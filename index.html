@@ -72,7 +72,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.3</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.4</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -85,7 +85,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <button class="btn" id="btn-undo">&#8630;</button>
   <button class="btn" id="btn-reset">&#8635;</button>
   <button class="btn" id="btn-half">&#189; Plan</button>
-  <button class="btn" id="btn-panel">&#9660;</button>
+  <button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button>
 </div>
 
 <div id="pitch-wrapper">
@@ -113,10 +113,11 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <div id="bottompanel">
-  <div class="tabs">
+  <div class="tabs" style="align-items:center">
     <button class="tab on" data-panel="formations">Formation</button>
     <button class="tab" data-panel="taktik">&#127916; Taktik</button>
     <button class="tab" data-panel="saves">Sparade</button>
+    <button id="btn-panel" style="margin-left:auto;background:transparent;border:1px solid #2d4a35;border-radius:4px;color:#7aaa88;padding:3px 8px;font-size:0.72rem;cursor:pointer">&#9660;</button>
   </div>
   <div class="panel on" id="panel-formations">
     <div class="frow" id="formation-btns"></div>
@@ -138,6 +139,8 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
           <button class="btn" id="btn-import-taktik-btn">Importera</button>
           <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
         </div>
+        <input type="text" id="taktik-search" placeholder="S&#246;k taktikfilm..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
+        <div id="taktik-folder-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px"></div>
         <div class="list" id="taktik-list"></div>
       </div>
     </div>
@@ -285,6 +288,34 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   </div>
 </div>
 
+<!-- EDIT TAKTIK MODAL -->
+<div class="modal-bg hidden" id="modal-edit-taktik">
+  <div class="modal" style="max-width:440px">
+    <h2>Redigera taktikfilm</h2>
+    <div class="mrow"><label>Namn</label><input type="text" class="minput wide" id="edit-taktik-name-inp"></div>
+    <div class="mrow"><label>Mapp</label><select class="btn" id="edit-taktik-folder" style="flex:1"></select></div>
+    <hr class="mdiv">
+    <div style="font-size:0.75rem;color:#7aaa88;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Steg – tryck f&#246;r att redigera namn, dra f&#246;r att sortera</div>
+    <div class="list" id="edit-taktik-steps" style="max-height:160px"></div>
+    <div class="mactions">
+      <button class="btn" id="edit-taktik-cancel">Avbryt</button>
+      <button class="btn on" id="edit-taktik-ok">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- MERGE TAKTIK MODAL -->
+<div class="modal-bg hidden" id="modal-merge-taktik">
+  <div class="modal">
+    <h2>Sammanfoga filmer</h2>
+    <p style="font-size:0.82rem;color:#7aaa88;margin-bottom:12px">V&#228;lj en film att l&#228;gga till <b id="merge-base-name" style="color:#edf5ee"></b> i slutet av</p>
+    <div class="list" id="merge-taktik-list" style="max-height:160px"></div>
+    <div class="mactions">
+      <button class="btn" id="merge-taktik-cancel">Avbryt</button>
+    </div>
+  </div>
+</div>
+
 <script>
 window.onerror = function(msg,src,line,col,err){
   document.body.style.overflow="auto";
@@ -299,6 +330,8 @@ var undoStack=[],idCounter=0,panelOpen=true,halfMode=0;
 var savedFormations=[],taktikFilmer=[],activeTaktik=null,playback=null;
 var animFrame=null,animSpeed=600,dragging=null;
 var folders=["Allm\u00e4nt"],currentFolder="Alla";
+var taktikFolders=["Allm\u00e4nt"],currentTaktikFolder="Alla",taktikSearch="";
+var editingTaktikIdx=null,mergingTaktikIdx=null;
 
 var FORMATIONS={
   11:["4-4-2","4-3-3","3-5-2","4-2-3-1","5-3-2","3-4-3"],
@@ -567,13 +600,150 @@ document.getElementById("btn-undo").addEventListener("click",doUndo);
 document.getElementById("btn-reset").addEventListener("click",function(){initPlayers(document.querySelector("#formation-btns .on")?document.querySelector("#formation-btns .on").textContent:"4-4-2");arrows=[];labels=[];render();});
 document.getElementById("fmt-sel").addEventListener("change",function(e){format=parseInt(e.target.value);buildFormationBtns();initPlayers((FORMATIONS[format]||FORMATIONS[11])[0]);render();});
 document.getElementById("btn-half").addEventListener("click",function(){halfMode=(halfMode+1)%3;var lbl=["\u00bd Plan","\u00bd Borta","Hel"];document.getElementById("btn-half").innerHTML=lbl[halfMode];updateViewBox();});
-document.getElementById("btn-panel").addEventListener("click",function(){panelOpen=!panelOpen;document.getElementById("bottompanel").classList.toggle("hidden",!panelOpen);document.getElementById("btn-panel").textContent=panelOpen?"\u25bc":"\u25b2";});
+document.getElementById("btn-panel").addEventListener("click",function(){panelOpen=!panelOpen;document.getElementById("bottompanel").classList.toggle("hidden",!panelOpen);document.getElementById("btn-panel").textContent=panelOpen?"▼":"▲";});
+
+var topbarOpen=true;
+document.getElementById("btn-topbar-toggle").addEventListener("click",function(){
+  topbarOpen=!topbarOpen;
+  var tb=document.getElementById("topbar");
+  var btn=document.getElementById("btn-topbar-toggle");
+  var children=tb.children;
+  for(var i=0;i<children.length;i++){if(children[i]!==btn)children[i].style.display=topbarOpen?"":"none";}
+  btn.innerHTML=topbarOpen?"▲":"▼";
+  btn.title=topbarOpen?"Minimera menyn":"Visa menyn";
+});
+
+document.getElementById("taktik-search").addEventListener("input",function(e){taktikSearch=e.target.value;renderTaktikList();});
 document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
 function startRecording(name){activeTaktik={name:name,steps:[currentSnap()]};document.getElementById("rec-badge").style.display="block";document.getElementById("rec-ui").style.display="block";document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-name-lbl").textContent="\u25cf "+name;renderRecSteps();}
 document.getElementById("btn-add-step").addEventListener("click",function(){if(!activeTaktik)return;activeTaktik.steps.push(currentSnap());renderRecSteps();});
 document.getElementById("btn-stop-rec").addEventListener("click",function(){if(!activeTaktik||activeTaktik.steps.length<2)return;var newFilm={name:activeTaktik.name,steps:activeTaktik.steps};taktikFilmer.push(newFilm);cloudSaveTaktik(newFilm);activeTaktik=null;document.getElementById("rec-badge").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("no-rec-ui").style.display="block";renderTaktikList();});
-function renderRecSteps(){var list=document.getElementById("rec-steps-list");list.innerHTML="";if(!activeTaktik)return;for(var i=0;i<activeTaktik.steps.length;i++){(function(idx){var row=document.createElement("div");row.className="row";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=idx===0?"Startl\u00e4ge":"Steg "+idx;var jmp=document.createElement("button");jmp.className="sa jump";jmp.textContent="Hoppa";jmp.addEventListener("click",function(){restoreSnap(activeTaktik.steps[idx]);render();});var upd=document.createElement("button");upd.className="sa save2";upd.textContent="Spara";upd.addEventListener("click",function(){activeTaktik.steps[idx]=currentSnap();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);row.appendChild(upd);if(idx>0){var del=document.createElement("button");del.className="sa del";del.textContent="\u00d7";del.addEventListener("click",function(){activeTaktik.steps.splice(idx,1);renderRecSteps();});row.appendChild(del);}list.appendChild(row);})(i);}}
-function renderTaktikList(){var list=document.getElementById("taktik-list");list.innerHTML="";if(!taktikFilmer.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga taktikfilmer sparade</span>";return;}for(var i=0;i<taktikFilmer.length;i++){(function(idx){var tk=taktikFilmer[idx];var row=document.createElement("div");row.className="row";var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;var cnt=document.createElement("span");cnt.className="row-sub";cnt.textContent=(tk.steps.length-1)+" steg";var pb=document.createElement("button");pb.className="sa play";pb.textContent="\u25ba Spela";pb.addEventListener("click",function(){startPlayback(idx);});var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";dl.addEventListener("click",function(){if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"DELETE",headers:supaHeaders()}).then(function(){cloudLoadTaktik();});}else{taktikFilmer.splice(idx,1);renderTaktikList();}});row.appendChild(nm);row.appendChild(cnt);row.appendChild(pb);row.appendChild(dl);list.appendChild(row);})(i);}}
+function renderRecSteps(){var list=document.getElementById("rec-steps-list");list.innerHTML="";if(!activeTaktik)return;for(var i=0;i<activeTaktik.steps.length;i++){(function(idx){var row=document.createElement("div");row.className="row";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";var stepLabel=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startläge":"Steg "+idx);lbl.textContent=stepLabel;var jmp=document.createElement("button");jmp.className="sa jump";jmp.textContent="Hoppa";jmp.addEventListener("click",function(){restoreSnap(activeTaktik.steps[idx]);render();});var upd=document.createElement("button");upd.className="sa save2";upd.textContent="Spara";upd.addEventListener("click",function(){activeTaktik.steps[idx]=currentSnap();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);row.appendChild(upd);if(idx>0){var del=document.createElement("button");del.className="sa del";del.textContent="\u00d7";del.addEventListener("click",function(){activeTaktik.steps.splice(idx,1);renderRecSteps();});row.appendChild(del);}list.appendChild(row);})(i);}}
+function renderTaktikList(){
+  // folder filter bar
+  var filterDiv=document.getElementById("taktik-folder-filter");
+  if(filterDiv){
+    filterDiv.innerHTML="";
+    var tfCounts={"Alla":taktikFilmer.length};
+    for(var i=0;i<taktikFilmer.length;i++){var f=taktikFilmer[i].folder||"Allmänt";tfCounts[f]=(tfCounts[f]||0)+1;}
+    var tfAll=["Alla"];var tfseen={};
+    for(var i=0;i<taktikFilmer.length;i++){var f=taktikFilmer[i].folder||"Allmänt";if(!tfseen[f]){tfseen[f]=true;tfAll.push(f);}}
+    for(var i=0;i<tfAll.length;i++){
+      (function(f){var fb=document.createElement("button");fb.className="tab"+(currentTaktikFolder===f?" on":"");fb.textContent=f+" ("+(tfCounts[f]||0)+")";fb.style.fontSize="0.62rem";fb.style.padding="2px 6px";fb.addEventListener("click",function(){currentTaktikFolder=f;renderTaktikList();});filterDiv.appendChild(fb);})(tfAll[i]);
+    }
+  }
+  var list=document.getElementById("taktik-list");list.innerHTML="";
+  var q=taktikSearch.toLowerCase();
+  var filtered=taktikFilmer.filter(function(tk,i){
+    var inFolder=currentTaktikFolder==="Alla"||(tk.folder||"Allmänt")===currentTaktikFolder;
+    var inSearch=!q||tk.name.toLowerCase().indexOf(q)>=0;
+    return inFolder&&inSearch;
+  });
+  if(!filtered.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>"+(taktikSearch?"Inga träffar":"Inga taktikfilmer sparade")+"</span>";return;}
+  for(var i=0;i<filtered.length;i++){
+    (function(tk){
+      var idx=taktikFilmer.indexOf(tk);
+      var row=document.createElement("div");row.className="row";
+      var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;
+      var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.folder||"Allmänt")+" · "+(tk.steps.length-1)+" steg";
+      var pb=document.createElement("button");pb.className="sa play";pb.textContent="► Spela";pb.addEventListener("click",function(){startPlayback(idx);});
+      var ed=document.createElement("button");ed.className="sa";ed.style.cssText="color:#e8c84a;border-color:#e8c84a";ed.textContent="✏";ed.title="Redigera";ed.addEventListener("click",function(){openEditTaktik(idx);});
+      var dup=document.createElement("button");dup.className="sa";dup.style.cssText="color:#4ae8e8;border-color:#4ae8e8";dup.textContent="Kopia";dup.addEventListener("click",function(){duplicateTaktik(idx);});
+      var mg=document.createElement("button");mg.className="sa";mg.style.cssText="color:#a78bfa;border-color:#a78bfa";mg.textContent="⋓";mg.title="Sammanfoga";mg.addEventListener("click",function(){openMergeTaktik(idx);});
+      var dl=document.createElement("button");dl.className="sa del";dl.textContent="×";
+      dl.addEventListener("click",function(){if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"DELETE",headers:supaHeaders()}).then(function(){cloudLoadTaktik();});}else{taktikFilmer.splice(idx,1);renderTaktikList();}});
+      row.appendChild(nm);row.appendChild(fl);row.appendChild(pb);row.appendChild(ed);row.appendChild(dup);row.appendChild(mg);row.appendChild(dl);
+      list.appendChild(row);
+    })(filtered[i]);
+  }
+}
+
+function openEditTaktik(idx){
+  editingTaktikIdx=idx;
+  var tk=taktikFilmer[idx];
+  document.getElementById("edit-taktik-name-inp").value=tk.name;
+  // populate folder select
+  var sel=document.getElementById("edit-taktik-folder");sel.innerHTML="";
+  var allTF=taktikFolders.slice();if(allTF.indexOf(tk.folder||"Allmänt")<0)allTF.push(tk.folder||"Allmänt");
+  allTF.forEach(function(f){var o=document.createElement("option");o.value=f;o.textContent=f;if((tk.folder||"Allmänt")===f)o.selected=true;sel.appendChild(o);});
+  // build steps list with editable names and reorder
+  renderEditSteps(tk);
+  document.getElementById("modal-edit-taktik").classList.remove("hidden");
+}
+
+function renderEditSteps(tk){
+  var list=document.getElementById("edit-taktik-steps");list.innerHTML="";
+  for(var i=0;i<tk.steps.length;i++){
+    (function(idx){
+      var s=tk.steps[idx];
+      var row=document.createElement("div");row.className="row";row.draggable=true;row.dataset.idx=idx;
+      row.style.cursor="grab";
+      var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"►":String(idx);
+      var nameInp=document.createElement("input");nameInp.type="text";nameInp.value=s.label||( idx===0?"Startläge":"Steg "+idx);nameInp.style.cssText="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 6px;font-size:0.78rem";
+      nameInp.addEventListener("change",function(){s.label=nameInp.value;});
+      var del=document.createElement("button");del.className="sa del";del.textContent="×";
+      del.style.display=idx===0?"none":"";
+      del.addEventListener("click",function(){tk.steps.splice(idx,1);renderEditSteps(tk);});
+      // move up/down
+      var up=document.createElement("button");up.className="sa";up.textContent="↑";up.style.display=idx<=1?"none":"";
+      up.addEventListener("click",function(){if(idx>1){var tmp=tk.steps[idx];tk.steps[idx]=tk.steps[idx-1];tk.steps[idx-1]=tmp;renderEditSteps(tk);}});
+      var dn=document.createElement("button");dn.className="sa";dn.textContent="↓";dn.style.display=idx===0||idx===tk.steps.length-1?"none":"";
+      dn.addEventListener("click",function(){if(idx<tk.steps.length-1){var tmp=tk.steps[idx];tk.steps[idx]=tk.steps[idx+1];tk.steps[idx+1]=tmp;renderEditSteps(tk);}});
+      row.appendChild(num);row.appendChild(nameInp);row.appendChild(up);row.appendChild(dn);row.appendChild(del);
+      list.appendChild(row);
+    })(i);
+  }
+}
+
+document.getElementById("edit-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-edit-taktik").classList.add("hidden");editingTaktikIdx=null;});
+document.getElementById("edit-taktik-ok").addEventListener("click",function(){
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  tk.name=document.getElementById("edit-taktik-name-inp").value.trim()||tk.name;
+  tk.folder=document.getElementById("edit-taktik-folder").value;
+  // save to supabase
+  if(tk.dbId){
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder})}).then(function(){cloudStatus("✅ Film uppdaterad","#4ae87a");cloudLoadTaktik();});
+  } else { cloudStatus("✅ Film uppdaterad (lokalt)","#4ae87a");renderTaktikList(); }
+  document.getElementById("modal-edit-taktik").classList.add("hidden");editingTaktikIdx=null;
+});
+
+function duplicateTaktik(idx){
+  var tk=taktikFilmer[idx];
+  var copy={name:"Kopia av "+tk.name,folder:tk.folder||"Allmänt",steps:JSON.parse(JSON.stringify(tk.steps))};
+  taktikFilmer.push(copy);
+  cloudSaveTaktik(copy);
+  cloudStatus("✅ Film duplicerad","#4ae87a");
+}
+
+function openMergeTaktik(idx){
+  mergingTaktikIdx=idx;
+  document.getElementById("merge-base-name").textContent=taktikFilmer[idx].name;
+  var list=document.getElementById("merge-taktik-list");list.innerHTML="";
+  for(var i=0;i<taktikFilmer.length;i++){
+    if(i===idx)continue;
+    (function(i2){
+      var tk2=taktikFilmer[i2];
+      var row=document.createElement("div");row.className="row";row.style.cursor="pointer";
+      var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk2.name;
+      var cnt=document.createElement("span");cnt.className="row-sub";cnt.textContent=(tk2.steps.length-1)+" steg";
+      var btn=document.createElement("button");btn.className="sa play";btn.textContent="Lägg till";
+      btn.addEventListener("click",function(){mergeTaktik(mergingTaktikIdx,i2);document.getElementById("modal-merge-taktik").classList.add("hidden");mergingTaktikIdx=null;});
+      row.appendChild(nm);row.appendChild(cnt);row.appendChild(btn);list.appendChild(row);
+    })(i);
+  }
+  document.getElementById("modal-merge-taktik").classList.remove("hidden");
+}
+
+function mergeTaktik(idxA,idxB){
+  var tkA=taktikFilmer[idxA],tkB=taktikFilmer[idxB];
+  var merged={name:tkA.name+" + "+tkB.name,folder:tkA.folder||"Allmänt",steps:JSON.parse(JSON.stringify(tkA.steps)).concat(JSON.parse(JSON.stringify(tkB.steps)).slice(1))};
+  taktikFilmer.push(merged);
+  cloudSaveTaktik(merged);
+  cloudStatus("✅ Filmer sammanfogade","#4ae87a");
+}
+
+document.getElementById("merge-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-merge-taktik").classList.add("hidden");mergingTaktikIdx=null;});
 document.getElementById("btn-new-taktik").addEventListener("click",function(){document.getElementById("taktik-name-inp").value="";document.getElementById("modal-new-taktik").classList.remove("hidden");});
 document.getElementById("new-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-new-taktik").classList.add("hidden");});
 document.getElementById("new-taktik-ok").addEventListener("click",function(){var name=document.getElementById("taktik-name-inp").value.trim();if(!name)return;document.getElementById("modal-new-taktik").classList.add("hidden");startRecording(name);});
@@ -584,7 +754,7 @@ document.getElementById("btn-next").addEventListener("click",function(){if(!play
 document.getElementById("btn-prev").addEventListener("click",function(){if(!playback||playback.animating)return;if(playback.stepIndex<=0)return;animateToStep(playback.stepIndex-1);});
 document.getElementById("play-speed").addEventListener("change",function(){animSpeed=parseInt(this.value);});
 function updatePlaybar(){if(!playback)return;var cur=playback.stepIndex,total=playback.tk.steps.length-1;document.getElementById("play-title").textContent=playback.tk.name;document.getElementById("play-counter").textContent=cur===0?"Start":cur+"/"+total;document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";renderPlayStepList();}
-function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=idx===0?"Startl\u00e4ge":"Steg "+idx;var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
+function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";var rLabel=activeTaktik.steps[idx]&&activeTaktik.steps[idx].label?activeTaktik.steps[idx].label:(idx===0?"Startläge":"Steg "+idx);lbl.textContent=rLabel;var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
 function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx],fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};}),fromBall={x:ball.x,y:ball.y},start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed),ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){players[i].x=fp.x+(tp2.x-fp.x)*ease;players[i].y=fp.y+(tp2.y-fp.y)*ease;}var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}if(tx){tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);}}}ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}}animFrame=requestAnimationFrame(frame);}
 function buildState(){return{format:format,homeColor:homeColor,awayColor:awayColor,displayMode:displayMode,players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};})};}
 function applyState(s){format=s.format||11;homeColor=s.homeColor||"#e8c84a";awayColor=s.awayColor||"#e84a4a";displayMode=s.displayMode||"number";document.getElementById("fmt-sel").value=String(format);players=(s.players||[]).map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball=s.ball||{x:W/2,y:H/2};arrows=(s.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};});labels=(s.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});buildFormationBtns();render();}
@@ -615,7 +785,7 @@ function cloudSaveWithName(name){cloudStatus("Sparar...","#7aaa88");var folderSe
 function cloudLoadSaves(){cloudStatus("Laddar...","#7aaa88");fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=folder.asc,id.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data)){savedFormations=data.map(function(row){return{id:row.id,name:row.name,state:row.data,folder:row.folder||"Allm\u00e4nt"};});var seen={};folders=["Allm\u00e4nt"];for(var i=0;i<savedFormations.length;i++){var f=savedFormations[i].folder;if(f&&!seen[f]){seen[f]=true;if(f!=="Allm\u00e4nt")folders.push(f);}}cloudStatus(data.length+" uppst\u00e4llningar \u2705","#4ae87a");renderSavesList();updateFolderSelect();}else cloudStatus("\u274c Fel","#e84a4a");}).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});}
 function cloudDelete(id){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{method:"DELETE",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"})}).then(function(){cloudLoadSaves();}).catch(function(err){cloudStatus("\u274c Raderingsfel: "+err.message,"#e84a4a");});}
 function cloudSaveTaktik(tk){var body=JSON.stringify({name:tk.name,data:tk,type:"taktikfilm"});fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:body}).then(function(r){return r.json();}).then(function(data){if(data&&data[0]&&data[0].id){tk.dbId=data[0].id;cloudStatus("\u2705 Film sparad: "+tk.name,"#4ae87a");}else cloudStatus("\u274c Fel","#e84a4a");}).catch(function(){cloudStatus("\u274c Anslutningsfel","#e84a4a");});}
-function cloudLoadTaktik(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data)){taktikFilmer=data.map(function(row){var tk=row.data;tk.dbId=row.id;return tk;});renderTaktikList();cloudStatus(data.length+" taktikfilmer laddade","#4ae87a");}}).catch(function(){});}
+function cloudLoadTaktik(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data)){taktikFilmer=data.map(function(row){var tk=row.data;tk.dbId=row.id;if(!tk.folder)tk.folder="Allmänt";return tk;});var tfseen={};taktikFolders=["Allmänt"];taktikFilmer.forEach(function(tk){if(tk.folder&&!tfseen[tk.folder]){tfseen[tk.folder]=true;if(tk.folder!=="Allmänt")taktikFolders.push(tk.folder);}});renderTaktikList();cloudStatus(data.length+" taktikfilmer laddade","#4ae87a");}}).catch(function(){});}
 
 // Init
 drawPitch();
