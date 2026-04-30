@@ -72,7 +72,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.4</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.5</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -131,6 +131,26 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
           <button class="btn danger" id="btn-stop-rec">Stoppa</button>
         </div>
         <div class="list" id="rec-steps-list"></div>
+      </div>
+      <div id="edit-taktik-ui" style="display:none">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;align-items:center">
+          <span style="font-size:0.73rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1" id="edit-taktik-title-lbl"></span>
+          <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a">&#9998; Info</button>
+          <button class="btn on" id="btn-edit-taktik-save">Spara film</button>
+          <button class="btn danger" id="btn-edit-taktik-exit">Avsluta</button>
+        </div>
+        <div style="display:flex;gap:5px;margin-bottom:5px">
+          <button class="btn" id="btn-edit-step-prev">&#9664;</button>
+          <span id="edit-step-counter" style="font-size:0.8rem;color:#7aaa88;align-self:center;flex:1;text-align:center">Steg 0/0</span>
+          <button class="btn" id="btn-edit-step-next">&#9654;</button>
+          <button class="btn on" id="btn-edit-update-step">&#10003; Spara steg</button>
+        </div>
+        <div style="display:flex;gap:5px;margin-bottom:5px">
+          <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem">
+          <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a">+ Steg</button>
+          <button class="btn danger" id="btn-edit-del-step">&#10005;</button>
+        </div>
+        <div class="list" id="edit-taktik-steps" style="max-height:60px"></div>
       </div>
       <div id="no-rec-ui">
         <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
@@ -288,18 +308,15 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   </div>
 </div>
 
-<!-- EDIT TAKTIK MODAL -->
-<div class="modal-bg hidden" id="modal-edit-taktik">
-  <div class="modal" style="max-width:440px">
-    <h2>Redigera taktikfilm</h2>
+<!-- EDIT TAKTIK: inline panel, no modal needed -->
+<div class="modal-bg hidden" id="modal-edit-taktik-meta">
+  <div class="modal" style="max-width:360px">
+    <h2>Filminfo</h2>
     <div class="mrow"><label>Namn</label><input type="text" class="minput wide" id="edit-taktik-name-inp"></div>
     <div class="mrow"><label>Mapp</label><select class="btn" id="edit-taktik-folder" style="flex:1"></select></div>
-    <hr class="mdiv">
-    <div style="font-size:0.75rem;color:#7aaa88;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Steg – tryck f&#246;r att redigera namn, dra f&#246;r att sortera</div>
-    <div class="list" id="edit-taktik-steps" style="max-height:160px"></div>
     <div class="mactions">
       <button class="btn" id="edit-taktik-cancel">Avbryt</button>
-      <button class="btn on" id="edit-taktik-ok">Spara</button>
+      <button class="btn on" id="edit-taktik-ok">Spara info</button>
     </div>
   </div>
 </div>
@@ -668,7 +685,7 @@ function openEditTaktik(idx){
   allTF.forEach(function(f){var o=document.createElement("option");o.value=f;o.textContent=f;if((tk.folder||"Allmänt")===f)o.selected=true;sel.appendChild(o);});
   // build steps list with editable names and reorder
   renderEditSteps(tk);
-  document.getElementById("modal-edit-taktik").classList.remove("hidden");
+  document.getElementById("modal-edit-taktik-meta").classList.remove("hidden");
 }
 
 function renderEditSteps(tk){
@@ -695,7 +712,7 @@ function renderEditSteps(tk){
   }
 }
 
-document.getElementById("edit-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-edit-taktik").classList.add("hidden");editingTaktikIdx=null;});
+document.getElementById("edit-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-edit-taktik-meta").classList.add("hidden");editingTaktikIdx=null;});
 document.getElementById("edit-taktik-ok").addEventListener("click",function(){
   if(editingTaktikIdx===null)return;
   var tk=taktikFilmer[editingTaktikIdx];
@@ -705,7 +722,7 @@ document.getElementById("edit-taktik-ok").addEventListener("click",function(){
   if(tk.dbId){
     fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder})}).then(function(){cloudStatus("✅ Film uppdaterad","#4ae87a");cloudLoadTaktik();});
   } else { cloudStatus("✅ Film uppdaterad (lokalt)","#4ae87a");renderTaktikList(); }
-  document.getElementById("modal-edit-taktik").classList.add("hidden");editingTaktikIdx=null;
+  document.getElementById("modal-edit-taktik-meta").classList.add("hidden");editingTaktikIdx=null;
 });
 
 function duplicateTaktik(idx){
@@ -747,7 +764,7 @@ document.getElementById("merge-taktik-cancel").addEventListener("click",function
 document.getElementById("btn-new-taktik").addEventListener("click",function(){document.getElementById("taktik-name-inp").value="";document.getElementById("modal-new-taktik").classList.remove("hidden");});
 document.getElementById("new-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-new-taktik").classList.add("hidden");});
 document.getElementById("new-taktik-ok").addEventListener("click",function(){var name=document.getElementById("taktik-name-inp").value.trim();if(!name)return;document.getElementById("modal-new-taktik").classList.add("hidden");startRecording(name);});
-function startPlayback(idx){var tk=taktikFilmer[idx];if(animFrame)cancelAnimationFrame(animFrame);playback={tk:tk,stepIndex:0,animating:false};restoreSnap(tk.steps[0]);render();document.getElementById("playbar").classList.add("active");updatePlaybar();renderPlayStepList();document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-taktik");});}
+function startPlayback(idx){var tk=taktikFilmer[idx];if(!tk||!tk.steps||!tk.steps.length){cloudStatus("❌ Ogiltig taktikfilm","#e84a4a");return;}if(animFrame)cancelAnimationFrame(animFrame);playback={tk:tk,stepIndex:0,animating:false};var s0=tk.steps[0];if(!s0.players)s0={players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:[],labels:[]};restoreSnap(s0);render();document.getElementById("playbar").classList.add("active");updatePlaybar();renderPlayStepList();document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-taktik");});}
 function stopPlayback(){if(animFrame)cancelAnimationFrame(animFrame);playback=null;document.getElementById("playbar").classList.remove("active");render();renderTaktikList();}
 document.getElementById("btn-stop-play").addEventListener("click",stopPlayback);
 document.getElementById("btn-next").addEventListener("click",function(){if(!playback||playback.animating)return;if(playback.stepIndex>=playback.tk.steps.length-1)return;animateToStep(playback.stepIndex+1);});
