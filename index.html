@@ -1127,31 +1127,54 @@ function cloudSaveWithName(name){
     method: "POST",
     headers: Object.assign({}, supaHeaders(), {"Prefer": "return=representation"}),
     body: body
-  }).then(function(r){ return r.json(); }).then(function(data){
-    if(data && data[0] && data[0].id){
-      cloudStatus("✅ Sparat: " + name, "#4ae87a");
-      cloudLoadSaves();
-    } else {
-      cloudStatus("❌ Fel: " + JSON.stringify(data), "#e84a4a");
+  }).then(function(r){
+    cloudStatus("Spara HTTP " + r.status, r.ok ? "#7aaa88" : "#e84a4a");
+    return r.text();
+  }).then(function(text){
+    cloudStatus("Spara-svar: " + text.substring(0,80), "#7aaa88");
+    try {
+      var data = JSON.parse(text);
+      if(Array.isArray(data) && data[0] && data[0].id){
+        cloudStatus("✅ Sparat: " + name, "#4ae87a");
+        cloudLoadSaves();
+      } else {
+        cloudStatus("❌ Spara-fel: " + text.substring(0,100), "#e84a4a");
+      }
+    } catch(e) {
+      cloudStatus("❌ Parse-fel: " + e.message, "#e84a4a");
     }
-  }).catch(function(err){ cloudStatus("❌ Anslutningsfel", "#e84a4a"); });
+  }).catch(function(err){
+    cloudStatus("❌ Fetch-fel: " + err.message, "#e84a4a");
+  });
 }
 
 function cloudLoadSaves(){
   cloudStatus("Laddar...", "#7aaa88");
-  fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE + "?type=eq.uppstallning&order=id.desc", {
+  var url = SUPA_URL + "/rest/v1/" + SUPA_TABLE + "?type=eq.uppstallning&order=id.desc";
+  fetch(url, {
     headers: supaHeaders()
-  }).then(function(r){ return r.json(); }).then(function(data){
-    if(Array.isArray(data)){
-      savedFormations = data.map(function(row){
-        return { id: row.id, name: row.name, state: row.data };
-      });
-      cloudStatus(data.length + " uppställningar laddade", "#4ae87a");
-      renderSavesList();
-    } else {
-      cloudStatus("❌ Fel vid laddning", "#e84a4a");
+  }).then(function(r){
+    cloudStatus("HTTP " + r.status + " från Supabase", r.ok ? "#7aaa88" : "#e84a4a");
+    return r.text();
+  }).then(function(text){
+    cloudStatus("Svar: " + text.substring(0,80), "#7aaa88");
+    try {
+      var data = JSON.parse(text);
+      if(Array.isArray(data)){
+        savedFormations = data.map(function(row){
+          return { id: row.id, name: row.name, state: row.data };
+        });
+        cloudStatus(data.length + " uppställningar laddade ✅", "#4ae87a");
+        renderSavesList();
+      } else {
+        cloudStatus("❌ Oväntat svar: " + text.substring(0,100), "#e84a4a");
+      }
+    } catch(e) {
+      cloudStatus("❌ Parse-fel: " + e.message, "#e84a4a");
     }
-  }).catch(function(err){ cloudStatus("❌ Anslutningsfel", "#e84a4a"); });
+  }).catch(function(err){
+    cloudStatus("❌ Fetch-fel: " + err.message, "#e84a4a");
+  });
 }
 
 function cloudDelete(id){
