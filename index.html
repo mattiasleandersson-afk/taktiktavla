@@ -72,7 +72,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v1.8</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v1.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1121,7 +1121,6 @@ function cloudSave(){
 }
 
 function cloudSaveWithName(name){
-  alert("cloudSaveWithName kallas med: " + name);
   cloudStatus("Sparar...", "#7aaa88");
   var body = JSON.stringify({ name: name, data: buildState(), type: "uppstallning" });
   fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE, {
@@ -1132,7 +1131,6 @@ function cloudSaveWithName(name){
     cloudStatus("Spara HTTP " + r.status, r.ok ? "#7aaa88" : "#e84a4a");
     return r.text();
   }).then(function(text){
-    alert("SVAR FRAN SUPABASE: " + text.substring(0,200));
     try {
       var data = JSON.parse(text);
       if(Array.isArray(data) && data[0] && data[0].id){
