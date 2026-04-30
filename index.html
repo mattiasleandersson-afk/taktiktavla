@@ -74,7 +74,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.5</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -326,6 +326,19 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   </div>
 </div>
 
+<!-- DELETE FOLDER CONFIRM -->
+<div class="modal-bg hidden" id="modal-delete-folder">
+  <div class="modal">
+    <h2>Radera mapp</h2>
+    <p style="font-size:0.85rem;color:#7aaa88;margin-bottom:12px">Mappen <b id="delete-folder-name" style="color:#edf5ee"></b> inneh&#229;ller inneh&#229;ll. Vad vill du g&#246;ra?</p>
+    <div class="mactions" style="flex-direction:column;gap:8px">
+      <button class="btn" id="delete-folder-move" style="width:100%;text-align:center">Flytta allt till Allm&#228;nt</button>
+      <button class="btn danger" id="delete-folder-all" style="width:100%;text-align:center">Radera allt inneh&#229;ll</button>
+      <button class="btn" id="delete-folder-cancel">Avbryt</button>
+    </div>
+  </div>
+</div>
+
 <!-- MERGE TAKTIK MODAL -->
 <div class="modal-bg hidden" id="modal-merge-taktik">
   <div class="modal">
@@ -384,6 +397,7 @@ function updateFolderSelect(){
 }
 
 var movingId=null,renamingFolder=null,searchQuery="";
+var pendingFolderTarget="saves",deletingFolder=null,deletingFolderTarget=null;
 
 document.getElementById("saves-search").addEventListener("input",function(e){searchQuery=e.target.value.toLowerCase();renderSavesList();});
 
@@ -393,38 +407,68 @@ function renderSavesList(){
   // count per folder
   var folderCounts={"Alla":savedFormations.length};
   for(var i=0;i<savedFormations.length;i++){
-    var f=savedFormations[i].folder||"Allm\u00e4nt";
+    var f=savedFormations[i].folder||"Allmänt";
     folderCounts[f]=(folderCounts[f]||0)+1;
   }
 
-  // folder filter row
+  // folder filter row with inline management
   var filterRow=document.createElement("div");
   filterRow.style.cssText="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;width:100%";
   var allFolders=["Alla"];
   var seen2={};
-  for(var i=0;i<savedFormations.length;i++){var f=savedFormations[i].folder||"Allm\u00e4nt";if(!seen2[f]){seen2[f]=true;allFolders.push(f);}}
+  for(var i=0;i<savedFormations.length;i++){var f=savedFormations[i].folder||"Allmänt";if(!seen2[f]){seen2[f]=true;allFolders.push(f);}}
+  // also include folders that exist but have no saves yet
+  for(var i=0;i<folders.length;i++){if(!seen2[folders[i]]&&folders[i]!=="Alla"){seen2[folders[i]]=true;allFolders.push(folders[i]);}}
 
   for(var i=0;i<allFolders.length;i++){
     (function(f){
-      var wrap=document.createElement("div");wrap.style.cssText="display:flex;align-items:center;gap:1px";
+      var wrap=document.createElement("div");wrap.style.cssText="display:flex;align-items:center;gap:1px;margin-bottom:2px";
       var fb=document.createElement("button");
       fb.className="tab"+(currentFolder===f?" on":"");
       fb.textContent=f+" ("+(folderCounts[f]||0)+")";
       fb.style.fontSize="0.62rem";fb.style.padding="2px 6px";
       fb.addEventListener("click",function(){currentFolder=f;renderSavesList();});
       wrap.appendChild(fb);
-      // rename button (not for "Alla")
       if(f!=="Alla"){
+        // rename
         var rnBtn=document.createElement("button");
-        rnBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#7aaa88;border:1px solid #2d4a35;border-left:none;border-radius:0 4px 4px 0;cursor:pointer";
-        rnBtn.textContent="\u270f";
-        rnBtn.title="Byt namn";
+        rnBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#7aaa88;border:1px solid #2d4a35;border-left:none;cursor:pointer";
+        rnBtn.textContent="✏";rnBtn.title="Byt namn";
         rnBtn.addEventListener("click",function(e){e.stopPropagation();openRenameFolder(f);});
         wrap.appendChild(rnBtn);
+        // delete
+        var delBtn=document.createElement("button");
+        delBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#e84a4a;border:1px solid #2d4a35;border-left:none;border-radius:0 4px 4px 0;cursor:pointer";
+        delBtn.textContent="×";delBtn.title="Radera mapp";
+        delBtn.addEventListener("click",function(e){
+          e.stopPropagation();
+          var count=folderCounts[f]||0;
+          if(count===0){
+            // empty folder - just remove
+            folders=folders.filter(function(x){return x!==f;});
+            if(currentFolder===f)currentFolder="Alla";
+            renderSavesList();
+          } else {
+            // has content - ask
+            openDeleteFolderConfirm(f,"saves");
+          }
+        });
+        wrap.appendChild(delBtn);
       }
       filterRow.appendChild(wrap);
     })(allFolders[i]);
   }
+  // + new folder button
+  var addBtn=document.createElement("button");
+  addBtn.style.cssText="font-size:0.62rem;padding:2px 8px;background:#111a14;color:#4ae87a;border:1px solid #4ae87a;border-radius:4px;cursor:pointer";
+  addBtn.textContent="+ Mapp";
+  addBtn.addEventListener("click",function(){
+    pendingFolderTarget="saves";
+    document.getElementById("new-folder-inp").value="";
+    document.getElementById("modal-new-folder").classList.remove("hidden");
+    setTimeout(function(){document.getElementById("new-folder-inp").focus();},100);
+  });
+  filterRow.appendChild(addBtn);
   list.appendChild(filterRow);
 
   // filter by folder and search
@@ -503,11 +547,77 @@ function openRenameFolder(f){
 }
 
 document.getElementById("rename-folder-cancel").addEventListener("click",function(){document.getElementById("modal-rename-folder").classList.add("hidden");renamingOldFolder=null;});
+
+function openRenameTaktikFolder(f){
+  renamingOldFolder=f;
+  renamingOldFolder_type="taktik";
+  document.getElementById("rename-folder-inp").value=f;
+  document.getElementById("modal-rename-folder").classList.remove("hidden");
+  setTimeout(function(){document.getElementById("rename-folder-inp").focus();},100);
+}
+
+function openDeleteFolderConfirm(f,type){
+  deletingFolder=f;deletingFolderTarget=type;
+  document.getElementById("delete-folder-name").textContent=f;
+  document.getElementById("modal-delete-folder").classList.remove("hidden");
+}
+
+document.getElementById("delete-folder-cancel").addEventListener("click",function(){document.getElementById("modal-delete-folder").classList.add("hidden");deletingFolder=null;deletingFolderTarget=null;});
+
+document.getElementById("delete-folder-move").addEventListener("click",function(){
+  document.getElementById("modal-delete-folder").classList.add("hidden");
+  if(!deletingFolder)return;
+  if(deletingFolderTarget==="saves"){
+    // move all saves to Allmänt
+    var ids=savedFormations.filter(function(s){return(s.folder||"Allmänt")===deletingFolder;}).map(function(s){return s.id;});
+    ids.forEach(function(id){if(id)cloudMoveToFolder(id,"Allmänt");});
+    folders=folders.filter(function(x){return x!==deletingFolder;});
+    if(currentFolder===deletingFolder)currentFolder="Alla";
+    setTimeout(function(){cloudLoadSaves();},500);
+  } else {
+    // move all taktik to Allmänt
+    var toUpdate=taktikFilmer.filter(function(tk){return(tk.folder||"Allmänt")===deletingFolder;});
+    toUpdate.forEach(function(tk){tk.folder="Allmänt";if(tk.dbId)fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({folder:"Allmänt"})});});
+    taktikFolders=taktikFolders.filter(function(x){return x!==deletingFolder;});
+    if(currentTaktikFolder===deletingFolder)currentTaktikFolder="Alla";
+    renderTaktikList();
+  }
+  deletingFolder=null;deletingFolderTarget=null;
+});
+
+document.getElementById("delete-folder-all").addEventListener("click",function(){
+  document.getElementById("modal-delete-folder").classList.add("hidden");
+  if(!deletingFolder)return;
+  if(deletingFolderTarget==="saves"){
+    var toDelete=savedFormations.filter(function(s){return(s.folder||"Allmänt")===deletingFolder;});
+    toDelete.forEach(function(s){if(s.id)fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{method:"DELETE",headers:supaHeaders()});});
+    folders=folders.filter(function(x){return x!==deletingFolder;});
+    if(currentFolder===deletingFolder)currentFolder="Alla";
+    setTimeout(function(){cloudLoadSaves();},500);
+  } else {
+    var toDelete=taktikFilmer.filter(function(tk){return(tk.folder||"Allmänt")===deletingFolder;});
+    toDelete.forEach(function(tk){if(tk.dbId)fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"DELETE",headers:supaHeaders()});});
+    taktikFolders=taktikFolders.filter(function(x){return x!==deletingFolder;});
+    if(currentTaktikFolder===deletingFolder)currentTaktikFolder="Alla";
+    setTimeout(function(){cloudLoadTaktik();},500);
+  }
+  deletingFolder=null;deletingFolderTarget=null;
+});
+var renamingOldFolder_type="saves";
 document.getElementById("rename-folder-ok").addEventListener("click",function(){
   var newName=document.getElementById("rename-folder-inp").value.trim();
   if(!newName||!renamingOldFolder)return;
   document.getElementById("modal-rename-folder").classList.add("hidden");
-  cloudRenameFolder(renamingOldFolder,newName);
+  if(renamingOldFolder_type==="taktik"){
+    // rename taktik folder locally + in supabase
+    var toUpdate=taktikFilmer.filter(function(tk){return(tk.folder||"Allmänt")===renamingOldFolder;});
+    toUpdate.forEach(function(tk){tk.folder=newName;if(tk.dbId)fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({folder:newName})});});
+    for(var i=0;i<taktikFolders.length;i++){if(taktikFolders[i]===renamingOldFolder){taktikFolders[i]=newName;break;}}
+    if(currentTaktikFolder===renamingOldFolder)currentTaktikFolder=newName;
+    renderTaktikList();
+  } else {
+    cloudRenameFolder(renamingOldFolder,newName);
+  }
   renamingOldFolder=null;
 });
 document.getElementById("rename-folder-inp").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("rename-folder-ok").click();});
@@ -658,12 +768,52 @@ function renderTaktikList(){
   if(filterDiv){
     filterDiv.innerHTML="";
     var tfCounts={"Alla":taktikFilmer.length};
-    for(var i=0;i<taktikFilmer.length;i++){var f=taktikFilmer[i].folder||"Allm\u00e4nt";tfCounts[f]=(tfCounts[f]||0)+1;}
+    for(var i=0;i<taktikFilmer.length;i++){var f=taktikFilmer[i].folder||"Allmänt";tfCounts[f]=(tfCounts[f]||0)+1;}
     var tfAll=["Alla"];var tfseen={};
-    for(var i=0;i<taktikFilmer.length;i++){var f=taktikFilmer[i].folder||"Allm\u00e4nt";if(!tfseen[f]){tfseen[f]=true;tfAll.push(f);}}
+    for(var i=0;i<taktikFilmer.length;i++){var f=taktikFilmer[i].folder||"Allmänt";if(!tfseen[f]){tfseen[f]=true;tfAll.push(f);}}
+    for(var i=0;i<taktikFolders.length;i++){if(!tfseen[taktikFolders[i]]&&taktikFolders[i]!=="Alla"){tfseen[taktikFolders[i]]=true;tfAll.push(taktikFolders[i]);}}
     for(var i=0;i<tfAll.length;i++){
-      (function(f){var fb=document.createElement("button");fb.className="tab"+(currentTaktikFolder===f?" on":"");fb.textContent=f+" ("+(tfCounts[f]||0)+")";fb.style.fontSize="0.62rem";fb.style.padding="2px 6px";fb.addEventListener("click",function(){currentTaktikFolder=f;renderTaktikList();});filterDiv.appendChild(fb);})(tfAll[i]);
+      (function(f){
+        var wrap=document.createElement("div");wrap.style.cssText="display:inline-flex;align-items:center;gap:1px;margin-bottom:2px;margin-right:2px";
+        var fb=document.createElement("button");fb.className="tab"+(currentTaktikFolder===f?" on":"");fb.textContent=f+" ("+(tfCounts[f]||0)+")";fb.style.fontSize="0.62rem";fb.style.padding="2px 6px";
+        fb.addEventListener("click",function(){currentTaktikFolder=f;renderTaktikList();});
+        wrap.appendChild(fb);
+        if(f!=="Alla"){
+          var rnBtn=document.createElement("button");
+          rnBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#7aaa88;border:1px solid #2d4a35;border-left:none;cursor:pointer";
+          rnBtn.textContent="✏";rnBtn.title="Byt namn";
+          rnBtn.addEventListener("click",function(e){e.stopPropagation();openRenameTaktikFolder(f);});
+          wrap.appendChild(rnBtn);
+          var delBtn=document.createElement("button");
+          delBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#e84a4a;border:1px solid #2d4a35;border-left:none;border-radius:0 4px 4px 0;cursor:pointer";
+          delBtn.textContent="×";delBtn.title="Radera mapp";
+          delBtn.addEventListener("click",function(e){
+            e.stopPropagation();
+            var count=tfCounts[f]||0;
+            if(count===0){
+              taktikFolders=taktikFolders.filter(function(x){return x!==f;});
+              if(currentTaktikFolder===f)currentTaktikFolder="Alla";
+              renderTaktikList();
+            } else {
+              openDeleteFolderConfirm(f,"taktik");
+            }
+          });
+          wrap.appendChild(delBtn);
+        }
+        filterDiv.appendChild(wrap);
+      })(tfAll[i]);
     }
+    // + new folder
+    var addBtn=document.createElement("button");
+    addBtn.style.cssText="font-size:0.62rem;padding:2px 8px;background:#111a14;color:#4ae87a;border:1px solid #4ae87a;border-radius:4px;cursor:pointer;margin-bottom:2px";
+    addBtn.textContent="+ Mapp";
+    addBtn.addEventListener("click",function(){
+      pendingFolderTarget="taktik";
+      document.getElementById("new-folder-inp").value="";
+      document.getElementById("modal-new-folder").classList.remove("hidden");
+      setTimeout(function(){document.getElementById("new-folder-inp").focus();},100);
+    });
+    filterDiv.appendChild(addBtn);
   }
   var list=document.getElementById("taktik-list");list.innerHTML="";
   var q=taktikSearch.toLowerCase();
@@ -810,7 +960,22 @@ document.getElementById("savename-ok").addEventListener("click",function(){var n
 // New folder modal (no window.prompt)
 document.getElementById("btn-new-folder").addEventListener("click",function(){document.getElementById("new-folder-inp").value="";document.getElementById("modal-new-folder").classList.remove("hidden");setTimeout(function(){document.getElementById("new-folder-inp").focus();},100);});
 document.getElementById("new-folder-cancel").addEventListener("click",function(){document.getElementById("modal-new-folder").classList.add("hidden");});
-document.getElementById("new-folder-ok").addEventListener("click",function(){var name=document.getElementById("new-folder-inp").value.trim();if(name){if(folders.indexOf(name)===-1)folders.push(name);updateFolderSelect();var sel=document.getElementById("folder-select");if(sel)sel.value=name;if(pendingMoveAfterCreate&&movingId){cloudMoveToFolder(movingId,name);movingId=null;pendingMoveAfterCreate=false;}}document.getElementById("modal-new-folder").classList.add("hidden");});
+document.getElementById("new-folder-ok").addEventListener("click",function(){
+  var name=document.getElementById("new-folder-inp").value.trim();
+  if(name){
+    if(pendingFolderTarget==="taktik"){
+      if(taktikFolders.indexOf(name)===-1)taktikFolders.push(name);
+      renderTaktikList();
+    } else {
+      if(folders.indexOf(name)===-1)folders.push(name);
+      updateFolderSelect();
+      var sel=document.getElementById("folder-select");if(sel)sel.value=name;
+      if(pendingMoveAfterCreate&&movingId){cloudMoveToFolder(movingId,name);movingId=null;pendingMoveAfterCreate=false;}
+      renderSavesList();
+    }
+  }
+  document.getElementById("modal-new-folder").classList.add("hidden");
+});
 document.getElementById("new-folder-inp").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("new-folder-ok").click();});
 
 // Supabase
