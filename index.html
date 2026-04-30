@@ -50,6 +50,8 @@ select.btn { appearance: none; padding-right: 18px; background-image: url("data:
 .pitch-label-txt { fill: #fff; font-family: Arial Narrow, Arial, sans-serif; font-weight: 700; dominant-baseline: central; text-anchor: middle; pointer-events: none; }
 .del-circ { fill: #e84a4a; stroke: #fff; stroke-width: 1.5; cursor: pointer; }
 .del-txt { fill: #fff; font-size: 13px; font-weight: bold; dominant-baseline: central; text-anchor: middle; pointer-events: none; }
+.toast-msg { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: #4ae87a; color: #0a1a0d; padding: 5px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; white-space: nowrap; }
+.toast-msg.show { opacity: 1; }
 .rec-badge { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: #e84a4a; color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.73rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; pointer-events: none; display: none; animation: pulse 1s infinite; }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
 .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
@@ -74,7 +76,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.0</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.1</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -93,6 +95,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 <div id="pitch-wrapper">
   <svg id="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg"></svg>
   <div id="mode-badge"></div>
+  <div class="toast-msg" id="toast-msg"></div>
   <div class="rec-badge" id="rec-badge">&#9679; Spelar in</div>
 </div>
 
@@ -380,6 +383,18 @@ var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 var SUPA_TABLE="saves";
 
 function supaHeaders(){return{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY};}
+
+var _toastTimer=null;
+function showToast(msg,ok){
+  var el=document.getElementById("toast-msg");
+  if(!el)return;
+  el.textContent=msg;
+  el.style.background=ok===false?"#e84a4a":"#4ae87a";
+  el.style.color=ok===false?"#fff":"#0a1a0d";
+  el.classList.add("show");
+  if(_toastTimer)clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(function(){el.classList.remove("show");},2200);
+}
 function cloudStatus(msg,color){var el=document.getElementById("cloud-status");if(el){el.textContent=msg;el.style.color=color||"#7aaa88";}}
 
 // \u2500\u2500 FOLDER HELPERS (defined early so all callers can use them) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -630,7 +645,7 @@ function cloudMoveToFolder(id,folder){
     headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
     body:JSON.stringify({folder:folder})
   }).then(function(r){return r.json();}).then(function(){
-    cloudStatus("\u2705 Flyttad","#4ae87a");cloudLoadSaves();
+    cloudStatus("\u2705 Flyttad","#4ae87a");showToast("Uppst\u00e4llning flyttad!");cloudLoadSaves();
   }).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});
 }
 
@@ -645,7 +660,7 @@ function cloudRenameFolder(oldName,newName){
     // update local folders array
     for(var i=0;i<folders.length;i++){if(folders[i]===oldName){folders[i]=newName;break;}}
     if(currentFolder===oldName)currentFolder=newName;
-    cloudStatus("\u2705 Namnbyte klart","#4ae87a");cloudLoadSaves();
+    cloudStatus("\u2705 Namnbyte klart","#4ae87a");showToast("Namn bytt!");cloudLoadSaves();
   }).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});
 }
 
@@ -946,8 +961,8 @@ document.getElementById("edit-taktik-ok").addEventListener("click",function(){
   tk.folder=document.getElementById("edit-taktik-folder").value;
   // save to supabase
   if(tk.dbId){
-    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder})}).then(function(){cloudStatus("\u2705 Film uppdaterad","#4ae87a");cloudLoadTaktik();});
-  } else { cloudStatus("\u2705 Film uppdaterad (lokalt)","#4ae87a");renderTaktikList(); }
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder})}).then(function(){cloudStatus("\u2705 Film uppdaterad","#4ae87a");showToast("Film uppdaterad!");cloudLoadTaktik();});
+  } else { cloudStatus("\u2705 Film uppdaterad (lokalt)","#4ae87a");showToast("Film uppdaterad!");renderTaktikList(); }
   document.getElementById("modal-edit-taktik-meta").classList.add("hidden");
   document.getElementById("edit-taktik-title-lbl").textContent="\u270f "+tk.name;
 });
@@ -958,7 +973,7 @@ function duplicateTaktik(idx){
   taktikFilmer.push(copy);
   renderTaktikList();
   cloudSaveTaktik(copy);
-  cloudStatus("\u2705 Film kopierad","#4ae87a");
+  cloudStatus("\u2705 Film kopierad","#4ae87a");showToast("Film kopierad!");
   setTimeout(function(){cloudLoadTaktik();},1200);
 }
 
@@ -986,7 +1001,7 @@ function mergeTaktik(idxA,idxB){
   var merged={name:tkA.name+" + "+tkB.name,folder:tkA.folder||"Allm\u00e4nt",steps:JSON.parse(JSON.stringify(tkA.steps)).concat(JSON.parse(JSON.stringify(tkB.steps)).slice(1))};
   taktikFilmer.push(merged);
   cloudSaveTaktik(merged);
-  cloudStatus("\u2705 Filmer sammanfogade","#4ae87a");
+  cloudStatus("\u2705 Filmer sammanfogade","#4ae87a");showToast("Filmer sammanfogade!");
 }
 
 document.getElementById("merge-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-merge-taktik").classList.add("hidden");mergingTaktikIdx=null;});
@@ -1042,11 +1057,11 @@ document.getElementById("new-folder-ok").addEventListener("click",function(){
 document.getElementById("new-folder-inp").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("new-folder-ok").click();});
 
 // Supabase
-function cloudSaveWithName(name){cloudStatus("Sparar...","#7aaa88");var folderSel=document.getElementById("folder-select");var folder=folderSel?folderSel.value:"Allm\u00e4nt";var body=JSON.stringify({name:name,data:buildState(),type:"uppstallning",folder:folder});fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:body}).then(function(r){return r.text();}).then(function(text){try{var data=JSON.parse(text);if(Array.isArray(data)&&data[0]&&data[0].id){cloudStatus("\u2705 Sparat: "+name,"#4ae87a");cloudLoadSaves();}else cloudStatus("\u274c Fel: "+text.substring(0,80),"#e84a4a");}catch(e){cloudStatus("\u274c Parse-fel: "+e.message,"#e84a4a");}}).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});}
-function cloudLoadSaves(){cloudStatus("Laddar...","#7aaa88");fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=folder.asc,id.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data)){savedFormations=data.map(function(row){return{id:row.id,name:row.name,state:row.data,folder:row.folder||"Allm\u00e4nt"};});var seen={};folders=["Allm\u00e4nt"];for(var i=0;i<savedFormations.length;i++){var f=savedFormations[i].folder;if(f&&!seen[f]){seen[f]=true;if(f!=="Allm\u00e4nt")folders.push(f);}}cloudStatus(data.length+" uppst\u00e4llningar \u2705","#4ae87a");renderSavesList();updateFolderSelect();}else cloudStatus("\u274c Fel","#e84a4a");}).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});}
-function cloudDelete(id){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{method:"DELETE",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"})}).then(function(){cloudLoadSaves();}).catch(function(err){cloudStatus("\u274c Raderingsfel: "+err.message,"#e84a4a");});}
-function cloudSaveTaktik(tk){var body=JSON.stringify({name:tk.name,data:tk,type:"taktikfilm"});fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:body}).then(function(r){return r.json();}).then(function(data){if(data&&data[0]&&data[0].id){tk.dbId=data[0].id;cloudStatus("\u2705 Film sparad: "+tk.name,"#4ae87a");}else cloudStatus("\u274c Fel","#e84a4a");}).catch(function(){cloudStatus("\u274c Anslutningsfel","#e84a4a");});}
-function cloudLoadTaktik(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data)){taktikFilmer=data.map(function(row){var tk=row.data;tk.dbId=row.id;if(!tk.folder)tk.folder="Allm\u00e4nt";return tk;});var tfseen={};taktikFolders=["Allm\u00e4nt"];taktikFilmer.forEach(function(tk){if(tk.folder&&!tfseen[tk.folder]){tfseen[tk.folder]=true;if(tk.folder!=="Allm\u00e4nt")taktikFolders.push(tk.folder);}});renderTaktikList();cloudStatus(data.length+" taktikfilmer laddade","#4ae87a");}}).catch(function(){});}
+function cloudSaveWithName(name){cloudStatus("Sparar...","#7aaa88");var folderSel=document.getElementById("folder-select");var folder=folderSel?folderSel.value:"Allm\u00e4nt";var body=JSON.stringify({name:name,data:buildState(),type:"uppstallning",folder:folder});fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:body}).then(function(r){return r.text();}).then(function(text){try{var data=JSON.parse(text);if(Array.isArray(data)&&data[0]&&data[0].id){cloudStatus("\u2705 Sparat: "+name,"#4ae87a");showToast("Sparat!");cloudLoadSaves();}else cloudStatus("\u274c Fel: "+text.substring(0,80),"#e84a4a");}catch(e){cloudStatus("\u274c Parse-fel: "+e.message,"#e84a4a");}}).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});}
+function cloudLoadSaves(){cloudStatus("Laddar...","#7aaa88");fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=folder.asc,id.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data)){savedFormations=data.map(function(row){return{id:row.id,name:row.name,state:row.data,folder:row.folder||"Allm\u00e4nt"};});var seen={};folders=["Allm\u00e4nt"];for(var i=0;i<savedFormations.length;i++){var f=savedFormations[i].folder;if(f&&!seen[f]){seen[f]=true;if(f!=="Allm\u00e4nt")folders.push(f);}}cloudStatus(data.length+" uppst\u00e4llningar \u2705","#4ae87a");showToast(data.length+" uppst\u00e4llningar laddade");renderSavesList();updateFolderSelect();}else cloudStatus("\u274c Fel","#e84a4a");}).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});}
+function cloudDelete(id){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{method:"DELETE",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"})}).then(function(){cloudLoadSaves();showToast("Raderat!");}).catch(function(err){cloudStatus("\u274c Raderingsfel: "+err.message,"#e84a4a");});}
+function cloudSaveTaktik(tk){var body=JSON.stringify({name:tk.name,data:tk,type:"taktikfilm"});fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:body}).then(function(r){return r.json();}).then(function(data){if(data&&data[0]&&data[0].id){tk.dbId=data[0].id;cloudStatus("\u2705 Film sparad: "+tk.name,"#4ae87a");showToast("Film sparad!");}else cloudStatus("\u274c Fel","#e84a4a");}).catch(function(){cloudStatus("\u274c Anslutningsfel","#e84a4a");});}
+function cloudLoadTaktik(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data)){taktikFilmer=data.map(function(row){var tk=row.data;tk.dbId=row.id;if(!tk.folder)tk.folder="Allm\u00e4nt";return tk;});var tfseen={};taktikFolders=["Allm\u00e4nt"];taktikFilmer.forEach(function(tk){if(tk.folder&&!tfseen[tk.folder]){tfseen[tk.folder]=true;if(tk.folder!=="Allm\u00e4nt")taktikFolders.push(tk.folder);}});renderTaktikList();cloudStatus(data.length+" taktikfilmer laddade","#4ae87a");showToast(data.length+" filmer laddade");}}).catch(function(){});}
 
 // Init
 drawPitch();
