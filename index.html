@@ -72,7 +72,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v1.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v1.8</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1075,9 +1075,6 @@ document.getElementById("savename-ok").addEventListener("click",function(){
   var name=document.getElementById("save-name-inp").value.trim()||"Uppst\u00e4llning";
   document.getElementById("modal-savename").classList.add("hidden");
   cloudSaveWithName(name);
-});
-  document.getElementById("modal-savename").classList.add("hidden");
-  renderSavesList();
 });
 function renderSavesList(){
   var list=document.getElementById("saves-list");list.innerHTML="";
