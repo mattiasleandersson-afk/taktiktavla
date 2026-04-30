@@ -938,7 +938,8 @@ document.getElementById("btn-edit-update-step").addEventListener("click",functio
   var lbl=document.getElementById("edit-step-name-inp").value.trim();
   if(lbl)snap.label=lbl;
   tk.steps[editingStepIdx]=snap;
-  cloudStatus("✅ Steg sparat","#4ae87a");
+  cloudStatus("\u2705 Steg sparat","#4ae87a");
+  showToast("Steg sparat!");
   renderEditSteps(tk);
 });
 document.getElementById("btn-edit-add-step").addEventListener("click",function(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];var snap=currentSnap();tk.steps.splice(editingStepIdx+1,0,snap);editingStepIdx++;updateEditStepUI();});
