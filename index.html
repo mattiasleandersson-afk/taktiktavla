@@ -2,7 +2,12 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Taktiktavla">
+<meta name="theme-color" content="#111a14">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
 <title>Taktiktavla</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -70,13 +75,51 @@ input[type=color].minput { padding: 2px 4px; height: 34px; width: 56px; cursor: 
 .num-cell input { background: #111a14; color: #edf5ee; border: 1px solid #2d4a35; border-radius: 4px; padding: 4px 5px; font-size: 0.84rem; text-align: center; width: 100%; }
 .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 2px solid rgba(255,255,255,0.2); }
 hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
+
+@media (orientation: landscape) {
+  #topbar { padding: 3px 8px; gap: 4px; max-height: 15vh; }
+  #topbar h1 { font-size: 0.9rem; }
+  .btn { padding: 3px 7px; font-size: 0.68rem; }
+  #bottompanel { max-height: 30vh; padding: 5px 8px; }
+  .tabs { margin-bottom: 4px; }
+  .list { max-height: 60px; }
+  #panel-toggle-strip button { padding: 1px 24px; }
+  #landscape-bar { display: flex !important; }
+  #playbar { padding: 5px 10px; }
+}
+@media (orientation: portrait) {
+  #landscape-bar { display: none !important; }
+}
+#landscape-bar {
+  display: none;
+  background: #0e1710;
+  border-top: 1px solid #2d4a35;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 12px;
+  flex-shrink: 0;
+  gap: 8px;
+}
+#landscape-bar .lbtn {
+  background: transparent;
+  border: 1px solid #2d4a35;
+  border-radius: 4px;
+  color: #7aaa88;
+  padding: 2px 10px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  font-family: Arial Narrow, Arial, sans-serif;
+  font-weight: 700;
+}
+#landscape-bar .lbtn.on { color: #4ae87a; border-color: #4ae87a; }
+#landscape-play { display: flex; align-items: center; gap: 6px; }
 </style>
 </head>
 <body>
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.1</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -118,6 +161,15 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <button id="panel-show-btn">&#9650; Meny</button>
+<div id="landscape-bar">
+  <button class="lbtn" id="ls-topbar-toggle">&#9650; Menu</button>
+  <div id="landscape-play">
+    <button class="lbtn" id="ls-prev" style="opacity:0.3">&#9664;</button>
+    <span id="ls-counter" style="font-size:0.72rem;color:#7aaa88;min-width:50px;text-align:center">&#9917;</span>
+    <button class="lbtn" id="ls-next" style="opacity:0.3">&#9654;</button>
+  </div>
+  <button class="lbtn" id="ls-panel-toggle">&#9660; Panel</button>
+</div>
 <div id="panel-toggle-strip" style="background:#1e2e22;border-top:1px solid #2d4a35;display:flex;justify-content:center;flex-shrink:0;">
   <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 24px;font-size:0.72rem;cursor:pointer;width:100%">&#9660;</button>
 </div>
@@ -1063,6 +1115,59 @@ function cloudLoadSaves(){cloudStatus("Laddar...","#7aaa88");fetch(SUPA_URL+"/re
 function cloudDelete(id){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{method:"DELETE",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"})}).then(function(){cloudLoadSaves();showToast("Raderat!");}).catch(function(err){cloudStatus("\u274c Raderingsfel: "+err.message,"#e84a4a");});}
 function cloudSaveTaktik(tk){var body=JSON.stringify({name:tk.name,data:tk,type:"taktikfilm"});fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:body}).then(function(r){return r.json();}).then(function(data){if(data&&data[0]&&data[0].id){tk.dbId=data[0].id;cloudStatus("\u2705 Film sparad: "+tk.name,"#4ae87a");showToast("Film sparad!");}else cloudStatus("\u274c Fel","#e84a4a");}).catch(function(){cloudStatus("\u274c Anslutningsfel","#e84a4a");});}
 function cloudLoadTaktik(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data)){taktikFilmer=data.map(function(row){var tk=row.data;tk.dbId=row.id;if(!tk.folder)tk.folder="Allm\u00e4nt";return tk;});var tfseen={};taktikFolders=["Allm\u00e4nt"];taktikFilmer.forEach(function(tk){if(tk.folder&&!tfseen[tk.folder]){tfseen[tk.folder]=true;if(tk.folder!=="Allm\u00e4nt")taktikFolders.push(tk.folder);}});renderTaktikList();cloudStatus(data.length+" taktikfilmer laddade","#4ae87a");showToast(data.length+" filmer laddade");}}).catch(function(){});}
+
+// ── LANDSCAPE BAR ──────────────────────────────────────────────────────────
+document.getElementById("ls-topbar-toggle").addEventListener("click",function(){
+  document.getElementById("btn-topbar-toggle").click();
+  this.innerHTML=topbarOpen?"▲ Menu":"▼ Menu";
+});
+document.getElementById("ls-panel-toggle").addEventListener("click",function(){
+  document.getElementById("btn-panel").click();
+  this.innerHTML=panelOpen?"▼ Panel":"▲ Panel";
+});
+document.getElementById("ls-prev").addEventListener("click",function(){
+  document.getElementById("btn-prev").click();
+});
+document.getElementById("ls-next").addEventListener("click",function(){
+  document.getElementById("btn-next").click();
+});
+
+// Update landscape counter when playbar updates
+var _origUpdatePlaybar=updatePlaybar;
+updatePlaybar=function(){
+  _origUpdatePlaybar();
+  if(playback){
+    var cur=playback.stepIndex,total=playback.tk.steps.length-1;
+    document.getElementById("ls-counter").textContent=(cur===0?"Start":cur+"/"+total);
+    document.getElementById("ls-prev").style.opacity=cur>0?"1":"0.3";
+    document.getElementById("ls-next").style.opacity=cur<total?"1":"0.3";
+    document.getElementById("ls-prev").classList.toggle("on",cur>0);
+    document.getElementById("ls-next").classList.toggle("on",cur<total);
+  } else {
+    document.getElementById("ls-counter").innerHTML="&#9917;";
+    document.getElementById("ls-prev").style.opacity="0.3";
+    document.getElementById("ls-next").style.opacity="0.3";
+  }
+};
+
+// Auto-minimize on landscape
+function handleOrientation(){
+  var isLandscape=window.innerWidth>window.innerHeight;
+  if(isLandscape){
+    // auto-minimize both bars for more space
+    if(topbarOpen){
+      topbarOpen=false;
+      var tb=document.getElementById("topbar");
+      var btn=document.getElementById("btn-topbar-toggle");
+      var children=tb.children;
+      for(var i=0;i<children.length;i++){if(children[i]!==btn)children[i].style.display="none";}
+      btn.innerHTML="▼";
+      document.getElementById("ls-topbar-toggle").innerHTML="▼ Menu";
+    }
+  }
+}
+window.addEventListener("resize",handleOrientation);
+window.addEventListener("orientationchange",function(){setTimeout(handleOrientation,300);});
 
 // Init
 drawPitch();
