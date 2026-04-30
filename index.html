@@ -72,7 +72,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.0</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.1</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -883,7 +883,16 @@ function renderTaktikList(){
       var pb=document.createElement("button");pb.className="sa play";pb.textContent="\u25ba Spela";
       var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";
       pb.addEventListener("click",function(){startPlayback(idx);});
-      dl.addEventListener("click",function(){taktikFilmer.splice(idx,1);renderTaktikList();});
+      dl.addEventListener("click",function(){
+        if(tk.dbId){
+          fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE + "?id=eq." + tk.dbId, {
+            method: "DELETE",
+            headers: supaHeaders()
+          }).then(function(){ cloudLoadTaktik(); });
+        } else {
+          taktikFilmer.splice(idx,1);renderTaktikList();
+        }
+      });
       row.appendChild(nm);row.appendChild(cnt);row.appendChild(pb);row.appendChild(dl);
       list.appendChild(row);
     })(i);
@@ -1170,31 +1179,26 @@ function cloudSaveWithName(name){
 
 function cloudLoadSaves(){
   cloudStatus("Laddar...", "#7aaa88");
-  var url = SUPA_URL + "/rest/v1/" + SUPA_TABLE + "?type=eq.uppstallning&order=id.desc";
-  fetch(url, {
+  fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE + "?type=eq.uppstallning&order=folder.asc,id.desc", {
     headers: supaHeaders()
-  }).then(function(r){
-    cloudStatus("HTTP " + r.status + " från Supabase", r.ok ? "#7aaa88" : "#e84a4a");
-    return r.text();
-  }).then(function(text){
-    cloudStatus("Svar: " + text.substring(0,80), "#7aaa88");
-    try {
-      var data = JSON.parse(text);
-      if(Array.isArray(data)){
-        savedFormations = data.map(function(row){
-          return { id: row.id, name: row.name, state: row.data };
-        });
-        cloudStatus(data.length + " uppställningar laddade ✅", "#4ae87a");
-        renderSavesList();
-      } else {
-        cloudStatus("❌ Oväntat svar: " + text.substring(0,100), "#e84a4a");
-      }
-    } catch(e) {
-      cloudStatus("❌ Parse-fel: " + e.message, "#e84a4a");
+  }).then(function(r){ return r.json(); })
+  .then(function(data){
+    if(Array.isArray(data)){
+      savedFormations = data.map(function(row){
+        return { id: row.id, name: row.name, state: row.data, folder: row.folder || "Allmänt" };
+      });
+      var seen = {};
+      folders = ["Allmänt"];
+      savedFormations.forEach(function(s){
+        if(s.folder && !seen[s.folder]){ seen[s.folder]=true; if(s.folder!=="Allmänt") folders.push(s.folder); }
+      });
+      cloudStatus(data.length + " uppställningar ✅", "#4ae87a");
+      renderSavesList();
+      updateFolderSelect();
+    } else {
+      cloudStatus("❌ Fel", "#e84a4a");
     }
-  }).catch(function(err){
-    cloudStatus("❌ Fetch-fel: " + err.message, "#e84a4a");
-  });
+  }).catch(function(err){ cloudStatus("❌ Fel: "+err.message,"#e84a4a"); });
 }
 
 function cloudDelete(id){
@@ -1216,8 +1220,11 @@ function cloudSaveTaktik(tk){
     headers: Object.assign({}, supaHeaders(), {"Prefer": "return=representation"}),
     body: body
   }).then(function(r){ return r.json(); }).then(function(data){
-    if(data && data[0]) cloudStatus("✅ Film sparad: " + tk.name, "#4ae87a");
-    else cloudStatus("❌ Fel", "#e84a4a");
+    if(data && data[0] && data[0].id){
+      // store db id so we can delete later
+      tk.dbId = data[0].id;
+      cloudStatus("✅ Film sparad: " + tk.name, "#4ae87a");
+    } else cloudStatus("❌ Fel", "#e84a4a");
   }).catch(function(){ cloudStatus("❌ Anslutningsfel", "#e84a4a"); });
 }
 
@@ -1226,7 +1233,11 @@ function cloudLoadTaktik(){
     headers: supaHeaders()
   }).then(function(r){ return r.json(); }).then(function(data){
     if(Array.isArray(data)){
-      taktikFilmer = data.map(function(row){ return row.data; });
+      taktikFilmer = data.map(function(row){
+        var tk = row.data;
+        tk.dbId = row.id; // store db id for deletion
+        return tk;
+      });
       renderTaktikList();
       cloudStatus(data.length + " taktikfilmer laddade", "#4ae87a");
     }
