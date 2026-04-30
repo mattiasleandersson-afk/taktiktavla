@@ -72,7 +72,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v1.4</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v1.5</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1132,7 +1132,7 @@ function cloudSaveWithName(name){
     cloudStatus("Spara HTTP " + r.status, r.ok ? "#7aaa88" : "#e84a4a");
     return r.text();
   }).then(function(text){
-    cloudStatus("Spara-svar: " + text.substring(0,80), "#7aaa88");
+    alert("SVAR FRAN SUPABASE: " + text.substring(0,200));
     try {
       var data = JSON.parse(text);
       if(Array.isArray(data) && data[0] && data[0].id){
@@ -1145,6 +1145,7 @@ function cloudSaveWithName(name){
       cloudStatus("❌ Parse-fel: " + e.message, "#e84a4a");
     }
   }).catch(function(err){
+    alert("FETCH-FEL: " + err.message);
     cloudStatus("❌ Fetch-fel: " + err.message, "#e84a4a");
   });
 }
