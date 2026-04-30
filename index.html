@@ -72,7 +72,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v1.9</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.0</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -197,7 +197,14 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 <div class="modal-bg hidden" id="modal-savename">
   <div class="modal">
     <h2>Spara uppst&#228;llning</h2>
-    <input type="text" class="minput wide" id="save-name-inp" placeholder="Uppst&#228;llning 1" style="margin-bottom:13px;width:100%">
+    <input type="text" class="minput wide" id="save-name-inp" placeholder="Uppst&#228;llning 1" style="margin-bottom:10px;width:100%">
+    <div class="mrow">
+      <label>Mapp</label>
+      <div style="display:flex;gap:5px;align-items:center;flex:1">
+        <select class="btn" id="folder-select" style="flex:1"></select>
+        <button class="btn" id="btn-new-folder" style="padding:5px 8px">+ Ny</button>
+      </div>
+    </div>
     <div class="mactions">
       <button class="btn" id="savename-cancel">Avbryt</button>
       <button class="btn on" id="savename-ok">Spara</button>
@@ -1071,6 +1078,15 @@ saveBtn.addEventListener("click",function(){
 });
 document.getElementById("topbar").insertBefore(saveBtn,document.getElementById("btn-half"));
 document.getElementById("savename-cancel").addEventListener("click",function(){document.getElementById("modal-savename").classList.add("hidden");});
+document.getElementById("btn-new-folder").addEventListener("click",function(){
+  var name=window.prompt("Namn på ny mapp:");
+  if(name&&name.trim()){
+    if(folders.indexOf(name.trim())===-1) folders.push(name.trim());
+    updateFolderSelect();
+    var sel=document.getElementById("folder-select");
+    if(sel) sel.value=name.trim();
+  }
+});
 document.getElementById("savename-ok").addEventListener("click",function(){
   var name=document.getElementById("save-name-inp").value.trim()||"Uppst\u00e4llning";
   document.getElementById("modal-savename").classList.add("hidden");
@@ -1097,6 +1113,8 @@ function renderSavesList(){
 var SUPA_URL = "https://hpwpsmjswvpuzykxjvhd.supabase.co";
 var SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhwd3BzbWpzd3ZwdXp5a3hqdmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MDMzODAsImV4cCI6MjA5MzA3OTM4MH0.RKkWz-KzWxn7F3_ShnW7DVUMy4Unt7T52wP1EmgmCp0";
 var SUPA_TABLE = "saves";
+var folders = ["Allmänt"]; // default folder
+var currentFolder = "Alla"; // filter in saves list
 
 function supaHeaders(){
   return {
@@ -1122,7 +1140,9 @@ function cloudSave(){
 
 function cloudSaveWithName(name){
   cloudStatus("Sparar...", "#7aaa88");
-  var body = JSON.stringify({ name: name, data: buildState(), type: "uppstallning" });
+  var folderSel = document.getElementById("folder-select");
+  var folder = folderSel ? folderSel.value : "Allmänt";
+  var body = JSON.stringify({ name: name, data: buildState(), type: "uppstallning", folder: folder });
   fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE, {
     method: "POST",
     headers: Object.assign({}, supaHeaders(), {"Prefer": "return=representation"}),
@@ -1180,8 +1200,12 @@ function cloudLoadSaves(){
 function cloudDelete(id){
   fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE + "?id=eq." + id, {
     method: "DELETE",
-    headers: supaHeaders()
-  }).then(function(){ cloudLoadSaves(); });
+    headers: Object.assign({}, supaHeaders(), {"Prefer": "return=representation"})
+  }).then(function(r){
+    cloudLoadSaves();
+  }).catch(function(err){
+    cloudStatus("❌ Raderingsfel: " + err.message, "#e84a4a");
+  });
 }
 
 // Taktikfilmer cloud
