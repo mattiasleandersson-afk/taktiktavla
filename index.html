@@ -22,6 +22,8 @@ select.btn { appearance: none; padding-right: 18px; background-image: url("data:
 #play-title { color: #4ae87a; font-weight: 700; font-size: 0.88rem; text-transform: uppercase; flex: 1; min-width: 80px; }
 #bottompanel { background: #1e2e22; border-top: 1px solid #2d4a35; padding: 8px 10px; flex-shrink: 0; max-height: 38vh; overflow-y: auto; }
 #bottompanel.hidden { display: none; }
+#panel-show-btn { position: fixed; bottom: 0; right: 10px; background: #1e2e22; border: 1px solid #2d4a35; border-bottom: none; border-radius: 6px 6px 0 0; padding: 4px 10px; font-size: 0.72rem; color: #7aaa88; cursor: pointer; display: none; z-index: 20; }
+#panel-show-btn.visible { display: block; }
 .tabs { display: flex; gap: 5px; margin-bottom: 7px; }
 .tab { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 10px; border-radius: 4px; border: 1px solid #2d4a35; background: transparent; color: #7aaa88; cursor: pointer; }
 .tab.on { background: #4ae87a; color: #0a1a0d; border-color: #4ae87a; }
@@ -112,12 +114,15 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <button class="btn danger" id="btn-stop-play">&#10005;</button>
 </div>
 
+<button id="panel-show-btn">&#9650; Meny</button>
+<div id="panel-toggle-strip" style="background:#1e2e22;border-top:1px solid #2d4a35;display:flex;justify-content:center;flex-shrink:0;">
+  <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 24px;font-size:0.72rem;cursor:pointer;width:100%">&#9660;</button>
+</div>
 <div id="bottompanel">
   <div class="tabs" style="align-items:center">
     <button class="tab on" data-panel="formations">Formation</button>
     <button class="tab" data-panel="taktik">&#127916; Taktik</button>
     <button class="tab" data-panel="saves">Sparade</button>
-    <button id="btn-panel" style="margin-left:auto;background:transparent;border:1px solid #2d4a35;border-radius:4px;color:#7aaa88;padding:3px 8px;font-size:0.72rem;cursor:pointer">&#9660;</button>
   </div>
   <div class="panel on" id="panel-formations">
     <div class="frow" id="formation-btns"></div>
@@ -617,7 +622,18 @@ document.getElementById("btn-undo").addEventListener("click",doUndo);
 document.getElementById("btn-reset").addEventListener("click",function(){initPlayers(document.querySelector("#formation-btns .on")?document.querySelector("#formation-btns .on").textContent:"4-4-2");arrows=[];labels=[];render();});
 document.getElementById("fmt-sel").addEventListener("change",function(e){format=parseInt(e.target.value);buildFormationBtns();initPlayers((FORMATIONS[format]||FORMATIONS[11])[0]);render();});
 document.getElementById("btn-half").addEventListener("click",function(){halfMode=(halfMode+1)%3;var lbl=["\u00bd Plan","\u00bd Borta","Hel"];document.getElementById("btn-half").innerHTML=lbl[halfMode];updateViewBox();});
-document.getElementById("btn-panel").addEventListener("click",function(){panelOpen=!panelOpen;document.getElementById("bottompanel").classList.toggle("hidden",!panelOpen);document.getElementById("btn-panel").textContent=panelOpen?"\u25bc":"\u25b2";});
+document.getElementById("btn-panel").addEventListener("click",function(){
+  panelOpen=!panelOpen;
+  document.getElementById("bottompanel").classList.toggle("hidden",!panelOpen);
+  document.getElementById("btn-panel").textContent=panelOpen?"▼":"▲";
+  document.getElementById("panel-show-btn").classList.toggle("visible",!panelOpen);
+});
+document.getElementById("panel-show-btn").addEventListener("click",function(){
+  panelOpen=true;
+  document.getElementById("bottompanel").classList.remove("hidden");
+  document.getElementById("btn-panel").textContent="▼";
+  document.getElementById("panel-show-btn").classList.remove("visible");
+});
 
 var topbarOpen=true;
 document.getElementById("btn-topbar-toggle").addEventListener("click",function(){
