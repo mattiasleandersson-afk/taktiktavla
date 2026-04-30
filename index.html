@@ -74,7 +74,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.6</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -831,7 +831,7 @@ function renderTaktikList(){
       var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.folder||"Allm\u00e4nt")+" \u00b7 "+(tk.steps.length-1)+" steg";
       var pb=document.createElement("button");pb.className="sa play";pb.textContent="\u25ba Spela";pb.addEventListener("click",function(){startPlayback(idx);});
       var ed=document.createElement("button");ed.className="sa";ed.style.cssText="color:#e8c84a;border-color:#e8c84a";ed.textContent="\u270f";ed.title="Redigera";ed.addEventListener("click",function(){openEditTaktik(idx);});
-      var dup=document.createElement("button");dup.className="sa";dup.style.cssText="color:#4ae8e8;border-color:#4ae8e8";dup.textContent="Kopia";dup.addEventListener("click",function(){duplicateTaktik(idx);});
+      var dup=document.createElement("button");dup.className="sa";dup.style.cssText="color:#4ae8e8;border-color:#4ae8e8";dup.textContent="Kopiera";dup.addEventListener("click",function(){duplicateTaktik(idx);});
       var mg=document.createElement("button");mg.className="sa";mg.style.cssText="color:#a78bfa;border-color:#a78bfa";mg.textContent="\u22d3";mg.title="Sammanfoga";mg.addEventListener("click",function(){openMergeTaktik(idx);});
       var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";
       dl.addEventListener("click",function(){if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"DELETE",headers:supaHeaders()}).then(function(){cloudLoadTaktik();});}else{taktikFilmer.splice(idx,1);renderTaktikList();}});
@@ -841,18 +841,46 @@ function renderTaktikList(){
   }
 }
 
+var editingStepIdx=0;
+
 function openEditTaktik(idx){
   editingTaktikIdx=idx;
+  editingStepIdx=0;
   var tk=taktikFilmer[idx];
-  document.getElementById("edit-taktik-name-inp").value=tk.name;
-  // populate folder select
-  var sel=document.getElementById("edit-taktik-folder");sel.innerHTML="";
-  var allTF=taktikFolders.slice();if(allTF.indexOf(tk.folder||"Allm\u00e4nt")<0)allTF.push(tk.folder||"Allm\u00e4nt");
-  allTF.forEach(function(f){var o=document.createElement("option");o.value=f;o.textContent=f;if((tk.folder||"Allm\u00e4nt")===f)o.selected=true;sel.appendChild(o);});
-  // build steps list with editable names and reorder
-  renderEditSteps(tk);
-  document.getElementById("modal-edit-taktik-meta").classList.remove("hidden");
+  if(tk.steps&&tk.steps[0]) restoreSnap(tk.steps[0]);
+  render();
+  document.getElementById("no-rec-ui").style.display="none";
+  document.getElementById("rec-ui").style.display="none";
+  document.getElementById("edit-taktik-ui").style.display="block";
+  document.getElementById("edit-taktik-title-lbl").textContent="✏ "+tk.name;
+  updateEditStepUI();
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");});
+  document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-taktik");});
 }
+
+function updateEditStepUI(){
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  if(!tk||!tk.steps)return;
+  var s=tk.steps[editingStepIdx];
+  var total=tk.steps.length-1;
+  document.getElementById("edit-step-counter").textContent=(editingStepIdx===0?"Start":"Steg "+editingStepIdx)+"/"+total;
+  document.getElementById("edit-step-name-inp").value=s.label||(editingStepIdx===0?"Startläge":"Steg "+editingStepIdx);
+  document.getElementById("btn-edit-step-prev").style.opacity=editingStepIdx>0?"1":"0.3";
+  document.getElementById("btn-edit-step-next").style.opacity=editingStepIdx<total?"1":"0.3";
+  document.getElementById("btn-edit-del-step").style.opacity=editingStepIdx>0?"1":"0.3";
+  restoreSnap(s);render();
+  renderEditSteps(tk);
+}
+
+function exitEditTaktik(){
+  editingTaktikIdx=null;editingStepIdx=0;
+  document.getElementById("edit-taktik-ui").style.display="none";
+  document.getElementById("no-rec-ui").style.display="block";
+  renderTaktikList();
+}
+
+
 
 function renderEditSteps(tk){
   var list=document.getElementById("edit-taktik-steps");list.innerHTML="";
@@ -878,7 +906,38 @@ function renderEditSteps(tk){
   }
 }
 
-document.getElementById("edit-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-edit-taktik-meta").classList.add("hidden");editingTaktikIdx=null;});
+document.getElementById("btn-edit-taktik-exit").addEventListener("click",exitEditTaktik);
+document.getElementById("btn-edit-taktik-save").addEventListener("click",function(){
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder||"Allmänt"})}).then(function(){cloudStatus("✅ Film sparad","#4ae87a");});}
+  else cloudStatus("✅ Sparad lokalt","#4ae87a");
+});
+document.getElementById("btn-edit-step-prev").addEventListener("click",function(){if(editingTaktikIdx===null||editingStepIdx<=0)return;editingStepIdx--;updateEditStepUI();});
+document.getElementById("btn-edit-step-next").addEventListener("click",function(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];if(editingStepIdx>=tk.steps.length-1)return;editingStepIdx++;updateEditStepUI();});
+document.getElementById("btn-edit-update-step").addEventListener("click",function(){
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  var snap=currentSnap();
+  var lbl=document.getElementById("edit-step-name-inp").value.trim();
+  if(lbl)snap.label=lbl;
+  tk.steps[editingStepIdx]=snap;
+  cloudStatus("✅ Steg sparat","#4ae87a");
+  renderEditSteps(tk);
+});
+document.getElementById("btn-edit-add-step").addEventListener("click",function(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];var snap=currentSnap();tk.steps.splice(editingStepIdx+1,0,snap);editingStepIdx++;updateEditStepUI();});
+document.getElementById("btn-edit-del-step").addEventListener("click",function(){if(editingTaktikIdx===null||editingStepIdx===0)return;var tk=taktikFilmer[editingTaktikIdx];tk.steps.splice(editingStepIdx,1);editingStepIdx=Math.min(editingStepIdx,tk.steps.length-1);updateEditStepUI();});
+document.getElementById("btn-edit-taktik-meta").addEventListener("click",function(){
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  document.getElementById("edit-taktik-name-inp").value=tk.name;
+  var sel=document.getElementById("edit-taktik-folder");sel.innerHTML="";
+  var allTF=taktikFolders.slice();if(allTF.indexOf(tk.folder||"Allmänt")<0)allTF.push(tk.folder||"Allmänt");
+  allTF.forEach(function(f){var o=document.createElement("option");o.value=f;o.textContent=f;if((tk.folder||"Allmänt")===f)o.selected=true;sel.appendChild(o);});
+  document.getElementById("modal-edit-taktik-meta").classList.remove("hidden");
+});
+
+document.getElementById("edit-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-edit-taktik-meta").classList.add("hidden");});
 document.getElementById("edit-taktik-ok").addEventListener("click",function(){
   if(editingTaktikIdx===null)return;
   var tk=taktikFilmer[editingTaktikIdx];
@@ -888,15 +947,18 @@ document.getElementById("edit-taktik-ok").addEventListener("click",function(){
   if(tk.dbId){
     fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder})}).then(function(){cloudStatus("\u2705 Film uppdaterad","#4ae87a");cloudLoadTaktik();});
   } else { cloudStatus("\u2705 Film uppdaterad (lokalt)","#4ae87a");renderTaktikList(); }
-  document.getElementById("modal-edit-taktik-meta").classList.add("hidden");editingTaktikIdx=null;
+  document.getElementById("modal-edit-taktik-meta").classList.add("hidden");
+  document.getElementById("edit-taktik-title-lbl").textContent="\u270f "+tk.name;
 });
 
 function duplicateTaktik(idx){
   var tk=taktikFilmer[idx];
   var copy={name:"Kopia av "+tk.name,folder:tk.folder||"Allm\u00e4nt",steps:JSON.parse(JSON.stringify(tk.steps))};
   taktikFilmer.push(copy);
+  renderTaktikList();
   cloudSaveTaktik(copy);
-  cloudStatus("\u2705 Film duplicerad","#4ae87a");
+  cloudStatus("\u2705 Film kopierad","#4ae87a");
+  setTimeout(function(){cloudLoadTaktik();},1200);
 }
 
 function openMergeTaktik(idx){
