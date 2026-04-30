@@ -72,7 +72,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.2</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v2.3</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -152,6 +152,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
         <input type="file" id="btn-import" accept=".json" style="display:none">
       </div>
       <div id="cloud-status" style="font-size:0.72rem;color:#7aaa88;margin-bottom:5px"></div>
+      <input type="text" id="saves-search" placeholder="Sök uppställning..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
       <div class="list" id="saves-list"></div>
     </div>
   </div>
@@ -261,6 +262,29 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   </div>
 </div>
 
+<!-- MOVE TO FOLDER MODAL -->
+<div class="modal-bg hidden" id="modal-move-folder">
+  <div class="modal">
+    <h2>Flytta till mapp</h2>
+    <div id="move-folder-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:13px"></div>
+    <div class="mactions">
+      <button class="btn" id="move-folder-cancel">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME FOLDER MODAL -->
+<div class="modal-bg hidden" id="modal-rename-folder">
+  <div class="modal">
+    <h2>Byt namn p&#229; mapp</h2>
+    <input type="text" class="minput wide" id="rename-folder-inp" style="margin-bottom:13px;width:100%">
+    <div class="mactions">
+      <button class="btn" id="rename-folder-cancel">Avbryt</button>
+      <button class="btn on" id="rename-folder-ok">Spara</button>
+    </div>
+  </div>
+</div>
+
 <script>
 window.onerror = function(msg,src,line,col,err){
   document.body.style.overflow="auto";
@@ -304,37 +328,160 @@ function updateFolderSelect(){
   }
 }
 
+var movingId=null,renamingFolder=null,searchQuery="";
+
+document.getElementById("saves-search").addEventListener("input",function(e){searchQuery=e.target.value.toLowerCase();renderSavesList();});
+
 function renderSavesList(){
   var list=document.getElementById("saves-list");list.innerHTML="";
-  // folder filter buttons
-  var dataFolders={"Alla":true};
-  for(var i=0;i<savedFormations.length;i++) dataFolders[savedFormations[i].folder||"Allm\u00e4nt"]=true;
+
+  // count per folder
+  var folderCounts={"Alla":savedFormations.length};
+  for(var i=0;i<savedFormations.length;i++){
+    var f=savedFormations[i].folder||"Allmänt";
+    folderCounts[f]=(folderCounts[f]||0)+1;
+  }
+
+  // folder filter row
   var filterRow=document.createElement("div");
   filterRow.style.cssText="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;width:100%";
-  var fkeys=Object.keys(dataFolders);
-  for(var i=0;i<fkeys.length;i++){
+  var allFolders=["Alla"];
+  var seen2={};
+  for(var i=0;i<savedFormations.length;i++){var f=savedFormations[i].folder||"Allmänt";if(!seen2[f]){seen2[f]=true;allFolders.push(f);}}
+
+  for(var i=0;i<allFolders.length;i++){
     (function(f){
-      var fb=document.createElement("button");fb.className="tab"+(currentFolder===f?" on":"");
-      fb.textContent=f;fb.style.fontSize="0.65rem";fb.style.padding="2px 7px";
+      var wrap=document.createElement("div");wrap.style.cssText="display:flex;align-items:center;gap:1px";
+      var fb=document.createElement("button");
+      fb.className="tab"+(currentFolder===f?" on":"");
+      fb.textContent=f+" ("+(folderCounts[f]||0)+")";
+      fb.style.fontSize="0.62rem";fb.style.padding="2px 6px";
       fb.addEventListener("click",function(){currentFolder=f;renderSavesList();});
-      filterRow.appendChild(fb);
-    })(fkeys[i]);
+      wrap.appendChild(fb);
+      // rename button (not for "Alla")
+      if(f!=="Alla"){
+        var rnBtn=document.createElement("button");
+        rnBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#7aaa88;border:1px solid #2d4a35;border-left:none;border-radius:0 4px 4px 0;cursor:pointer";
+        rnBtn.textContent="✏";
+        rnBtn.title="Byt namn";
+        rnBtn.addEventListener("click",function(e){e.stopPropagation();openRenameFolder(f);});
+        wrap.appendChild(rnBtn);
+      }
+      filterRow.appendChild(wrap);
+    })(allFolders[i]);
   }
   list.appendChild(filterRow);
-  var filtered=currentFolder==="Alla"?savedFormations:savedFormations.filter(function(s){return(s.folder||"Allm\u00e4nt")===currentFolder;});
-  if(!filtered.length){var empty=document.createElement("span");empty.style.cssText="color:#7aaa88;font-size:0.8rem";empty.textContent="Inga uppst\u00e4llningar"+(currentFolder!=="Alla"?" i denna mapp":"");list.appendChild(empty);return;}
-  for(var i=0;i<filtered.length;i++){
+
+  // filter by folder and search
+  var filtered=savedFormations.filter(function(s){
+    var inFolder=currentFolder==="Alla"||(s.folder||"Allmänt")===currentFolder;
+    var inSearch=!searchQuery||s.name.toLowerCase().indexOf(searchQuery)>=0;
+    return inFolder&&inSearch;
+  });
+
+  if(!filtered.length){
+    var empty=document.createElement("span");empty.style.cssText="color:#7aaa88;font-size:0.8rem";
+    empty.textContent=searchQuery?"Inga träffar":"Inga uppställningar"+(currentFolder!=="Alla"?" i denna mapp":"");
+    list.appendChild(empty);return;
+  }
+
+  // sort by name
+  var sorted=filtered.slice().sort(function(a,b){return a.name.localeCompare(b.name,"sv");});
+
+  for(var i=0;i<sorted.length;i++){
     (function(s){
       var row=document.createElement("div");row.className="row";
       var nm=document.createElement("span");nm.className="row-name";nm.textContent=s.name;
-      var fl=document.createElement("span");fl.className="row-sub";fl.textContent=s.folder||"Allm\u00e4nt";
+      var fl=document.createElement("span");fl.className="row-sub";fl.textContent=s.folder||"Allmänt";
       var ld=document.createElement("button");ld.className="sa load";ld.textContent="Ladda";
-      var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";
+      var mv=document.createElement("button");mv.className="sa";mv.style.cssText="color:#e8c84a;border-color:#e8c84a";mv.textContent="⇆ Flytta";
+      var dl=document.createElement("button");dl.className="sa del";dl.textContent="×";
       ld.addEventListener("click",function(){applyState(JSON.parse(JSON.stringify(s.state)));});
+      mv.addEventListener("click",function(){openMoveFolder(s);});
       dl.addEventListener("click",function(){if(s.id)cloudDelete(s.id);else{savedFormations=savedFormations.filter(function(x){return x.id!==s.id;});renderSavesList();}});
-      row.appendChild(nm);row.appendChild(fl);row.appendChild(ld);row.appendChild(dl);list.appendChild(row);
-    })(filtered[i]);
+      row.appendChild(nm);row.appendChild(fl);row.appendChild(mv);row.appendChild(ld);row.appendChild(dl);
+      list.appendChild(row);
+    })(sorted[i]);
   }
+}
+
+function openMoveFolder(s){
+  movingId=s.id;
+  var container=document.getElementById("move-folder-list");
+  container.innerHTML="";
+  var allF=[];var seen3={};
+  for(var i=0;i<savedFormations.length;i++){var f=savedFormations[i].folder||"Allmänt";if(!seen3[f]){seen3[f]=true;allF.push(f);}}
+  for(var i=0;i<folders.length;i++){if(!seen3[folders[i]]){allF.push(folders[i]);}}
+  allF.forEach(function(f){
+    var btn=document.createElement("button");
+    btn.className="btn"+(( s.folder||"Allmänt")===f?" on":"");
+    btn.textContent=f;btn.style.cssText="width:100%;text-align:left;margin-bottom:2px";
+    btn.addEventListener("click",function(){
+      cloudMoveToFolder(movingId,f);
+      document.getElementById("modal-move-folder").classList.add("hidden");
+      movingId=null;
+    });
+    container.appendChild(btn);
+  });
+  // also allow creating new folder inline
+  var newBtn=document.createElement("button");newBtn.className="btn";newBtn.textContent="+ Ny mapp";newBtn.style.cssText="width:100%;margin-top:4px;color:#4ae87a;border-color:#4ae87a";
+  newBtn.addEventListener("click",function(){
+    document.getElementById("modal-move-folder").classList.add("hidden");
+    document.getElementById("new-folder-inp").value="";
+    document.getElementById("modal-new-folder").classList.remove("hidden");
+    setTimeout(function(){document.getElementById("new-folder-inp").focus();},100);
+    // after folder created, auto-move
+    pendingMoveAfterCreate=true;
+  });
+  container.appendChild(newBtn);
+  document.getElementById("modal-move-folder").classList.remove("hidden");
+}
+
+var pendingMoveAfterCreate=false;
+var renamingOldFolder=null;
+
+function openRenameFolder(f){
+  renamingOldFolder=f;
+  document.getElementById("rename-folder-inp").value=f;
+  document.getElementById("modal-rename-folder").classList.remove("hidden");
+  setTimeout(function(){document.getElementById("rename-folder-inp").focus();},100);
+}
+
+document.getElementById("rename-folder-cancel").addEventListener("click",function(){document.getElementById("modal-rename-folder").classList.add("hidden");renamingOldFolder=null;});
+document.getElementById("rename-folder-ok").addEventListener("click",function(){
+  var newName=document.getElementById("rename-folder-inp").value.trim();
+  if(!newName||!renamingOldFolder)return;
+  document.getElementById("modal-rename-folder").classList.add("hidden");
+  cloudRenameFolder(renamingOldFolder,newName);
+  renamingOldFolder=null;
+});
+document.getElementById("rename-folder-inp").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("rename-folder-ok").click();});
+document.getElementById("move-folder-cancel").addEventListener("click",function(){document.getElementById("modal-move-folder").classList.add("hidden");movingId=null;});
+
+function cloudMoveToFolder(id,folder){
+  cloudStatus("Flyttar...","#7aaa88");
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({folder:folder})
+  }).then(function(r){return r.json();}).then(function(){
+    cloudStatus("✅ Flyttad","#4ae87a");cloudLoadSaves();
+  }).catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");});
+}
+
+function cloudRenameFolder(oldName,newName){
+  cloudStatus("Byter namn...","#7aaa88");
+  // update all rows with this folder name
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?folder=eq."+encodeURIComponent(oldName),{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({folder:newName})
+  }).then(function(){
+    // update local folders array
+    for(var i=0;i<folders.length;i++){if(folders[i]===oldName){folders[i]=newName;break;}}
+    if(currentFolder===oldName)currentFolder=newName;
+    cloudStatus("✅ Namnbyte klart","#4ae87a");cloudLoadSaves();
+  }).catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");});
 }
 
 var svg=document.getElementById("pitch-svg");
@@ -460,7 +607,7 @@ document.getElementById("savename-ok").addEventListener("click",function(){var n
 // New folder modal (no window.prompt)
 document.getElementById("btn-new-folder").addEventListener("click",function(){document.getElementById("new-folder-inp").value="";document.getElementById("modal-new-folder").classList.remove("hidden");setTimeout(function(){document.getElementById("new-folder-inp").focus();},100);});
 document.getElementById("new-folder-cancel").addEventListener("click",function(){document.getElementById("modal-new-folder").classList.add("hidden");});
-document.getElementById("new-folder-ok").addEventListener("click",function(){var name=document.getElementById("new-folder-inp").value.trim();if(name){if(folders.indexOf(name)===-1)folders.push(name);updateFolderSelect();var sel=document.getElementById("folder-select");if(sel)sel.value=name;}document.getElementById("modal-new-folder").classList.add("hidden");});
+document.getElementById("new-folder-ok").addEventListener("click",function(){var name=document.getElementById("new-folder-inp").value.trim();if(name){if(folders.indexOf(name)===-1)folders.push(name);updateFolderSelect();var sel=document.getElementById("folder-select");if(sel)sel.value=name;if(pendingMoveAfterCreate&&movingId){cloudMoveToFolder(movingId,name);movingId=null;pendingMoveAfterCreate=false;}}document.getElementById("modal-new-folder").classList.add("hidden");});
 document.getElementById("new-folder-inp").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("new-folder-ok").click();});
 
 // Supabase
