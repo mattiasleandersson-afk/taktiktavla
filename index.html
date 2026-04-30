@@ -142,10 +142,17 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
     </div>
   </div>
   <div class="panel" id="panel-saves">
-    <button class="btn" id="btn-export">Exportera</button>
-    <button class="btn" id="btn-import-btn">Importera</button>
-    <input type="file" id="btn-import" accept=".json" style="display:none">
-    <div class="list" id="saves-list"></div>
+    <div style="width:100%">
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+        <button class="btn on" id="btn-cloud-save">&#9729; Spara</button>
+        <button class="btn" id="btn-cloud-refresh">&#8635; Ladda</button>
+        <button class="btn" id="btn-export">&#8595; Exportera</button>
+        <button class="btn" id="btn-import-btn">&#8593; Importera</button>
+        <input type="file" id="btn-import" accept=".json" style="display:none">
+      </div>
+      <div id="cloud-status" style="font-size:0.72rem;color:#7aaa88;margin-bottom:5px"></div>
+      <div class="list" id="saves-list"></div>
+    </div>
   </div>
 </div>
 
@@ -823,7 +830,9 @@ document.getElementById("btn-add-step").addEventListener("click",function(){
 });
 document.getElementById("btn-stop-rec").addEventListener("click",function(){
   if(!activeTaktik||activeTaktik.steps.length<2) return;
-  taktikFilmer.push({name:activeTaktik.name,steps:activeTaktik.steps});
+  var newFilm = {name:activeTaktik.name,steps:activeTaktik.steps};
+  taktikFilmer.push(newFilm);
+  cloudSaveTaktik(newFilm);
   activeTaktik=null;
   document.getElementById("rec-badge").style.display="none";
   document.getElementById("rec-ui").style.display="none";
@@ -1084,13 +1093,106 @@ function renderSavesList(){
   }
 }
 
+// ── SUPABASE ─────────────────────────────────────────────────────────────────
+var SUPA_URL = "https://hpwpsmjswvpuzykxjvhd.supabase.co";
+var SUPA_KEY = "sb_publishable_IjTMj4Bfv0EmcjKGwzS5Mw_oLhqcLKj";
+var SUPA_TABLE = "saves";
+
+function supaHeaders(){
+  return {
+    "Content-Type": "application/json",
+    "apikey": SUPA_KEY,
+    "Authorization": "Bearer " + SUPA_KEY
+  };
+}
+
+function cloudStatus(msg, color){
+  var el = document.getElementById("cloud-status");
+  if(el){ el.textContent = msg; el.style.color = color || "#7aaa88"; }
+}
+
+function cloudSave(){
+  var name = document.getElementById("save-name-inp") ? document.getElementById("save-name-inp").value : "";
+  // open save name modal first
+  var d = new Date();
+  document.getElementById("save-name-inp").value = "Uppställning " + d.getDate() + "/" + (d.getMonth()+1) + " " + d.getHours() + ":" + ("0"+d.getMinutes()).slice(-2);
+  document.getElementById("modal-savename").classList.remove("hidden");
+  // after modal ok, cloudSaveWithName is called
+}
+
+function cloudSaveWithName(name){
+  cloudStatus("Sparar...", "#7aaa88");
+  var body = JSON.stringify({ name: name, data: buildState(), type: "uppstallning" });
+  fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE, {
+    method: "POST",
+    headers: Object.assign({}, supaHeaders(), {"Prefer": "return=representation"}),
+    body: body
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if(data && data[0] && data[0].id){
+      cloudStatus("✅ Sparat: " + name, "#4ae87a");
+      cloudLoadSaves();
+    } else {
+      cloudStatus("❌ Fel: " + JSON.stringify(data), "#e84a4a");
+    }
+  }).catch(function(err){ cloudStatus("❌ Anslutningsfel", "#e84a4a"); });
+}
+
+function cloudLoadSaves(){
+  cloudStatus("Laddar...", "#7aaa88");
+  fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE + "?type=eq.uppstallning&order=id.desc", {
+    headers: supaHeaders()
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if(Array.isArray(data)){
+      savedFormations = data.map(function(row){
+        return { id: row.id, name: row.name, state: row.data };
+      });
+      cloudStatus(data.length + " uppställningar laddade", "#4ae87a");
+      renderSavesList();
+    } else {
+      cloudStatus("❌ Fel vid laddning", "#e84a4a");
+    }
+  }).catch(function(err){ cloudStatus("❌ Anslutningsfel", "#e84a4a"); });
+}
+
+function cloudDelete(id){
+  fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE + "?id=eq." + id, {
+    method: "DELETE",
+    headers: supaHeaders()
+  }).then(function(){ cloudLoadSaves(); });
+}
+
+// Taktikfilmer cloud
+function cloudSaveTaktik(tk){
+  var body = JSON.stringify({ name: tk.name, data: tk, type: "taktikfilm" });
+  fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE, {
+    method: "POST",
+    headers: Object.assign({}, supaHeaders(), {"Prefer": "return=representation"}),
+    body: body
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if(data && data[0]) cloudStatus("✅ Film sparad: " + tk.name, "#4ae87a");
+    else cloudStatus("❌ Fel", "#e84a4a");
+  }).catch(function(){ cloudStatus("❌ Anslutningsfel", "#e84a4a"); });
+}
+
+function cloudLoadTaktik(){
+  fetch(SUPA_URL + "/rest/v1/" + SUPA_TABLE + "?type=eq.taktikfilm&order=id.desc", {
+    headers: supaHeaders()
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if(Array.isArray(data)){
+      taktikFilmer = data.map(function(row){ return row.data; });
+      renderTaktikList();
+      cloudStatus(data.length + " taktikfilmer laddade", "#4ae87a");
+    }
+  }).catch(function(){});
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 drawPitch();
 buildFormationBtns();
 initPlayers("4-4-2");
 render();
-renderSavesList();
-renderTaktikList();
+cloudLoadSaves();
+cloudLoadTaktik();
 </script>
 </body>
 </html>
