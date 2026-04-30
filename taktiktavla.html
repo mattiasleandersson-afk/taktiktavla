@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Taktiktavla</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: Arial Narrow, Arial, sans-serif; background: #111a14; color: #edf5ee; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; touch-action: none; user-select: none; }
+#topbar { display: flex; align-items: center; gap: 5px; padding: 6px 10px; background: #1e2e22; border-bottom: 1px solid #2d4a35; flex-shrink: 0; flex-wrap: wrap; max-height: 25vh; overflow-y: auto; }
+#topbar h1 { font-weight: 900; font-size: 1.05rem; color: #4ae87a; text-transform: uppercase; letter-spacing: 1px; margin-right: 2px; }
+.btn { font-family: Arial Narrow, Arial, sans-serif; font-weight: 700; font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase; background: #111a14; color: #edf5ee; border: 1px solid #2d4a35; border-radius: 6px; padding: 5px 9px; cursor: pointer; white-space: nowrap; }
+.btn:active { background: #2d4a35; }
+.btn.on { background: #4ae87a; color: #0a1a0d; border-color: #4ae87a; }
+.btn.danger { background: #e84a4a; color: #fff; border-color: #e84a4a; }
+select.btn { appearance: none; padding-right: 18px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237aaa88'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 5px center; }
+#pitch-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #0e1710; position: relative; }
+#pitch-svg { touch-action: none; display: block; max-width: 100%; max-height: 100%; }
+#mode-badge { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); padding: 4px 14px; border-radius: 20px; font-size: 0.73rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; pointer-events: none; display: none; }
+#playbar { display: none; background: #0a1a0d; border-top: 2px solid #4ae87a; padding: 8px 12px; flex-shrink: 0; flex-wrap: wrap; gap: 6px; align-items: center; max-height: 20vh; overflow-y: auto; }
+#playbar.active { display: flex; }
+#play-title { color: #4ae87a; font-weight: 700; font-size: 0.88rem; text-transform: uppercase; flex: 1; min-width: 80px; }
+#bottompanel { background: #1e2e22; border-top: 1px solid #2d4a35; padding: 8px 10px; flex-shrink: 0; max-height: 38vh; overflow-y: auto; }
+#bottompanel.hidden { display: none; }
+.tabs { display: flex; gap: 5px; margin-bottom: 7px; }
+.tab { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 10px; border-radius: 4px; border: 1px solid #2d4a35; background: transparent; color: #7aaa88; cursor: pointer; }
+.tab.on { background: #4ae87a; color: #0a1a0d; border-color: #4ae87a; }
+.panel { display: none; }
+.panel.on { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.frow { display: flex; gap: 5px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.frow::-webkit-scrollbar { display: none; }
+.list { display: flex; flex-direction: column; gap: 5px; width: 100%; max-height: 80px; overflow-y: auto; }
+.row { display: flex; align-items: center; gap: 5px; background: #111a14; border-radius: 5px; padding: 4px 8px; border: 1px solid #2d4a35; }
+.row-name { flex: 1; font-size: 0.82rem; }
+.row-sub { font-size: 0.68rem; color: #7aaa88; }
+.sa { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; border: 1px solid #2d4a35; background: transparent; color: #7aaa88; cursor: pointer; }
+.sa.load { color: #4ae87a; border-color: #4ae87a; }
+.sa.play { color: #4ae8e8; border-color: #4ae8e8; }
+.sa.del { color: #e84a4a; border-color: #e84a4a; }
+.sa.jump { color: #4ae8e8; border-color: #4ae8e8; }
+.sa.save2 { color: #4ae87a; border-color: #4ae87a; }
+.token-text { font-family: Arial Narrow, Arial, sans-serif; font-weight: 900; dominant-baseline: central; text-anchor: middle; pointer-events: none; font-size: 11px; }
+.ball-text { dominant-baseline: central; text-anchor: middle; pointer-events: none; font-size: 26px; }
+.arrow-vis { stroke: #ffdd44; stroke-width: 3; fill: none; stroke-linecap: round; marker-end: url(#arrowhead); }
+.arrow-hit { stroke: transparent; stroke-width: 20; fill: none; cursor: pointer; }
+.pitch-label { cursor: move; }
+.pitch-label-bg { fill: rgba(0,0,0,0.7); }
+.pitch-label-txt { fill: #fff; font-family: Arial Narrow, Arial, sans-serif; font-weight: 700; dominant-baseline: central; text-anchor: middle; pointer-events: none; }
+.del-circ { fill: #e84a4a; stroke: #fff; stroke-width: 1.5; cursor: pointer; }
+.del-txt { fill: #fff; font-size: 13px; font-weight: bold; dominant-baseline: central; text-anchor: middle; pointer-events: none; }
+.rec-badge { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: #e84a4a; color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.73rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; pointer-events: none; display: none; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+.modal-bg.hidden { display: none; }
+.modal { background: #1e2e22; border: 1px solid #2d4a35; border-radius: 12px; padding: 20px; width: 100%; max-width: 390px; max-height: 90dvh; overflow-y: auto; }
+.modal h2 { font-weight: 900; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 1px; color: #4ae87a; margin-bottom: 13px; }
+.mrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; gap: 8px; }
+.mrow label { font-size: 0.82rem; color: #7aaa88; text-transform: uppercase; letter-spacing: 0.5px; }
+.minput { background: #111a14; color: #edf5ee; border: 1px solid #2d4a35; border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; font-family: Arial Narrow, Arial, sans-serif; }
+.minput.wide { width: 210px; }
+input[type=color].minput { padding: 2px 4px; height: 34px; width: 56px; cursor: pointer; }
+.mactions { display: flex; gap: 8px; margin-top: 13px; justify-content: flex-end; }
+.num-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 5px; }
+.num-cell { display: flex; flex-direction: column; gap: 3px; background: #111a14; border-radius: 6px; padding: 5px; }
+.num-cell span { font-size: 0.6rem; color: #7aaa88; text-transform: uppercase; }
+.num-cell input { background: #111a14; color: #edf5ee; border: 1px solid #2d4a35; border-radius: 4px; padding: 4px 5px; font-size: 0.84rem; text-align: center; width: 100%; }
+.dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 2px solid rgba(255,255,255,0.2); }
+hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>&#9917;</h1>
+  <select class="btn" id="fmt-sel">
+    <option value="11">11v11</option>
+    <option value="9">9v9</option>
+    <option value="7">7v7</option>
+    <option value="5">5v5</option>
+  </select>
+  <button class="btn" id="btn-setup">Spelare</button>
+  <button class="btn" id="btn-arrow">&#8599; Pil</button>
+  <button class="btn" id="btn-text">T Text</button>
+  <button class="btn" id="btn-undo">&#8630;</button>
+  <button class="btn" id="btn-reset">&#8635;</button>
+  <button class="btn" id="btn-half">&#189; Plan</button>
+  <button class="btn" id="btn-panel">&#9660;</button>
+</div>
+
+<div id="pitch-wrapper">
+  <svg id="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div id="mode-badge"></div>
+  <div class="rec-badge" id="rec-badge">&#9679; Spelar in</div>
+</div>
+
+<div id="playbar">
+  <div id="play-title">-</div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <button class="btn" id="btn-prev" style="font-size:1rem;padding:5px 12px">&#9664;</button>
+    <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.85rem">0/0</span>
+    <button class="btn" id="btn-next" style="font-size:1rem;padding:5px 12px">&#9654;</button>
+  </div>
+  <select class="btn" id="play-speed">
+    <option value="1200">Sakta</option>
+    <option value="600" selected>Normal</option>
+    <option value="300">Snabb</option>
+  </select>
+  <label style="display:flex;align-items:center;gap:4px;font-size:0.74rem;color:#7aaa88;cursor:pointer">
+    <input type="checkbox" id="play-loop"> Loop
+  </label>
+  <button class="btn danger" id="btn-stop-play">&#10005;</button>
+</div>
+
+<div id="bottompanel">
+  <div class="tabs">
+    <button class="tab on" data-panel="formations">Formation</button>
+    <button class="tab" data-panel="taktik">&#127916; Taktik</button>
+    <button class="tab" data-panel="saves">Sparade</button>
+  </div>
+  <div class="panel on" id="panel-formations">
+    <div class="frow" id="formation-btns"></div>
+  </div>
+  <div class="panel" id="panel-taktik">
+    <div style="width:100%">
+      <div id="rec-ui" style="display:none">
+        <div style="font-size:0.73rem;color:#e84a4a;font-weight:700;text-transform:uppercase;margin-bottom:6px" id="rec-name-lbl"></div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+          <button class="btn on" id="btn-add-step">+ Steg</button>
+          <button class="btn danger" id="btn-stop-rec">Stoppa</button>
+        </div>
+        <div class="list" id="rec-steps-list"></div>
+      </div>
+      <div id="no-rec-ui">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+          <button class="btn on" id="btn-new-taktik">+ Ny film</button>
+          <button class="btn" id="btn-export-taktik">Exportera</button>
+          <button class="btn" id="btn-import-taktik-btn">Importera</button>
+          <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
+        </div>
+        <div class="list" id="taktik-list"></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="panel-saves">
+    <button class="btn" id="btn-export">Exportera</button>
+    <button class="btn" id="btn-import-btn">Importera</button>
+    <input type="file" id="btn-import" accept=".json" style="display:none">
+    <div class="list" id="saves-list"></div>
+  </div>
+</div>
+
+<!-- SETUP MODAL -->
+<div class="modal-bg hidden" id="modal-setup">
+  <div class="modal">
+    <h2>Spelarinst&#228;llningar</h2>
+    <div class="mrow"><label>Hemma f&#228;rg</label><input type="color" class="minput" id="home-color" value="#e8c84a"></div>
+    <div class="mrow"><label>Borta f&#228;rg</label><input type="color" class="minput" id="away-color" value="#e84a4a"></div>
+    <div class="mrow">
+      <label>Visa</label>
+      <div style="display:flex;gap:5px">
+        <button class="btn on" data-dm="number">Nummer</button>
+        <button class="btn" data-dm="name">Namn</button>
+        <button class="btn" data-dm="both">B&#229;da</button>
+      </div>
+    </div>
+    <hr class="mdiv">
+    <div id="setup-home"></div>
+    <div id="setup-away" style="margin-top:10px"></div>
+    <div class="mactions">
+      <button class="btn" id="setup-cancel">Avbryt</button>
+      <button class="btn on" id="setup-apply">Till&#228;mpa</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW TAKTIK MODAL -->
+<div class="modal-bg hidden" id="modal-new-taktik">
+  <div class="modal">
+    <h2>Ny taktikfilm</h2>
+    <input type="text" class="minput wide" id="taktik-name-inp" placeholder="Speluppbyggnad fr&#229;n m&#229;lvakt" style="margin-bottom:13px;width:100%">
+    <div class="mactions">
+      <button class="btn" id="new-taktik-cancel">Avbryt</button>
+      <button class="btn on" id="new-taktik-ok">Starta</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVE NAME MODAL -->
+<div class="modal-bg hidden" id="modal-savename">
+  <div class="modal">
+    <h2>Spara uppst&#228;llning</h2>
+    <input type="text" class="minput wide" id="save-name-inp" placeholder="Uppst&#228;llning 1" style="margin-bottom:13px;width:100%">
+    <div class="mactions">
+      <button class="btn" id="savename-cancel">Avbryt</button>
+      <button class="btn on" id="savename-ok">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEXT LABEL MODAL -->
+<div class="modal-bg hidden" id="modal-text">
+  <div class="modal">
+    <h2>L&#228;gg till text</h2>
+    <input type="text" class="minput wide" id="text-inp" placeholder="Press h&#228;r!" style="margin-bottom:10px;width:100%">
+    <div style="display:flex;gap:5px;margin-bottom:13px" id="size-btns">
+      <button class="btn" data-sz="10">S</button>
+      <button class="btn on" data-sz="13">M</button>
+      <button class="btn" data-sz="18">L</button>
+      <button class="btn" data-sz="24">XL</button>
+    </div>
+    <div class="mactions">
+      <button class="btn" id="text-cancel">Avbryt</button>
+      <button class="btn on" id="text-ok">L&#228;gg till</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT LABEL MODAL -->
+<div class="modal-bg hidden" id="modal-edit-text">
+  <div class="modal">
+    <h2>Redigera text</h2>
+    <input type="text" class="minput wide" id="edit-text-inp" style="margin-bottom:10px;width:100%">
+    <div style="display:flex;gap:5px;margin-bottom:13px" id="edit-size-btns">
+      <button class="btn" data-sz="10">S</button>
+      <button class="btn on" data-sz="13">M</button>
+      <button class="btn" data-sz="18">L</button>
+      <button class="btn" data-sz="24">XL</button>
+    </div>
+    <div class="mactions">
+      <button class="btn danger" id="edit-text-del">Radera</button>
+      <button class="btn" id="edit-text-cancel">Avbryt</button>
+      <button class="btn on" id="edit-text-ok">Spara</button>
+    </div>
+  </div>
+</div>
+
+<script>
+window.onerror = function(msg,src,line,col,err){
+  document.body.style.overflow="auto";
+  document.body.innerHTML="<div style='padding:20px;font-family:monospace;color:#e84a4a;font-size:13px'><b>FEL rad "+line+":</b><br>"+msg+"<br><br>"+(err&&err.stack?err.stack:"")+"</div>";
+};
+
+var W=400,H=600;
+var format=11, homeColor="#e8c84a", awayColor="#e84a4a";
+var displayMode="number";
+var players=[], ball={x:W/2,y:H/2};
+var arrows=[], labels=[], arrowStart=null, arrowCurrent=null;
+var selectedId=null, editingLabelId=null;
+var mode="move"; // move|arrow|text
+var pendingLabelPt=null, labelSize=13;
+var undoStack=[];
+var idCounter=0;
+var panelOpen=true;
+var halfMode=0; // 0=full,1=home,2=away
+var savedFormations=[], taktikFilmer=[], activeTaktik=null, playback=null;
+var animFrame=null, animSpeed=600;
+var dragging=null;
+
+var FORMATIONS={
+  11:["4-4-2","4-3-3","3-5-2","4-2-3-1","5-3-2","3-4-3"],
+  9:["3-3-2","4-3-1","3-2-3","2-4-2","3-1-3-1","3-4-1"],
+  7:["3-2-1","2-3-1","3-1-2"],
+  5:["2-2","1-2-1","2-1-1"]
+};
+
+var svg=document.getElementById("pitch-svg");
+
+// ── PITCH ────────────────────────────────────────────────────────────────────
+function drawPitch(){
+  svg.innerHTML="";
+  var ns="http://www.w3.org/2000/svg";
+  function el(tag,attrs){var e=document.createElementNS(ns,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);return e;}
+  // defs
+  var defs=document.createElementNS(ns,"defs");
+  var marker=document.createElementNS(ns,"marker");
+  marker.setAttribute("id","arrowhead");marker.setAttribute("markerWidth","8");marker.setAttribute("markerHeight","6");
+  marker.setAttribute("refX","8");marker.setAttribute("refY","3");marker.setAttribute("orient","auto");
+  var poly=document.createElementNS(ns,"polygon");
+  poly.setAttribute("points","0 0, 8 3, 0 6");poly.setAttribute("fill","#ffdd44");
+  marker.appendChild(poly);defs.appendChild(marker);svg.appendChild(defs);
+  // stripes
+  var c=["#1e5c35","#226640"];
+  for(var i=0;i<10;i++) svg.appendChild(el("rect",{x:0,y:i*60,width:W,height:60,fill:c[i%2]}));
+  var S={stroke:"rgba(255,255,255,0.55)","stroke-width":"1.5",fill:"none"};
+  function se(tag,a){var m={};for(var k in S)m[k]=S[k];for(var k in a)m[k]=a[k];return el(tag,m);}
+  svg.appendChild(se("rect",{x:20,y:20,width:360,height:560}));
+  svg.appendChild(se("line",{x1:20,y1:300,x2:380,y2:300}));
+  svg.appendChild(se("circle",{cx:200,cy:300,r:46}));
+  svg.appendChild(el("circle",{cx:200,cy:300,r:3,fill:"rgba(255,255,255,0.55)"}));
+  svg.appendChild(se("rect",{x:98,y:20,width:204,height:88}));
+  svg.appendChild(se("rect",{x:138,y:20,width:124,height:44}));
+  svg.appendChild(se("rect",{x:98,y:492,width:204,height:88}));
+  svg.appendChild(se("rect",{x:138,y:536,width:124,height:44}));
+  svg.appendChild(el("circle",{cx:200,cy:132,r:3,fill:"rgba(255,255,255,0.55)"}));
+  svg.appendChild(el("circle",{cx:200,cy:468,r:3,fill:"rgba(255,255,255,0.55)"}));
+  svg.appendChild(se("path",{d:"M155,108 A50,50 0 0,1 245,108"}));
+  svg.appendChild(se("path",{d:"M155,492 A50,50 0 0,0 245,492"}));
+  svg.appendChild(se("rect",{x:158,y:8,width:84,height:14}));
+  svg.appendChild(se("rect",{x:158,y:578,width:84,height:14}));
+  var corners=[[20,20,0,90],[380,20,90,180],[380,580,180,270],[20,580,270,360]];
+  for(var ci=0;ci<corners.length;ci++){
+    var cx=corners[ci][0],cy=corners[ci][1],s1=corners[ci][2]*Math.PI/180,e1=corners[ci][3]*Math.PI/180,r=10;
+    svg.appendChild(se("path",{d:"M"+(cx+r*Math.cos(s1))+","+(cy+r*Math.sin(s1))+" A"+r+","+r+" 0 0,1 "+(cx+r*Math.cos(e1))+","+(cy+r*Math.sin(e1))}));
+  }
+}
+
+function updateViewBox(){
+  if(halfMode===1) svg.setAttribute("viewBox","0 280 400 320");
+  else if(halfMode===2) svg.setAttribute("viewBox","0 0 400 320");
+  else svg.setAttribute("viewBox","0 0 400 600");
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render(){
+  // remove old overlay + tokens
+  var old=svg.querySelectorAll(".player-token,.ball-token,.arrow-g,.label-g,.preview-arrow,.del-g");
+  for(var i=0;i<old.length;i++) old[i].remove();
+  var ns="http://www.w3.org/2000/svg";
+
+  // arrows
+  for(var i=0;i<arrows.length;i++){
+    (function(a){
+      var g=document.createElementNS(ns,"g");g.setAttribute("class","arrow-g");
+      var vis=document.createElementNS(ns,"line");
+      vis.setAttribute("class","arrow-vis");
+      vis.setAttribute("x1",a.x1);vis.setAttribute("y1",a.y1);
+      vis.setAttribute("x2",a.x2);vis.setAttribute("y2",a.y2);
+      var hit=document.createElementNS(ns,"line");
+      hit.setAttribute("class","arrow-hit");
+      hit.setAttribute("x1",a.x1);hit.setAttribute("y1",a.y1);
+      hit.setAttribute("x2",a.x2);hit.setAttribute("y2",a.y2);
+      g.appendChild(vis);g.appendChild(hit);svg.appendChild(g);
+      function selectArrow(ev){ev.stopPropagation();selectedId=a.id;render();}
+      hit.addEventListener("touchstart",function(ev){ev.preventDefault();selectArrow(ev);},{passive:false});
+      hit.addEventListener("mousedown",selectArrow);
+      if(selectedId===a.id){
+        var mx=(a.x1+a.x2)/2,my=(a.y1+a.y2)/2;
+        var dg=document.createElementNS(ns,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";
+        var dc=document.createElementNS(ns,"circle");
+        dc.setAttribute("class","del-circ");dc.setAttribute("cx",mx);dc.setAttribute("cy",my);dc.setAttribute("r",11);
+        var dt=document.createElementNS(ns,"text");
+        dt.setAttribute("class","del-txt");dt.setAttribute("x",mx);dt.setAttribute("y",my);dt.textContent="\u00d7";
+        dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);
+        function delArrow(ev){ev.stopPropagation();ev.preventDefault();saveUndo();arrows=arrows.filter(function(x){return x.id!==a.id;});selectedId=null;render();}
+        dg.addEventListener("touchstart",delArrow,{passive:false});
+        dg.addEventListener("mousedown",delArrow);
+      }
+    })(arrows[i]);
+  }
+
+  // preview arrow
+  if(mode==="arrow"&&arrowStart&&arrowCurrent){
+    var pg=document.createElementNS(ns,"line");
+    pg.setAttribute("class","preview-arrow");
+    pg.setAttribute("x1",arrowStart.x);pg.setAttribute("y1",arrowStart.y);
+    pg.setAttribute("x2",arrowCurrent.x);pg.setAttribute("y2",arrowCurrent.y);
+    pg.setAttribute("stroke","#ffdd44");pg.setAttribute("stroke-width","3");
+    pg.setAttribute("stroke-dasharray","6 4");pg.setAttribute("stroke-linecap","round");
+    pg.setAttribute("fill","none");pg.setAttribute("marker-end","url(#arrowhead)");
+    pg.style.pointerEvents="none";
+    svg.appendChild(pg);
+  }
+
+  // labels
+  for(var i=0;i<labels.length;i++){
+    (function(l){
+      var fs=l.size||13;
+      var tw=l.text.length*(fs*0.55)+12, th=fs+10;
+      var g=document.createElementNS(ns,"g");g.setAttribute("class","label-g pitch-label");
+      var bg=document.createElementNS(ns,"rect");
+      bg.setAttribute("class","pitch-label-bg");bg.setAttribute("rx","4");
+      bg.setAttribute("x",l.x-tw/2);bg.setAttribute("y",l.y-th/2);
+      bg.setAttribute("width",tw);bg.setAttribute("height",th);
+      var tx=document.createElementNS(ns,"text");
+      tx.setAttribute("class","pitch-label-txt");tx.setAttribute("x",l.x);tx.setAttribute("y",l.y);
+      tx.setAttribute("font-size",fs);tx.textContent=l.text;
+      g.appendChild(bg);g.appendChild(tx);svg.appendChild(g);
+      if(selectedId===l.id){
+        var dg=document.createElementNS(ns,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";
+        var dc=document.createElementNS(ns,"circle");
+        dc.setAttribute("class","del-circ");dc.setAttribute("cx",l.x+tw/2-2);dc.setAttribute("cy",l.y-th/2-2);dc.setAttribute("r",9);
+        var dt=document.createElementNS(ns,"text");
+        dt.setAttribute("class","del-txt");dt.setAttribute("x",l.x+tw/2-2);dt.setAttribute("y",l.y-th/2-2);dt.textContent="\u00d7";
+        dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);
+        function delLabel(ev){ev.stopPropagation();ev.preventDefault();saveUndo();labels=labels.filter(function(x){return x.id!==l.id;});selectedId=null;render();}
+        dg.addEventListener("touchstart",delLabel,{passive:false});
+        dg.addEventListener("mousedown",delLabel);
+      }
+      function startLabelDrag(cx,cy){
+        if(mode!=="move")return;
+        dragging={type:"label",id:l.id,ox:l.x-cx,oy:l.y-cy};
+      }
+      g.addEventListener("touchstart",function(ev){
+        ev.stopPropagation();
+        var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);
+        if(selectedId===l.id){
+          openEditLabel(l);
+          selectedId=null;
+          return;
+        }
+        selectedId=l.id;
+        startLabelDrag(pt.x,pt.y);
+        window.addEventListener("touchmove",onTM,{passive:false});
+        window.addEventListener("touchend",onTE);
+      },{passive:false});
+      g.addEventListener("mousedown",function(ev){
+        ev.stopPropagation();
+        var pt=svgPt(ev.clientX,ev.clientY);
+        if(selectedId===l.id){openEditLabel(l);selectedId=null;return;}
+        selectedId=l.id;
+        startLabelDrag(pt.x,pt.y);
+        window.addEventListener("mousemove",onMM);
+        window.addEventListener("mouseup",onMU);
+      });
+    })(labels[i]);
+  }
+
+  // players
+  for(var i=0;i<players.length;i++){
+    (function(p){
+      var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);
+      var c=document.createElementNS(ns,"circle");
+      c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);
+      c.setAttribute("fill",p.team==="home"?homeColor:awayColor);
+      c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","2");
+      var t=document.createElementNS(ns,"text");
+      t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);
+      t.setAttribute("fill",p.team==="home"?"#111":"#fff");
+      t.textContent=tokenLabel(p);
+      g.appendChild(c);g.appendChild(t);svg.appendChild(g);
+      if(!playback){
+        g.addEventListener("touchstart",function(ev){
+          ev.preventDefault();ev.stopPropagation();
+          if(mode!=="move")return;
+          saveUndo();
+          var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);
+          dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};
+          window.addEventListener("touchmove",onTM,{passive:false});
+          window.addEventListener("touchend",onTE);
+        },{passive:false});
+        g.addEventListener("mousedown",function(ev){
+          ev.stopPropagation();
+          if(mode!=="move")return;
+          saveUndo();
+          var pt=svgPt(ev.clientX,ev.clientY);
+          dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};
+          window.addEventListener("mousemove",onMM);
+          window.addEventListener("mouseup",onMU);
+        });
+      }
+    })(players[i]);
+  }
+
+  // ball
+  var bg=document.createElementNS(ns,"g");bg.setAttribute("class","ball-token");
+  var bhit=document.createElementNS(ns,"circle");
+  bhit.setAttribute("cx",ball.x);bhit.setAttribute("cy",ball.y);bhit.setAttribute("r",18);bhit.setAttribute("fill","transparent");
+  var bt=document.createElementNS(ns,"text");
+  bt.setAttribute("class","ball-text");bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);bt.textContent="\u26bd";
+  bg.appendChild(bhit);bg.appendChild(bt);svg.appendChild(bg);
+  if(!playback){
+    bg.addEventListener("touchstart",function(ev){
+      ev.preventDefault();ev.stopPropagation();
+      if(mode!=="move")return;
+      saveUndo();
+      var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);
+      dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};
+      window.addEventListener("touchmove",onTM,{passive:false});
+      window.addEventListener("touchend",onTE);
+    },{passive:false});
+    bg.addEventListener("mousedown",function(ev){
+      ev.stopPropagation();
+      if(mode!=="move")return;
+      saveUndo();
+      var pt=svgPt(ev.clientX,ev.clientY);
+      dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};
+      window.addEventListener("mousemove",onMM);
+      window.addEventListener("mouseup",onMU);
+    });
+  }
+}
+
+// ── DRAG ─────────────────────────────────────────────────────────────────────
+function svgPt(cx,cy){var r=svg.getBoundingClientRect();return{x:(cx-r.left)/r.width*W,y:(cy-r.top)/r.height*H};}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+
+function moveDrag(nx,ny){
+  nx=clamp(nx,10,W-10);ny=clamp(ny,10,H-10);
+  if(!dragging)return;
+  if(dragging.type==="ball"){
+    ball.x=nx;ball.y=ny;
+    var bg=svg.querySelector(".ball-token");
+    if(bg){var t=bg.querySelector("text"),h=bg.querySelector("circle");
+      if(t){t.setAttribute("x",nx);t.setAttribute("y",ny);}
+      if(h){h.setAttribute("cx",nx);h.setAttribute("cy",ny);}
+    }
+  } else if(dragging.type==="player"){
+    for(var i=0;i<players.length;i++) if(players[i].id===dragging.id){players[i].x=nx;players[i].y=ny;break;}
+    var g=svg.querySelector(".player-token[data-id='"+dragging.id+"']");
+    if(g){var c=g.querySelector("circle"),t=g.querySelector("text");
+      if(c){c.setAttribute("cx",nx);c.setAttribute("cy",ny);}
+      if(t){t.setAttribute("x",nx);t.setAttribute("y",ny);}
+    }
+  } else if(dragging.type==="label"){
+    for(var i=0;i<labels.length;i++){
+      if(labels[i].id===dragging.id){
+        labels[i].x=nx;labels[i].y=ny;
+        var fs=labels[i].size||13,tw=labels[i].text.length*(fs*0.55)+12,th=fs+10;
+        var lg=svg.querySelector(".label-g[data-lid='"+dragging.id+"']");
+        // just re-render since label groups don't have data-lid - full render on end
+        break;
+      }
+    }
+  }
+}
+
+function onTM(ev){
+  ev.preventDefault();
+  var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);
+  if(dragging) moveDrag(pt.x+(dragging.ox||0),pt.y+(dragging.oy||0));
+  if(mode==="arrow"&&arrowStart){arrowCurrent=pt;render();}
+}
+function onTE(ev){
+  if(mode==="arrow"&&arrowStart&&ev.changedTouches){
+    var pt=svgPt(ev.changedTouches[0].clientX,ev.changedTouches[0].clientY);
+    var dx=pt.x-arrowStart.x,dy=pt.y-arrowStart.y;
+    if(dx*dx+dy*dy>100){arrows.push({id:"arr"+(idCounter++),x1:arrowStart.x,y1:arrowStart.y,x2:pt.x,y2:pt.y,x1:arrowStart.x,y1:arrowStart.y,x2:pt.x,y2:pt.y});}
+    arrowStart=null;arrowCurrent=null;
+  }
+  dragging=null;
+  window.removeEventListener("touchmove",onTM);
+  window.removeEventListener("touchend",onTE);
+  render();
+}
+function onMM(ev){
+  var pt=svgPt(ev.clientX,ev.clientY);
+  if(dragging) moveDrag(pt.x+(dragging.ox||0),pt.y+(dragging.oy||0));
+  if(mode==="arrow"&&arrowStart){arrowCurrent=pt;render();}
+}
+function onMU(ev){
+  if(mode==="arrow"&&arrowStart){
+    var pt=svgPt(ev.clientX,ev.clientY);
+    var dx=pt.x-arrowStart.x,dy=pt.y-arrowStart.y;
+    if(dx*dx+dy*dy>100){arrows.push({id:"arr"+(idCounter++),x1:arrowStart.x,y1:arrowStart.y,x2:pt.x,y2:pt.y});}
+    arrowStart=null;arrowCurrent=null;
+  }
+  dragging=null;
+  window.removeEventListener("mousemove",onMM);
+  window.removeEventListener("mouseup",onMU);
+  render();
+}
+
+svg.addEventListener("touchstart",function(ev){
+  if(mode==="arrow"){ev.preventDefault();arrowStart=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);saveUndo();window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);return;}
+  if(mode==="text"){var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);pendingLabelPt=pt;setMode("move");openTextModal();return;}
+  selectedId=null;render();
+},{passive:false});
+
+svg.addEventListener("mousedown",function(ev){
+  if(mode==="arrow"){arrowStart=svgPt(ev.clientX,ev.clientY);saveUndo();window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);return;}
+  if(mode==="text"){var pt=svgPt(ev.clientX,ev.clientY);pendingLabelPt=pt;setMode("move");openTextModal();return;}
+  selectedId=null;render();
+});
+
+// ── POSITIONS ─────────────────────────────────────────────────────────────────
+function getPositions(f,team){
+  var rows=f.split("-").map(Number);
+  var isHome=team==="home",yMin=isHome?330:40,yMax=isHome?560:270;
+  var allRows=[1].concat(rows),total=allRows.length,pos=[];
+  for(var ri=0;ri<allRows.length;ri++){
+    var count=allRows[ri],frac=isHome?1-(ri/(total-1)):ri/(total-1),y=yMin+frac*(yMax-yMin);
+    for(var ci=0;ci<count;ci++){var xFrac=count===1?0.5:ci/(count-1);pos.push({x:40+xFrac*(W-80),y:y});}
+  }
+  return pos;
+}
+
+function initPlayers(f){
+  f=f||"4-4-2";
+  var parts=f.split("-"),total=1;
+  for(var i=0;i<parts.length;i++) total+=parseInt(parts[i]);
+  var hp=getPositions(f,"home"),ap=getPositions(f,"away");
+  var oldH=players.filter(function(p){return p.team==="home";});
+  var oldA=players.filter(function(p){return p.team==="away";});
+  players=[];
+  for(var i=0;i<Math.min(total,hp.length);i++)
+    players.push({id:"h"+i,team:"home",number:(oldH[i]?oldH[i].number:i+1),name:(oldH[i]?oldH[i].name:""),x:hp[i].x,y:hp[i].y});
+  for(var i=0;i<Math.min(total,ap.length);i++)
+    players.push({id:"a"+i,team:"away",number:(oldA[i]?oldA[i].number:i+1),name:(oldA[i]?oldA[i].name:""),x:ap[i].x,y:ap[i].y});
+  ball={x:W/2,y:H/2};
+}
+
+// ── TOKEN LABEL ───────────────────────────────────────────────────────────────
+function tokenLabel(p){
+  if(displayMode==="name") return p.name||p.number;
+  if(displayMode==="both") return (p.name?p.name+" ":"")+p.number;
+  return p.number;
+}
+
+// ── UNDO ─────────────────────────────────────────────────────────────────────
+function saveUndo(){
+  var snap=currentSnap();
+  undoStack.push(snap);
+  if(undoStack.length>30) undoStack.shift();
+}
+function doUndo(){
+  if(!undoStack.length) return;
+  var prev=undoStack.pop();
+  restoreSnap(prev);
+  render();
+}
+
+// ── SNAPSHOT ─────────────────────────────────────────────────────────────────
+function currentSnap(){
+  return{
+    players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),
+    ball:{x:ball.x,y:ball.y},
+    arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};}),
+    labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};})
+  };
+}
+function restoreSnap(snap){
+  players=snap.players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});
+  ball={x:snap.ball.x,y:snap.ball.y};
+  arrows=(snap.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};});
+  labels=(snap.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});
+}
+
+// ── MODE ─────────────────────────────────────────────────────────────────────
+function setMode(m){
+  mode=m;
+  document.getElementById("btn-arrow").classList.toggle("on",m==="arrow");
+  document.getElementById("btn-text").classList.toggle("on",m==="text");
+  svg.style.cursor=m==="arrow"?"crosshair":m==="text"?"text":"default";
+  var badge=document.getElementById("mode-badge");
+  if(m==="arrow"){badge.style.display="block";badge.style.background="#2a4a8a";badge.style.color="#9ac4ff";badge.textContent="Dra f\u00f6r att rita pil";}
+  else if(m==="text"){badge.style.display="block";badge.style.background="#4ae87a";badge.style.color="#0a1a0d";badge.textContent="Tryck p\u00e5 planen";}
+  else badge.style.display="none";
+}
+
+// ── FORMATIONS ────────────────────────────────────────────────────────────────
+function buildFormationBtns(){
+  var c=document.getElementById("formation-btns");c.innerHTML="";
+  var list=FORMATIONS[format]||FORMATIONS[11];
+  for(var i=0;i<list.length;i++){
+    (function(f){
+      var b=document.createElement("button");b.className="btn";b.textContent=f;b.style.flexShrink="0";
+      b.addEventListener("click",function(){
+        document.querySelectorAll("#formation-btns .btn").forEach(function(x){x.classList.remove("on");});
+        b.classList.add("on");
+        initPlayers(f);render();
+      });
+      c.appendChild(b);
+    })(list[i]);
+  }
+  if(c.firstChild) c.firstChild.classList.add("on");
+}
+
+// ── SETUP MODAL ───────────────────────────────────────────────────────────────
+function openSetup(){
+  document.getElementById("home-color").value=homeColor;
+  document.getElementById("away-color").value=awayColor;
+  document.querySelectorAll("[data-dm]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-dm")===displayMode);});
+  buildSetupTeam("home");buildSetupTeam("away");
+  document.getElementById("modal-setup").classList.remove("hidden");
+}
+function buildSetupTeam(team){
+  var c=document.getElementById("setup-"+team);
+  var tp=players.filter(function(p){return p.team===team;});
+  var color=team==="home"?homeColor:awayColor;
+  var html="<div style='display:flex;align-items:center;gap:8px;margin-bottom:8px'>";
+  html+="<span class='dot' id='dot-"+team+"' style='background:"+color+"'></span>";
+  html+="<span style='font-size:0.78rem;color:#7aaa88;text-transform:uppercase;letter-spacing:0.5px;flex:1'>"+(team==="home"?"Hemmalag":"Bortalag")+"</span>";
+  html+="<button class='btn' onclick='removePlayer(\""+team+"\")' style='padding:3px 9px'>&#8722;</button>";
+  html+="<span style='font-weight:900;font-size:1rem;color:#4ae87a;min-width:20px;text-align:center'>"+tp.length+"</span>";
+  html+="<button class='btn' onclick='addPlayer(\""+team+"\")' style='padding:3px 9px'>+</button></div>";
+  html+="<div class='num-grid'>";
+  for(var i=0;i<tp.length;i++){
+    var p=tp[i];
+    html+="<div class='num-cell'><span>"+(i===0?"MV":"#"+i)+"</span>";
+    html+="<input type='number' data-pid='"+p.id+"' value='"+p.number+"' min='1' max='99'>";
+    html+="<input type='text' data-name='"+p.id+"' value='"+p.name+"' placeholder='Namn' style='background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.78rem;width:100%'>";
+    html+="</div>";
+  }
+  html+="</div>";
+  c.innerHTML=html;
+}
+function addPlayer(team){
+  var tp=players.filter(function(p){return p.team===team;});
+  if(tp.length>=11) return;
+  players.push({id:team[0]+"x"+Date.now(),team:team,number:tp.length+1,name:"",x:W/2+(Math.random()-0.5)*80,y:team==="home"?430:170});
+  buildSetupTeam(team);render();
+}
+function removePlayer(team){
+  var tp=players.filter(function(p){return p.team===team;});
+  if(tp.length<=0) return;
+  var last=tp[tp.length-1];
+  players=players.filter(function(p){return p.id!==last.id;});
+  buildSetupTeam(team);render();
+}
+document.getElementById("btn-setup").addEventListener("click",openSetup);
+document.getElementById("setup-cancel").addEventListener("click",function(){document.getElementById("modal-setup").classList.add("hidden");});
+document.getElementById("setup-apply").addEventListener("click",function(){
+  homeColor=document.getElementById("home-color").value;
+  awayColor=document.getElementById("away-color").value;
+  document.querySelectorAll("#modal-setup .num-cell input[data-pid]").forEach(function(inp){
+    var p=players.find(function(x){return x.id===inp.getAttribute("data-pid");});
+    if(p) p.number=parseInt(inp.value)||p.number;
+  });
+  document.querySelectorAll("#modal-setup .num-cell input[data-name]").forEach(function(inp){
+    var p=players.find(function(x){return x.id===inp.getAttribute("data-name");});
+    if(p) p.name=inp.value.trim();
+  });
+  document.getElementById("modal-setup").classList.add("hidden");
+  render();
+});
+document.querySelectorAll("[data-dm]").forEach(function(b){
+  b.addEventListener("click",function(){
+    displayMode=b.getAttribute("data-dm");
+    document.querySelectorAll("[data-dm]").forEach(function(x){x.classList.toggle("on",x===b);});
+    render();
+  });
+});
+document.getElementById("home-color").addEventListener("input",function(e){var d=document.getElementById("dot-home");if(d)d.style.background=e.target.value;});
+document.getElementById("away-color").addEventListener("input",function(e){var d=document.getElementById("dot-away");if(d)d.style.background=e.target.value;});
+
+// ── TEXT LABEL ────────────────────────────────────────────────────────────────
+function openTextModal(){
+  document.getElementById("text-inp").value="";
+  document.getElementById("modal-text").classList.remove("hidden");
+  setTimeout(function(){document.getElementById("text-inp").focus();},100);
+}
+document.querySelectorAll("#size-btns [data-sz]").forEach(function(b){
+  b.addEventListener("click",function(){
+    labelSize=parseInt(b.getAttribute("data-sz"));
+    document.querySelectorAll("#size-btns [data-sz]").forEach(function(x){x.classList.toggle("on",x===b);});
+  });
+});
+document.getElementById("text-cancel").addEventListener("click",function(){document.getElementById("modal-text").classList.add("hidden");pendingLabelPt=null;});
+document.getElementById("text-ok").addEventListener("click",function(){
+  var txt=document.getElementById("text-inp").value.trim();
+  if(txt&&pendingLabelPt){saveUndo();labels.push({id:"lbl"+(idCounter++),x:pendingLabelPt.x,y:pendingLabelPt.y,text:txt,size:labelSize});}
+  document.getElementById("modal-text").classList.add("hidden");pendingLabelPt=null;render();
+});
+document.getElementById("text-inp").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("text-ok").click();});
+
+// ── EDIT LABEL ────────────────────────────────────────────────────────────────
+var editLabelId=null;
+function openEditLabel(l){
+  editLabelId=l.id;
+  document.getElementById("edit-text-inp").value=l.text;
+  var sz=l.size||13;
+  document.querySelectorAll("#edit-size-btns [data-sz]").forEach(function(b){b.classList.toggle("on",parseInt(b.getAttribute("data-sz"))===sz);});
+  document.getElementById("modal-edit-text").classList.remove("hidden");
+  setTimeout(function(){document.getElementById("edit-text-inp").focus();},100);
+}
+document.querySelectorAll("#edit-size-btns [data-sz]").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.querySelectorAll("#edit-size-btns [data-sz]").forEach(function(x){x.classList.toggle("on",x===b);});
+  });
+});
+document.getElementById("edit-text-cancel").addEventListener("click",function(){document.getElementById("modal-edit-text").classList.add("hidden");editLabelId=null;});
+document.getElementById("edit-text-ok").addEventListener("click",function(){
+  if(editLabelId){
+    var txt=document.getElementById("edit-text-inp").value.trim();
+    var sz=parseInt(document.querySelector("#edit-size-btns .on").getAttribute("data-sz"))||13;
+    labels=labels.map(function(l){return l.id===editLabelId?{id:l.id,x:l.x,y:l.y,text:txt||l.text,size:sz}:l;});
+  }
+  document.getElementById("modal-edit-text").classList.add("hidden");editLabelId=null;render();
+});
+document.getElementById("edit-text-del").addEventListener("click",function(){
+  if(editLabelId){saveUndo();labels=labels.filter(function(l){return l.id!==editLabelId;});}
+  document.getElementById("modal-edit-text").classList.add("hidden");editLabelId=null;render();
+});
+document.getElementById("edit-text-inp").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("edit-text-ok").click();});
+
+// ── TOPBAR BUTTONS ────────────────────────────────────────────────────────────
+document.getElementById("btn-arrow").addEventListener("click",function(){setMode(mode==="arrow"?"move":"arrow");});
+document.getElementById("btn-text").addEventListener("click",function(){setMode(mode==="text"?"move":"text");});
+document.getElementById("btn-undo").addEventListener("click",doUndo);
+document.getElementById("btn-reset").addEventListener("click",function(){initPlayers(document.querySelector("#formation-btns .on")?.textContent||"4-4-2");arrows=[];labels=[];render();});
+document.getElementById("fmt-sel").addEventListener("change",function(e){
+  format=parseInt(e.target.value);
+  buildFormationBtns();
+  initPlayers((FORMATIONS[format]||FORMATIONS[11])[0]);
+  render();
+});
+document.getElementById("btn-half").addEventListener("click",function(){
+  halfMode=(halfMode+1)%3;
+  var labels2=["&#189; Plan","&#189; Borta","Hel"];
+  document.getElementById("btn-half").innerHTML=labels2[halfMode];
+  updateViewBox();
+});
+document.getElementById("btn-panel").addEventListener("click",function(){
+  panelOpen=!panelOpen;
+  document.getElementById("bottompanel").classList.toggle("hidden",!panelOpen);
+  document.getElementById("btn-panel").textContent=panelOpen?"\u25bc":"\u25b2";
+});
+
+// ── PANEL TABS ────────────────────────────────────────────────────────────────
+document.querySelectorAll(".tab").forEach(function(tab){
+  tab.addEventListener("click",function(){
+    var name=tab.getAttribute("data-panel");
+    document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});
+    document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});
+    if(name==="saves") renderSavesList();
+    if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}
+  });
+});
+
+// ── RECORDING ─────────────────────────────────────────────────────────────────
+function startRecording(name){
+  activeTaktik={name:name,steps:[currentSnap()]};
+  document.getElementById("rec-badge").style.display="block";
+  document.getElementById("rec-ui").style.display="block";
+  document.getElementById("no-rec-ui").style.display="none";
+  document.getElementById("rec-name-lbl").textContent="\u25cf "+name;
+  renderRecSteps();
+}
+document.getElementById("btn-add-step").addEventListener("click",function(){
+  if(!activeTaktik) return;
+  activeTaktik.steps.push(currentSnap());
+  renderRecSteps();
+});
+document.getElementById("btn-stop-rec").addEventListener("click",function(){
+  if(!activeTaktik||activeTaktik.steps.length<2) return;
+  taktikFilmer.push({name:activeTaktik.name,steps:activeTaktik.steps});
+  activeTaktik=null;
+  document.getElementById("rec-badge").style.display="none";
+  document.getElementById("rec-ui").style.display="none";
+  document.getElementById("no-rec-ui").style.display="block";
+  renderTaktikList();
+});
+
+function renderRecSteps(){
+  var list=document.getElementById("rec-steps-list");list.innerHTML="";
+  if(!activeTaktik) return;
+  for(var i=0;i<activeTaktik.steps.length;i++){
+    (function(idx){
+      var row=document.createElement("div");row.className="row";
+      var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);
+      var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=idx===0?"Startl\u00e4ge":"Steg "+idx;
+      var jmp=document.createElement("button");jmp.className="sa jump";jmp.textContent="Hoppa";
+      jmp.addEventListener("click",function(){restoreSnap(activeTaktik.steps[idx]);render();});
+      var upd=document.createElement("button");upd.className="sa save2";upd.textContent="Spara";
+      upd.addEventListener("click",function(){activeTaktik.steps[idx]=currentSnap();});
+      row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);row.appendChild(upd);
+      if(idx>0){
+        var del=document.createElement("button");del.className="sa del";del.textContent="\u00d7";
+        del.addEventListener("click",function(){activeTaktik.steps.splice(idx,1);renderRecSteps();});
+        row.appendChild(del);
+      }
+      list.appendChild(row);
+    })(i);
+  }
+}
+
+function renderTaktikList(){
+  var list=document.getElementById("taktik-list");list.innerHTML="";
+  if(!taktikFilmer.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga taktikfilmer sparade</span>";return;}
+  for(var i=0;i<taktikFilmer.length;i++){
+    (function(idx){
+      var tk=taktikFilmer[idx];
+      var row=document.createElement("div");row.className="row";
+      var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;
+      var cnt=document.createElement("span");cnt.className="row-sub";cnt.textContent=(tk.steps.length-1)+" steg";
+      var pb=document.createElement("button");pb.className="sa play";pb.textContent="\u25ba Spela";
+      var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";
+      pb.addEventListener("click",function(){startPlayback(idx);});
+      dl.addEventListener("click",function(){taktikFilmer.splice(idx,1);renderTaktikList();});
+      row.appendChild(nm);row.appendChild(cnt);row.appendChild(pb);row.appendChild(dl);
+      list.appendChild(row);
+    })(i);
+  }
+}
+
+document.getElementById("btn-new-taktik").addEventListener("click",function(){
+  document.getElementById("taktik-name-inp").value="";
+  document.getElementById("modal-new-taktik").classList.remove("hidden");
+});
+document.getElementById("new-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-new-taktik").classList.add("hidden");});
+document.getElementById("new-taktik-ok").addEventListener("click",function(){
+  var name=document.getElementById("taktik-name-inp").value.trim();
+  if(!name) return;
+  document.getElementById("modal-new-taktik").classList.add("hidden");
+  startRecording(name);
+});
+
+// ── PLAYBACK ─────────────────────────────────────────────────────────────────
+function startPlayback(idx){
+  var tk=taktikFilmer[idx];
+  if(animFrame) cancelAnimationFrame(animFrame);
+  playback={tk:tk,stepIndex:0,animating:false};
+  restoreSnap(tk.steps[0]);render();
+  document.getElementById("playbar").classList.add("active");
+  updatePlaybar();
+  renderPlayStepList();
+  // switch to taktik panel
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");});
+  document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-taktik");});
+}
+function stopPlayback(){
+  if(animFrame) cancelAnimationFrame(animFrame);
+  playback=null;
+  document.getElementById("playbar").classList.remove("active");
+  render();renderTaktikList();
+}
+document.getElementById("btn-stop-play").addEventListener("click",stopPlayback);
+document.getElementById("btn-next").addEventListener("click",function(){
+  if(!playback||playback.animating) return;
+  if(playback.stepIndex>=playback.tk.steps.length-1) return;
+  animateToStep(playback.stepIndex+1);
+});
+document.getElementById("btn-prev").addEventListener("click",function(){
+  if(!playback||playback.animating) return;
+  if(playback.stepIndex<=0) return;
+  animateToStep(playback.stepIndex-1);
+});
+document.getElementById("play-speed").addEventListener("change",function(){animSpeed=parseInt(this.value);});
+
+function updatePlaybar(){
+  if(!playback) return;
+  var cur=playback.stepIndex,total=playback.tk.steps.length-1;
+  document.getElementById("play-title").textContent=playback.tk.name;
+  document.getElementById("play-counter").textContent=cur===0?"Start":cur+"/"+total;
+  document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";
+  document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";
+  renderPlayStepList();
+}
+
+function renderPlayStepList(){
+  if(!playback) return;
+  var list=document.getElementById("taktik-list");list.innerHTML="";
+  var tk=playback.tk;
+  for(var i=0;i<tk.steps.length;i++){
+    (function(idx){
+      var isCur=playback.stepIndex===idx;
+      var row=document.createElement("div");row.className="row";
+      row.style.borderColor=isCur?"#4ae87a":"#2d4a35";
+      var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);
+      var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=idx===0?"Startl\u00e4ge":"Steg "+idx;
+      var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";
+      if(!isCur) jmp.addEventListener("click",function(){
+        if(playback.animating) return;
+        playback.stepIndex=idx;
+        restoreSnap(tk.steps[idx]);render();updatePlaybar();
+      });
+      row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);
+      list.appendChild(row);
+    })(i);
+  }
+}
+
+function animateToStep(targetIdx){
+  if(!playback) return;
+  playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();
+  var target=playback.tk.steps[targetIdx];
+  var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});
+  var fromBall={x:ball.x,y:ball.y};
+  var start=performance.now();
+  function frame(now){
+    var t=Math.min(1,(now-start)/animSpeed);
+    var ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    for(var i=0;i<players.length;i++){
+      var fp=null,tp2=null;
+      for(var j=0;j<fromPlayers.length;j++) if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}
+      for(var j=0;j<target.players.length;j++) if(target.players[j].id===players[i].id){tp2=target.players[j];break;}
+      if(fp&&tp2){players[i].x=fp.x+(tp2.x-fp.x)*ease;players[i].y=fp.y+(tp2.y-fp.y)*ease;}
+      var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");
+      if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");
+        if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}
+        if(tx){tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);}
+      }
+    }
+    ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;
+    ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;
+    var bg=svg.querySelector(".ball-token");
+    if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");
+      if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}
+      if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}
+    }
+    if(t<1){animFrame=requestAnimationFrame(frame);}
+    else{
+      restoreSnap(target);render();
+      if(playback){
+        playback.animating=false;
+        var loopOn=document.getElementById("play-loop").checked;
+        if(loopOn&&targetIdx>=playback.tk.steps.length-1){
+          setTimeout(function(){
+            if(!playback) return;
+            restoreSnap(playback.tk.steps[0]);render();
+            playback.stepIndex=0;updatePlaybar();
+            setTimeout(function(){if(playback) animateToStep(1);},600);
+          },800);
+        }
+      }
+    }
+  }
+  animFrame=requestAnimationFrame(frame);
+}
+
+// ── SAVES ─────────────────────────────────────────────────────────────────────
+function buildState(){
+  return{format:format,homeColor:homeColor,awayColor:awayColor,displayMode:displayMode,
+    players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),
+    ball:{x:ball.x,y:ball.y},
+    arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};}),
+    labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};})
+  };
+}
+function applyState(s){
+  format=s.format||11;homeColor=s.homeColor||"#e8c84a";awayColor=s.awayColor||"#e84a4a";
+  displayMode=s.displayMode||"number";
+  document.getElementById("fmt-sel").value=String(format);
+  players=(s.players||[]).map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});
+  ball=s.ball||{x:W/2,y:H/2};
+  arrows=(s.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};});
+  labels=(s.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});
+  buildFormationBtns();render();
+}
+document.getElementById("btn-export").addEventListener("click",function(){
+  var data={savedFormations:savedFormations,current:buildState()};
+  var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+  var a=document.createElement("a");a.href=url;a.download="taktik.json";a.click();URL.revokeObjectURL(url);
+});
+document.getElementById("btn-import-btn").addEventListener("click",function(){document.getElementById("btn-import").click();});
+document.getElementById("btn-import").addEventListener("change",function(e){
+  var file=e.target.files[0];if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{var data=JSON.parse(ev.target.result);if(data.savedFormations)savedFormations=data.savedFormations;if(data.current)applyState(data.current);renderSavesList();}
+    catch(err){alert("Kunde inte l\u00e4sa filen.");}
+  };
+  reader.readAsText(file);e.target.value="";
+});
+document.getElementById("btn-export-taktik").addEventListener("click",function(){
+  var data={taktikFilmer:taktikFilmer};
+  var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+  var a=document.createElement("a");a.href=url;a.download="taktikfilm.json";a.click();URL.revokeObjectURL(url);
+});
+document.getElementById("btn-import-taktik-btn").addEventListener("click",function(){document.getElementById("btn-import-taktik").click();});
+document.getElementById("btn-import-taktik").addEventListener("change",function(e){
+  var file=e.target.files[0];if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{var data=JSON.parse(ev.target.result);if(data.taktikFilmer)taktikFilmer=data.taktikFilmer;renderTaktikList();}
+    catch(err){alert("Kunde inte l\u00e4sa filen.");}
+  };
+  reader.readAsText(file);e.target.value="";
+});
+
+// Save current setup
+document.getElementById("btn-reset").addEventListener("click",function(){
+  // also save button in saves panel? We add a quick save from topbar via save btn
+});
+// Quick save – add it
+var saveBtn=document.createElement("button");saveBtn.className="btn on";saveBtn.textContent="Spara";saveBtn.style.marginLeft="2px";
+saveBtn.addEventListener("click",function(){
+  var d=new Date();
+  document.getElementById("save-name-inp").value="Uppst\u00e4llning "+d.getDate()+"/"+(d.getMonth()+1)+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);
+  document.getElementById("modal-savename").classList.remove("hidden");
+});
+document.getElementById("topbar").insertBefore(saveBtn,document.getElementById("btn-half"));
+document.getElementById("savename-cancel").addEventListener("click",function(){document.getElementById("modal-savename").classList.add("hidden");});
+document.getElementById("savename-ok").addEventListener("click",function(){
+  var name=document.getElementById("save-name-inp").value.trim()||"Uppst\u00e4llning";
+  savedFormations.push({name:name,state:buildState()});
+  document.getElementById("modal-savename").classList.add("hidden");
+  renderSavesList();
+});
+function renderSavesList(){
+  var list=document.getElementById("saves-list");list.innerHTML="";
+  if(!savedFormations.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga sparade uppst\u00e4llningar</span>";return;}
+  for(var i=0;i<savedFormations.length;i++){
+    (function(idx){
+      var s=savedFormations[idx];
+      var row=document.createElement("div");row.className="row";
+      var nm=document.createElement("span");nm.className="row-name";nm.textContent=s.name;
+      var ld=document.createElement("button");ld.className="sa load";ld.textContent="Ladda";
+      var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";
+      ld.addEventListener("click",function(){applyState(JSON.parse(JSON.stringify(s.state)));});
+      dl.addEventListener("click",function(){savedFormations.splice(idx,1);renderSavesList();});
+      row.appendChild(nm);row.appendChild(ld);row.appendChild(dl);list.appendChild(row);
+    })(i);
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+drawPitch();
+buildFormationBtns();
+initPlayers("4-4-2");
+render();
+renderSavesList();
+renderTaktikList();
+</script>
+</body>
+</html>
