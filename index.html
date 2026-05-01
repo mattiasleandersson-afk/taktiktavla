@@ -56,6 +56,7 @@ select.btn { appearance: none; padding-right: 18px; background-image: url("data:
 .del-txt { fill: #fff; font-size: 13px; font-weight: bold; dominant-baseline: central; text-anchor: middle; pointer-events: none; }
 /* &#9472;&#9472; LANDSCAPE MODE &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; */
 body.landscape #topbar { display: none !important; }
+body.landscape #topbar h1 { display: none !important; }
 body.landscape #bottompanel { display: none !important; }
 body.landscape #panel-toggle-strip { display: none !important; }
 body.landscape #taktikbar { display: none !important; }
@@ -113,12 +114,6 @@ max-height: none !important;
 width: 100vh !important;
 height: 100vw !important;
 }
-/* Counter-rotate player numbers so they stay upright */
-body.landscape .token-text {
-transform: rotate(90deg);
-transform-box: fill-box;
-transform-origin: center;
-}
 
 .toast-msg { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: #4ae87a; color: #0a1a0d; padding: 5px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; white-space: nowrap; }
 .toast-msg.show { opacity: 1; }
@@ -151,7 +146,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v4.8</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v4.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -501,7 +496,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="landscape-strip">
   <button class="ls-btn" id="ls-prev-btn" style="opacity:0.3">&#9664;</button>
-  <span id="ls-step-label">&#9917;</span>
+  <span id="ls-step-label">-</span>
   <button class="ls-btn" id="ls-next-btn" style="opacity:0.3">&#9654;</button>
 </div>
 
@@ -965,7 +960,7 @@ function render(){
         window.addEventListener("mousemove",_onMM2);
         window.addEventListener("mouseup",_onMU2);
       });})(labels[i]);}
-  for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);c.setAttribute("fill",p.team==="home"?homeColor:awayColor);c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill",p.team==="home"?"#111":"#fff");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);svg.appendChild(g);if(true){g.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});g.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});}})(players[i]);}
+  for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);c.setAttribute("fill",p.team==="home"?homeColor:awayColor);c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill",p.team==="home"?"#111":"#fff");if(document.body.classList.contains("landscape"))t.setAttribute("transform","rotate(90,"+p.x+","+p.y+")");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);svg.appendChild(g);if(true){g.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});g.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});}})(players[i]);}
   var bg=document.createElementNS(ns,"g");bg.setAttribute("class","ball-token");var bhit=document.createElementNS(ns,"circle");bhit.setAttribute("cx",ball.x);bhit.setAttribute("cy",ball.y);bhit.setAttribute("r",18);bhit.setAttribute("fill","transparent");var bt=document.createElementNS(ns,"text");bt.setAttribute("class","ball-text");bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);bt.textContent="\u26bd";bg.appendChild(bhit);bg.appendChild(bt);svg.appendChild(bg);
   if(true){bg.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});bg.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});}
 }
@@ -1719,7 +1714,7 @@ function updateLandscapeStrip(){
     prevBtn.classList.toggle("active", cur > 0);
     nextBtn.classList.toggle("active", cur < total);
   } else {
-    label.innerHTML = "&#9917;";
+    label.textContent = "-";
     prevBtn.style.opacity = "0.3";
     nextBtn.style.opacity = "0.3";
     prevBtn.classList.remove("active");
@@ -1747,9 +1742,15 @@ document.getElementById("ls-next-btn").addEventListener("click", function(){
   setTimeout(updateLandscapeStrip, 100);
 });
 
-window.addEventListener("resize", function(){ handleOrientation(); });
+var _orientTimer=null;
+function debouncedOrientation(){
+  if(_orientTimer)clearTimeout(_orientTimer);
+  _orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=null;},200);
+}
+window.addEventListener("resize", debouncedOrientation);
 window.addEventListener("orientationchange", function(){
-  setTimeout(handleOrientation, 300);
+  if(_orientTimer)clearTimeout(_orientTimer);
+  _orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=null;},350);
 });
 
 // Init
