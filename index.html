@@ -193,7 +193,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v5.4</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v5.5</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1028,9 +1028,9 @@ function render(){
 function svgPt(cx,cy){
   var r=svg.getBoundingClientRect();
   if(document.body.classList.contains("landscape")){
-    // SVG rotated -90deg: remap screen coords to SVG coords
-    var px=(cy-r.top)/r.height;
-    var py=1-(cx-r.left)/r.width;
+    // SVG rotated -90deg CSS: screen right=SVG top, screen top=SVG left
+    var px=1-(cy-r.top)/r.height;
+    var py=(cx-r.left)/r.width;
     return{x:px*W,y:py*H};
   }
   return{x:(cx-r.left)/r.width*W,y:(cy-r.top)/r.height*H};
