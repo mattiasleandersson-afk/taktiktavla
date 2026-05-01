@@ -76,60 +76,73 @@ flex-direction: column;
 align-items: center;
 gap: 12px;
 }
-#ls-prev-side { left: 0; padding: 0 6px 0 max(4px,env(safe-area-inset-left)); }
-#ls-next-side { right: 0; padding: 0 max(4px,env(safe-area-inset-right)) 0 6px; }
+#ls-prev-side { left: max(4px,env(safe-area-inset-left)); padding: 0 4px; }
+#ls-next-side { right: max(4px,env(safe-area-inset-right)); padding: 0 4px; }
 
 #ls-title-top {
 position: fixed;
-top: max(4px,env(safe-area-inset-top));
+top: max(6px,env(safe-area-inset-top));
 left: 0; right: 0;
 z-index: 51;
 text-align: center;
-padding: 3px 80px;
+padding: 0 60px;
 pointer-events: none;
+}
+#ls-step-label {
+background: rgba(14,23,16,0.75);
+border-radius: 20px;
+padding: 3px 14px;
+display: inline-block;
 }
 
 .ls-btn {
-background: rgba(10,26,13,0.85);
-border: 1px solid #2d4a35;
-border-radius: 8px;
+background: rgba(14,23,16,0.92);
+border: 1px solid #3a6b46;
+border-radius: 10px;
 color: #7aaa88;
 cursor: pointer;
 font-family: Arial Narrow, Arial, sans-serif;
 touch-action: manipulation;
-padding: 12px 10px;
-font-size: 1.1rem;
-min-width: 36px;
+padding: 14px 11px;
+font-size: 1.2rem;
+min-width: 40px;
 text-align: center;
+line-height: 1;
+box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
-.ls-btn.active { color: #4ae87a; border-color: #4ae87a; }
-.ls-btn:disabled { opacity: 0.3; }
+.ls-btn.active { color: #4ae87a; border-color: #4ae87a; background: rgba(74,232,122,0.1); }
+.ls-btn:disabled { opacity: 0.25; }
 .ls-select {
-background: rgba(10,26,13,0.85);
-border: 1px solid #2d4a35;
-border-radius: 6px;
+background: rgba(14,23,16,0.92);
+border: 1px solid #3a6b46;
+border-radius: 8px;
 color: #7aaa88;
 font-family: Arial Narrow, Arial, sans-serif;
-font-size: 0.68rem;
-padding: 4px 4px;
-width: 36px;
+font-weight: 700;
+font-size: 0.72rem;
+padding: 6px 3px;
+width: 40px;
 text-align: center;
-writing-mode: horizontal-tb;
+box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+-webkit-appearance: none;
 }
 .ls-label {
 display: flex;
 align-items: center;
+justify-content: center;
 gap: 4px;
-font-size: 0.65rem;
+font-size: 0.62rem;
+font-weight: 700;
 color: #7aaa88;
 font-family: Arial Narrow, Arial, sans-serif;
 cursor: pointer;
-background: rgba(10,26,13,0.85);
-border: 1px solid #2d4a35;
-border-radius: 6px;
-padding: 6px 4px;
+background: rgba(14,23,16,0.92);
+border: 1px solid #3a6b46;
+border-radius: 8px;
+padding: 8px 6px;
 writing-mode: vertical-rl;
 text-orientation: mixed;
+box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 /* Rotate pitch wrapper in landscape */
@@ -179,7 +192,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v5.1</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v5.2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1642,7 +1655,7 @@ function updatePlaybar(){
   updateLandscapeStrip();
 }
 function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";var rLabel=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);lbl.textContent=rLabel;var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
-function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var tk2=editingTaktikIdx!==null?taktikFilmer[editingTaktikIdx]:playback.tk;var target=tk2.steps[targetIdx],fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};}),fromBall={x:ball.x,y:ball.y},start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed),ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){players[i].x=fp.x+(tp2.x-fp.x)*ease;players[i].y=fp.y+(tp2.y-fp.y)*ease;}var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}if(tx){tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);if(document.body.classList.contains("landscape"))tx.setAttribute("transform","rotate(90,"+players[i].x+","+players[i].y+")");}}ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}}animFrame=requestAnimationFrame(frame);}}
+function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx],fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};}),fromBall={x:ball.x,y:ball.y},start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed),ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){players[i].x=fp.x+(tp2.x-fp.x)*ease;players[i].y=fp.y+(tp2.y-fp.y)*ease;}var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}if(tx){tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);if(document.body.classList.contains("landscape"))tx.setAttribute("transform","rotate(90,"+players[i].x+","+players[i].y+")");}}ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}}animFrame=requestAnimationFrame(frame);}}
 function buildState(){return{format:format,homeColor:homeColor,awayColor:awayColor,displayMode:displayMode,players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};})};}
 function applyState(s){format=s.format||11;homeColor=s.homeColor||"#e8c84a";awayColor=s.awayColor||"#e84a4a";displayMode=s.displayMode||"number";document.getElementById("fmt-sel").value=String(format);players=(s.players||[]).map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball=s.ball||{x:W/2,y:H/2};arrows=(s.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};});labels=(s.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});buildFormationBtns();render();}
 document.getElementById("btn-export").addEventListener("click",function(){var data={savedFormations:savedFormations,current:buildState()};var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));var a=document.createElement("a");a.href=url;a.download="taktik.json";a.click();URL.revokeObjectURL(url);});
