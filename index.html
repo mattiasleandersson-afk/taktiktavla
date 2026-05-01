@@ -939,15 +939,8 @@ document.getElementById("btn-edit-taktik-save").addEventListener("click",functio
 document.getElementById("btn-edit-step-prev").addEventListener("click",function(){if(editingTaktikIdx===null||editingStepIdx<=0)return;editingStepIdx--;updateEditStepUI();});
 document.getElementById("btn-edit-step-next").addEventListener("click",function(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];if(editingStepIdx>=tk.steps.length-1)return;editingStepIdx++;updateEditStepUI();});
 document.getElementById("btn-edit-update-step").addEventListener("click",function(){
-  if(editingTaktikIdx===null)return;
-  var tk=taktikFilmer[editingTaktikIdx];
-  var snap=currentSnap();
-  var lbl=document.getElementById("edit-step-name-inp").value.trim();
-  if(lbl)snap.label=lbl;
-  tk.steps[editingStepIdx]=snap;
-  cloudStatus("\u2705 Steg sparat","#4ae87a");
-  showToast("Steg sparat!");
-  renderEditSteps(tk);
+  // Delegate to taktikbar save button which has full propagation logic
+  document.getElementById("btn-edit-update-step2").click();
 });
 document.getElementById("btn-edit-add-step").addEventListener("click",function(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];var snap=currentSnap();tk.steps.splice(editingStepIdx+1,0,snap);editingStepIdx++;updateEditStepUI();});
 document.getElementById("btn-edit-del-step").addEventListener("click",function(){if(editingTaktikIdx===null||editingStepIdx===0)return;var tk=taktikFilmer[editingTaktikIdx];tk.steps.splice(editingStepIdx,1);editingStepIdx=Math.min(editingStepIdx,tk.steps.length-1);updateEditStepUI();});
@@ -1066,12 +1059,51 @@ document.getElementById("btn-stop-play").addEventListener("click",stopPlayback);
 document.getElementById("btn-edit-update-step2").addEventListener("click",function(){
   if(editingTaktikIdx===null)return;
   var tk=taktikFilmer[editingTaktikIdx];
+  var oldSnap=tk.steps[editingStepIdx];
   var snap=currentSnap();
   var lbl=document.getElementById("edit-step-name-inp").value.trim();
   if(lbl)snap.label=lbl;
+
+  // Forward-propagate moved players to subsequent steps
+  // For each player: if their position in a later step matches
+  // the OLD position in this step, update to new position.
+  // Stop when we find a step where the player was explicitly moved.
+  for(var pi=0;pi<snap.players.length;pi++){
+    var newP=snap.players[pi];
+    var oldP=null;
+    if(oldSnap&&oldSnap.players){
+      for(var oi=0;oi<oldSnap.players.length;oi++){
+        if(oldSnap.players[oi].id===newP.id){oldP=oldSnap.players[oi];break;}
+      }
+    }
+    if(!oldP)continue;
+    var movedX=Math.abs(newP.x-oldP.x)>1;
+    var movedY=Math.abs(newP.y-oldP.y)>1;
+    if(!movedX&&!movedY)continue; // player didn’t move, skip
+
+    // Propagate to future steps
+    for(var si=editingStepIdx+1;si<tk.steps.length;si++){
+      var futureStep=tk.steps[si];
+      if(!futureStep||!futureStep.players)continue;
+      var futureP=null;
+      for(var fi=0;fi<futureStep.players.length;fi++){
+        if(futureStep.players[fi].id===newP.id){futureP=futureStep.players[fi];break;}
+      }
+      if(!futureP)continue;
+      // Check if future position matches OLD position (within 1px tolerance)
+      var sameAsOld=Math.abs(futureP.x-oldP.x)<2&&Math.abs(futureP.y-oldP.y)<2;
+      if(sameAsOld){
+        // Update to new position
+        futureP.x=newP.x;futureP.y=newP.y;
+      } else {
+        // Player was explicitly placed differently in this step - stop
+        break;
+      }
+    }
+  }
+
   tk.steps[editingStepIdx]=snap;
-  // Also sync playback
-  if(playback)playback.tk.steps[editingStepIdx]=snap;
+  if(playback)playback.tk=tk;
   showToast("Steg sparat!");
   cloudStatus("\u2705 Steg sparat","#4ae87a");
   renderEditSteps(tk);
