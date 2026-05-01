@@ -85,7 +85,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v4.5</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v4.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -93,13 +93,13 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
     <option value="5">5v5</option>
   </select>
   <button class="btn" id="btn-setup">Lag</button>
-  <button class="btn" id="btn-arrow">↗ Pil</button>
+  <button class="btn" id="btn-arrow">&#8599; Pil</button>
   <button class="btn" id="btn-text">T Text</button>
-  <button class="btn" id="btn-undo">↺</button>
-  <button class="btn" id="btn-reset">↻</button>
-  <button class="btn" id="btn-freehand">✎ Fri</button>
-  <button class="btn" id="btn-zone">□ Zon</button>
-  <button class="btn" id="btn-half">½</button>
+  <button class="btn" id="btn-undo">&#8634;</button>
+  <button class="btn" id="btn-reset">&#8635;</button>
+  <button class="btn" id="btn-freehand">&#9998; Fri</button>
+  <button class="btn" id="btn-zone">&#9633; Zon</button>
+  <button class="btn" id="btn-half">&#189;</button>
   <button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button>
 </div>
 
@@ -959,14 +959,15 @@ svg.addEventListener("touchstart",function(ev){
   if(mode==="text"){var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);pendingLabelPt=pt;setMode("move");openTextModal();return;}
   if(mode==="freehand"){ev.preventDefault();saveUndo();freehandDrawing=true;freehandCurrent={id:"fp"+(idCounter++),pts:[svgPt(ev.touches[0].clientX,ev.touches[0].clientY)],color:freehandColor,width:freehandWidth};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);return;}
   if(mode==="zone"){ev.preventDefault();saveUndo();zoneStart=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);return;}
-  selectedId=null;render();
+  // only clear selection if clicking pitch background
+  if(ev.target===svg||ev.target.tagName==="rect"&&ev.target.getAttribute("fill")&&ev.target.getAttribute("fill").indexOf("5c35")>=0){selectedId=null;render();}
 },{passive:false});
 svg.addEventListener("mousedown",function(ev){
   if(mode==="arrow"){arrowStart=svgPt(ev.clientX,ev.clientY);saveUndo();window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);return;}
   if(mode==="text"){var pt=svgPt(ev.clientX,ev.clientY);pendingLabelPt=pt;setMode("move");openTextModal();return;}
   if(mode==="freehand"){saveUndo();freehandDrawing=true;freehandCurrent={id:"fp"+(idCounter++),pts:[svgPt(ev.clientX,ev.clientY)],color:freehandColor,width:freehandWidth};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);return;}
   if(mode==="zone"){saveUndo();zoneStart=svgPt(ev.clientX,ev.clientY);window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);return;}
-  selectedId=null;render();
+  if(ev.target===svg||ev.target.tagName==="rect"&&ev.target.getAttribute("fill")&&ev.target.getAttribute("fill").indexOf("5c35")>=0){selectedId=null;render();}
 });
 
 function getPositions(f,team){var rows=f.split("-").map(Number),isHome=team==="home",yMin=isHome?330:40,yMax=isHome?560:270,allRows=[1].concat(rows),total=allRows.length,pos=[];for(var ri=0;ri<allRows.length;ri++){var count=allRows[ri],frac=isHome?1-(ri/(total-1)):ri/(total-1),y=yMin+frac*(yMax-yMin);for(var ci=0;ci<count;ci++){var xFrac=count===1?0.5:ci/(count-1);pos.push({x:40+xFrac*(W-80),y:y});}}return pos;}
@@ -1106,8 +1107,7 @@ document.getElementById("btn-reset").addEventListener("click",function(){initPla
 var clearBtn=document.createElement("button");
 clearBtn.className="btn";
 clearBtn.title="Rensa pilar, frihand och zoner";
-clearBtn.textContent="⎚";  // eraser-like
-clearBtn.style.fontSize="0.9rem";
+clearBtn.textContent="Rensa";
 clearBtn.addEventListener("click",function(){
   saveUndo();arrows=[];labels=[];freehandPaths=[];zones=[];render();
   showToast("Ritningar rensade!");
