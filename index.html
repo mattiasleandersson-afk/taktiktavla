@@ -1059,7 +1059,7 @@ document.getElementById("btn-stop-play").addEventListener("click",stopPlayback);
 document.getElementById("btn-edit-update-step2").addEventListener("click",function(){
   if(editingTaktikIdx===null)return;
   var tk=taktikFilmer[editingTaktikIdx];
-  var oldSnap=tk.steps[editingStepIdx];
+  var oldSnap=JSON.parse(JSON.stringify(tk.steps[editingStepIdx]));
   var snap=currentSnap();
   var lbl=document.getElementById("edit-step-name-inp").value.trim();
   if(lbl)snap.label=lbl;
