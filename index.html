@@ -54,6 +54,72 @@ select.btn { appearance: none; padding-right: 18px; background-image: url("data:
 .pitch-label-txt { fill: #fff; font-family: Arial Narrow, Arial, sans-serif; font-weight: 700; dominant-baseline: central; text-anchor: middle; pointer-events: none; }
 .del-circ { fill: #e84a4a; stroke: #fff; stroke-width: 1.5; cursor: pointer; }
 .del-txt { fill: #fff; font-size: 13px; font-weight: bold; dominant-baseline: central; text-anchor: middle; pointer-events: none; }
+/* &#9472;&#9472; LANDSCAPE MODE &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; */
+body.landscape #topbar { display: none !important; }
+body.landscape #bottompanel { display: none !important; }
+body.landscape #panel-toggle-strip { display: none !important; }
+body.landscape #taktikbar { display: none !important; }
+body.landscape #rec-badge { display: none !important; }
+body.landscape #mode-badge { display: none !important; }
+body.landscape #landscape-strip { display: flex !important; }
+
+#landscape-strip {
+display: none;
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+background: rgba(10,26,13,0.92);
+border-top: 1px solid #2d4a35;
+padding: 6px 16px;
+padding-bottom: max(6px, env(safe-area-inset-bottom));
+align-items: center;
+justify-content: center;
+gap: 16px;
+z-index: 50;
+}
+#landscape-strip .ls-btn {
+background: transparent;
+border: 1px solid #2d4a35;
+border-radius: 6px;
+color: #7aaa88;
+padding: 6px 20px;
+font-size: 1.1rem;
+cursor: pointer;
+font-family: Arial Narrow, Arial, sans-serif;
+}
+#landscape-strip .ls-btn.active { color: #4ae87a; border-color: #4ae87a; }
+#landscape-strip #ls-step-label {
+color: #4ae87a;
+font-weight: 700;
+font-size: 0.85rem;
+text-transform: uppercase;
+min-width: 80px;
+text-align: center;
+}
+
+/* Rotate pitch wrapper in landscape */
+body.landscape #pitch-wrapper {
+position: fixed;
+inset: 0;
+z-index: 40;
+background: #0e1710;
+}
+body.landscape #pitch-svg {
+transform: rotate(-90deg);
+transform-origin: center center;
+max-width: none !important;
+max-height: none !important;
+width: 100vh !important;
+height: 100vw !important;
+}
+/* Counter-rotate player numbers so they stay upright */
+body.landscape .token-text {
+transform: rotate(90deg);
+transform-box: fill-box;
+transform-origin: center;
+}
+
 .toast-msg { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: #4ae87a; color: #0a1a0d; padding: 5px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; white-space: nowrap; }
 .toast-msg.show { opacity: 1; }
 .zone-shape { cursor: move; }
@@ -85,7 +151,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v4.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v4.8</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -431,6 +497,12 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
       <button class="btn" id="merge-taktik-cancel">Avbryt</button>
     </div>
   </div>
+</div>
+
+<div id="landscape-strip">
+  <button class="ls-btn" id="ls-prev-btn" style="opacity:0.3">&#9664;</button>
+  <span id="ls-step-label">&#9917;</span>
+  <button class="ls-btn" id="ls-next-btn" style="opacity:0.3">&#9654;</button>
 </div>
 
 <script>
@@ -1526,6 +1598,7 @@ function updatePlaybar(){
   document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";
   document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";
   renderPlayStepList();
+  updateLandscapeStrip();
 }
 function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";var rLabel=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);lbl.textContent=rLabel;var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
 function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var tk2=editingTaktikIdx!==null?taktikFilmer[editingTaktikIdx]:playback.tk;var target=tk2.steps[targetIdx],fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};}),fromBall={x:ball.x,y:ball.y},start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed),ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){players[i].x=fp.x+(tp2.x-fp.x)*ease;players[i].y=fp.y+(tp2.y-fp.y)*ease;}var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}if(tx){tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);}}}ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}}animFrame=requestAnimationFrame(frame);}
@@ -1622,8 +1695,66 @@ function checkShareLink(){
   }).catch(function(){});
 }
 
+// \u2500\u2500 LANDSCAPE / ORIENTATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function handleOrientation(){
+  var isLandscape = window.innerWidth > window.innerHeight;
+  document.body.classList.toggle("landscape", isLandscape);
+  if(isLandscape){
+    // Update landscape strip
+    updateLandscapeStrip();
+  }
+}
+
+function updateLandscapeStrip(){
+  var label = document.getElementById("ls-step-label");
+  var prevBtn = document.getElementById("ls-prev-btn");
+  var nextBtn = document.getElementById("ls-next-btn");
+  if(!label) return;
+  if(playback){
+    var cur = playback.stepIndex;
+    var total = playback.tk.steps.length - 1;
+    label.textContent = (cur===0?"Start":cur+"/"+total) + " \u2013 " + playback.tk.name;
+    prevBtn.style.opacity = cur > 0 ? "1" : "0.3";
+    nextBtn.style.opacity = cur < total ? "1" : "0.3";
+    prevBtn.classList.toggle("active", cur > 0);
+    nextBtn.classList.toggle("active", cur < total);
+  } else {
+    label.innerHTML = "&#9917;";
+    prevBtn.style.opacity = "0.3";
+    nextBtn.style.opacity = "0.3";
+    prevBtn.classList.remove("active");
+    nextBtn.classList.remove("active");
+  }
+}
+
+document.getElementById("ls-prev-btn").addEventListener("click", function(){
+  if(!playback || playback.animating) return;
+  if(playback.stepIndex <= 0) return;
+  var idx = playback.stepIndex - 1;
+  editingStepIdx = idx;
+  animateToStep(idx);
+  updateEditStepUI_silent();
+  setTimeout(updateLandscapeStrip, 100);
+});
+
+document.getElementById("ls-next-btn").addEventListener("click", function(){
+  if(!playback || playback.animating) return;
+  if(playback.stepIndex >= playback.tk.steps.length - 1) return;
+  var idx = playback.stepIndex + 1;
+  editingStepIdx = idx;
+  animateToStep(idx);
+  updateEditStepUI_silent();
+  setTimeout(updateLandscapeStrip, 100);
+});
+
+window.addEventListener("resize", function(){ handleOrientation(); });
+window.addEventListener("orientationchange", function(){
+  setTimeout(handleOrientation, 300);
+});
+
 // Init
 drawPitch();
+handleOrientation();
 buildFormationBtns();
 initPlayers("4-4-2");
 render();
