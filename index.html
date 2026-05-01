@@ -85,7 +85,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v4.1</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v4.2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -978,7 +978,26 @@ function clearDrawings(){
   render();
 }
 
-function setMode(m){mode=m;document.getElementById("btn-arrow").classList.toggle("on",m==="arrow");document.getElementById("btn-text").classList.toggle("on",m==="text");svg.style.cursor=m==="arrow"?"crosshair":m==="text"?"text":"default";var badge=document.getElementById("mode-badge");if(m==="arrow"){badge.style.display="block";badge.style.background="#2a4a8a";badge.style.color="#9ac4ff";badge.textContent="Dra f\u00f6r att rita pil";}else if(m==="text"){badge.style.display="block";badge.style.background="#4ae87a";badge.style.color="#0a1a0d";badge.textContent="Tryck p\u00e5 planen";}else badge.style.display="none";}
+function setMode(m){
+  mode=m;
+  document.getElementById("btn-arrow").classList.toggle("on",m==="arrow");
+  document.getElementById("btn-text").classList.toggle("on",m==="text");
+  document.getElementById("btn-freehand").classList.toggle("on",m==="freehand");
+  document.getElementById("btn-zone").classList.toggle("on",m==="zone");
+  svg.style.cursor=m==="arrow"||m==="freehand"||m==="zone"?"crosshair":m==="text"?"text":"default";
+  var badge=document.getElementById("mode-badge");
+  var ao=document.getElementById("arrow-options");
+  var zo=document.getElementById("zone-options");
+  var fo=document.getElementById("freehand-options");
+  if(ao)ao.style.display=m==="arrow"?"flex":"none";
+  if(zo)zo.style.display=m==="zone"?"flex":"none";
+  if(fo)fo.style.display=m==="freehand"?"flex":"none";
+  if(m==="arrow"){badge.style.display="block";badge.style.background="#2a4a8a";badge.style.color="#9ac4ff";badge.textContent="Dra f\u00f6r att rita pil";}
+  else if(m==="text"){badge.style.display="block";badge.style.background="#4ae87a";badge.style.color="#0a1a0d";badge.textContent="Tryck p\u00e5 planen";}
+  else if(m==="freehand"){badge.style.display="block";badge.style.background="#8b4ae8";badge.style.color="#fff";badge.textContent="Rita fritt";}
+  else if(m==="zone"){badge.style.display="block";badge.style.background="#e87a4a";badge.style.color="#fff";badge.textContent="Dra f\u00f6r att rita zon";}
+  else badge.style.display="none";
+}
 function buildFormationBtns(){var c=document.getElementById("formation-btns");c.innerHTML="";var list=FORMATIONS[format]||FORMATIONS[11];for(var i=0;i<list.length;i++){(function(f){var b=document.createElement("button");b.className="btn";b.textContent=f;b.style.flexShrink="0";b.addEventListener("click",function(){document.querySelectorAll("#formation-btns .btn").forEach(function(x){x.classList.remove("on");});b.classList.add("on");initPlayers(f);render();});c.appendChild(b);})(list[i]);}if(c.firstChild)c.firstChild.classList.add("on");}
 function openSetup(){document.getElementById("home-color").value=homeColor;document.getElementById("away-color").value=awayColor;document.querySelectorAll("[data-dm]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-dm")===displayMode);});buildSetupTeam("home");buildSetupTeam("away");document.getElementById("modal-setup").classList.remove("hidden");}
 function buildSetupTeam(team){var c=document.getElementById("setup-"+team),tp=players.filter(function(p){return p.team===team;}),color=team==="home"?homeColor:awayColor;var html="<div style='display:flex;align-items:center;gap:8px;margin-bottom:8px'><span class='dot' id='dot-"+team+"' style='background:"+color+"'></span><span style='font-size:0.78rem;color:#7aaa88;text-transform:uppercase;letter-spacing:0.5px;flex:1'>"+(team==="home"?"Hemmalag":"Bortalag")+"</span><button class='btn' onclick='removePlayer(\""+team+"\")' style='padding:3px 9px'>&#8722;</button><span style='font-weight:900;font-size:1rem;color:#4ae87a;min-width:20px;text-align:center'>"+tp.length+"</span><button class='btn' onclick='addPlayer(\""+team+"\")' style='padding:3px 9px'>+</button></div><div class='num-grid'>";for(var i=0;i<tp.length;i++){var p=tp[i];html+="<div class='num-cell'><span>"+(i===0?"MV":"#"+i)+"</span><input type='number' data-pid='"+p.id+"' value='"+p.number+"' min='1' max='99'><input type='text' data-name='"+p.id+"' value='"+p.name+"' placeholder='Namn' style='background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.78rem;width:100%'></div>";}html+="</div>";c.innerHTML=html;}
