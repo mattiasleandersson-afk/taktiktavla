@@ -62,20 +62,75 @@ body.landscape #panel-toggle-strip { display: none !important; }
 body.landscape #taktikbar { display: none !important; }
 body.landscape #rec-badge { display: none !important; }
 body.landscape #mode-badge { display: none !important; }
-body.landscape #ls-prev-side { display: block !important; }
-body.landscape #ls-next-side { display: block !important; }
+body.landscape #ls-prev-side { display: flex !important; }
+body.landscape #ls-next-side { display: flex !important; }
 body.landscape #ls-title-top { display: block !important; }
 
+/* Side panels sit just inside the pitch wrapper */
+#ls-prev-side, #ls-next-side {
+position: fixed;
+top: 50%;
+transform: translateY(-50%);
+z-index: 51;
+flex-direction: column;
+align-items: center;
+gap: 12px;
+}
+#ls-prev-side { left: 0; padding: 0 6px 0 max(4px,env(safe-area-inset-left)); }
+#ls-next-side { right: 0; padding: 0 max(4px,env(safe-area-inset-right)) 0 6px; }
+
+#ls-title-top {
+position: fixed;
+top: max(4px,env(safe-area-inset-top));
+left: 0; right: 0;
+z-index: 51;
+text-align: center;
+padding: 3px 80px;
+pointer-events: none;
+}
+
 .ls-btn {
-background: rgba(10,26,13,0.7);
+background: rgba(10,26,13,0.85);
 border: 1px solid #2d4a35;
-border-radius: 6px;
+border-radius: 8px;
 color: #7aaa88;
 cursor: pointer;
 font-family: Arial Narrow, Arial, sans-serif;
 touch-action: manipulation;
+padding: 12px 10px;
+font-size: 1.1rem;
+min-width: 36px;
+text-align: center;
 }
 .ls-btn.active { color: #4ae87a; border-color: #4ae87a; }
+.ls-btn:disabled { opacity: 0.3; }
+.ls-select {
+background: rgba(10,26,13,0.85);
+border: 1px solid #2d4a35;
+border-radius: 6px;
+color: #7aaa88;
+font-family: Arial Narrow, Arial, sans-serif;
+font-size: 0.68rem;
+padding: 4px 4px;
+width: 36px;
+text-align: center;
+writing-mode: horizontal-tb;
+}
+.ls-label {
+display: flex;
+align-items: center;
+gap: 4px;
+font-size: 0.65rem;
+color: #7aaa88;
+font-family: Arial Narrow, Arial, sans-serif;
+cursor: pointer;
+background: rgba(10,26,13,0.85);
+border: 1px solid #2d4a35;
+border-radius: 6px;
+padding: 6px 4px;
+writing-mode: vertical-rl;
+text-orientation: mixed;
+}
 
 /* Rotate pitch wrapper in landscape */
 body.landscape #pitch-wrapper {
@@ -124,7 +179,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v5.0</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v5.1</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -472,16 +527,23 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   </div>
 </div>
 
-<!-- Landscape nav - buttons on sides, title on top -->
+<!-- Landscape nav -->
 
-<div id="ls-prev-side" style="display:none;position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:51;padding:8px 4px;">
-  <button class="ls-btn" id="ls-prev-btn" style="opacity:0.3;writing-mode:vertical-rl;padding:20px 8px;font-size:1.3rem">&#9664;</button>
+<div id="ls-prev-side" style="display:none">
+  <button class="ls-btn" id="ls-first-btn" title="Till start">&#9646;&#9664;</button>
+  <button class="ls-btn" id="ls-prev-btn">&#9664;</button>
 </div>
-<div id="ls-next-side" style="display:none;position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:51;padding:8px 4px;">
-  <button class="ls-btn" id="ls-next-btn" style="opacity:0.3;writing-mode:vertical-rl;padding:20px 8px;font-size:1.3rem">&#9654;</button>
+<div id="ls-next-side" style="display:none">
+  <button class="ls-btn" id="ls-next-btn">&#9654;</button>
+  <select class="ls-select" id="ls-speed-sel">
+    <option value="1200">S</option>
+    <option value="600" selected>N</option>
+    <option value="300">F</option>
+  </select>
+  <label class="ls-label"><input type="checkbox" id="ls-loop" style="width:12px;height:12px"> Loop</label>
 </div>
-<div id="ls-title-top" style="display:none;position:fixed;top:0;left:0;right:0;z-index:51;text-align:center;padding:4px 60px;">
-  <span id="ls-step-label" style="color:#4ae87a;font-weight:700;font-size:0.8rem;text-transform:uppercase;font-family:Arial Narrow,Arial,sans-serif">-</span>
+<div id="ls-title-top" style="display:none">
+  <span id="ls-step-label" style="color:#4ae87a;font-weight:700;font-size:0.78rem;text-transform:uppercase;font-family:Arial Narrow,Arial,sans-serif;letter-spacing:0.5px">-</span>
 </div>
 
 <script>
@@ -1688,24 +1750,33 @@ function updateLandscapeStrip(){
   var label = document.getElementById("ls-step-label");
   var prevBtn = document.getElementById("ls-prev-btn");
   var nextBtn = document.getElementById("ls-next-btn");
+  var firstBtn = document.getElementById("ls-first-btn");
   if(!label) return;
   if(playback){
     var cur = playback.stepIndex;
     var total = playback.tk.steps.length - 1;
-    label.textContent = (cur===0?"Start":cur+"/"+total) + " \u2013 " + playback.tk.name;
-    prevBtn.style.opacity = cur > 0 ? "1" : "0.3";
-    nextBtn.style.opacity = cur < total ? "1" : "0.3";
-    prevBtn.classList.toggle("active", cur > 0);
-    nextBtn.classList.toggle("active", cur < total);
+    label.textContent = playback.tk.name + "  " + (cur===0?"Start":cur+"/"+total);
+    var hasPrev = cur > 0;
+    var hasNext = cur < total;
+    prevBtn.disabled = !hasPrev;
+    nextBtn.disabled = !hasNext;
+    firstBtn.disabled = cur === 0;
+    prevBtn.classList.toggle("active", hasPrev);
+    nextBtn.classList.toggle("active", hasNext);
   } else {
-    label.textContent = "Ingen film";
-    prevBtn.style.opacity = "0.3";
-    nextBtn.style.opacity = "0.3";
+    label.textContent = "-";
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    firstBtn.disabled = true;
     prevBtn.classList.remove("active");
     nextBtn.classList.remove("active");
   }
 }
 
+document.getElementById("ls-first-btn").addEventListener("click", function(){
+  document.getElementById("btn-first").click();
+  setTimeout(updateLandscapeStrip, 100);
+});
 document.getElementById("ls-prev-btn").addEventListener("click", function(){
   if(!playback || playback.animating) return;
   if(playback.stepIndex <= 0) return;
@@ -1715,7 +1786,6 @@ document.getElementById("ls-prev-btn").addEventListener("click", function(){
   updateEditStepUI_silent();
   setTimeout(updateLandscapeStrip, 100);
 });
-
 document.getElementById("ls-next-btn").addEventListener("click", function(){
   if(!playback || playback.animating) return;
   if(playback.stepIndex >= playback.tk.steps.length - 1) return;
@@ -1724,6 +1794,13 @@ document.getElementById("ls-next-btn").addEventListener("click", function(){
   animateToStep(idx);
   updateEditStepUI_silent();
   setTimeout(updateLandscapeStrip, 100);
+});
+document.getElementById("ls-speed-sel").addEventListener("change", function(){
+  animSpeed = parseInt(this.value);
+  document.getElementById("play-speed").value = this.value;
+});
+document.getElementById("ls-loop").addEventListener("change", function(){
+  document.getElementById("play-loop").checked = this.checked;
 });
 
 var _orientTimer=null;
