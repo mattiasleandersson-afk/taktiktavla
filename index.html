@@ -80,7 +80,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.4</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.5</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1103,7 +1103,11 @@ document.getElementById("btn-edit-update-step2").addEventListener("click",functi
   }
 
   tk.steps[editingStepIdx]=snap;
-  if(playback)playback.tk=tk;
+  if(playback)playback.tk=taktikFilmer[editingTaktikIdx];
+  var msg="Steg "+editingStepIdx+" sparat. ";
+  var changed=0;
+  for(var dbsi=editingStepIdx+1;dbsi<tk.steps.length;dbsi++){msg+="Steg "+dbsi+": ";for(var dbpi=0;dbpi<snap.players.length;dbpi++){var dbfp=tk.steps[dbsi].players[dbpi];if(dbfp)msg+=dbfp.x.toFixed(0)+","+dbfp.y.toFixed(0)+" ";}msg+="| ";}
+  alert(msg.substring(0,300));
   showToast("Steg sparat!");
   cloudStatus("\u2705 Steg sparat","#4ae87a");
   renderEditSteps(tk);
