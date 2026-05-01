@@ -11,7 +11,7 @@
 <title>Taktiktavla</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: Arial Narrow, Arial, sans-serif; background: #111a14; color: #edf5ee; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; touch-action: none; user-select: none; }
+body { font-family: Arial Narrow, Arial, sans-serif; background: #111a14; color: #edf5ee; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; touch-action: none; user-select: none; padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
 #topbar { display: flex; align-items: center; gap: 5px; padding: 6px 10px; padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); background: #1e2e22; border-bottom: 1px solid #2d4a35; flex-shrink: 0; flex-wrap: wrap; max-height: 25vh; overflow-y: auto; }
 #topbar h1 { font-weight: 900; font-size: 1.05rem; color: #4ae87a; text-transform: uppercase; letter-spacing: 1px; margin-right: 2px; }
 .btn { font-family: Arial Narrow, Arial, sans-serif; font-weight: 700; font-size: 0.74rem; letter-spacing: 0.5px; text-transform: uppercase; background: #111a14; color: #edf5ee; border: 1px solid #2d4a35; border-radius: 6px; padding: 5px 9px; cursor: pointer; white-space: nowrap; }
@@ -22,8 +22,6 @@ select.btn { appearance: none; padding-right: 18px; background-image: url("data:
 #pitch-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #0e1710; position: relative; }
 #pitch-svg { touch-action: none; display: block; max-width: 100%; max-height: 100%; }
 #mode-badge { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); padding: 4px 14px; border-radius: 20px; font-size: 0.73rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; pointer-events: none; display: none; }
-#playbar { display: none; background: #0a1a0d; border-top: 2px solid #4ae87a; padding: 8px 12px; flex-shrink: 0; flex-wrap: wrap; gap: 6px; align-items: center; max-height: 20vh; overflow-y: auto; }
-#playbar.active { display: flex; }
 #play-title { color: #4ae87a; font-weight: 700; font-size: 0.88rem; text-transform: uppercase; flex: 1; min-width: 80px; }
 #bottompanel { background: #1e2e22; border-top: 1px solid #2d4a35; padding: 8px 10px; flex-shrink: 0; max-height: 38vh; overflow-y: auto; }
 #bottompanel.hidden { display: none; }
@@ -76,50 +74,13 @@ input[type=color].minput { padding: 2px 4px; height: 34px; width: 56px; cursor: 
 .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 2px solid rgba(255,255,255,0.2); }
 hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
-@media (orientation: landscape) {
-  #topbar { padding: 3px 8px; gap: 4px; max-height: 15vh; }
-  #topbar h1 { font-size: 0.9rem; }
-  .btn { padding: 3px 7px; font-size: 0.68rem; }
-  #bottompanel { max-height: 30vh; padding: 5px 8px; }
-  .tabs { margin-bottom: 4px; }
-  .list { max-height: 60px; }
-  #panel-toggle-strip button { padding: 1px 24px; }
-  #landscape-bar { display: flex !important; }
-  #playbar { padding: 5px 10px; }
-}
-@media (orientation: portrait) {
-  #landscape-bar { display: none !important; }
-}
-#landscape-bar {
-  display: none;
-  background: #0e1710;
-  border-top: 1px solid #2d4a35;
-  align-items: center;
-  justify-content: space-between;
-  padding: 3px max(12px,env(safe-area-inset-right)) 3px max(12px,env(safe-area-inset-left));
-  flex-shrink: 0;
-  gap: 8px;
-}
-#landscape-bar .lbtn {
-  background: transparent;
-  border: 1px solid #2d4a35;
-  border-radius: 4px;
-  color: #7aaa88;
-  padding: 2px 10px;
-  font-size: 0.72rem;
-  cursor: pointer;
-  font-family: Arial Narrow, Arial, sans-serif;
-  font-weight: 700;
-}
-#landscape-bar .lbtn.on { color: #4ae87a; border-color: #4ae87a; }
-#landscape-play { display: flex; align-items: center; gap: 6px; }
 </style>
 </head>
 <body>
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.3</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.4</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -142,34 +103,24 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <div class="rec-badge" id="rec-badge">&#9679; Spelar in</div>
 </div>
 
-<div id="playbar">
-  <div id="play-title">-</div>
-  <div style="display:flex;gap:6px;align-items:center">
-    <button class="btn" id="btn-prev" style="font-size:1rem;padding:5px 12px">&#9664;</button>
-    <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.85rem">0/0</span>
-    <button class="btn" id="btn-next" style="font-size:1rem;padding:5px 12px">&#9654;</button>
-  </div>
-  <select class="btn" id="play-speed">
+<!-- COMBINED TAKTIK BAR (edit + play merged) -->
+<div id="taktikbar" style="display:none;background:#0a1a0d;border-top:2px solid #4ae87a;padding:7px 12px;flex-shrink:0;flex-wrap:wrap;gap:5px;align-items:center">
+  <span id="taktikbar-title" style="color:#4ae87a;font-weight:700;font-size:0.82rem;text-transform:uppercase;flex:1;min-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+  <button class="btn" id="btn-prev" style="font-size:1rem;padding:4px 11px">&#9664;</button>
+  <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.82rem;min-width:52px;text-align:center">Start</span>
+  <button class="btn" id="btn-next" style="font-size:1rem;padding:4px 11px">&#9654;</button>
+  <select class="btn" id="play-speed" style="padding:4px 16px 4px 6px;font-size:0.7rem">
     <option value="1200">Sakta</option>
     <option value="600" selected>Normal</option>
     <option value="300">Snabb</option>
   </select>
-  <label style="display:flex;align-items:center;gap:4px;font-size:0.74rem;color:#7aaa88;cursor:pointer">
-    <input type="checkbox" id="play-loop"> Loop
-  </label>
-  <button class="btn danger" id="btn-stop-play">&#10005;</button>
+  <label style="display:flex;align-items:center;gap:3px;font-size:0.72rem;color:#7aaa88;cursor:pointer"><input type="checkbox" id="play-loop"> Loop</label>
+  <button class="btn on" id="btn-edit-update-step2" style="padding:4px 8px;font-size:0.72rem">&#10003; Spara steg</button>
+  <button class="btn" id="btn-taktikbar-save" style="padding:4px 8px;font-size:0.72rem;color:#4ae87a;border-color:#4ae87a">Spara film</button>
+  <button class="btn danger" id="btn-stop-play" style="padding:4px 8px;font-size:0.72rem">&#10005;</button>
 </div>
 
 <button id="panel-show-btn">&#9650; Meny</button>
-<div id="landscape-bar">
-  <button class="lbtn" id="ls-topbar-toggle">&#9650; Menu</button>
-  <div id="landscape-play">
-    <button class="lbtn" id="ls-prev" style="opacity:0.3">&#9664;</button>
-    <span id="ls-counter" style="font-size:0.72rem;color:#7aaa88;min-width:50px;text-align:center">&#9917;</span>
-    <button class="lbtn" id="ls-next" style="opacity:0.3">&#9654;</button>
-  </div>
-  <button class="lbtn" id="ls-panel-toggle">&#9660; Panel</button>
-</div>
 <div id="panel-toggle-strip" style="background:#1e2e22;border-top:1px solid #2d4a35;display:flex;justify-content:center;flex-shrink:0;">
   <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 24px;font-size:0.72rem;cursor:pointer;width:100%">&#9660;</button>
 </div>
@@ -739,25 +690,7 @@ function drawPitch(){
   for(var ci=0;ci<corners.length;ci++){var cx=corners[ci][0],cy=corners[ci][1],s1=corners[ci][2]*Math.PI/180,e1=corners[ci][3]*Math.PI/180,r=10;svg.appendChild(se("path",{d:"M"+(cx+r*Math.cos(s1))+","+(cy+r*Math.sin(s1))+" A"+r+","+r+" 0 0,1 "+(cx+r*Math.cos(e1))+","+(cy+r*Math.sin(e1))}));}
 }
 
-var isLandscape=false;
 function updateViewBox(){
-  isLandscape=window.innerWidth>window.innerHeight;
-  var wrapper=document.getElementById("pitch-wrapper");
-  if(isLandscape){
-    // Rotate the SVG so pitch lies on its side filling landscape
-    svg.style.transform="rotate(-90deg)";
-    svg.style.transformOrigin="center center";
-    svg.style.maxWidth="none";
-    svg.style.maxHeight="none";
-    svg.style.height="100%";
-    svg.style.width="auto";
-  } else {
-    svg.style.transform="";
-    svg.style.maxWidth="100%";
-    svg.style.maxHeight="100%";
-    svg.style.height="";
-    svg.style.width="";
-  }
   if(halfMode===1) svg.setAttribute("viewBox","0 280 400 320");
   else if(halfMode===2) svg.setAttribute("viewBox","0 0 400 320");
   else svg.setAttribute("viewBox","0 0 400 600");
@@ -769,21 +702,12 @@ function render(){
   for(var i=0;i<arrows.length;i++){(function(a){var g=document.createElementNS(ns,"g");g.setAttribute("class","arrow-g");var vis=document.createElementNS(ns,"line");vis.setAttribute("class","arrow-vis");vis.setAttribute("x1",a.x1);vis.setAttribute("y1",a.y1);vis.setAttribute("x2",a.x2);vis.setAttribute("y2",a.y2);var hit=document.createElementNS(ns,"line");hit.setAttribute("class","arrow-hit");hit.setAttribute("x1",a.x1);hit.setAttribute("y1",a.y1);hit.setAttribute("x2",a.x2);hit.setAttribute("y2",a.y2);g.appendChild(vis);g.appendChild(hit);svg.appendChild(g);function selectArrow(ev){ev.stopPropagation();selectedId=a.id;render();}hit.addEventListener("touchstart",function(ev){ev.preventDefault();selectArrow(ev);},{passive:false});hit.addEventListener("mousedown",selectArrow);if(selectedId===a.id){var mx=(a.x1+a.x2)/2,my=(a.y1+a.y2)/2;var dg=document.createElementNS(ns,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";var dc=document.createElementNS(ns,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",mx);dc.setAttribute("cy",my);dc.setAttribute("r",11);var dt=document.createElementNS(ns,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",mx);dt.setAttribute("y",my);dt.textContent="\u00d7";dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);function delArrow(ev){ev.stopPropagation();ev.preventDefault();saveUndo();arrows=arrows.filter(function(x){return x.id!==a.id;});selectedId=null;render();}dg.addEventListener("touchstart",delArrow,{passive:false});dg.addEventListener("mousedown",delArrow);};})(arrows[i]);}
   if(mode==="arrow"&&arrowStart&&arrowCurrent){var pg=document.createElementNS(ns,"line");pg.setAttribute("class","preview-arrow");pg.setAttribute("x1",arrowStart.x);pg.setAttribute("y1",arrowStart.y);pg.setAttribute("x2",arrowCurrent.x);pg.setAttribute("y2",arrowCurrent.y);pg.setAttribute("stroke","#ffdd44");pg.setAttribute("stroke-width","3");pg.setAttribute("stroke-dasharray","6 4");pg.setAttribute("stroke-linecap","round");pg.setAttribute("fill","none");pg.setAttribute("marker-end","url(#arrowhead)");pg.style.pointerEvents="none";svg.appendChild(pg);}
   for(var i=0;i<labels.length;i++){(function(l){var fs=l.size||13,tw=l.text.length*(fs*0.55)+12,th=fs+10;var g=document.createElementNS(ns,"g");g.setAttribute("class","label-g pitch-label");var bg=document.createElementNS(ns,"rect");bg.setAttribute("class","pitch-label-bg");bg.setAttribute("rx","4");bg.setAttribute("x",l.x-tw/2);bg.setAttribute("y",l.y-th/2);bg.setAttribute("width",tw);bg.setAttribute("height",th);var tx=document.createElementNS(ns,"text");tx.setAttribute("class","pitch-label-txt");tx.setAttribute("x",l.x);tx.setAttribute("y",l.y);tx.setAttribute("font-size",fs);tx.textContent=l.text;g.appendChild(bg);g.appendChild(tx);svg.appendChild(g);if(selectedId===l.id){var dg=document.createElementNS(ns,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";var dc=document.createElementNS(ns,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",l.x+tw/2-2);dc.setAttribute("cy",l.y-th/2-2);dc.setAttribute("r",9);var dt=document.createElementNS(ns,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",l.x+tw/2-2);dt.setAttribute("y",l.y-th/2-2);dt.textContent="\u00d7";dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);function delLabel(ev){ev.stopPropagation();ev.preventDefault();saveUndo();labels=labels.filter(function(x){return x.id!==l.id;});selectedId=null;render();}dg.addEventListener("touchstart",delLabel,{passive:false});dg.addEventListener("mousedown",delLabel);}function startLabelDrag(cx,cy){if(mode!=="move")return;dragging={type:"label",id:l.id,ox:l.x-cx,oy:l.y-cy};}g.addEventListener("touchstart",function(ev){ev.stopPropagation();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);if(selectedId===l.id){openEditLabel(l);selectedId=null;return;}selectedId=l.id;startLabelDrag(pt.x,pt.y);window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});g.addEventListener("mousedown",function(ev){ev.stopPropagation();var pt=svgPt(ev.clientX,ev.clientY);if(selectedId===l.id){openEditLabel(l);selectedId=null;return;}selectedId=l.id;startLabelDrag(pt.x,pt.y);window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});})(labels[i]);}
-  for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);c.setAttribute("fill",p.team==="home"?homeColor:awayColor);c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill",p.team==="home"?"#111":"#fff");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);svg.appendChild(g);if(!playback||isEditingTaktik){g.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});g.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});}})(players[i]);}
+  for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);c.setAttribute("fill",p.team==="home"?homeColor:awayColor);c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill",p.team==="home"?"#111":"#fff");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);svg.appendChild(g);if(true){g.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});g.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});}})(players[i]);}
   var bg=document.createElementNS(ns,"g");bg.setAttribute("class","ball-token");var bhit=document.createElementNS(ns,"circle");bhit.setAttribute("cx",ball.x);bhit.setAttribute("cy",ball.y);bhit.setAttribute("r",18);bhit.setAttribute("fill","transparent");var bt=document.createElementNS(ns,"text");bt.setAttribute("class","ball-text");bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);bt.textContent="\u26bd";bg.appendChild(bhit);bg.appendChild(bt);svg.appendChild(bg);
-  if(!playback||isEditingTaktik){bg.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});bg.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});}
+  if(true){bg.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});bg.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});}
 }
 
-function svgPt(cx,cy){
-  var r=svg.getBoundingClientRect();
-  if(isLandscape){
-    // SVG is rotated -90deg: swap and invert axes
-    var px=(cy-r.top)/r.height;   // becomes x in SVG space
-    var py=1-(cx-r.left)/r.width; // becomes y in SVG space
-    return{x:px*W,y:py*H};
-  }
-  return{x:(cx-r.left)/r.width*W,y:(cy-r.top)/r.height*H};
-}
+function svgPt(cx,cy){var r=svg.getBoundingClientRect();return{x:(cx-r.left)/r.width*W,y:(cy-r.top)/r.height*H};}
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
 function moveDrag(nx,ny){nx=clamp(nx,10,W-10);ny=clamp(ny,10,H-10);if(!dragging)return;if(dragging.type==="ball"){ball.x=nx;ball.y=ny;var bg=svg.querySelector(".ball-token");if(bg){var t=bg.querySelector("text"),h=bg.querySelector("circle");if(t){t.setAttribute("x",nx);t.setAttribute("y",ny);}if(h){h.setAttribute("cx",nx);h.setAttribute("cy",ny);}}}else if(dragging.type==="player"){for(var i=0;i<players.length;i++)if(players[i].id===dragging.id){players[i].x=nx;players[i].y=ny;break;}var g=svg.querySelector(".player-token[data-id='"+dragging.id+"']");if(g){var c=g.querySelector("circle"),t=g.querySelector("text");if(c){c.setAttribute("cx",nx);c.setAttribute("cy",ny);}if(t){t.setAttribute("x",nx);t.setAttribute("y",ny);}}}else if(dragging.type==="label"){for(var i=0;i<labels.length;i++)if(labels[i].id===dragging.id){labels[i].x=nx;labels[i].y=ny;break;}}}
 function onTM(ev){ev.preventDefault();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);if(dragging)moveDrag(pt.x+(dragging.ox||0),pt.y+(dragging.oy||0));if(mode==="arrow"&&arrowStart){arrowCurrent=pt;render();}}
@@ -927,8 +851,8 @@ function renderTaktikList(){
       var row=document.createElement("div");row.className="row";
       var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;
       var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.folder||"Allm\u00e4nt")+" \u00b7 "+(tk.steps.length-1)+" steg";
-      var pb=document.createElement("button");pb.className="sa play";pb.textContent="\u25ba Spela";pb.addEventListener("click",function(){startPlayback(idx);});
-      var ed=document.createElement("button");ed.className="sa";ed.style.cssText="color:#e8c84a;border-color:#e8c84a";ed.textContent="\u270f";ed.title="Redigera";ed.addEventListener("click",function(){openEditTaktik(idx);});
+      var pb=document.createElement("button");pb.className="sa play";pb.textContent="\u25ba \u00d6ppna";pb.addEventListener("click",function(){startPlayback(idx);});
+
       var dup=document.createElement("button");dup.className="sa";dup.style.cssText="color:#4ae8e8;border-color:#4ae8e8";dup.textContent="Kopiera";dup.addEventListener("click",function(){duplicateTaktik(idx);});
       var mg=document.createElement("button");mg.className="sa";mg.style.cssText="color:#a78bfa;border-color:#a78bfa";mg.textContent="\u22d3";mg.title="Sammanfoga";mg.addEventListener("click",function(){openMergeTaktik(idx);});
       var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";
@@ -1092,13 +1016,105 @@ document.getElementById("merge-taktik-cancel").addEventListener("click",function
 document.getElementById("btn-new-taktik").addEventListener("click",function(){document.getElementById("taktik-name-inp").value="";document.getElementById("modal-new-taktik").classList.remove("hidden");});
 document.getElementById("new-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-new-taktik").classList.add("hidden");});
 document.getElementById("new-taktik-ok").addEventListener("click",function(){var name=document.getElementById("taktik-name-inp").value.trim();if(!name)return;document.getElementById("modal-new-taktik").classList.add("hidden");startRecording(name);});
-function startPlayback(idx){var tk=taktikFilmer[idx];if(!tk||!tk.steps||!tk.steps.length){cloudStatus("\u274c Ogiltig taktikfilm","#e84a4a");return;}if(animFrame)cancelAnimationFrame(animFrame);playback={tk:tk,stepIndex:0,animating:false};var s0=tk.steps[0];if(!s0.players)s0={players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:[],labels:[]};restoreSnap(s0);render();document.getElementById("playbar").classList.add("active");updatePlaybar();renderPlayStepList();document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-taktik");});}
-function stopPlayback(){if(animFrame)cancelAnimationFrame(animFrame);playback=null;document.getElementById("playbar").classList.remove("active");render();renderTaktikList();}
+function startPlayback(idx){
+  var tk=taktikFilmer[idx];
+  if(!tk||!tk.steps||!tk.steps.length){cloudStatus("\u274c Ogiltig taktikfilm","#e84a4a");return;}
+  if(animFrame)cancelAnimationFrame(animFrame);
+  playback={tk:tk,stepIndex:0,animating:false};
+  var s0=tk.steps[0];
+  restoreSnap(s0);render();
+  // Show taktikbar
+  document.getElementById("taktikbar").style.display="flex";
+  document.getElementById("taktikbar-title").textContent=tk.name;
+  updatePlaybar();
+  // Also enter edit mode UI so user can edit inline
+  editingTaktikIdx=idx;editingStepIdx=0;isEditingTaktik=true;
+  document.getElementById("no-rec-ui").style.display="none";
+  document.getElementById("rec-ui").style.display="none";
+  document.getElementById("edit-taktik-ui").style.display="block";
+  document.getElementById("edit-taktik-title-lbl").textContent="\u270f "+tk.name;
+  updateEditStepUI_silent();
+  // switch to taktik panel
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");});
+  document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-taktik");});
+}
+
+// Update edit UI without restoring snap (called from playbar nav)
+function updateEditStepUI_silent(){
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  if(!tk||!tk.steps)return;
+  var s=tk.steps[editingStepIdx];
+  var total=tk.steps.length-1;
+  document.getElementById("edit-step-counter").textContent=(editingStepIdx===0?"Start":"Steg "+editingStepIdx)+"/"+total;
+  document.getElementById("edit-step-name-inp").value=s.label||(editingStepIdx===0?"Startl\u00e4ge":"Steg "+editingStepIdx);
+  document.getElementById("btn-edit-step-prev").style.opacity=editingStepIdx>0?"1":"0.3";
+  document.getElementById("btn-edit-step-next").style.opacity=editingStepIdx<total?"1":"0.3";
+  document.getElementById("btn-edit-del-step").style.opacity=editingStepIdx>0?"1":"0.3";
+  renderEditSteps(tk);
+}
+function stopPlayback(){
+  if(animFrame)cancelAnimationFrame(animFrame);
+  playback=null;
+  document.getElementById("taktikbar").style.display="none";
+  exitEditTaktik();
+  render();
+}
 document.getElementById("btn-stop-play").addEventListener("click",stopPlayback);
-document.getElementById("btn-next").addEventListener("click",function(){if(!playback||playback.animating)return;if(playback.stepIndex>=playback.tk.steps.length-1)return;animateToStep(playback.stepIndex+1);});
-document.getElementById("btn-prev").addEventListener("click",function(){if(!playback||playback.animating)return;if(playback.stepIndex<=0)return;animateToStep(playback.stepIndex-1);});
+
+// Taktikbar: save step button (mirror of edit-update-step)
+document.getElementById("btn-edit-update-step2").addEventListener("click",function(){
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  var snap=currentSnap();
+  var lbl=document.getElementById("edit-step-name-inp").value.trim();
+  if(lbl)snap.label=lbl;
+  tk.steps[editingStepIdx]=snap;
+  // Also sync playback
+  if(playback)playback.tk.steps[editingStepIdx]=snap;
+  showToast("Steg sparat!");
+  cloudStatus("\u2705 Steg sparat","#4ae87a");
+  renderEditSteps(tk);
+});
+
+// Taktikbar: save film
+document.getElementById("btn-taktikbar-save").addEventListener("click",function(){
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  if(tk.dbId){
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{
+      method:"PATCH",
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+      body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder||"Allm\u00e4nt"})
+    }).then(function(){showToast("Film sparad!");cloudStatus("\u2705 Film sparad","#4ae87a");});
+  } else {showToast("Film sparad!");cloudStatus("\u2705 Sparad lokalt","#4ae87a");}
+});
+document.getElementById("btn-next").addEventListener("click",function(){
+  if(!playback||playback.animating)return;
+  if(playback.stepIndex>=playback.tk.steps.length-1)return;
+  var idx=playback.stepIndex+1;
+  editingStepIdx=idx;
+  animateToStep(idx);
+  updateEditStepUI_silent();
+});
+document.getElementById("btn-prev").addEventListener("click",function(){
+  if(!playback||playback.animating)return;
+  if(playback.stepIndex<=0)return;
+  var idx=playback.stepIndex-1;
+  editingStepIdx=idx;
+  animateToStep(idx);
+  updateEditStepUI_silent();
+});
 document.getElementById("play-speed").addEventListener("change",function(){animSpeed=parseInt(this.value);});
-function updatePlaybar(){if(!playback)return;var cur=playback.stepIndex,total=playback.tk.steps.length-1;document.getElementById("play-title").textContent=playback.tk.name;document.getElementById("play-counter").textContent=cur===0?"Start":cur+"/"+total;document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";renderPlayStepList();}
+function updatePlaybar(){
+  if(!playback)return;
+  var cur=playback.stepIndex,total=playback.tk.steps.length-1;
+  document.getElementById("taktikbar-title").textContent=playback.tk.name;
+  document.getElementById("play-counter").textContent=cur===0?"Start":cur+"/"+total;
+  document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";
+  document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";
+  renderPlayStepList();
+}
 function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";var rLabel=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);lbl.textContent=rLabel;var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
 function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx],fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};}),fromBall={x:ball.x,y:ball.y},start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed),ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){players[i].x=fp.x+(tp2.x-fp.x)*ease;players[i].y=fp.y+(tp2.y-fp.y)*ease;}var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}if(tx){tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);}}}ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}}animFrame=requestAnimationFrame(frame);}
 function buildState(){return{format:format,homeColor:homeColor,awayColor:awayColor,displayMode:displayMode,players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};})};}
@@ -1202,7 +1218,6 @@ window.addEventListener("orientationchange",function(){setTimeout(function(){han
 
 // Init
 drawPitch();
-updateViewBox();
 buildFormationBtns();
 initPlayers("4-4-2");
 render();
