@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
@@ -55,6 +56,10 @@ select.btn { appearance: none; padding-right: 18px; background-image: url("data:
 .del-txt { fill: #fff; font-size: 13px; font-weight: bold; dominant-baseline: central; text-anchor: middle; pointer-events: none; }
 .toast-msg { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: #4ae87a; color: #0a1a0d; padding: 5px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; white-space: nowrap; }
 .toast-msg.show { opacity: 1; }
+.zone-shape { cursor: move; }
+.zone-hit { stroke: transparent; stroke-width: 16; fill: transparent; cursor: pointer; }
+.freehand-path { stroke-linecap: round; stroke-linejoin: round; fill: none; cursor: pointer; }
+.freehand-hit { stroke: transparent; stroke-width: 16; fill: none; cursor: pointer; }
 .rec-badge { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: #e84a4a; color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 0.73rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; pointer-events: none; display: none; animation: pulse 1s infinite; }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
 .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
@@ -80,7 +85,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v4.0</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -92,6 +97,8 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <button class="btn" id="btn-text">T Text</button>
   <button class="btn" id="btn-undo">&#8630;</button>
   <button class="btn" id="btn-reset">&#8635;</button>
+  <button class="btn" id="btn-freehand">&#9998; Fri</button>
+  <button class="btn" id="btn-zone">&#9633; Zon</button>
   <button class="btn" id="btn-half">&#189; Plan</button>
   <button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button>
 </div>
@@ -99,11 +106,52 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 <div id="pitch-wrapper">
   <svg id="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg"></svg>
   <div id="mode-badge"></div>
+  <div id="arrow-options" style="display:none;position:absolute;top:8px;right:8px;display:none;gap:5px;align-items:center;z-index:5">
+    <select id="arrow-color-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="#ffdd44">&#9632; Gul</option>
+      <option value="#e84a4a">&#9632; R&#246;d</option>
+      <option value="#4ae8e8">&#9632; Bl&#229;</option>
+      <option value="#4ae87a">&#9632; Gr&#246;n</option>
+      <option value="#fff">&#9632; Vit</option>
+    </select>
+    <select id="arrow-type-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="solid">&#8212; Hel</option>
+      <option value="dashed">&#8229; Streckad</option>
+    </select>
+  </div>
+  <div id="zone-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:5">
+    <select id="zone-shape-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="rect">&#9635; Rektangel</option>
+      <option value="circle">&#9711; Cirkel</option>
+    </select>
+    <select id="zone-color-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="rgba(232,76,76,0.25)">&#9632; R&#246;d</option>
+      <option value="rgba(74,232,122,0.25)">&#9632; Gr&#246;n</option>
+      <option value="rgba(74,232,232,0.25)">&#9632; Bl&#229;</option>
+      <option value="rgba(232,200,74,0.25)">&#9632; Gul</option>
+      <option value="rgba(160,120,255,0.25)">&#9632; Lila</option>
+    </select>
+  </div>
+  <div id="freehand-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:5">
+    <select id="freehand-color-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="#ffdd44">&#9632; Gul</option>
+      <option value="#e84a4a">&#9632; R&#246;d</option>
+      <option value="#4ae8e8">&#9632; Bl&#229;</option>
+      <option value="#4ae87a">&#9632; Gr&#246;n</option>
+      <option value="#fff">&#9632; Vit</option>
+    </select>
+    <select id="freehand-width-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="2">Tunn</option>
+      <option value="4" selected>Normal</option>
+      <option value="7">Tjock</option>
+    </select>
+  </div>
   <div class="toast-msg" id="toast-msg"></div>
   <div class="rec-badge" id="rec-badge">&#9679; Spelar in</div>
 </div>
 
 <!-- COMBINED TAKTIK BAR (edit + play merged) -->
+
 <div id="taktikbar" style="display:none;background:#0a1a0d;border-top:2px solid #4ae87a;padding:7px 12px;flex-shrink:0;flex-wrap:wrap;gap:5px;align-items:center">
   <span id="taktikbar-title" style="color:#4ae87a;font-weight:700;font-size:0.82rem;text-transform:uppercase;flex:1;min-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
   <button class="btn" id="btn-first" style="font-size:1rem;padding:4px 11px" title="Till start">&#9646;&#9664;</button>
@@ -121,7 +169,8 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <button class="btn danger" id="btn-stop-play" style="padding:4px 8px;font-size:0.72rem">&#10005;</button>
 </div>
 
-<button id="panel-show-btn">&#9650; Meny</button>
+<button id="panel-show-btn">▲ Meny</button>
+
 <div id="panel-toggle-strip" style="background:#1e2e22;border-top:1px solid #2d4a35;display:flex;justify-content:center;flex-shrink:0;">
   <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 24px;font-size:0.72rem;cursor:pointer;width:100%">&#9660;</button>
 </div>
@@ -194,6 +243,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- SETUP MODAL -->
+
 <div class="modal-bg hidden" id="modal-setup">
   <div class="modal">
     <h2>Spelarinst&#228;llningar</h2>
@@ -218,6 +268,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- NEW TAKTIK MODAL -->
+
 <div class="modal-bg hidden" id="modal-new-taktik">
   <div class="modal">
     <h2>Ny taktikfilm</h2>
@@ -230,6 +281,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- SAVE NAME MODAL -->
+
 <div class="modal-bg hidden" id="modal-savename">
   <div class="modal">
     <h2>Spara uppst&#228;llning</h2>
@@ -249,6 +301,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- NEW FOLDER MODAL -->
+
 <div class="modal-bg hidden" id="modal-new-folder">
   <div class="modal">
     <h2>Ny mapp</h2>
@@ -261,6 +314,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- TEXT LABEL MODAL -->
+
 <div class="modal-bg hidden" id="modal-text">
   <div class="modal">
     <h2>L&#228;gg till text</h2>
@@ -279,6 +333,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- EDIT LABEL MODAL -->
+
 <div class="modal-bg hidden" id="modal-edit-text">
   <div class="modal">
     <h2>Redigera text</h2>
@@ -298,6 +353,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- MOVE TO FOLDER MODAL -->
+
 <div class="modal-bg hidden" id="modal-move-folder">
   <div class="modal">
     <h2>Flytta till mapp</h2>
@@ -309,6 +365,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- RENAME FOLDER MODAL -->
+
 <div class="modal-bg hidden" id="modal-rename-folder">
   <div class="modal">
     <h2>Byt namn p&#229; mapp</h2>
@@ -321,6 +378,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- EDIT TAKTIK: inline panel, no modal needed -->
+
 <div class="modal-bg hidden" id="modal-edit-taktik-meta">
   <div class="modal" style="max-width:360px">
     <h2>Filminfo</h2>
@@ -334,6 +392,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- DELETE FOLDER CONFIRM -->
+
 <div class="modal-bg hidden" id="modal-delete-folder">
   <div class="modal">
     <h2>Radera mapp</h2>
@@ -346,7 +405,23 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   </div>
 </div>
 
+<!-- SHARE MODAL -->
+
+<div class="modal-bg hidden" id="modal-share">
+  <div class="modal">
+    <h2>Dela taktikfilm</h2>
+    <p style="font-size:0.82rem;color:#7aaa88;margin-bottom:10px">Genererar en permanent l&#228;nk. Mottagaren kan se och spela upp filmen.</p>
+    <div id="share-status" style="font-size:0.8rem;color:#7aaa88;margin-bottom:8px"></div>
+    <input type="text" id="share-link-inp" class="minput wide" style="width:100%;margin-bottom:12px;font-size:0.75rem" readonly placeholder="Genererar l&#228;nk...">
+    <div class="mactions">
+      <button class="btn" id="share-copy-btn">Kopiera l&#228;nk</button>
+      <button class="btn on" id="share-close-btn">St&#228;ng</button>
+    </div>
+  </div>
+</div>
+
 <!-- MERGE TAKTIK MODAL -->
+
 <div class="modal-bg hidden" id="modal-merge-taktik">
   <div class="modal">
     <h2>Sammanfoga filmer</h2>
@@ -373,6 +448,12 @@ var savedFormations=[],taktikFilmer=[],activeTaktik=null,playback=null;
 var animFrame=null,animSpeed=600,dragging=null;
 var folders=["Allm\u00e4nt"],currentFolder="Alla";
 var taktikFolders=["Allm\u00e4nt"],currentTaktikFolder="Alla",taktikSearch="";
+var freehandPaths=[],zones=[]; // new drawing types
+var arrowColor="#ffdd44",arrowType="solid";
+var freehandColor="#ffdd44",freehandWidth=4;
+var zoneShapeType="rect",zoneColor="rgba(232,76,76,0.25)";
+var freehandDrawing=false,freehandCurrent=null;
+var zoneStart=null,zonePreview=null;
 var editingTaktikIdx=null,mergingTaktikIdx=null,isEditingTaktik=false;
 
 var FORMATIONS={
@@ -673,10 +754,19 @@ var svg=document.getElementById("pitch-svg");
 function drawPitch(){
   svg.innerHTML="";var ns="http://www.w3.org/2000/svg";
   function el(tag,attrs){var e=document.createElementNS(ns,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);return e;}
-  var defs=document.createElementNS(ns,"defs"),marker=document.createElementNS(ns,"marker");
-  marker.setAttribute("id","arrowhead");marker.setAttribute("markerWidth","8");marker.setAttribute("markerHeight","6");marker.setAttribute("refX","8");marker.setAttribute("refY","3");marker.setAttribute("orient","auto");
-  var poly=document.createElementNS(ns,"polygon");poly.setAttribute("points","0 0, 8 3, 0 6");poly.setAttribute("fill","#ffdd44");
-  marker.appendChild(poly);defs.appendChild(marker);svg.appendChild(defs);
+  var defs=document.createElementNS(ns,"defs");
+  var arrowColors=["#ffdd44","#e84a4a","#4ae8e8","#4ae87a","#fff"];
+  for(var aci=0;aci<arrowColors.length;aci++){
+    (function(col){
+      var m=document.createElementNS(ns,"marker");
+      m.setAttribute("id","arrowhead-"+col.replace("#",""));
+      m.setAttribute("markerWidth","8");m.setAttribute("markerHeight","6");
+      m.setAttribute("refX","8");m.setAttribute("refY","3");m.setAttribute("orient","auto");
+      var poly2=document.createElementNS(ns,"polygon");poly2.setAttribute("points","0 0, 8 3, 0 6");poly2.setAttribute("fill",col);
+      m.appendChild(poly2);defs.appendChild(m);
+    })(arrowColors[aci]);
+  }
+  svg.appendChild(defs);
   var c=["#1e5c35","#226640"];for(var i=0;i<10;i++) svg.appendChild(el("rect",{x:0,y:i*60,width:W,height:60,fill:c[i%2]}));
   var S={stroke:"rgba(255,255,255,0.55)","stroke-width":"1.5",fill:"none"};
   function se(tag,a){var m={};for(var k in S)m[k]=S[k];for(var k in a)m[k]=a[k];return el(tag,m);}
@@ -698,10 +788,81 @@ function updateViewBox(){
 }
 
 function render(){
-  var old=svg.querySelectorAll(".player-token,.ball-token,.arrow-g,.label-g,.preview-arrow,.del-g");for(var i=0;i<old.length;i++)old[i].remove();
+  var old=svg.querySelectorAll(".player-token,.ball-token,.arrow-g,.label-g,.preview-arrow,.del-g,.zone-g,.freehand-g,.zone-preview");for(var i=0;i<old.length;i++)old[i].remove();
   var ns="http://www.w3.org/2000/svg";
+  // \u2500\u2500 Zones \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  var ns2="http://www.w3.org/2000/svg";
+  for(var i=0;i<zones.length;i++){
+    (function(z){
+      var g=document.createElementNS(ns2,"g");g.setAttribute("class","zone-g");
+      var shape;
+      if(z.type==="circle"){
+        shape=document.createElementNS(ns2,"ellipse");
+        shape.setAttribute("cx",z.x);shape.setAttribute("cy",z.y);
+        shape.setAttribute("rx",z.r||50);shape.setAttribute("ry",z.r||50);
+      } else {
+        shape=document.createElementNS(ns2,"rect");
+        shape.setAttribute("x",z.x);shape.setAttribute("y",z.y);
+        shape.setAttribute("width",z.w||80);shape.setAttribute("height",z.h||80);
+        shape.setAttribute("rx","4");
+      }
+      shape.setAttribute("fill",z.color||"rgba(232,76,76,0.25)");
+      shape.setAttribute("stroke",z.color.replace(/,[0-9.]+\)/,",0.8)").replace("rgba","rgba"));
+      shape.setAttribute("stroke-width","1.5");
+      var hit=document.createElementNS(ns2,"rect");
+      if(z.type==="circle"){hit.setAttribute("x",z.x-(z.r||50));hit.setAttribute("y",z.y-(z.r||50));hit.setAttribute("width",(z.r||50)*2);hit.setAttribute("height",(z.r||50)*2);}
+      else{hit.setAttribute("x",z.x);hit.setAttribute("y",z.y);hit.setAttribute("width",z.w||80);hit.setAttribute("height",z.h||80);}
+      hit.setAttribute("class","zone-hit");
+      g.appendChild(shape);g.appendChild(hit);svg.appendChild(g);
+      function selZone(ev){ev.stopPropagation();selectedId=z.id;render();}
+      hit.addEventListener("touchstart",function(ev){ev.preventDefault();selZone(ev);},{passive:false});
+      hit.addEventListener("mousedown",selZone);
+      if(selectedId===z.id){
+        var cx2=z.type==="circle"?z.x:z.x+(z.w||80)/2;
+        var cy2=z.type==="circle"?z.y-(z.r||50)-6:z.y-6;
+        var dg=document.createElementNS(ns2,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";
+        var dc=document.createElementNS(ns2,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",cx2);dc.setAttribute("cy",cy2);dc.setAttribute("r",9);
+        var dt=document.createElementNS(ns2,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",cx2);dt.setAttribute("y",cy2);dt.textContent="\u00d7";
+        dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);
+        function delZone(ev){ev.stopPropagation();ev.preventDefault();saveUndo();zones=zones.filter(function(x){return x.id!==z.id;});selectedId=null;render();}
+        dg.addEventListener("touchstart",delZone,{passive:false});dg.addEventListener("mousedown",delZone);
+      }
+    })(zones[i]);
+  }
+
+  // \u2500\u2500 Freehand paths \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  for(var i=0;i<freehandPaths.length;i++){
+    (function(fp){
+      if(!fp.pts||fp.pts.length<2)return;
+      var g=document.createElementNS(ns2,"g");g.setAttribute("class","freehand-g");
+      var d="M"+fp.pts[0].x+","+fp.pts[0].y;
+      for(var pi=1;pi<fp.pts.length;pi++) d+=" L"+fp.pts[pi].x+","+fp.pts[pi].y;
+      var path=document.createElementNS(ns2,"path");
+      path.setAttribute("class","freehand-path");
+      path.setAttribute("d",d);
+      path.setAttribute("stroke",fp.color||"#ffdd44");
+      path.setAttribute("stroke-width",fp.width||4);
+      var hit=document.createElementNS(ns2,"path");
+      hit.setAttribute("class","freehand-hit");hit.setAttribute("d",d);hit.setAttribute("stroke-width","16");
+      g.appendChild(path);g.appendChild(hit);svg.appendChild(g);
+      function selFP(ev){ev.stopPropagation();selectedId=fp.id;render();}
+      hit.addEventListener("touchstart",function(ev){ev.preventDefault();selFP(ev);},{passive:false});
+      hit.addEventListener("mousedown",selFP);
+      if(selectedId===fp.id){
+        var mx=fp.pts[Math.floor(fp.pts.length/2)].x;
+        var my=fp.pts[Math.floor(fp.pts.length/2)].y;
+        var dg=document.createElementNS(ns2,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";
+        var dc=document.createElementNS(ns2,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",mx);dc.setAttribute("cy",my-12);dc.setAttribute("r",9);
+        var dt=document.createElementNS(ns2,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",mx);dt.setAttribute("y",my-12);dt.textContent="\u00d7";
+        dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);
+        function delFP(ev){ev.stopPropagation();ev.preventDefault();saveUndo();freehandPaths=freehandPaths.filter(function(x){return x.id!==fp.id;});selectedId=null;render();}
+        dg.addEventListener("touchstart",delFP,{passive:false});dg.addEventListener("mousedown",delFP);
+      }
+    })(freehandPaths[i]);
+  }
+
   for(var i=0;i<arrows.length;i++){(function(a){var g=document.createElementNS(ns,"g");g.setAttribute("class","arrow-g");var vis=document.createElementNS(ns,"line");vis.setAttribute("class","arrow-vis");vis.setAttribute("x1",a.x1);vis.setAttribute("y1",a.y1);vis.setAttribute("x2",a.x2);vis.setAttribute("y2",a.y2);var hit=document.createElementNS(ns,"line");hit.setAttribute("class","arrow-hit");hit.setAttribute("x1",a.x1);hit.setAttribute("y1",a.y1);hit.setAttribute("x2",a.x2);hit.setAttribute("y2",a.y2);g.appendChild(vis);g.appendChild(hit);svg.appendChild(g);function selectArrow(ev){ev.stopPropagation();selectedId=a.id;render();}hit.addEventListener("touchstart",function(ev){ev.preventDefault();selectArrow(ev);},{passive:false});hit.addEventListener("mousedown",selectArrow);if(selectedId===a.id){var mx=(a.x1+a.x2)/2,my=(a.y1+a.y2)/2;var dg=document.createElementNS(ns,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";var dc=document.createElementNS(ns,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",mx);dc.setAttribute("cy",my);dc.setAttribute("r",11);var dt=document.createElementNS(ns,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",mx);dt.setAttribute("y",my);dt.textContent="\u00d7";dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);function delArrow(ev){ev.stopPropagation();ev.preventDefault();saveUndo();arrows=arrows.filter(function(x){return x.id!==a.id;});selectedId=null;render();}dg.addEventListener("touchstart",delArrow,{passive:false});dg.addEventListener("mousedown",delArrow);};})(arrows[i]);}
-  if(mode==="arrow"&&arrowStart&&arrowCurrent){var pg=document.createElementNS(ns,"line");pg.setAttribute("class","preview-arrow");pg.setAttribute("x1",arrowStart.x);pg.setAttribute("y1",arrowStart.y);pg.setAttribute("x2",arrowCurrent.x);pg.setAttribute("y2",arrowCurrent.y);pg.setAttribute("stroke","#ffdd44");pg.setAttribute("stroke-width","3");pg.setAttribute("stroke-dasharray","6 4");pg.setAttribute("stroke-linecap","round");pg.setAttribute("fill","none");pg.setAttribute("marker-end","url(#arrowhead)");pg.style.pointerEvents="none";svg.appendChild(pg);}
+  if(mode==="arrow"&&arrowStart&&arrowCurrent){var pg=document.createElementNS(ns,"line");pg.setAttribute("class","preview-arrow");pg.setAttribute("x1",arrowStart.x);pg.setAttribute("y1",arrowStart.y);pg.setAttribute("x2",arrowCurrent.x);pg.setAttribute("y2",arrowCurrent.y);pg.setAttribute("stroke","#ffdd44");pg.setAttribute("stroke-width","3");pg.setAttribute("stroke-dasharray","6 4");pg.setAttribute("stroke-linecap","round");pg.setAttribute("fill","none");pg.setAttribute("marker-end","url(#arrowhead-"+(arrowColor||"#ffdd44").replace("#","")+")");pg.setAttribute("stroke",arrowColor||"#ffdd44");pg.style.pointerEvents="none";svg.appendChild(pg);}
   for(var i=0;i<labels.length;i++){(function(l){var fs=l.size||13,tw=l.text.length*(fs*0.55)+12,th=fs+10;var g=document.createElementNS(ns,"g");g.setAttribute("class","label-g pitch-label");var bg=document.createElementNS(ns,"rect");bg.setAttribute("class","pitch-label-bg");bg.setAttribute("rx","4");bg.setAttribute("x",l.x-tw/2);bg.setAttribute("y",l.y-th/2);bg.setAttribute("width",tw);bg.setAttribute("height",th);var tx=document.createElementNS(ns,"text");tx.setAttribute("class","pitch-label-txt");tx.setAttribute("x",l.x);tx.setAttribute("y",l.y);tx.setAttribute("font-size",fs);tx.textContent=l.text;g.appendChild(bg);g.appendChild(tx);svg.appendChild(g);if(selectedId===l.id){var dg=document.createElementNS(ns,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";var dc=document.createElementNS(ns,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",l.x+tw/2-2);dc.setAttribute("cy",l.y-th/2-2);dc.setAttribute("r",9);var dt=document.createElementNS(ns,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",l.x+tw/2-2);dt.setAttribute("y",l.y-th/2-2);dt.textContent="\u00d7";dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);function delLabel(ev){ev.stopPropagation();ev.preventDefault();saveUndo();labels=labels.filter(function(x){return x.id!==l.id;});selectedId=null;render();}dg.addEventListener("touchstart",delLabel,{passive:false});dg.addEventListener("mousedown",delLabel);}function startLabelDrag(cx,cy){if(mode!=="move")return;dragging={type:"label",id:l.id,ox:l.x-cx,oy:l.y-cy};}g.addEventListener("touchstart",function(ev){ev.stopPropagation();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);if(selectedId===l.id){openEditLabel(l);selectedId=null;return;}selectedId=l.id;startLabelDrag(pt.x,pt.y);window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});g.addEventListener("mousedown",function(ev){ev.stopPropagation();var pt=svgPt(ev.clientX,ev.clientY);if(selectedId===l.id){openEditLabel(l);selectedId=null;return;}selectedId=l.id;startLabelDrag(pt.x,pt.y);window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});})(labels[i]);}
   for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);c.setAttribute("fill",p.team==="home"?homeColor:awayColor);c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill",p.team==="home"?"#111":"#fff");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);svg.appendChild(g);if(true){g.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});g.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});}})(players[i]);}
   var bg=document.createElementNS(ns,"g");bg.setAttribute("class","ball-token");var bhit=document.createElementNS(ns,"circle");bhit.setAttribute("cx",ball.x);bhit.setAttribute("cy",ball.y);bhit.setAttribute("r",18);bhit.setAttribute("fill","transparent");var bt=document.createElementNS(ns,"text");bt.setAttribute("class","ball-text");bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);bt.textContent="\u26bd";bg.appendChild(bhit);bg.appendChild(bt);svg.appendChild(bg);
@@ -723,8 +884,71 @@ function initPlayers(f){f=f||"4-4-2";var parts=f.split("-"),total=1;for(var i=0;
 function tokenLabel(p){if(displayMode==="name")return p.name||p.number;if(displayMode==="both")return(p.name?p.name+" ":"")+p.number;return p.number;}
 function saveUndo(){undoStack.push(currentSnap());if(undoStack.length>30)undoStack.shift();}
 function doUndo(){if(!undoStack.length)return;restoreSnap(undoStack.pop());render();}
-function currentSnap(){return{players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};})};}
-function restoreSnap(snap){players=snap.players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball={x:snap.ball.x,y:snap.ball.y};arrows=(snap.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};});labels=(snap.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});}
+function currentSnap(){return{players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color,atype:a.atype};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};}),freehandPaths:freehandPaths.map(function(f){return{id:f.id,pts:f.pts.slice(),color:f.color,width:f.width};}),zones:zones.map(function(z){return{id:z.id,type:z.type,x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color};})};}
+function restoreSnap(snap){players=snap.players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball={x:snap.ball.x,y:snap.ball.y};arrows=(snap.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color||"#ffdd44",atype:a.atype||"solid"};});labels=(snap.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});freehandPaths=(snap.freehandPaths||[]).map(function(f){return{id:f.id,pts:f.pts.slice(),color:f.color||"#ffdd44",width:f.width||4};});zones=(snap.zones||[]).map(function(z){return{id:z.id,type:z.type||"rect",x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color||"rgba(232,76,76,0.25)"};});}
+function renderFreehandPreview(){
+  var old=svg.querySelectorAll(".freehand-preview");
+  for(var i=0;i<old.length;i++)old[i].remove();
+  if(!freehandCurrent||freehandCurrent.pts.length<2)return;
+  var ns3="http://www.w3.org/2000/svg";
+  var d="M"+freehandCurrent.pts[0].x+","+freehandCurrent.pts[0].y;
+  for(var i=1;i<freehandCurrent.pts.length;i++) d+=" L"+freehandCurrent.pts[i].x+","+freehandCurrent.pts[i].y;
+  var path=document.createElementNS(ns3,"path");
+  path.setAttribute("class","freehand-preview freehand-path");
+  path.setAttribute("d",d);path.setAttribute("stroke",freehandColor);
+  path.setAttribute("stroke-width",freehandWidth);path.style.pointerEvents="none";
+  svg.appendChild(path);
+}
+
+function renderZonePreview(){
+  var old=svg.querySelectorAll(".zone-preview");
+  for(var i=0;i<old.length;i++)old[i].remove();
+  if(!zoneStart||!zonePreview)return;
+  var ns3="http://www.w3.org/2000/svg";
+  var shape=buildZoneShape(zoneStart,zonePreview,true);
+  shape.setAttribute("class","zone-preview");shape.style.pointerEvents="none";
+  svg.appendChild(shape);
+}
+
+function buildZoneShape(start,end,preview){
+  var ns3="http://www.w3.org/2000/svg";
+  var col=zoneColor;
+  if(zoneShapeType==="circle"){
+    var el=document.createElementNS(ns3,"ellipse");
+    var cx=(start.x+end.x)/2,cy=(start.y+end.y)/2;
+    var rx=Math.abs(end.x-start.x)/2,ry=Math.abs(end.y-start.y)/2;
+    el.setAttribute("cx",cx);el.setAttribute("cy",cy);el.setAttribute("rx",rx);el.setAttribute("ry",ry);
+    el.setAttribute("fill",col);el.setAttribute("stroke",col.replace(/,[0-9.]+\)/,",0.8)"));el.setAttribute("stroke-width","1.5");
+    if(!preview) el._zdata={type:"circle",x:cx,y:cy,r:Math.max(rx,ry),color:col};
+    return el;
+  } else {
+    var x=Math.min(start.x,end.x),y=Math.min(start.y,end.y);
+    var w=Math.abs(end.x-start.x),h=Math.abs(end.y-start.y);
+    var r=document.createElementNS(ns3,"rect");
+    r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",w);r.setAttribute("height",h);
+    r.setAttribute("rx","3");r.setAttribute("fill",col);
+    r.setAttribute("stroke",col.replace(/,[0-9.]+\)/,",0.8)"));r.setAttribute("stroke-width","1.5");
+    if(!preview) r._zdata={type:"rect",x:x,y:y,w:w,h:h,color:col};
+    return r;
+  }
+}
+
+function finalizeZone(){
+  var shape=buildZoneShape(zoneStart,zonePreview,false);
+  var zd=shape._zdata;
+  if(!zd)return;
+  var dx=zonePreview.x-zoneStart.x,dy=zonePreview.y-zoneStart.y;
+  if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
+  zd.id="zone"+(idCounter++);
+  zones.push(zd);
+}
+
+function clearDrawings(){
+  saveUndo();
+  freehandPaths=[];zones=[];
+  render();
+}
+
 function setMode(m){mode=m;document.getElementById("btn-arrow").classList.toggle("on",m==="arrow");document.getElementById("btn-text").classList.toggle("on",m==="text");svg.style.cursor=m==="arrow"?"crosshair":m==="text"?"text":"default";var badge=document.getElementById("mode-badge");if(m==="arrow"){badge.style.display="block";badge.style.background="#2a4a8a";badge.style.color="#9ac4ff";badge.textContent="Dra f\u00f6r att rita pil";}else if(m==="text"){badge.style.display="block";badge.style.background="#4ae87a";badge.style.color="#0a1a0d";badge.textContent="Tryck p\u00e5 planen";}else badge.style.display="none";}
 function buildFormationBtns(){var c=document.getElementById("formation-btns");c.innerHTML="";var list=FORMATIONS[format]||FORMATIONS[11];for(var i=0;i<list.length;i++){(function(f){var b=document.createElement("button");b.className="btn";b.textContent=f;b.style.flexShrink="0";b.addEventListener("click",function(){document.querySelectorAll("#formation-btns .btn").forEach(function(x){x.classList.remove("on");});b.classList.add("on");initPlayers(f);render();});c.appendChild(b);})(list[i]);}if(c.firstChild)c.firstChild.classList.add("on");}
 function openSetup(){document.getElementById("home-color").value=homeColor;document.getElementById("away-color").value=awayColor;document.querySelectorAll("[data-dm]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-dm")===displayMode);});buildSetupTeam("home");buildSetupTeam("away");document.getElementById("modal-setup").classList.remove("hidden");}
@@ -750,9 +974,18 @@ document.getElementById("edit-text-ok").addEventListener("click",function(){if(e
 document.getElementById("edit-text-del").addEventListener("click",function(){if(editLabelId){saveUndo();labels=labels.filter(function(l){return l.id!==editLabelId;});}document.getElementById("modal-edit-text").classList.add("hidden");editLabelId=null;render();});
 document.getElementById("edit-text-inp").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("edit-text-ok").click();});
 document.getElementById("btn-arrow").addEventListener("click",function(){setMode(mode==="arrow"?"move":"arrow");});
+document.getElementById("btn-freehand").addEventListener("click",function(){setMode(mode==="freehand"?"move":"freehand");});
+document.getElementById("btn-zone").addEventListener("click",function(){setMode(mode==="zone"?"move":"zone");});
+
+document.getElementById("arrow-color-sel").addEventListener("change",function(){arrowColor=this.value;});
+document.getElementById("arrow-type-sel").addEventListener("change",function(){arrowType=this.value;});
+document.getElementById("freehand-color-sel").addEventListener("change",function(){freehandColor=this.value;});
+document.getElementById("freehand-width-sel").addEventListener("change",function(){freehandWidth=parseInt(this.value);});
+document.getElementById("zone-shape-sel").addEventListener("change",function(){zoneShapeType=this.value;});
+document.getElementById("zone-color-sel").addEventListener("change",function(){zoneColor=this.value;});
 document.getElementById("btn-text").addEventListener("click",function(){setMode(mode==="text"?"move":"text");});
 document.getElementById("btn-undo").addEventListener("click",doUndo);
-document.getElementById("btn-reset").addEventListener("click",function(){initPlayers(document.querySelector("#formation-btns .on")?document.querySelector("#formation-btns .on").textContent:"4-4-2");arrows=[];labels=[];render();});
+document.getElementById("btn-reset").addEventListener("click",function(){initPlayers(document.querySelector("#formation-btns .on")?document.querySelector("#formation-btns .on").textContent:"4-4-2");arrows=[];labels=[];freehandPaths=[];zones=[];render();});
 document.getElementById("fmt-sel").addEventListener("change",function(e){format=parseInt(e.target.value);buildFormationBtns();initPlayers((FORMATIONS[format]||FORMATIONS[11])[0]);render();});
 document.getElementById("btn-half").addEventListener("click",function(){halfMode=(halfMode+1)%3;var lbl=["\u00bd Plan","\u00bd Borta","Hel"];document.getElementById("btn-half").innerHTML=lbl[halfMode];updateViewBox();});
 document.getElementById("btn-panel").addEventListener("click",function(){
@@ -855,10 +1088,17 @@ function renderTaktikList(){
       var pb=document.createElement("button");pb.className="sa play";pb.textContent="\u25ba \u00d6ppna";pb.addEventListener("click",function(){startPlayback(idx);});
 
       var dup=document.createElement("button");dup.className="sa";dup.style.cssText="color:#4ae8e8;border-color:#4ae8e8";dup.textContent="Kopiera";dup.addEventListener("click",function(){duplicateTaktik(idx);});
+      var newFromStart=document.createElement("button");newFromStart.className="sa";newFromStart.style.cssText="color:#e8c84a;border-color:#e8c84a";newFromStart.textContent="Fr\u00e5n start";
+      newFromStart.title="Ny film med bara startl\u00e4get";
+      newFromStart.addEventListener("click",function(){
+        var copy={name:"Ny fr\u00e5n: "+tk.name,folder:tk.folder||"Allm\u00e4nt",steps:[JSON.parse(JSON.stringify(tk.steps[0]))]};
+        taktikFilmer.push(copy);cloudSaveTaktik(copy);renderTaktikList();showToast("Ny film skapad!");
+      });
       var mg=document.createElement("button");mg.className="sa";mg.style.cssText="color:#a78bfa;border-color:#a78bfa";mg.textContent="\u22d3";mg.title="Sammanfoga";mg.addEventListener("click",function(){openMergeTaktik(idx);});
+      var sh=document.createElement("button");sh.className="sa";sh.style.cssText="color:#7aaa88;border-color:#7aaa88";sh.textContent="\ud83d\udd17";sh.title="Dela";sh.addEventListener("click",function(){openShareTaktik(tk);});
       var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";
       dl.addEventListener("click",function(){if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"DELETE",headers:supaHeaders()}).then(function(){cloudLoadTaktik();});}else{taktikFilmer.splice(idx,1);renderTaktikList();}});
-      row.appendChild(nm);row.appendChild(fl);row.appendChild(pb);row.appendChild(dup);row.appendChild(mg);row.appendChild(dl);
+      row.appendChild(nm);row.appendChild(fl);row.appendChild(pb);row.appendChild(dup);row.appendChild(newFromStart);row.appendChild(mg);row.appendChild(sh);row.appendChild(dl);
       list.appendChild(row);
     })(filtered[i]);
   }
@@ -1080,7 +1320,7 @@ document.getElementById("btn-edit-update-step2").addEventListener("click",functi
     if(!oldP)continue;
     var movedX=Math.abs(newP.x-oldP.x)>1;
     var movedY=Math.abs(newP.y-oldP.y)>1;
-    if(!movedX&&!movedY)continue; // player didn’t move, skip
+    if(!movedX&&!movedY)continue; // player didn\u2019t move, skip
 
     // Propagate to future steps
     for(var si=editingStepIdx+1;si<tk.steps.length;si++){
@@ -1207,6 +1447,52 @@ function cloudSaveTaktik(tk){var body=JSON.stringify({name:tk.name,data:tk,type:
 function cloudLoadTaktik(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data)){taktikFilmer=data.map(function(row){var tk=row.data;tk.dbId=row.id;if(!tk.folder)tk.folder="Allm\u00e4nt";return tk;});var tfseen={};taktikFolders=["Allm\u00e4nt"];taktikFilmer.forEach(function(tk){if(tk.folder&&!tfseen[tk.folder]){tfseen[tk.folder]=true;if(tk.folder!=="Allm\u00e4nt")taktikFolders.push(tk.folder);}});renderTaktikList();cloudStatus(data.length+" taktikfilmer laddade","#4ae87a");showToast(data.length+" filmer laddade");}}).catch(function(){});}
 
 
+// \u2500\u2500 SHARE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function openShareTaktik(tk){
+  document.getElementById("share-link-inp").value="Genererar...";
+  document.getElementById("share-status").textContent="";
+  document.getElementById("modal-share").classList.remove("hidden");
+  // Save as share record in Supabase, get ID, build URL
+  var shareData={name:tk.name,steps:tk.steps,folder:tk.folder};
+  if(tk.dbId){
+    // Use existing dbId to build share URL
+    var url=window.location.origin+window.location.pathname+"?share="+tk.dbId;
+    document.getElementById("share-link-inp").value=url;
+    document.getElementById("share-status").textContent="Permanent l\u00e4nk (l\u00e4sbar f\u00f6r alla med l\u00e4nken)";
+  } else {
+    document.getElementById("share-status").textContent="Spara filmen f\u00f6rst f\u00f6r att f\u00e5 en l\u00e4nk";
+    document.getElementById("share-link-inp").value="";
+  }
+}
+document.getElementById("share-copy-btn").addEventListener("click",function(){
+  var inp=document.getElementById("share-link-inp");
+  if(!inp.value)return;
+  inp.select();
+  try{navigator.clipboard.writeText(inp.value).then(function(){showToast("L\u00e4nk kopierad!");});}
+  catch(e){document.execCommand("copy");showToast("L\u00e4nk kopierad!");}
+});
+document.getElementById("share-close-btn").addEventListener("click",function(){document.getElementById("modal-share").classList.add("hidden");});
+
+// Check if opened via share link
+function checkShareLink(){
+  var params=new URLSearchParams(window.location.search);
+  var shareId=params.get("share");
+  if(!shareId)return;
+  // Load shared taktik from Supabase
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+shareId,{headers:supaHeaders()})
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data&&data[0]){
+      var tk=data[0].data;tk.dbId=data[0].id;
+      taktikFilmer=[tk];
+      renderTaktikList();
+      // Auto-open
+      startPlayback(0);
+      showToast("Delade filmen: "+tk.name);
+    }
+  }).catch(function(){});
+}
+
 // Init
 drawPitch();
 buildFormationBtns();
@@ -1214,6 +1500,8 @@ initPlayers("4-4-2");
 render();
 cloudLoadSaves();
 cloudLoadTaktik();
+checkShareLink();
 </script>
+
 </body>
 </html>
