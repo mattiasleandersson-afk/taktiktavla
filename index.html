@@ -80,7 +80,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.6</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -106,6 +106,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 <!-- COMBINED TAKTIK BAR (edit + play merged) -->
 <div id="taktikbar" style="display:none;background:#0a1a0d;border-top:2px solid #4ae87a;padding:7px 12px;flex-shrink:0;flex-wrap:wrap;gap:5px;align-items:center">
   <span id="taktikbar-title" style="color:#4ae87a;font-weight:700;font-size:0.82rem;text-transform:uppercase;flex:1;min-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+  <button class="btn" id="btn-first" style="font-size:1rem;padding:4px 11px" title="Till start">&#9646;&#9664;</button>
   <button class="btn" id="btn-prev" style="font-size:1rem;padding:4px 11px">&#9664;</button>
   <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.82rem;min-width:52px;text-align:center">Start</span>
   <button class="btn" id="btn-next" style="font-size:1rem;padding:4px 11px">&#9654;</button>
@@ -1121,6 +1122,15 @@ document.getElementById("btn-taktikbar-save").addEventListener("click",function(
       body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder||"Allm\u00e4nt"})
     }).then(function(){showToast("Film sparad!");cloudStatus("\u2705 Film sparad","#4ae87a");});
   } else {showToast("Film sparad!");cloudStatus("\u2705 Sparad lokalt","#4ae87a");}
+});
+document.getElementById("btn-first").addEventListener("click",function(){
+  if(!playback||playback.animating)return;
+  editingStepIdx=0;
+  playback.stepIndex=0;
+  restoreSnap(taktikFilmer[editingTaktikIdx]?taktikFilmer[editingTaktikIdx].steps[0]:playback.tk.steps[0]);
+  render();
+  updatePlaybar();
+  updateEditStepUI_silent();
 });
 document.getElementById("btn-next").addEventListener("click",function(){
   if(!playback||playback.animating)return;
