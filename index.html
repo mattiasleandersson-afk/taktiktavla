@@ -56,6 +56,7 @@ select.btn { appearance: none; padding-right: 18px; background-image: url("data:
 .del-txt { fill: #fff; font-size: 13px; font-weight: bold; dominant-baseline: central; text-anchor: middle; pointer-events: none; }
 /* &#9472;&#9472; LANDSCAPE MODE &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; */
 body.landscape #topbar { display: none !important; }
+body.fullscreen-portrait #btn-fs-topbar { display: none !important; }
 body.landscape #topbar h1 { display: none !important; }
 body.landscape #bottompanel { display: none !important; }
 body.landscape #panel-toggle-strip { display: none !important; }
@@ -212,23 +213,19 @@ box-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
 
 #fs-enter-btn {
-position: fixed;
-bottom: max(10px, env(safe-area-inset-bottom));
-right: max(10px, env(safe-area-inset-right));
-z-index: 100;
-background: rgba(14,23,16,0.85);
+background: transparent;
 border: 1px solid #4ae87a;
-border-radius: 8px;
+border-radius: 6px;
 color: #4ae87a;
-padding: 7px 12px;
-font-size: 0.78rem;
+padding: 2px 8px;
+font-size: 0.7rem;
 font-weight: 700;
 font-family: Arial Narrow, Arial, sans-serif;
 cursor: pointer;
-display: none;
+margin-left: auto;
 touch-action: manipulation;
 }
-body:not(.landscape) #fs-enter-btn { display: block; }
+body.landscape #fs-enter-btn { display: none; }
 body.fullscreen-portrait #fs-enter-btn { display: none; }
 
 .toast-msg { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: #4ae87a; color: #0a1a0d; padding: 5px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; white-space: nowrap; }
@@ -262,7 +259,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v6.2</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v6.3</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -278,6 +275,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <button class="btn" id="btn-zone">&#9633; Zon</button>
   <button class="btn" id="btn-half">&#189;</button>
   <button class="btn" id="btn-backup" title="Exportera backup">&#128190;</button>
+  <button class="btn" id="btn-fs-topbar" style="color:#4ae87a;border-color:#4ae87a" title="Helsk\u00e4rm">&#x26F6;</button>
   <button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button>
 </div>
 
@@ -356,8 +354,9 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <button id="panel-show-btn">▲ Meny</button>
 
-<div id="panel-toggle-strip" style="background:#1e2e22;border-top:1px solid #2d4a35;display:flex;justify-content:center;flex-shrink:0;position:relative;z-index:10;">
-  <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 24px;font-size:0.72rem;cursor:pointer;width:100%">&#9660;</button>
+<div id="panel-toggle-strip" style="background:#1e2e22;border-top:1px solid #2d4a35;display:flex;align-items:center;flex-shrink:0;position:relative;z-index:10;padding:0 8px;">
+  <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 0;font-size:0.72rem;cursor:pointer;flex:1">&#9660;</button>
+  <button id="fs-enter-btn" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:3px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:Arial Narrow,Arial,sans-serif;display:block">&#x26F6; FS</button>
 </div>
 <div id="bottompanel">
   <div class="tabs" style="align-items:center">
@@ -623,7 +622,6 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <!-- Fullscreen portrait controls -->
 
-<button id="fs-enter-btn">⛶ Helskärm</button>
 <button id="fs-restore-btn">✕ Återställ</button>
 
 <div id="fs-portrait-nav">
@@ -2059,6 +2057,29 @@ function checkShareLink(){
     }
   }).catch(function(){});
 }
+
+// \u2500\u2500 FULLSCREEN PORTRAIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function enterFullscreenPortrait(){document.body.classList.add("fullscreen-portrait");updateFsPortraitNav();}
+function exitFullscreenPortrait(){document.body.classList.remove("fullscreen-portrait");}
+function updateFsPortraitNav(){
+  var label=document.getElementById("fs-step-label");
+  var prev=document.getElementById("fs-prev-btn");
+  var next=document.getElementById("fs-next-btn");
+  var first=document.getElementById("fs-first-btn");
+  if(!label)return;
+  if(playback){
+    var cur=playback.stepIndex,total=playback.tk.steps.length-1;
+    label.textContent=(cur===0?"Start":cur+"/"+total);
+    prev.disabled=cur<=0;next.disabled=cur>=total;first.disabled=cur===0;
+    prev.classList.toggle("active",cur>0);next.classList.toggle("active",cur<total);
+  } else {label.textContent="-";prev.disabled=true;next.disabled=true;first.disabled=true;}
+}
+document.getElementById("fs-enter-btn").addEventListener("click",enterFullscreenPortrait);
+document.getElementById("btn-fs-topbar").addEventListener("click",enterFullscreenPortrait);
+document.getElementById("fs-restore-btn").addEventListener("click",exitFullscreenPortrait);
+document.getElementById("fs-first-btn").addEventListener("click",function(){document.getElementById("btn-first").click();setTimeout(updateFsPortraitNav,100);});
+document.getElementById("fs-prev-btn").addEventListener("click",function(){document.getElementById("btn-prev").click();setTimeout(updateFsPortraitNav,100);});
+document.getElementById("fs-next-btn").addEventListener("click",function(){document.getElementById("btn-next").click();setTimeout(updateFsPortraitNav,100);});
 
 // \u2500\u2500 LANDSCAPE / ORIENTATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function handleOrientation(){
