@@ -215,16 +215,18 @@ box-shadow: 0 2px 12px rgba(0,0,0,0.5);
 position: fixed;
 bottom: max(10px, env(safe-area-inset-bottom));
 right: max(10px, env(safe-area-inset-right));
-z-index: 55;
-background: rgba(14,23,16,0.7);
-border: 1px solid #2d4a35;
+z-index: 100;
+background: rgba(14,23,16,0.85);
+border: 1px solid #4ae87a;
 border-radius: 8px;
 color: #4ae87a;
-padding: 6px 10px;
-font-size: 0.75rem;
+padding: 7px 12px;
+font-size: 0.78rem;
+font-weight: 700;
 font-family: Arial Narrow, Arial, sans-serif;
 cursor: pointer;
 display: none;
+touch-action: manipulation;
 }
 body:not(.landscape) #fs-enter-btn { display: block; }
 body.fullscreen-portrait #fs-enter-btn { display: none; }
@@ -260,7 +262,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v6.1</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v6.2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -354,7 +356,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <button id="panel-show-btn">▲ Meny</button>
 
-<div id="panel-toggle-strip" style="background:#1e2e22;border-top:1px solid #2d4a35;display:flex;justify-content:center;flex-shrink:0;">
+<div id="panel-toggle-strip" style="background:#1e2e22;border-top:1px solid #2d4a35;display:flex;justify-content:center;flex-shrink:0;position:relative;z-index:10;">
   <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 24px;font-size:0.72rem;cursor:pointer;width:100%">&#9660;</button>
 </div>
 <div id="bottompanel">
