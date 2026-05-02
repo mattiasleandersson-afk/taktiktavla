@@ -166,6 +166,69 @@ height: 100vw !important;
 .star-btn.on { color:#ffdd44; }
 .star-btn.off { color:#2d4a35; }
 .arrow-handle { fill:#4ae8e8; stroke:#fff; stroke-width:1; cursor:grab; r:7; }
+/* Fullscreen portrait mode */
+body.fullscreen-portrait #topbar { display: none !important; }
+body.fullscreen-portrait #bottompanel { display: none !important; }
+body.fullscreen-portrait #panel-toggle-strip { display: none !important; }
+body.fullscreen-portrait #taktikbar { display: none !important; }
+body.fullscreen-portrait #mode-badge { display: none !important; }
+body.fullscreen-portrait #fs-restore-btn { display: flex !important; }
+body.fullscreen-portrait #fs-portrait-nav { display: flex !important; }
+
+#fs-restore-btn {
+display: none;
+position: fixed;
+top: max(8px, env(safe-area-inset-top));
+right: max(8px, env(safe-area-inset-right));
+z-index: 60;
+background: rgba(14,23,16,0.88);
+border: 1px solid #3a6b46;
+border-radius: 8px;
+color: #4ae87a;
+padding: 8px 12px;
+font-size: 0.8rem;
+font-weight: 700;
+font-family: Arial Narrow, Arial, sans-serif;
+cursor: pointer;
+align-items: center;
+gap: 6px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+#fs-portrait-nav {
+display: none;
+position: fixed;
+bottom: max(12px, env(safe-area-inset-bottom));
+left: 50%;
+transform: translateX(-50%);
+z-index: 60;
+background: rgba(14,23,16,0.88);
+border: 1px solid #3a6b46;
+border-radius: 12px;
+padding: 6px 12px;
+align-items: center;
+gap: 10px;
+box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+
+#fs-enter-btn {
+position: fixed;
+bottom: max(10px, env(safe-area-inset-bottom));
+right: max(10px, env(safe-area-inset-right));
+z-index: 55;
+background: rgba(14,23,16,0.7);
+border: 1px solid #2d4a35;
+border-radius: 8px;
+color: #4ae87a;
+padding: 6px 10px;
+font-size: 0.75rem;
+font-family: Arial Narrow, Arial, sans-serif;
+cursor: pointer;
+display: none;
+}
+body:not(.landscape) #fs-enter-btn { display: block; }
+body.fullscreen-portrait #fs-enter-btn { display: none; }
+
 .toast-msg { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: #4ae87a; color: #0a1a0d; padding: 5px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; white-space: nowrap; }
 .toast-msg.show { opacity: 1; }
 .zone-shape { cursor: move; }
@@ -197,7 +260,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v6.0</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v6.1</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -555,6 +618,18 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- Landscape nav -->
+
+<!-- Fullscreen portrait controls -->
+
+<button id="fs-enter-btn">⛶ Helskärm</button>
+<button id="fs-restore-btn">✕ Återställ</button>
+
+<div id="fs-portrait-nav">
+  <button class="ls-btn" id="fs-first-btn" style="padding:8px 12px;font-size:1rem">&#9646;&#9664;</button>
+  <button class="ls-btn" id="fs-prev-btn" style="padding:8px 12px;font-size:1rem">&#9664;</button>
+  <span id="fs-step-label" style="color:#4ae87a;font-weight:700;font-size:0.8rem;min-width:70px;text-align:center">-</span>
+  <button class="ls-btn" id="fs-next-btn" style="padding:8px 12px;font-size:1rem">&#9654;</button>
+</div>
 
 <div id="ls-prev-side" style="display:none">
   <button class="ls-btn" id="ls-first-btn" title="Till start">&#9646;&#9664;</button>
@@ -1064,7 +1139,30 @@ function render(){
         window.addEventListener("mousemove",_onMM2);
         window.addEventListener("mouseup",_onMU2);
       });})(labels[i]);}
-  for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);c.setAttribute("fill",p.team==="home"?homeColor:awayColor);c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill",p.team==="home"?"#111":"#fff");if(document.body.classList.contains("landscape"))t.setAttribute("transform","rotate(90,"+p.x+","+p.y+")");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);svg.appendChild(g);if(true){g.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});g.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});}})(players[i]);}
+  for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);c.setAttribute("fill",playerColors[p.id]||(p.team==="home"?homeColor:awayColor));c.setAttribute("stroke","#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill",p.team==="home"?"#111":"#fff");if(document.body.classList.contains("landscape"))t.setAttribute("transform","rotate(90,"+p.x+","+p.y+")");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);svg.appendChild(g);if(true){
+  g.addEventListener("touchstart",function(ev){
+    ev.preventDefault();ev.stopPropagation();
+    var now=Date.now();
+    if(_lastTap.id===p.id&&now-_lastTap.time<400){
+      _lastTap={id:null,time:0};openPlayerColor(p.id);return;
+    }
+    _lastTap={id:p.id,time:now};
+    if(mode!=="move")return;
+    saveUndo();
+    var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);
+    dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};
+    window.addEventListener("touchmove",onTM,{passive:false});
+    window.addEventListener("touchend",onTE);
+  },{passive:false});
+  g.addEventListener("mousedown",function(ev){
+    ev.stopPropagation();
+    if(mode!=="move")return;
+    saveUndo();
+    var pt=svgPt(ev.clientX,ev.clientY);
+    dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};
+    window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);
+  });
+}})(players[i]);}
   var bg=document.createElementNS(ns,"g");bg.setAttribute("class","ball-token");var bhit=document.createElementNS(ns,"circle");bhit.setAttribute("cx",ball.x);bhit.setAttribute("cy",ball.y);bhit.setAttribute("r",18);bhit.setAttribute("fill","transparent");var bt=document.createElementNS(ns,"text");bt.setAttribute("class","ball-text");bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);bt.textContent="\u26bd";bg.appendChild(bhit);bg.appendChild(bt);svg.appendChild(bg);
   if(true){bg.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});bg.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});}
 }
@@ -1740,6 +1838,7 @@ function updatePlaybar(){
   document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";
   renderPlayStepList();
   updateLandscapeStrip();
+  updateFsPortraitNav();
 }
 function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";var rLabel=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);lbl.textContent=rLabel;var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
 function animateToStep(targetIdx){
