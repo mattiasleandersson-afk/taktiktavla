@@ -193,7 +193,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v5.5</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v5.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -302,24 +302,25 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
         <div class="list" id="rec-steps-list"></div>
       </div>
       <div id="edit-taktik-ui" style="display:none">
-        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;align-items:center">
-          <span style="font-size:0.73rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1" id="edit-taktik-title-lbl"></span>
-          <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a">&#9998; Info</button>
-          <button class="btn on" id="btn-edit-taktik-save">Spara film</button>
-          <button class="btn danger" id="btn-edit-taktik-exit">Avsluta</button>
+        <!-- Row 1: step navigation + name + actions -->
+        <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px">
+          <button class="btn" id="btn-edit-step-prev" style="padding:4px 10px;font-size:1rem">&#9664;</button>
+          <span id="edit-step-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;min-width:38px;text-align:center;flex-shrink:0">Start</span>
+          <button class="btn" id="btn-edit-step-next" style="padding:4px 10px;font-size:1rem">&#9654;</button>
+          <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem;min-width:0">
+          <button class="btn on" id="btn-edit-update-step" style="padding:4px 8px" title="Spara steg">&#10003;</button>
+          <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a;padding:4px 8px" title="L&#228;gg till steg">+</button>
+          <button class="btn danger" id="btn-edit-del-step" style="padding:4px 8px" title="Ta bort steg">&#10005;</button>
         </div>
-        <div style="display:flex;gap:5px;margin-bottom:5px">
-          <button class="btn" id="btn-edit-step-prev">&#9664;</button>
-          <span id="edit-step-counter" style="font-size:0.8rem;color:#7aaa88;align-self:center;flex:1;text-align:center">Steg 0/0</span>
-          <button class="btn" id="btn-edit-step-next">&#9654;</button>
-          <button class="btn on" id="btn-edit-update-step">&#10003; Spara steg</button>
+        <!-- Row 2: film title + save/exit -->
+        <div style="display:flex;gap:4px;align-items:center">
+          <span style="font-size:0.72rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="edit-taktik-title-lbl"></span>
+          <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a;padding:3px 7px;font-size:0.68rem">&#9998; Info</button>
+          <button class="btn on" id="btn-edit-taktik-save" style="padding:3px 7px;font-size:0.68rem">Spara</button>
+          <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
         </div>
-        <div style="display:flex;gap:5px;margin-bottom:5px">
-          <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem">
-          <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a">+ Steg</button>
-          <button class="btn danger" id="btn-edit-del-step">&#10005;</button>
-        </div>
-        <div class="list" id="edit-taktik-steps" style="max-height:60px"></div>
+        <!-- Hidden step list (still used by renderEditSteps internally) -->
+        <div class="list" id="edit-taktik-steps" style="display:none"></div>
       </div>
       <div id="no-rec-ui">
         <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
