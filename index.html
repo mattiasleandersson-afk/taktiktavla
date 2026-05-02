@@ -197,7 +197,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v5.9</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v6.0</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -230,6 +230,11 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
     <select id="arrow-type-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
       <option value="solid">&#8212; Hel</option>
       <option value="dashed">&#8229; Streckad</option>
+    </select>
+    <select id="arrow-width-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="2">&#9135; Tunn</option>
+      <option value="3" selected>&#9473; Normal</option>
+      <option value="5">&#9644; Tjock</option>
     </select>
   </div>
   <div id="zone-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:6;pointer-events:auto">
@@ -1295,6 +1300,7 @@ document.getElementById("btn-zone").addEventListener("click",function(){setMode(
 
 document.getElementById("arrow-color-sel").addEventListener("change",function(){arrowColor=this.value;});
 document.getElementById("arrow-type-sel").addEventListener("change",function(){arrowType=this.value;});
+document.getElementById("arrow-width-sel").addEventListener("change",function(){arrowWidth=parseInt(this.value);});
 document.getElementById("freehand-color-sel").addEventListener("change",function(){freehandColor=this.value;});
 document.getElementById("freehand-width-sel").addEventListener("change",function(){freehandWidth=parseInt(this.value);});
 document.getElementById("zone-shape-sel").addEventListener("change",function(){zoneShapeType=this.value;});
@@ -1419,6 +1425,7 @@ function renderTaktikList(){
       var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;
       var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.folder||"Allm\u00e4nt")+" \u00b7 "+(tk.steps.length-1)+" steg";
       var fav=document.createElement("button");fav.className="star-btn "+(favorites[tk.dbId]?"on":"off");fav.textContent="\u2605";fav.title="Favorit";fav.addEventListener("click",function(e){e.stopPropagation();if(tk.dbId)toggleFavorite(tk.dbId);});
+      var fav=document.createElement("button");fav.className="star-btn "+(tk.dbId&&favorites[tk.dbId]?"on":"off");fav.innerHTML="&#9733;";fav.addEventListener("click",function(e){e.stopPropagation();if(tk.dbId)toggleFavorite(tk.dbId);});
       var pb=document.createElement("button");pb.className="sa play";pb.textContent="\u25ba \u00d6ppna";pb.addEventListener("click",function(){startPlayback(idx);});
 
       var dup=document.createElement("button");dup.className="sa";dup.style.cssText="color:#4ae8e8;border-color:#4ae8e8";dup.textContent="Kopiera";dup.addEventListener("click",function(){duplicateTaktik(idx);});
@@ -1429,7 +1436,7 @@ function renderTaktikList(){
         taktikFilmer.push(copy);cloudSaveTaktik(copy);renderTaktikList();showToast("Ny film skapad!");
       });
       var mg=document.createElement("button");mg.className="sa";mg.style.cssText="color:#a78bfa;border-color:#a78bfa";mg.textContent="\u22d3";mg.title="Sammanfoga";mg.addEventListener("click",function(){openMergeTaktik(idx);});
-      var sh=document.createElement("button");sh.className="sa";sh.style.cssText="color:#7aaa88;border-color:#7aaa88";sh.textContent="\ud83d\udd17";sh.title="Dela";sh.addEventListener("click",function(){openShareTaktik(tk);});
+      var sh=document.createElement("button");sh.className="sa";sh.style.cssText="color:#7aaa88;border-color:#7aaa88";sh.textContent="\u29c9";sh.title="Dela";sh.addEventListener("click",function(){openShareTaktik(tk);});
       var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";
       dl.addEventListener("click",function(){if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"DELETE",headers:supaHeaders()}).then(function(){cloudLoadTaktik();});}else{taktikFilmer.splice(idx,1);renderTaktikList();}});
       row.appendChild(nm);row.appendChild(fl);row.appendChild(fav);row.appendChild(pb);row.appendChild(dup);row.appendChild(newFromStart);row.appendChild(mg);row.appendChild(sh);row.appendChild(dl);
@@ -1836,6 +1843,75 @@ function cloudDelete(id){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{met
 function cloudSaveTaktik(tk){var body=JSON.stringify({name:tk.name,data:tk,type:"taktikfilm"});fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:body}).then(function(r){return r.json();}).then(function(data){if(data&&data[0]&&data[0].id){tk.dbId=data[0].id;cloudStatus("\u2705 Film sparad: "+tk.name,"#4ae87a");showToast("Film sparad!");}else cloudStatus("\u274c Fel","#e84a4a");}).catch(function(){cloudStatus("\u274c Anslutningsfel","#e84a4a");});}
 function cloudLoadTaktik(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(Array.isArray(data)){taktikFilmer=data.map(function(row){var tk=row.data;tk.dbId=row.id;if(!tk.folder)tk.folder="Allm\u00e4nt";return tk;});var tfseen={};taktikFolders=["Allm\u00e4nt"];taktikFilmer.forEach(function(tk){if(tk.folder&&!tfseen[tk.folder]){tfseen[tk.folder]=true;if(tk.folder!=="Allm\u00e4nt")taktikFolders.push(tk.folder);}});renderTaktikList();cloudStatus(data.length+" taktikfilmer laddade","#4ae87a");showToast(data.length+" filmer laddade");}}).catch(function(){});}
 
+
+// \u2500\u2500 COPY/PASTE STEP \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+document.getElementById("btn-copy-step").addEventListener("click",function(){
+  if(editingTaktikIdx===null)return;
+  copiedStep=JSON.parse(JSON.stringify(taktikFilmer[editingTaktikIdx].steps[editingStepIdx]));
+  showToast("Steg kopierat!");
+  document.getElementById("btn-paste-step").style.opacity="1";
+});
+document.getElementById("btn-paste-step").addEventListener("click",function(){
+  if(!copiedStep||editingTaktikIdx===null)return;
+  saveTaktikUndo();
+  var tk=taktikFilmer[editingTaktikIdx];
+  var paste=JSON.parse(JSON.stringify(copiedStep));
+  tk.steps.splice(editingStepIdx+1,0,paste);
+  editingStepIdx++;updateEditStepUI();
+  showToast("Steg inklistrat!");
+});
+
+// \u2500\u2500 TAKTIK UNDO \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+document.addEventListener("keydown",function(e){
+  if((e.metaKey||e.ctrlKey)&&e.key==="z"&&!e.shiftKey&&editingTaktikIdx!==null){taktikUndo();}
+  if((e.metaKey||e.ctrlKey)&&(e.key==="y"||(e.key==="z"&&e.shiftKey))&&editingTaktikIdx!==null){taktikRedo();}
+});
+
+// \u2500\u2500 FAVORITES \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var favorites={};
+try{var _fav=localStorage.getItem("taktik_favorites");if(_fav)favorites=JSON.parse(_fav);}catch(e){}
+function toggleFavorite(dbId){
+  if(favorites[dbId])delete favorites[dbId]; else favorites[dbId]=true;
+  try{localStorage.setItem("taktik_favorites",JSON.stringify(favorites));}catch(e){}
+  renderTaktikList();
+}
+
+// \u2500\u2500 PLAYER COLORS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var _pendingColorPlayerId=null;
+var _colorSwatches=["#ffdd44","#e84a4a","#4ae8e8","#4ae87a","#a78bfa","#f97316","#ffffff","#111111"];
+function openPlayerColor(pid){
+  _pendingColorPlayerId=pid;
+  var cont=document.getElementById("player-color-swatches");cont.innerHTML="";
+  _colorSwatches.forEach(function(c){
+    var sw=document.createElement("button");
+    sw.style.cssText="width:36px;height:36px;border-radius:50%;background:"+c+";border:3px solid "+(playerColors[pid]===c?"#4ae87a":"#2d4a35")+";cursor:pointer;margin:2px";
+    sw.addEventListener("click",function(){playerColors[pid]=c;document.getElementById("modal-player-color").classList.add("hidden");render();showToast("F\u00e4rg \u00e4ndrad!");});
+    cont.appendChild(sw);
+  });
+  document.getElementById("modal-player-color").classList.remove("hidden");
+}
+document.getElementById("player-color-reset").addEventListener("click",function(){if(_pendingColorPlayerId)delete playerColors[_pendingColorPlayerId];document.getElementById("modal-player-color").classList.add("hidden");render();});
+document.getElementById("player-color-close").addEventListener("click",function(){document.getElementById("modal-player-color").classList.add("hidden");});
+
+// \u2500\u2500 DOUBLE-TAP PLAYER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var _lastTap={id:null,time:0};
+function handlePlayerDoubleTap(pid){
+  var now=Date.now();
+  if(_lastTap.id===pid&&now-_lastTap.time<400){openPlayerColor(pid);_lastTap={id:null,time:0};}
+  else{_lastTap={id:pid,time:now};}
+}
+
+// \u2500\u2500 BACKUP \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+document.getElementById("btn-backup").addEventListener("click",function(){document.getElementById("modal-backup").classList.remove("hidden");});
+document.getElementById("backup-cancel").addEventListener("click",function(){document.getElementById("modal-backup").classList.add("hidden");});
+document.getElementById("backup-download").addEventListener("click",function(){
+  var data={savedFormations:savedFormations,taktikFilmer:taktikFilmer,exported:new Date().toISOString()};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;
+  a.download="taktiktavla-backup-"+new Date().toISOString().slice(0,10)+".json";
+  a.click();URL.revokeObjectURL(url);
+  document.getElementById("modal-backup").classList.add("hidden");showToast("Backup nedladdad!");
+});
 
 // \u2500\u2500 SHARE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function openShareTaktik(tk){
