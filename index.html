@@ -289,7 +289,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.9</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v8.0</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -769,11 +769,11 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <script>
 window.onerror = function(msg,src,line,col,err){
-  // Show toast instead of destroying page
   var t=document.getElementById("toast-msg");
-  if(t){t.textContent="FEL rad "+line+": "+msg;t.style.background="#e84a4a";t.style.color="#fff";t.classList.add("show");setTimeout(function(){t.classList.remove("show");},6000);}
+  if(t){t.textContent="FEL rad "+line+": "+msg;t.style.background="#e84a4a";t.style.color="#fff";t.style.display="block";t.style.opacity="1";t.style.zIndex="9999";t.style.position="fixed";t.style.top="20px";t.style.left="10px";t.style.right="10px";t.style.bottom="auto";t.style.borderRadius="8px";t.style.padding="12px 16px";t.style.fontSize="0.85rem";t.style.maxWidth="100%";}
+  else{var d=document.createElement("div");d.style.cssText="position:fixed;top:0;left:0;right:0;background:#e84a4a;color:#fff;padding:12px;font-family:monospace;font-size:12px;z-index:99999";d.textContent="FEL rad "+line+": "+msg;document.body.appendChild(d);}
   console.error("FEL rad "+line+":",msg,err);
-  return true; // prevent default handling
+  return true;
 };
 
 var W=400,H=600,format=11,homeColor="#cc2200",awayColor="#002288",displayMode="number";
