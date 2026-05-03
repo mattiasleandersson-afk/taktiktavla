@@ -322,7 +322,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.5</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2635,7 +2635,7 @@ function renderStatistik(){
   if(!trupp.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga spelare<\/span>";return;}
   var hdr=document.createElement("div");hdr.style.cssText="display:grid;grid-template-columns:24px 30px 1fr 40px 40px;gap:4px;padding:3px 8px;font-size:0.65rem;color:#7aaa88;font-weight:700;text-transform:uppercase;border-bottom:1px solid #2d4a35;margin-bottom:3px";hdr.innerHTML="<span><\/span><span>#<\/span><span>Spelare<\/span><span style='text-align:center'>Start<\/span><span style='text-align:center'>Tot<\/span>";list.appendChild(hdr);
   // Sort alphabetically
-  var sortedStats=Object.values(stats).sort(function(a,b){var totA=a.starter+a.inhopp,totB=b.starter+b.inhopp;return totA-totB||a.namn.localeCompare(b.namn,"sv");});
+  var sortedStats=Object.values(stats).sort(function(a,b){var totA=a.starter+a.inhopp,totB=b.starter+b.inhopp;return totB-totA||a.namn.localeCompare(b.namn,"sv");});
   sortedStats.forEach(function(sp){
     var row=document.createElement("div");
     row.style.cssText="display:grid;grid-template-columns:24px 30px 1fr 40px 40px;gap:4px;padding:5px 8px;font-size:0.78rem;border-bottom:1px solid #1a2e1f;cursor:pointer;align-items:center";
