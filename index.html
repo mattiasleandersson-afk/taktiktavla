@@ -289,7 +289,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.3</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.4</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -716,7 +716,7 @@ window.onerror = function(msg,src,line,col,err){
   document.body.innerHTML="<div style='padding:20px;font-family:monospace;color:#e84a4a;font-size:13px'><b>FEL rad "+line+":</b><br>"+msg+"<br><br>"+(err&&err.stack?err.stack:"")+"</div>";
 };
 
-var W=400,H=600,format=11,homeColor="#e8c84a",awayColor="#e84a4a",displayMode="number";
+var W=400,H=600,format=11,homeColor="#cc2200",awayColor="#002288",displayMode="number";
 var players=[],ball={x:W/2,y:H/2};
 var arrows=[],labels=[],arrowStart=null,arrowCurrent=null;
 var selectedId=null,mode="move",pendingLabelPt=null,labelSize=13;
