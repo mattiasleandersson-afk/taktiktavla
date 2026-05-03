@@ -294,7 +294,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v9.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v9.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -504,7 +504,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
         <div style="font-size:0.72rem;color:#7aaa88;margin-bottom:4px;text-transform:uppercase;font-weight:700">V&#228;lj spelare</div>
         <div class="list" id="match-trupp-list" style="max-height:90px"></div>
         <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
-          <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; &#214;ppna i taktik</button>
+          <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; Laguppst&#228;llning</button>
           <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
         </div>
       </div>
@@ -1330,9 +1330,32 @@ function render(){
   g.addEventListener("touchstart",function(ev){
     ev.preventDefault();ev.stopPropagation();
     var now=Date.now();
-    // Match roster mode: single tap opens player picker
+    // Match roster mode: long press opens picker, short tap = drag
     if(matchRoster.length&&p.team==="home"){
-      openPlayerPicker(p.id);return;
+      var _lpTimer=setTimeout(function(){
+        _lpTimer=null;
+        dragging=null;
+        window.removeEventListener("touchmove",onTM);
+        window.removeEventListener("touchend",onTE);
+        openPlayerPicker(p.id);
+      },400);
+      // If user starts dragging, cancel long press
+      function _onTMmatch(ev2){
+        if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}
+        onTM(ev2);
+      }
+      function _onTEmatch(ev2){
+        window.removeEventListener("touchmove",_onTMmatch);
+        window.removeEventListener("touchend",_onTEmatch);
+        if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;dragging=null;}
+        else onTE(ev2);
+      }
+      saveUndo();
+      var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);
+      dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};
+      window.addEventListener("touchmove",_onTMmatch,{passive:false});
+      window.addEventListener("touchend",_onTEmatch);
+      return;
     }
     if(_lastTap.id===p.id&&now-_lastTap.time<400){
       _lastTap={id:null,time:0};openPlayerColor(p.id);return;
