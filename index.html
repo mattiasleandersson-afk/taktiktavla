@@ -318,7 +318,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.3</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.4</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2559,12 +2559,22 @@ document.getElementById("btn-spara-match").addEventListener("click",function(){
   var avbytare=trupp.filter(function(sp){return matchSelections[sp.id]==="avbytare";}).map(function(sp){return sp.id;});
   if(!startade.length){showToast("V\u00e4lj startspelare!");return;}
   var match={datum:datum,motstand:motstand||"Ok\u00e4nd",startade:startade,avbytare:avbytare};
-  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match,type:"match",folder:"Allm\u00e4nt"})})
-  .then(function(r){return r.json();}).then(function(data){
-    if(data&&data[0])match.dbId=data[0].id;
-    matcher.push(match);matchSelections={};renderMatchTruppList();renderStatistik();
-    showToast("Match sparad: "+datum+" vs "+match.motstand);
-  }).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});
+  var editId=window._editingMatchId||null;
+  if(editId){
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+editId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match})})
+    .then(function(){
+      matcher=matcher.map(function(x){return x.dbId===editId?Object.assign({},match,{dbId:editId}):x;});
+      matchSelections={};window._editingMatchId=null;renderMatchTruppList();renderStatistik();
+      showToast("Match uppdaterad!");
+    });
+  } else {
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match,type:"match",folder:"Allm\u00e4nt"})})
+    .then(function(r){return r.json();}).then(function(data){
+      if(data&&data[0])match.dbId=data[0].id;
+      matcher.push(match);matchSelections={};renderMatchTruppList();renderStatistik();
+      showToast("Match sparad: "+datum+" vs "+match.motstand);
+    }).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});
+  }
 });
 
 function renderStatistik(){
@@ -2585,6 +2595,80 @@ function renderStatistik(){
 }
 
 document.getElementById("btn-stat-filter").addEventListener("click",renderStatistik);
+
+// Stat sub-tabs
+document.querySelectorAll("[data-stat]").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var target=this.getAttribute("data-stat");
+    document.querySelectorAll("[data-stat]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-stat")===target);});
+    document.getElementById("stat-spelare-view").style.display=target==="spelare"?"":"none";
+    document.getElementById("stat-matcher-view").style.display=target==="matcher"?"":"none";
+    if(target==="matcher")renderMatchHistory();
+  });
+});
+
+function renderMatchHistory(){
+  var list=document.getElementById("match-history-list");
+  if(!list)return;
+  list.innerHTML="";
+  var from=document.getElementById("stat-from").value;
+  var to=document.getElementById("stat-to").value;
+  var filtered=matcher.filter(function(m){
+    if(from&&m.datum<from)return false;
+    if(to&&m.datum>to)return false;
+    return true;
+  }).sort(function(a,b){return b.datum.localeCompare(a.datum);});
+
+  if(!filtered.length){
+    list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga matcher i perioden<\/span>";
+    return;
+  }
+
+  filtered.forEach(function(m){
+    var row=document.createElement("div");row.className="row";row.style.flexWrap="wrap";
+    var info=document.createElement("div");
+    info.style.cssText="flex:1;min-width:0";
+    var datum=document.createElement("span");datum.style.cssText="font-weight:700;font-size:0.82rem;color:#4ae87a";datum.textContent=m.datum;
+    var mot=document.createElement("span");mot.className="row-sub";mot.style.marginLeft="6px";mot.textContent="vs "+m.motstand;
+    var cnt=document.createElement("span");cnt.className="row-sub";cnt.style.display="block";
+    cnt.textContent=(m.startade||[]).length+" startade";
+    info.appendChild(datum);info.appendChild(mot);info.appendChild(cnt);
+
+    var editBtn=document.createElement("button");editBtn.className="sa";editBtn.style.cssText="color:#e8c84a;border-color:#e8c84a";editBtn.textContent="\u270f";
+    editBtn.addEventListener("click",function(){openEditMatch(m);});
+
+    var delBtn=document.createElement("button");delBtn.className="sa del";delBtn.textContent="\u00d7";
+    delBtn.addEventListener("click",function(){
+      if(!confirm("Ta bort match "+m.datum+" vs "+m.motstand+"?"))return;
+      if(m.dbId){
+        fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+m.dbId,{method:"DELETE",headers:supaHeaders()})
+        .then(function(){matcher=matcher.filter(function(x){return x.dbId!==m.dbId;});renderMatchHistory();renderStatistik();showToast("Match borttagen!");});
+      } else {
+        matcher=matcher.filter(function(x){return x!==m;});renderMatchHistory();renderStatistik();showToast("Match borttagen!");
+      }
+    });
+
+    row.appendChild(info);row.appendChild(editBtn);row.appendChild(delBtn);
+    list.appendChild(row);
+  });
+}
+
+function openEditMatch(m){
+  // Load this match into the match tab for editing
+  document.querySelectorAll("[data-lag]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-lag")==="match");});
+  document.getElementById("lag-trupp").style.display="none";
+  document.getElementById("lag-match").style.display="";
+  document.getElementById("lag-statistik").style.display="none";
+  document.getElementById("match-datum").value=m.datum;
+  document.getElementById("match-motstand").value=m.motstand||"";
+  // Restore selections
+  matchSelections={};
+  (m.startade||[]).forEach(function(id){matchSelections[id]="start";});
+  renderMatchTruppList();
+  // Store dbId for update instead of insert
+  window._editingMatchId=m.dbId||null;
+  showToast("Redigerar match "+m.datum+" vs "+m.motstand);
+}
 
 document.getElementById("btn-export-stat-csv").addEventListener("click",function(){
   var from=document.getElementById("stat-from").value,to=document.getElementById("stat-to").value;
