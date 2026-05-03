@@ -294,7 +294,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v9.6</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v9.7</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -751,6 +751,19 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <span id="ls-step-label" style="color:#4ae87a;font-weight:700;font-size:0.78rem;text-transform:uppercase;font-family:Arial Narrow,Arial,sans-serif;letter-spacing:0.5px">-</span>
 </div>
 
+<!-- PLAYER PICKER MODAL -->
+
+<div class="modal-bg hidden" id="modal-player-picker">
+  <div class="modal" style="max-width:320px">
+    <h2>V&#228;lj spelare</h2>
+    <div id="player-picker-list" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;margin-bottom:12px"></div>
+    <div class="mactions">
+      <button class="btn danger" id="player-picker-clear">Rensa position</button>
+      <button class="btn" id="player-picker-cancel">Avbryt</button>
+    </div>
+  </div>
+</div>
+
 <!-- PLAYER COLOR MODAL -->
 
 <div class="modal-bg hidden" id="modal-player-color">
@@ -798,6 +811,9 @@ var taktikFolders=["Allm\u00e4nt"],currentTaktikFolder="Alla",taktikSearch="";
 var freehandPaths=[],zones=[]; // new drawing types
 var activeFormationId=null,activeFormationName=null;
 var trupp=[]; // [{id,nr,namn}]
+var matchRoster=[]; // spelare uttagna till match [{id,nr,namn}]
+var matchAssignments={}; // {playerId(on pitch) -> truppId}
+var assigningPlayerId=null; // which pitch player we are assigning
 var matcher=[]; // [{id,datum,motstand,startade:[id,...],avbytare:[id,...]}]
 var matchSelections={}; // {playerId: 'start'|'avbytare'|null} // currently loaded formation
 var showKorridorer=false;
@@ -1314,6 +1330,10 @@ function render(){
   g.addEventListener("touchstart",function(ev){
     ev.preventDefault();ev.stopPropagation();
     var now=Date.now();
+    // Match roster mode: single tap opens player picker
+    if(matchRoster.length&&p.team==="home"){
+      openPlayerPicker(p.id);return;
+    }
     if(_lastTap.id===p.id&&now-_lastTap.time<400){
       _lastTap={id:null,time:0};openPlayerColor(p.id);return;
     }
@@ -2233,6 +2253,72 @@ document.getElementById("backup-download").addEventListener("click",function(){
   document.getElementById("modal-backup").classList.add("hidden");showToast("Backup nedladdad!");
 });
 
+// \u2500\u2500 PLAYER PICKER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+function getAssignedTruppIds(){
+  var assigned={};
+  Object.values(matchAssignments).forEach(function(tid){assigned[tid]=true;});
+  return assigned;
+}
+
+function openPlayerPicker(pitchPlayerId){
+  if(!matchRoster.length)return; // not in match mode
+  assigningPlayerId=pitchPlayerId;
+  var assigned=getAssignedTruppIds();
+  var list=document.getElementById("player-picker-list");
+  list.innerHTML="";
+  var available=matchRoster.filter(function(sp){
+    // show if not assigned OR assigned to this player
+    return !assigned[sp.id]||(matchAssignments[pitchPlayerId]===sp.id);
+  });
+  if(!available.length){
+    list.innerHTML="<span style='color:#7aaa88;font-size:0.85rem'>Alla spelare placerade<\/span>";
+  }
+  available.forEach(function(sp){
+    var isCurrent=matchAssignments[pitchPlayerId]===sp.id;
+    var btn=document.createElement("button");
+    btn.className="btn"+(isCurrent?" on":"");
+    btn.style.cssText="width:100%;text-align:left;padding:8px 12px;font-size:0.85rem";
+    btn.innerHTML="<b style='color:#4ae87a'>#"+sp.nr+"<\/b> "+sp.namn;
+    btn.addEventListener("click",function(){
+      assignPlayerToPosition(pitchPlayerId,sp.id);
+      document.getElementById("modal-player-picker").classList.add("hidden");
+      assigningPlayerId=null;
+    });
+    list.appendChild(btn);
+  });
+  document.getElementById("modal-player-picker").classList.remove("hidden");
+}
+
+function assignPlayerToPosition(pitchPlayerId,truppId){
+  // Remove this truppId from any other assignment
+  Object.keys(matchAssignments).forEach(function(pid){
+    if(matchAssignments[pid]===truppId&&pid!==pitchPlayerId)delete matchAssignments[pid];
+  });
+  matchAssignments[pitchPlayerId]=truppId;
+  // Update player on pitch
+  var sp=matchRoster.find(function(x){return x.id===truppId;});
+  var p=players.find(function(x){return x.id===pitchPlayerId;});
+  if(sp&&p){p.number=sp.nr;p.name=sp.namn;}
+  render();
+}
+
+document.getElementById("player-picker-cancel").addEventListener("click",function(){
+  document.getElementById("modal-player-picker").classList.add("hidden");
+  assigningPlayerId=null;
+});
+
+document.getElementById("player-picker-clear").addEventListener("click",function(){
+  if(assigningPlayerId){
+    delete matchAssignments[assigningPlayerId];
+    var p=players.find(function(x){return x.id===assigningPlayerId;});
+    if(p){p.number=0;p.name="";}
+    render();
+  }
+  document.getElementById("modal-player-picker").classList.add("hidden");
+  assigningPlayerId=null;
+});
+
 // \u2500\u2500 SHARE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function openShareTaktik(tk){
   document.getElementById("share-link-inp").value="Genererar...";
@@ -2345,11 +2431,17 @@ function renderMatchTruppList(){
 document.getElementById("btn-match-to-taktik").addEventListener("click",function(){
   var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";});
   if(!startade.length){showToast("V\u00e4lj startspelare f\u00f6rst!");return;}
+  // Store match roster and reset assignments
+  matchRoster=startade.slice();
+  matchAssignments={};
+  // Reset home players to blank
+  var homeP=players.filter(function(p){return p.team==="home";});
+  homeP.forEach(function(p){p.name="";p.number=0;});
+  // Switch to formations panel
   document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});
   document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});
-  var homeP=players.filter(function(p){return p.team==="home";});
-  for(var i=0;i<homeP.length&&i<startade.length;i++){homeP[i].number=startade[i].nr;homeP[i].name=startade[i].namn;}
-  render();showToast("Uppst\u00e4llning \u00f6ppnad i taktik!");
+  render();
+  showToast("Tryck p\u00e5 en position f\u00f6r att placera spelare!");
 });
 
 document.getElementById("btn-spara-match").addEventListener("click",function(){
