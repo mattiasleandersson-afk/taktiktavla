@@ -318,7 +318,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.6</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.7</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -440,7 +440,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <div class="tabs" style="align-items:center">
     <button class="tab on" data-panel="formations">Formation</button>
     <button class="tab" data-panel="taktik">&#127916; Taktik</button>
-    <button class="tab" data-panel="saves">Sparade</button>
+    <button class="tab" data-panel="saves">Uppst&#228;ll.</button>
     <button class="tab" data-panel="lag">Lag</button>
   </div>
   <div class="panel on" id="panel-formations">
@@ -536,6 +536,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
           <span id="match-counter" style="font-size:0.78rem;color:#4ae87a;font-weight:700">0 valda</span>
         </div>
         <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+          <button class="btn" id="btn-ny-match" style="color:#4ae87a;border-color:#4ae87a">+ Ny match</button>
           <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem;flex:1">
           <input type="text" id="match-motstand" placeholder="Motst&#229;ndare..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
         </div>
@@ -2542,11 +2543,21 @@ document.getElementById("btn-add-trupp").addEventListener("click",function(){
 });
 document.getElementById("ny-spelare-namn").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("btn-add-trupp").click();});
 
+document.getElementById("btn-ny-match").addEventListener("click",function(){
+  matchSelections={};
+  var d=new Date();
+  document.getElementById("match-datum").value=d.toISOString().slice(0,10);
+  document.getElementById("match-motstand").value="";
+  window._editingMatchId=null;
+  renderMatchTruppList();
+  showToast("Ny match!");
+});
+
 function renderMatchTruppList(){
   var list=document.getElementById("match-trupp-list");if(!list)return;list.innerHTML="";
   var nSelected=Object.values(matchSelections).filter(function(v){return v==="start";}).length;
   var counter=document.getElementById("match-counter");
-  if(counter)counter.textContent=nSelected+" vald"+(nSelected===1?"":"e");
+  if(counter)counter.textContent=nSelected+" vald"+(nSelected===1?"":"a");
   var sorted=trupp.slice().sort(function(a,b){return(a.nr||0)-(b.nr||0);});
   if(!sorted.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>L\u00e4gg till spelare i truppen f\u00f6rst<\/span>";return;}
   sorted.forEach(function(sp){
@@ -2573,7 +2584,7 @@ document.getElementById("btn-match-to-taktik").addEventListener("click",function
   document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});
   document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});
   // Show only attacking half (home half) for lineup
-  halfMode=1; updateViewBox();
+  halfMode=2; updateViewBox();
   render();
   renderBench();
   showToast("Tryck p\u00e5 en position f\u00f6r att placera spelare!");
