@@ -54,7 +54,8 @@ select.btn { appearance: none; padding-right: 18px; background-image: url("data:
 #pitch-svg { touch-action: none; display: block; max-width: 100%; max-height: 100%; }
 #mode-badge { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); padding: 4px 14px; border-radius: 20px; font-size: 0.73rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; pointer-events: none; display: none; }
 #play-title { color: #4ae87a; font-weight: 700; font-size: 0.88rem; text-transform: uppercase; flex: 1; min-width: 80px; }
-#bottompanel { background: #1e2e22; border-top: 1px solid #2d4a35; padding: 8px 10px; flex-shrink: 0; max-height: 38vh; overflow-y: auto; }
+#bottompanel { background: #1e2e22; border-top: 1px solid #2d4a35; padding: 8px 10px; flex-shrink: 0; max-height: 38vh; overflow-y: auto; transition: max-height 0.2s ease; }
+#bottompanel.expanded { max-height: 70vh; }
 #bottompanel.hidden { display: none; }
 #panel-show-btn { position: fixed; bottom: 0; right: 10px; background: #1e2e22; border: 1px solid #2d4a35; border-bottom: none; border-radius: 6px 6px 0 0; padding: 4px 10px; font-size: 0.72rem; color: #7aaa88; cursor: pointer; display: none; z-index: 20; }
 #panel-show-btn.visible { display: block; }
@@ -321,7 +322,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.1</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1735,7 +1736,7 @@ document.getElementById("btn-topbar-toggle").addEventListener("click",function()
 });
 
 document.getElementById("taktik-search").addEventListener("input",function(e){taktikSearch=e.target.value;renderTaktikList();});
-document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="lag"){halfMode=1;updateViewBox();document.getElementById("pitch-wrapper").style.display="none";document.getElementById("taktikbar").style.display="none";}if(name!=="lag"){document.getElementById("pitch-wrapper").style.display="";if(halfMode===1&&matchRoster.length===0){halfMode=0;updateViewBox();}}if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
+document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="lag"){halfMode=1;updateViewBox();}else{document.getElementById("bottompanel").classList.remove("expanded");}if(name!=="lag"&&halfMode===1&&matchRoster.length===0){halfMode=0;updateViewBox();}if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
 function startRecording(name){activeTaktik={name:name,steps:[currentSnap()]};document.getElementById("rec-badge").style.display="block";document.getElementById("rec-ui").style.display="block";document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-name-lbl").textContent="\u25cf "+name;renderRecSteps();}
 document.getElementById("btn-add-step").addEventListener("click",function(){if(!activeTaktik)return;activeTaktik.steps.push(currentSnap());renderRecSteps();});
 document.getElementById("btn-stop-rec").addEventListener("click",function(){if(!activeTaktik||activeTaktik.steps.length<2)return;var newFilm={name:activeTaktik.name,steps:activeTaktik.steps};taktikFilmer.push(newFilm);cloudSaveTaktik(newFilm);activeTaktik=null;document.getElementById("rec-badge").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("no-rec-ui").style.display="block";renderTaktikList();});
@@ -2487,7 +2488,7 @@ try{document.querySelectorAll("[data-lag]").forEach(function(btn){
     document.getElementById("lag-match").style.display=target==="match"?"":"none";
     document.getElementById("lag-statistik").style.display=target==="statistik"?"":"none";
     if(target==="match")renderMatchTruppList();
-    if(target==="statistik")renderStatistik();
+    if(target==="statistik"){renderStatistik();document.getElementById("bottompanel").classList.add("expanded");}else{document.getElementById("bottompanel").classList.remove("expanded");}
   });
 });
 
@@ -2585,7 +2586,6 @@ document.getElementById("btn-match-to-taktik").addEventListener("click",function
   // Show only attacking half (home half) for lineup
   halfMode=1;
   updateViewBox();
-  document.getElementById("pitch-wrapper").style.display="";
   render();
   renderBench();
   showToast("Tryck p\u00e5 en position f\u00f6r att placera spelare!");
