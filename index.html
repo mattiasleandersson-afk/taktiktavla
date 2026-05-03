@@ -322,7 +322,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.2</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.3</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -563,6 +563,11 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
         </div>
         <div id="stat-spelare-view">
           <div class="list" id="stat-list" style="max-height:200px"></div>
+          <div id="stat-action-bar" style="display:none;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap">
+            <span id="stat-sel-count" style="font-size:0.75rem;color:#4ae87a;font-weight:700;flex:1">0 valda</span>
+            <button class="btn" id="btn-stat-clear-sel">Rensa</button>
+            <button class="btn on" id="btn-stat-to-match">&#9917; Skapa match</button>
+          </div>
           <div style="display:flex;gap:5px;margin-top:6px">
             <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
             <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
@@ -2617,6 +2622,8 @@ document.getElementById("btn-spara-match").addEventListener("click",function(){
   }
 });
 
+var statSelections={}; // {truppId: true}
+
 function renderStatistik(){
   var list=document.getElementById("stat-list");if(!list)return;
   var from=document.getElementById("stat-from").value;
@@ -2626,7 +2633,7 @@ function renderStatistik(){
   filtered.forEach(function(m){(m.startade||[]).forEach(function(id){if(stats[id])stats[id].starter++;});(m.avbytare||[]).forEach(function(id){if(stats[id])stats[id].inhopp++;});});
   list.innerHTML="";
   if(!trupp.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga spelare<\/span>";return;}
-  var hdr=document.createElement("div");hdr.style.cssText="display:grid;grid-template-columns:30px 1fr 44px 44px;gap:4px;padding:3px 8px;font-size:0.65rem;color:#7aaa88;font-weight:700;text-transform:uppercase;border-bottom:1px solid #2d4a35;margin-bottom:3px";hdr.innerHTML="<span>#<\/span><span>Spelare<\/span><span style='text-align:center'>Start<\/span><span style='text-align:center'>Tot<\/span>";list.appendChild(hdr);
+  var hdr=document.createElement("div");hdr.style.cssText="display:grid;grid-template-columns:24px 30px 1fr 40px 40px;gap:4px;padding:3px 8px;font-size:0.65rem;color:#7aaa88;font-weight:700;text-transform:uppercase;border-bottom:1px solid #2d4a35;margin-bottom:3px";hdr.innerHTML="<span><\/span><span>#<\/span><span>Spelare<\/span><span style='text-align:center'>Start<\/span><span style='text-align:center'>Tot<\/span>";list.appendChild(hdr);
   Object.values(stats).sort(function(a,b){return(b.starter+b.inhopp)-(a.starter+a.inhopp)||a.nr-b.nr;}).forEach(function(s){
     var row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:30px 1fr 44px 44px;gap:4px;padding:3px 8px;font-size:0.78rem;border-bottom:1px solid #1a2e1f";
     row.innerHTML="<span style='color:#7aaa88'>#"+s.nr+"<\/span><span>"+s.namn+"<\/span><span style='text-align:center;color:#4ae87a'>"+s.starter+"<\/span><span style='text-align:center;font-weight:700'>"+(s.starter+s.inhopp)+"<\/span>";
@@ -2634,7 +2641,43 @@ function renderStatistik(){
   });
 }
 
-document.getElementById("btn-stat-filter").addEventListener("click",renderStatistik);
+document.getElementById("btn-stat-filter").addEventListener("click",function(){statSelections={};renderStatistik();});
+
+function renderStatActionBar(){
+  var bar=document.getElementById("stat-action-bar");if(!bar)return;
+  var n=Object.keys(statSelections).length;
+  bar.style.display=n>0?"flex":"none";
+  var cnt=document.getElementById("stat-sel-count");if(cnt)cnt.textContent=n+" vald"+(n===1?"":"a");
+}
+
+document.getElementById("btn-stat-clear-sel").addEventListener("click",function(){
+  statSelections={};renderStatistik();
+});
+
+document.getElementById("btn-stat-to-match").addEventListener("click",function(){
+  var selectedIds=Object.keys(statSelections);
+  if(!selectedIds.length)return;
+  // Set match selections
+  matchSelections={};
+  selectedIds.forEach(function(id){matchSelections[id]="start";});
+  // Set match roster from trupp
+  matchRoster=trupp.filter(function(sp){return statSelections[sp.id];});
+  matchAssignments={};
+  // Reset home players
+  players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
+  // Switch to match tab to set date/opponent first
+  document.querySelectorAll("[data-lag]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-lag")==="match");});
+  document.getElementById("lag-trupp").style.display="none";
+  document.getElementById("lag-match").style.display="";
+  document.getElementById("lag-statistik").style.display="none";
+  document.getElementById("bottompanel").classList.remove("expanded");
+  // Set today's date
+  var d=new Date();document.getElementById("match-datum").value=d.toISOString().slice(0,10);
+  document.getElementById("match-motstand").value="";
+  window._editingMatchId=null;
+  renderMatchTruppList();
+  showToast(matchRoster.length+" spelare valda! Fyll i motst\u00e5ndare och tryck Laguppst\u00e4llning");
+});
 
 // Stat sub-tabs
 document.querySelectorAll("[data-stat]").forEach(function(btn){
