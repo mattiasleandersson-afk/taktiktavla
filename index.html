@@ -289,7 +289,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.1</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -663,6 +663,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <button class="ls-btn" id="fs-prev-btn" style="padding:8px 12px;font-size:1rem">&#9664;</button>
   <span id="fs-step-label" style="color:#4ae87a;font-weight:700;font-size:0.8rem;min-width:70px;text-align:center">-</span>
   <button class="ls-btn" id="fs-next-btn" style="padding:8px 12px;font-size:1rem">&#9654;</button>
+  <button class="ls-btn" id="fs-day-btn" style="font-size:0.8rem;padding:6px 10px">&#9728;</button>
 </div>
 
 <div id="ls-prev-side" style="display:none">
@@ -2170,6 +2171,7 @@ document.getElementById("fs-restore-btn").addEventListener("click",exitFullscree
 document.getElementById("fs-first-btn").addEventListener("click",function(){document.getElementById("btn-first").click();setTimeout(updateFsPortraitNav,100);});
 document.getElementById("fs-prev-btn").addEventListener("click",function(){document.getElementById("btn-prev").click();setTimeout(updateFsPortraitNav,100);});
 document.getElementById("fs-next-btn").addEventListener("click",function(){document.getElementById("btn-next").click();setTimeout(updateFsPortraitNav,100);});
+document.getElementById("fs-day-btn").addEventListener("click",function(){document.getElementById("btn-daylight").click();this.classList.toggle("active",daylightMode);});
 
 // \u2500\u2500 LANDSCAPE / ORIENTATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function handleOrientation(){
