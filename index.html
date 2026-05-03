@@ -321,7 +321,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.0</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.1</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -561,14 +561,14 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
           <button class="lag-tab" id="stat-tab-matcher" data-stat="matcher">Matcher</button>
         </div>
         <div id="stat-spelare-view">
-          <div class="list" id="stat-list" style="max-height:100px"></div>
+          <div class="list" id="stat-list" style="max-height:200px"></div>
           <div style="display:flex;gap:5px;margin-top:6px">
             <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
             <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
           </div>
         </div>
         <div id="stat-matcher-view" style="display:none">
-          <div class="list" id="match-history-list" style="max-height:140px"></div>
+          <div class="list" id="match-history-list" style="max-height:200px"></div>
         </div>
       </div>
     </div>
@@ -1735,7 +1735,7 @@ document.getElementById("btn-topbar-toggle").addEventListener("click",function()
 });
 
 document.getElementById("taktik-search").addEventListener("input",function(e){taktikSearch=e.target.value;renderTaktikList();});
-document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="lag"){halfMode=1;updateViewBox();}if(name!=="lag"&&halfMode===1&&matchRoster.length===0){halfMode=0;updateViewBox();}if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
+document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="lag"){halfMode=1;updateViewBox();document.getElementById("pitch-wrapper").style.display="none";document.getElementById("taktikbar").style.display="none";}if(name!=="lag"){document.getElementById("pitch-wrapper").style.display="";if(halfMode===1&&matchRoster.length===0){halfMode=0;updateViewBox();}}if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
 function startRecording(name){activeTaktik={name:name,steps:[currentSnap()]};document.getElementById("rec-badge").style.display="block";document.getElementById("rec-ui").style.display="block";document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-name-lbl").textContent="\u25cf "+name;renderRecSteps();}
 document.getElementById("btn-add-step").addEventListener("click",function(){if(!activeTaktik)return;activeTaktik.steps.push(currentSnap());renderRecSteps();});
 document.getElementById("btn-stop-rec").addEventListener("click",function(){if(!activeTaktik||activeTaktik.steps.length<2)return;var newFilm={name:activeTaktik.name,steps:activeTaktik.steps};taktikFilmer.push(newFilm);cloudSaveTaktik(newFilm);activeTaktik=null;document.getElementById("rec-badge").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("no-rec-ui").style.display="block";renderTaktikList();});
@@ -2585,6 +2585,7 @@ document.getElementById("btn-match-to-taktik").addEventListener("click",function
   // Show only attacking half (home half) for lineup
   halfMode=1;
   updateViewBox();
+  document.getElementById("pitch-wrapper").style.display="";
   render();
   renderBench();
   showToast("Tryck p\u00e5 en position f\u00f6r att placera spelare!");
