@@ -318,7 +318,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.5</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -346,6 +346,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <div id="bench-bar">
+  <button id="bench-exit-btn" style="background:transparent;border:1px solid #e84a4a;border-radius:5px;color:#e84a4a;padding:2px 8px;font-size:0.65rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">&#10005; Avsluta</button>
   <span class="bench-label">Avbytare:</span>
   <div id="bench-players" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
   <div style="display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0">
@@ -2348,6 +2349,16 @@ document.getElementById("bench-size-down").addEventListener("click",function(){
   render();
 });
 
+document.getElementById("bench-exit-btn").addEventListener("click",function(){
+  matchRoster=[];matchAssignments={};window._editingMatchId=null;
+  halfMode=0;updateViewBox();
+  // Reset player names/numbers
+  players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
+  render();
+  document.getElementById("bench-bar").classList.remove("active");
+  showToast("Laguppst\u00e4llning avslutad");
+});
+
 function renderBench(){
   var bar=document.getElementById("bench-bar");
   var cont=document.getElementById("bench-players");
@@ -2530,6 +2541,9 @@ document.getElementById("ny-spelare-namn").addEventListener("keydown",function(e
 
 function renderMatchTruppList(){
   var list=document.getElementById("match-trupp-list");if(!list)return;list.innerHTML="";
+  var nSelected=Object.values(matchSelections).filter(function(v){return v==="start";}).length;
+  var counter=document.getElementById("match-counter");
+  if(counter)counter.textContent=nSelected+" vald"+(nSelected===1?"":"e");
   var sorted=trupp.slice().sort(function(a,b){return(a.nr||0)-(b.nr||0);});
   if(!sorted.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>L\u00e4gg till spelare i truppen f\u00f6rst<\/span>";return;}
   sorted.forEach(function(sp){
@@ -2555,6 +2569,8 @@ document.getElementById("btn-match-to-taktik").addEventListener("click",function
   // Switch to formations panel
   document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});
   document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});
+  // Show only attacking half (home half) for lineup
+  halfMode=1; updateViewBox();
   render();
   renderBench();
   showToast("Tryck p\u00e5 en position f\u00f6r att placera spelare!");
