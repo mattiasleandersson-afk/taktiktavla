@@ -318,7 +318,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.8</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2584,7 +2584,8 @@ document.getElementById("btn-match-to-taktik").addEventListener("click",function
   document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});
   document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});
   // Show only attacking half (home half) for lineup
-  halfMode=2; updateViewBox();
+  halfMode=1;
+  updateViewBox();
   render();
   renderBench();
   showToast("Tryck p\u00e5 en position f\u00f6r att placera spelare!");
