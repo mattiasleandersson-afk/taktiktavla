@@ -322,7 +322,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.9</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v12.0</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2768,13 +2768,8 @@ function renderMatchHistory(){
   var list=document.getElementById("match-history-list");
   if(!list)return;
   list.innerHTML="";
-  var from=document.getElementById("stat-from").value;
-  var to=document.getElementById("stat-to").value;
-  var filtered=matcher.filter(function(m){
-    if(from&&m.datum<from)return false;
-    if(to&&m.datum>to)return false;
-    return true;
-  }).sort(function(a,b){return b.datum.localeCompare(a.datum);});
+  // Show ALL matches, not filtered by date
+  var filtered=matcher.slice().sort(function(a,b){return b.datum.localeCompare(a.datum);});
 
   if(!filtered.length){
     list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga matcher i perioden<\/span>";
