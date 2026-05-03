@@ -2247,132 +2247,285 @@ document.getElementById("share-copy-btn").addEventListener("click",function(){
 document.getElementById("share-close-btn").addEventListener("click",function(){document.getElementById("modal-share").classList.add("hidden");});
 
 // Check if opened via share link
-function checkShareLink(){
-  var params=new URLSearchParams(window.location.search);
-  var shareId=params.get("share");
-  if(!shareId)return;
-  // Load shared taktik from Supabase
-  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+shareId,{headers:supaHeaders()})
-  .then(function(r){return r.json();})
-  .then(function(data){
-    if(data&&data[0]){
-      var tk=data[0].data;tk.dbId=data[0].id;
-      taktikFilmer=[tk];
-      renderTaktikList();
-      // Auto-open
-      startPlayback(0);
-      showToast("Delade filmen: "+tk.name);
-    }
+// \u2500\u2500 LAG SYSTEM \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+document.querySelectorAll("[data-lag]").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    var target=this.getAttribute("data-lag");
+    document.querySelectorAll("[data-lag]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-lag")===target);});
+    document.getElementById("lag-trupp").style.display=target==="trupp"?"":"none";
+    document.getElementById("lag-match").style.display=target==="match"?"":"none";
+    document.getElementById("lag-statistik").style.display=target==="statistik"?"":"none";
+    if(target==="match")renderMatchTruppList();
+    if(target==="statistik")renderStatistik();
+  });
+});
+
+function saveTrupp(){
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.trupp",{headers:supaHeaders()})
+  .then(function(r){return r.json();}).then(function(data){
+    if(data&&data[0]){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+data[0].id,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({data:{trupp:trupp}})});}
+    else{fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:"trupp",data:{trupp:trupp},type:"trupp",folder:"Allm\u00e4nt"})});}
+  });
+}
+
+function loadTrupp(){
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.trupp",{headers:supaHeaders()})
+  .then(function(r){return r.json();}).then(function(data){
+    if(data&&data[0]&&data[0].data&&data[0].data.trupp)trupp=data[0].data.trupp;
+    renderTruppList();
   }).catch(function(){});
 }
 
-// \u2500\u2500 FULLSCREEN PORTRAIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function enterFullscreenPortrait(){document.body.classList.add("fullscreen-portrait");updateFsPortraitNav();}
-function exitFullscreenPortrait(){document.body.classList.remove("fullscreen-portrait");}
-function updateFsPortraitNav(){
-  var label=document.getElementById("fs-step-label");
-  var prev=document.getElementById("fs-prev-btn");
-  var next=document.getElementById("fs-next-btn");
-  var first=document.getElementById("fs-first-btn");
-  if(!label)return;
-  if(playback){
-    var cur=playback.stepIndex,total=playback.tk.steps.length-1;
-    label.textContent=(cur===0?"Start":cur+"/"+total);
-    prev.disabled=cur<=0;next.disabled=cur>=total;first.disabled=cur===0;
-    prev.classList.toggle("active",cur>0);next.classList.toggle("active",cur<total);
-  } else {label.textContent="-";prev.disabled=true;next.disabled=true;first.disabled=true;}
+function loadMatcher(){
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.match&order=name.desc",{headers:supaHeaders()})
+  .then(function(r){return r.json();}).then(function(data){
+    if(data&&Array.isArray(data))matcher=data.map(function(row){var m=row.data;m.dbId=row.id;return m;});
+    renderStatistik();
+  }).catch(function(){});
 }
-document.getElementById("fs-enter-btn").addEventListener("click",enterFullscreenPortrait);
-document.getElementById("btn-fs-topbar").addEventListener("click",enterFullscreenPortrait);
-document.getElementById("fs-restore-btn").addEventListener("click",exitFullscreenPortrait);
-document.getElementById("fs-first-btn").addEventListener("click",function(){document.getElementById("btn-first").click();setTimeout(updateFsPortraitNav,100);});
-document.getElementById("fs-prev-btn").addEventListener("click",function(){document.getElementById("btn-prev").click();setTimeout(updateFsPortraitNav,100);});
-document.getElementById("fs-next-btn").addEventListener("click",function(){document.getElementById("btn-next").click();setTimeout(updateFsPortraitNav,100);});
-document.getElementById("fs-day-btn").addEventListener("click",function(){document.getElementById("btn-daylight").click();this.classList.toggle("active",daylightMode);});
+
+function renderTruppList(){
+  var list=document.getElementById("trupp-list");if(!list)return;
+  list.innerHTML="";
+  var sorted=trupp.slice().sort(function(a,b){return(a.nr||0)-(b.nr||0);});
+  if(!sorted.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga spelare i truppen</span>";return;}
+  sorted.forEach(function(sp){
+    var row=document.createElement("div");row.className="row";
+    var nr=document.createElement("span");nr.style.cssText="font-weight:900;color:#4ae87a;min-width:24px;font-size:0.85rem";nr.textContent="#"+sp.nr;
+    var nm=document.createElement("span");nm.className="row-name";nm.textContent=sp.namn;
+    var ed=document.createElement("button");ed.className="sa";ed.style.cssText="color:#e8c84a;border-color:#e8c84a";ed.textContent="\u270f";
+    var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";
+    ed.addEventListener("click",function(){document.getElementById("ny-spelare-nr").value=sp.nr;document.getElementById("ny-spelare-namn").value=sp.namn;trupp=trupp.filter(function(x){return x.id!==sp.id;});renderTruppList();saveTrupp();});
+    dl.addEventListener("click",function(){trupp=trupp.filter(function(x){return x.id!==sp.id;});renderTruppList();saveTrupp();showToast(sp.namn+" borttagen");});
+    row.appendChild(nr);row.appendChild(nm);row.appendChild(ed);row.appendChild(dl);list.appendChild(row);
+  });
+}
+
+document.getElementById("btn-add-trupp").addEventListener("click",function(){
+  var nr=parseInt(document.getElementById("ny-spelare-nr").value)||0;
+  var namn=document.getElementById("ny-spelare-namn").value.trim();
+  if(!namn)return;
+  trupp.push({id:"sp"+Date.now(),nr:nr,namn:namn});
+  document.getElementById("ny-spelare-nr").value="";document.getElementById("ny-spelare-namn").value="";
+  renderTruppList();saveTrupp();showToast(namn+" tillagd!");
+});
+document.getElementById("ny-spelare-namn").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("btn-add-trupp").click();});
+
+function renderMatchTruppList(){
+  var list=document.getElementById("match-trupp-list");if(!list)return;list.innerHTML="";
+  var sorted=trupp.slice().sort(function(a,b){return(a.nr||0)-(b.nr||0);});
+  if(!sorted.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>L\u00e4gg till spelare i truppen f\u00f6rst</span>";return;}
+  sorted.forEach(function(sp){
+    var sel=matchSelections[sp.id]||null;
+    var row=document.createElement("div");row.className="row";row.style.padding="4px 8px";
+    var nr=document.createElement("span");nr.style.cssText="font-weight:900;color:#4ae87a;min-width:24px;font-size:0.82rem";nr.textContent="#"+sp.nr;
+    var nm=document.createElement("span");nm.style.cssText="flex:1;font-size:0.82rem";nm.textContent=sp.namn;
+    var btnS=document.createElement("button");btnS.className="btn"+(sel==="start"?" on":"");btnS.style.cssText="padding:2px 7px;font-size:0.65rem";btnS.textContent="Start";
+    var btnA=document.createElement("button");btnA.className="btn"+(sel==="avbytare"?" on":"");btnA.style.cssText="padding:2px 7px;font-size:0.65rem";if(sel==="avbytare"){btnA.style.color="#e8c84a";btnA.style.borderColor="#e8c84a";}btnA.textContent="Inhopp";
+    btnS.addEventListener("click",function(){matchSelections[sp.id]=sel==="start"?null:"start";renderMatchTruppList();});
+    btnA.addEventListener("click",function(){matchSelections[sp.id]=sel==="avbytare"?null:"avbytare";renderMatchTruppList();});
+    row.appendChild(nr);row.appendChild(nm);row.appendChild(btnS);row.appendChild(btnA);list.appendChild(row);
+  });
+}
+
+document.getElementById("btn-match-to-taktik").addEventListener("click",function(){
+  var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";});
+  if(!startade.length){showToast("V\u00e4lj startspelare f\u00f6rst!");return;}
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});
+  document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});
+  var homeP=players.filter(function(p){return p.team==="home";});
+  for(var i=0;i<homeP.length&&i<startade.length;i++){homeP[i].number=startade[i].nr;homeP[i].name=startade[i].namn;}
+  render();showToast("Uppst\u00e4llning \u00f6ppnad i taktik!");
+});
+
+document.getElementById("btn-spara-match").addEventListener("click",function(){
+  var datum=document.getElementById("match-datum").value;
+  var motstand=document.getElementById("match-motstand").value.trim();
+  if(!datum){showToast("V\u00e4lj datum!");return;}
+  var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";}).map(function(sp){return sp.id;});
+  var avbytare=trupp.filter(function(sp){return matchSelections[sp.id]==="avbytare";}).map(function(sp){return sp.id;});
+  if(!startade.length){showToast("V\u00e4lj startspelare!");return;}
+  var match={datum:datum,motstand:motstand||"Ok\u00e4nd",startade:startade,avbytare:avbytare};
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match,type:"match",folder:"Allm\u00e4nt"})})
+  .then(function(r){return r.json();}).then(function(data){
+    if(data&&data[0])match.dbId=data[0].id;
+    matcher.push(match);matchSelections={};renderMatchTruppList();renderStatistik();
+    showToast("Match sparad: "+datum+" vs "+match.motstand);
+  }).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});
+});
+
+function renderStatistik(){
+  var list=document.getElementById("stat-list");if(!list)return;
+  var from=document.getElementById("stat-from").value;
+  var to=document.getElementById("stat-to").value;
+  var filtered=matcher.filter(function(m){if(from&&m.datum<from)return false;if(to&&m.datum>to)return false;return true;});
+  var stats={};trupp.forEach(function(sp){stats[sp.id]={namn:sp.namn,nr:sp.nr,starter:0,inhopp:0};});
+  filtered.forEach(function(m){(m.startade||[]).forEach(function(id){if(stats[id])stats[id].starter++;});(m.avbytare||[]).forEach(function(id){if(stats[id])stats[id].inhopp++;});});
+  list.innerHTML="";
+  if(!trupp.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga spelare</span>";return;}
+  var hdr=document.createElement("div");hdr.style.cssText="display:grid;grid-template-columns:30px 1fr 44px 44px 44px;gap:4px;padding:3px 8px;font-size:0.65rem;color:#7aaa88;font-weight:700;text-transform:uppercase;border-bottom:1px solid #2d4a35;margin-bottom:3px";hdr.innerHTML="<span>#</span><span>Spelare</span><span style='text-align:center'>Start</span><span style='text-align:center'>Inhopp</span><span style='text-align:center'>Tot</span>";list.appendChild(hdr);
+  Object.values(stats).sort(function(a,b){return(b.starter+b.inhopp)-(a.starter+a.inhopp)||a.nr-b.nr;}).forEach(function(s){
+    var row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:30px 1fr 44px 44px 44px;gap:4px;padding:3px 8px;font-size:0.78rem;border-bottom:1px solid #1a2e1f";
+    row.innerHTML="<span style='color:#7aaa88'>#"+s.nr+"</span><span>"+s.namn+"</span><span style='text-align:center;color:#4ae87a'>"+s.starter+"</span><span style='text-align:center;color:#e8c84a'>"+s.inhopp+"</span><span style='text-align:center;font-weight:700'>"+(s.starter+s.inhopp)+"</span>";
+    list.appendChild(row);
+  });
+}
+
+document.getElementById("btn-stat-filter").addEventListener("click",renderStatistik);
+
+document.getElementById("btn-export-stat-csv").addEventListener("click",function(){
+  var from=document.getElementById("stat-from").value,to=document.getElementById("stat-to").value;
+  var filtered=matcher.filter(function(m){if(from&&m.datum<from)return false;if(to&&m.datum>to)return false;return true;});
+  var stats={};trupp.forEach(function(sp){stats[sp.id]={namn:sp.namn,nr:sp.nr,starter:0,inhopp:0};});
+  filtered.forEach(function(m){(m.startade||[]).forEach(function(id){if(stats[id])stats[id].starter++;});(m.avbytare||[]).forEach(function(id){if(stats[id])stats[id].inhopp++;});});
+  var rows=["#,Spelare,Starter,Inhopp,Totalt"];
+  Object.values(stats).sort(function(a,b){return a.nr-b.nr;}).forEach(function(s){rows.push(s.nr+","+s.namn+","+s.starter+","+s.inhopp+","+(s.starter+s.inhopp));});
+  var blob=new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8;"});
+  var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="spelarstatistik.csv";a.click();URL.revokeObjectURL(url);showToast("CSV exporterad!");
+});
+
+document.getElementById("btn-export-stat-pdf").addEventListener("click",function(){
+  var from=document.getElementById("stat-from").value,to=document.getElementById("stat-to").value;
+  var filtered=matcher.filter(function(m){if(from&&m.datum<from)return false;if(to&&m.datum>to)return false;return true;});
+  var stats={};trupp.forEach(function(sp){stats[sp.id]={namn:sp.namn,nr:sp.nr,starter:0,inhopp:0};});
+  filtered.forEach(function(m){(m.startade||[]).forEach(function(id){if(stats[id])stats[id].starter++;});(m.avbytare||[]).forEach(function(id){if(stats[id])stats[id].inhopp++;});});
+  var rows=Object.values(stats).sort(function(a,b){return a.nr-b.nr;});
+  var pdoc="<html><head><style>body{font-family:Arial,sans-serif;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#f0f0f0}</style></head><body><h2>Spelarstatistik</h2><p>"+(from?"Fr\u00e5n: "+from:"")+(to?" \u2013 Till: "+to:"")+" ("+filtered.length+" matcher)</p><table><tr><th>#</th><th>Spelare</th><th>Starter</th><th>Inhopp</th><th>Totalt</th></tr>";
+
+rows.forEach(function(s){pdoc+=”<tr><td>”+s.nr+”</td><td>”+s.namn+”</td><td>”+s.starter+”</td><td>”+s.inhopp+”</td><td>”+(s.starter+s.inhopp)+”</td></tr>”;});
+pdoc+=”</table></body></html>”;
+var w=window.open(””,”_blank”);if(w){w.document.write(pdoc);w.document.close();w.print();}showToast(“PDF \u00f6ppnad!”);
+});
+
+(function(){var d=new Date();var ds=d.toISOString().slice(0,10);document.getElementById(“match-datum”).value=ds;document.getElementById(“stat-to”).value=ds;var y=new Date(d);y.setMonth(y.getMonth()-6);document.getElementById(“stat-from”).value=y.toISOString().slice(0,10);})();
+
+function checkShareLink(){
+var params=new URLSearchParams(window.location.search);
+var shareId=params.get(“share”);
+if(!shareId)return;
+// Load shared taktik from Supabase
+fetch(SUPA_URL+”/rest/v1/”+SUPA_TABLE+”?id=eq.”+shareId,{headers:supaHeaders()})
+.then(function(r){return r.json();})
+.then(function(data){
+if(data&&data[0]){
+var tk=data[0].data;tk.dbId=data[0].id;
+taktikFilmer=[tk];
+renderTaktikList();
+// Auto-open
+startPlayback(0);
+showToast(“Delade filmen: “+tk.name);
+}
+}).catch(function(){});
+}
+
+// \u2500\u2500 FULLSCREEN PORTRAIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function enterFullscreenPortrait(){document.body.classList.add(“fullscreen-portrait”);updateFsPortraitNav();}
+function exitFullscreenPortrait(){document.body.classList.remove(“fullscreen-portrait”);}
+function updateFsPortraitNav(){
+var label=document.getElementById(“fs-step-label”);
+var prev=document.getElementById(“fs-prev-btn”);
+var next=document.getElementById(“fs-next-btn”);
+var first=document.getElementById(“fs-first-btn”);
+if(!label)return;
+if(playback){
+var cur=playback.stepIndex,total=playback.tk.steps.length-1;
+label.textContent=(cur===0?“Start”:cur+”/”+total);
+prev.disabled=cur<=0;next.disabled=cur>=total;first.disabled=cur===0;
+prev.classList.toggle(“active”,cur>0);next.classList.toggle(“active”,cur<total);
+} else {label.textContent=”-”;prev.disabled=true;next.disabled=true;first.disabled=true;}
+}
+document.getElementById(“fs-enter-btn”).addEventListener(“click”,enterFullscreenPortrait);
+document.getElementById(“btn-fs-topbar”).addEventListener(“click”,enterFullscreenPortrait);
+document.getElementById(“fs-restore-btn”).addEventListener(“click”,exitFullscreenPortrait);
+document.getElementById(“fs-first-btn”).addEventListener(“click”,function(){document.getElementById(“btn-first”).click();setTimeout(updateFsPortraitNav,100);});
+document.getElementById(“fs-prev-btn”).addEventListener(“click”,function(){document.getElementById(“btn-prev”).click();setTimeout(updateFsPortraitNav,100);});
+document.getElementById(“fs-next-btn”).addEventListener(“click”,function(){document.getElementById(“btn-next”).click();setTimeout(updateFsPortraitNav,100);});
+document.getElementById(“fs-day-btn”).addEventListener(“click”,function(){document.getElementById(“btn-daylight”).click();this.classList.toggle(“active”,daylightMode);});
 
 // \u2500\u2500 LANDSCAPE / ORIENTATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function handleOrientation(){
-  var isLandscape = window.innerWidth > window.innerHeight;
-  document.body.classList.toggle("landscape", isLandscape);
-  if(isLandscape){
-    // Update landscape strip
-    updateLandscapeStrip();
-  }
+var isLandscape = window.innerWidth > window.innerHeight;
+document.body.classList.toggle(“landscape”, isLandscape);
+if(isLandscape){
+// Update landscape strip
+updateLandscapeStrip();
+}
 }
 
 function updateLandscapeStrip(){
-  var label = document.getElementById("ls-step-label");
-  var prevBtn = document.getElementById("ls-prev-btn");
-  var nextBtn = document.getElementById("ls-next-btn");
-  var firstBtn = document.getElementById("ls-first-btn");
-  if(!label) return;
-  if(playback){
-    var cur = playback.stepIndex;
-    var total = playback.tk.steps.length - 1;
-    label.textContent = playback.tk.name + "  " + (cur===0?"Start":cur+"/"+total);
-    var hasPrev = cur > 0;
-    var hasNext = cur < total;
-    prevBtn.disabled = !hasPrev;
-    nextBtn.disabled = !hasNext;
-    firstBtn.disabled = cur === 0;
-    prevBtn.classList.toggle("active", hasPrev);
-    nextBtn.classList.toggle("active", hasNext);
-  } else {
-    label.textContent = "-";
-    prevBtn.disabled = true;
-    nextBtn.disabled = true;
-    firstBtn.disabled = true;
-    prevBtn.classList.remove("active");
-    nextBtn.classList.remove("active");
-  }
+var label = document.getElementById(“ls-step-label”);
+var prevBtn = document.getElementById(“ls-prev-btn”);
+var nextBtn = document.getElementById(“ls-next-btn”);
+var firstBtn = document.getElementById(“ls-first-btn”);
+if(!label) return;
+if(playback){
+var cur = playback.stepIndex;
+var total = playback.tk.steps.length - 1;
+label.textContent = playback.tk.name + “  “ + (cur===0?“Start”:cur+”/”+total);
+var hasPrev = cur > 0;
+var hasNext = cur < total;
+prevBtn.disabled = !hasPrev;
+nextBtn.disabled = !hasNext;
+firstBtn.disabled = cur === 0;
+prevBtn.classList.toggle(“active”, hasPrev);
+nextBtn.classList.toggle(“active”, hasNext);
+} else {
+label.textContent = “-”;
+prevBtn.disabled = true;
+nextBtn.disabled = true;
+firstBtn.disabled = true;
+prevBtn.classList.remove(“active”);
+nextBtn.classList.remove(“active”);
+}
 }
 
-document.getElementById("ls-first-btn").addEventListener("click", function(){
-  document.getElementById("btn-first").click();
-  setTimeout(updateLandscapeStrip, 100);
+document.getElementById(“ls-first-btn”).addEventListener(“click”, function(){
+document.getElementById(“btn-first”).click();
+setTimeout(updateLandscapeStrip, 100);
 });
-document.getElementById("ls-prev-btn").addEventListener("click", function(){
-  if(!playback || playback.animating) return;
-  if(playback.stepIndex <= 0) return;
-  var idx = playback.stepIndex - 1;
-  editingStepIdx = idx;
-  animateToStep(idx);
-  updateEditStepUI_silent();
-  setTimeout(updateLandscapeStrip, 100);
+document.getElementById(“ls-prev-btn”).addEventListener(“click”, function(){
+if(!playback || playback.animating) return;
+if(playback.stepIndex <= 0) return;
+var idx = playback.stepIndex - 1;
+editingStepIdx = idx;
+animateToStep(idx);
+updateEditStepUI_silent();
+setTimeout(updateLandscapeStrip, 100);
 });
-document.getElementById("ls-next-btn").addEventListener("click", function(){
-  if(!playback || playback.animating) return;
-  if(playback.stepIndex >= playback.tk.steps.length - 1) return;
-  var idx = playback.stepIndex + 1;
-  editingStepIdx = idx;
-  animateToStep(idx);
-  updateEditStepUI_silent();
-  setTimeout(updateLandscapeStrip, 100);
+document.getElementById(“ls-next-btn”).addEventListener(“click”, function(){
+if(!playback || playback.animating) return;
+if(playback.stepIndex >= playback.tk.steps.length - 1) return;
+var idx = playback.stepIndex + 1;
+editingStepIdx = idx;
+animateToStep(idx);
+updateEditStepUI_silent();
+setTimeout(updateLandscapeStrip, 100);
 });
-document.getElementById("ls-speed-sel").addEventListener("change", function(){
-  animSpeed = parseInt(this.value);
-  document.getElementById("play-speed").value = this.value;
+document.getElementById(“ls-speed-sel”).addEventListener(“change”, function(){
+animSpeed = parseInt(this.value);
+document.getElementById(“play-speed”).value = this.value;
 });
-document.getElementById("ls-loop").addEventListener("change", function(){
-  document.getElementById("play-loop").checked = this.checked;
+document.getElementById(“ls-loop”).addEventListener(“change”, function(){
+document.getElementById(“play-loop”).checked = this.checked;
 });
 
 var _orientTimer=null;
 function debouncedOrientation(){
-  if(_orientTimer)clearTimeout(_orientTimer);
-  _orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=null;},200);
+if(_orientTimer)clearTimeout(_orientTimer);
+_orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=null;},200);
 }
-window.addEventListener("resize", debouncedOrientation);
-window.addEventListener("orientationchange", function(){
-  if(_orientTimer)clearTimeout(_orientTimer);
-  _orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=null;},350);
+window.addEventListener(“resize”, debouncedOrientation);
+window.addEventListener(“orientationchange”, function(){
+if(_orientTimer)clearTimeout(_orientTimer);
+_orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=null;},350);
 });
 
 // Init
 drawPitch();
 handleOrientation();
 buildFormationBtns();
-initPlayers("4-4-2");
+initPlayers(“4-4-2”);
 render();
 cloudLoadSaves();
 cloudLoadTaktik();
