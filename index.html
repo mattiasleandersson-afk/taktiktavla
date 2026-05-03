@@ -294,7 +294,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v9.4</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v9.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -424,52 +424,6 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 ```
   <!-- LAG PANEL -->
-  <div id="panel-lag" class="panel">
-    <div style="display:flex;gap:5px;margin-bottom:6px">
-      <button class="lag-tab on" data-lag="trupp" id="lag-tab-trupp">Trupp</button>
-      <button class="lag-tab" data-lag="match" id="lag-tab-match">Match</button>
-      <button class="lag-tab" data-lag="statistik" id="lag-tab-statistik">Statistik</button>
-    </div>
-
-    <!-- TRUPP -->
-    <div id="lag-trupp">
-      <div style="display:flex;gap:5px;margin-bottom:6px">
-        <input type="number" id="ny-spelare-nr" placeholder="Nr" min="1" max="99" style="width:52px;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
-        <input type="text" id="ny-spelare-namn" placeholder="Spelarnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
-        <button class="btn on" id="btn-add-trupp">+ L&#228;gg till</button>
-      </div>
-      <div class="list" id="trupp-list" style="max-height:130px"></div>
-    </div>
-
-    <!-- MATCH -->
-    <div id="lag-match" style="display:none">
-      <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
-        <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem;flex:1">
-        <input type="text" id="match-motstand" placeholder="Motst&#229;ndare..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
-      </div>
-      <div style="font-size:0.72rem;color:#7aaa88;margin-bottom:4px;text-transform:uppercase;font-weight:700">V&#228;lj spelare</div>
-      <div class="list" id="match-trupp-list" style="max-height:90px"></div>
-      <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
-        <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; &#214;ppna i taktik</button>
-        <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
-      </div>
-    </div>
-
-    <!-- STATISTIK -->
-    <div id="lag-statistik" style="display:none">
-      <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
-        <input type="date" id="stat-from" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
-        <span style="color:#7aaa88;font-size:0.72rem">&#8211;</span>
-        <input type="date" id="stat-to" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
-        <button class="btn" id="btn-stat-filter">Filtrera</button>
-      </div>
-      <div class="list" id="stat-list" style="max-height:120px"></div>
-      <div style="display:flex;gap:5px;margin-top:6px">
-        <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
-        <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
-      </div>
-    </div>
-  </div>
 
   <div id="edit-taktik-ui" style="display:none">
     <!-- Row 1: step navigation + name + actions -->
@@ -522,6 +476,57 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
       <div class="list" id="saves-list"></div>
     </div>
   </div>
+  <div id="panel-lag" class="panel">
+      <div style="width:100%">
+        <div style="display:flex;gap:5px;margin-bottom:6px">
+            <button class="lag-tab on" data-lag="trupp" id="lag-tab-trupp">Trupp</button>
+            <button class="lag-tab" data-lag="match" id="lag-tab-match">Match</button>
+            <button class="lag-tab" data-lag="statistik" id="lag-tab-statistik">Statistik</button>
+          </div>
+
+```
+      <!-- TRUPP -->
+      <div id="lag-trupp">
+        <div style="display:flex;gap:5px;margin-bottom:6px">
+          <input type="number" id="ny-spelare-nr" placeholder="Nr" min="1" max="99" style="width:52px;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+          <input type="text" id="ny-spelare-namn" placeholder="Spelarnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+          <button class="btn on" id="btn-add-trupp">+ L&#228;gg till</button>
+        </div>
+        <div class="list" id="trupp-list" style="max-height:130px"></div>
+      </div>
+
+      <!-- MATCH -->
+      <div id="lag-match" style="display:none">
+        <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+          <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem;flex:1">
+          <input type="text" id="match-motstand" placeholder="Motst&#229;ndare..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+        </div>
+        <div style="font-size:0.72rem;color:#7aaa88;margin-bottom:4px;text-transform:uppercase;font-weight:700">V&#228;lj spelare</div>
+        <div class="list" id="match-trupp-list" style="max-height:90px"></div>
+        <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
+          <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; &#214;ppna i taktik</button>
+          <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
+        </div>
+      </div>
+
+      <!-- STATISTIK -->
+      <div id="lag-statistik" style="display:none">
+        <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+          <input type="date" id="stat-from" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+          <span style="color:#7aaa88;font-size:0.72rem">&#8211;</span>
+          <input type="date" id="stat-to" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+          <button class="btn" id="btn-stat-filter">Filtrera</button>
+        </div>
+        <div class="list" id="stat-list" style="max-height:120px"></div>
+        <div style="display:flex;gap:5px;margin-top:6px">
+          <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
+          <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+```
+
 </div>
 
 <!-- SETUP MODAL -->
