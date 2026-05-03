@@ -322,7 +322,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.8</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2632,9 +2632,15 @@ document.getElementById("btn-spara-match").addEventListener("click",function(){
     fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match,type:"match",folder:"Allm\u00e4nt"})})
     .then(function(r){return r.json();}).then(function(data){
       if(data&&data[0])match.dbId=data[0].id;
-      matcher.push(match);matchSelections={};renderMatchTruppList();renderStatistik();
+      matcher.push(match);matchSelections={};
+      renderMatchTruppList();renderStatistik();renderMatchHistory();
       showToast("Match sparad: "+datum+" vs "+match.motstand);
-    }).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});
+    }).catch(function(err){
+      cloudStatus("\u274c Fel: "+err.message,"#e84a4a");
+      // Save locally anyway
+      matcher.push(match);renderMatchTruppList();renderStatistik();
+      showToast("Match sparad lokalt");
+    });
   }
 });
 
