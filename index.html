@@ -267,26 +267,29 @@ body.fullscreen-portrait #fs-enter-btn { display: none; }
 display: none;
 background: rgba(14,23,16,0.92);
 border-bottom: 1px solid #2d4a35;
-padding: 5px 10px;
+padding: 3px 8px;
 flex-shrink: 0;
-flex-wrap: wrap;
-gap: 6px;
+flex-wrap: nowrap;
+gap: 4px;
 align-items: center;
+overflow-x: auto;
+min-height: 0;
 }
 #bench-bar.active { display: flex; }
 .bench-player {
 display: flex;
-flex-direction: column;
+flex-direction: row;
 align-items: center;
+gap: 3px;
 background: #1e2e22;
 border: 1px solid #2d4a35;
-border-radius: 20px;
-padding: 3px 10px;
-min-width: 44px;
+border-radius: 12px;
+padding: 2px 7px;
+flex-shrink: 0;
 }
-.bench-player .bench-nr { font-size: 0.85rem; font-weight: 900; color: #4ae87a; line-height: 1.1; }
-.bench-player .bench-name { font-size: 0.65rem; color: #edf5ee; line-height: 1.1; white-space: nowrap; }
-.bench-label { font-size: 0.65rem; color: #7aaa88; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 2px; }
+.bench-player .bench-nr { font-size: 0.78rem; font-weight: 900; color: #4ae87a; white-space: nowrap; }
+.bench-player .bench-name { font-size: 0.72rem; color: #edf5ee; white-space: nowrap; }
+.bench-label { font-size: 0.62rem; color: #7aaa88; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; flex-shrink: 0; }
 .toast-msg { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: #4ae87a; color: #0a1a0d; padding: 5px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; white-space: nowrap; }
 .toast-msg.show { opacity: 1; }
 .zone-shape { cursor: move; }
@@ -318,7 +321,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.8</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1735,7 +1738,7 @@ document.getElementById("btn-topbar-toggle").addEventListener("click",function()
 });
 
 document.getElementById("taktik-search").addEventListener("input",function(e){taktikSearch=e.target.value;renderTaktikList();});
-document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
+document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="lag"){halfMode=1;updateViewBox();}if(name!=="lag"&&halfMode===1&&matchRoster.length===0){halfMode=0;updateViewBox();}if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
 function startRecording(name){activeTaktik={name:name,steps:[currentSnap()]};document.getElementById("rec-badge").style.display="block";document.getElementById("rec-ui").style.display="block";document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-name-lbl").textContent="\u25cf "+name;renderRecSteps();}
 document.getElementById("btn-add-step").addEventListener("click",function(){if(!activeTaktik)return;activeTaktik.steps.push(currentSnap());renderRecSteps();});
 document.getElementById("btn-stop-rec").addEventListener("click",function(){if(!activeTaktik||activeTaktik.steps.length<2)return;var newFilm={name:activeTaktik.name,steps:activeTaktik.steps};taktikFilmer.push(newFilm);cloudSaveTaktik(newFilm);activeTaktik=null;document.getElementById("rec-badge").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("no-rec-ui").style.display="block";renderTaktikList();});
@@ -2378,8 +2381,7 @@ function renderBench(){
     var div=document.createElement("div");div.className="bench-player";
     var nr=document.createElement("span");nr.className="bench-nr";nr.textContent="#"+sp.nr;
     var nm=document.createElement("span");nm.className="bench-name";nm.textContent=sp.namn;
-    div.appendChild(nr);div.appendChild(nm);
-    cont.appendChild(div);
+    div.appendChild(nr);div.appendChild(nm);cont.appendChild(div);
   });
   bar.classList.toggle("active",matchRoster.length>0);
 }
