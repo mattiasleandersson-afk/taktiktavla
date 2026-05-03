@@ -322,7 +322,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.6</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.7</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2524,7 +2524,7 @@ function loadMatcher(){
 function renderTruppList(){
   var list=document.getElementById("trupp-list");if(!list)return;
   list.innerHTML="";
-  var sorted=trupp.slice().sort(function(a,b){return a.namn.localeCompare(b.namn,"sv");});
+  var sorted=trupp.slice().sort(function(a,b){var ca=getPlayerMatchCount(a.id),cb=getPlayerMatchCount(b.id);return ca-cb||a.namn.localeCompare(b.namn,"sv");});
   if(!sorted.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga spelare i truppen<\/span>";return;}
   sorted.forEach(function(sp){
     var row=document.createElement("div");row.className="row";
@@ -2558,6 +2558,16 @@ document.getElementById("btn-ny-match").addEventListener("click",function(){
   showToast("Ny match!");
 });
 
+function getPlayerMatchCount(truppId){
+  var from=document.getElementById("stat-from")?document.getElementById("stat-from").value:"";
+  var to=document.getElementById("stat-to")?document.getElementById("stat-to").value:"";
+  return matcher.filter(function(m){
+    if(from&&m.datum<from)return false;
+    if(to&&m.datum>to)return false;
+    return(m.startade||[]).indexOf(truppId)>=0||(m.avbytare||[]).indexOf(truppId)>=0;
+  }).length;
+}
+
 function renderMatchTruppList(){
   var list=document.getElementById("match-trupp-list");if(!list)return;list.innerHTML="";
   var nSelected=Object.values(matchSelections).filter(function(v){return v==="start";}).length;
@@ -2570,9 +2580,13 @@ function renderMatchTruppList(){
     var row=document.createElement("div");row.className="row";row.style.padding="4px 8px";
     var nr=document.createElement("span");nr.style.cssText="font-weight:900;color:#4ae87a;min-width:24px;font-size:0.82rem";nr.textContent="#"+sp.nr;
     var nm=document.createElement("span");nm.style.cssText="flex:1;font-size:0.82rem";nm.textContent=sp.namn;
+    var cnt=getPlayerMatchCount(sp.id);
+    var cntEl=document.createElement("span");
+    cntEl.style.cssText="font-size:0.68rem;color:#7aaa88;white-space:nowrap";
+    cntEl.textContent=cnt+" mat.";
     var btnS=document.createElement("button");btnS.className="btn"+(sel==="start"?" on":"");btnS.style.cssText="padding:2px 7px;font-size:0.65rem";btnS.textContent="Start";
     btnS.addEventListener("click",function(){matchSelections[sp.id]=sel==="start"?null:"start";renderMatchTruppList();});
-    row.appendChild(nr);row.appendChild(nm);row.appendChild(btnS);list.appendChild(row);
+    row.appendChild(nr);row.appendChild(nm);row.appendChild(cntEl);row.appendChild(btnS);list.appendChild(row);
   });
 }
 
