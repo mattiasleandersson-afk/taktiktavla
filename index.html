@@ -63,7 +63,10 @@ select.btn { appearance: none; padding-right: 18px; background-image: url("data:
 .tab.on { background: #4ae87a; color: #0a1a0d; border-color: #4ae87a; }
 .panel { display: none; }
 .panel.on { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-#panel-lag.on { flex-direction: column; align-items: stretch; gap: 0; }
+#panel-lag.on { 
+  display: block !important;
+  width: 100%;
+}
 #panel-formations.on { flex-direction: column; align-items: stretch; }
 .frow { display: flex; gap: 5px; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .frow::-webkit-scrollbar { display: none; }
@@ -291,7 +294,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v9.3</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v9.4</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -422,7 +425,6 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 ```
   <!-- LAG PANEL -->
   <div id="panel-lag" class="panel">
-    <p style="color:red;font-size:1rem;font-weight:bold">LAG-PANEL VISAS!</p>
     <div style="display:flex;gap:5px;margin-bottom:6px">
       <button class="lag-tab on" data-lag="trupp" id="lag-tab-trupp">Trupp</button>
       <button class="lag-tab" data-lag="match" id="lag-tab-match">Match</button>
