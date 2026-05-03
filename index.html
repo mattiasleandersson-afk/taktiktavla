@@ -322,7 +322,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.3</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.4</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2524,7 +2524,7 @@ function loadMatcher(){
 function renderTruppList(){
   var list=document.getElementById("trupp-list");if(!list)return;
   list.innerHTML="";
-  var sorted=trupp.slice().sort(function(a,b){return(a.nr||0)-(b.nr||0);});
+  var sorted=trupp.slice().sort(function(a,b){return a.namn.localeCompare(b.namn,"sv");});
   if(!sorted.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga spelare i truppen<\/span>";return;}
   sorted.forEach(function(sp){
     var row=document.createElement("div");row.className="row";
@@ -2634,11 +2634,30 @@ function renderStatistik(){
   list.innerHTML="";
   if(!trupp.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga spelare<\/span>";return;}
   var hdr=document.createElement("div");hdr.style.cssText="display:grid;grid-template-columns:24px 30px 1fr 40px 40px;gap:4px;padding:3px 8px;font-size:0.65rem;color:#7aaa88;font-weight:700;text-transform:uppercase;border-bottom:1px solid #2d4a35;margin-bottom:3px";hdr.innerHTML="<span><\/span><span>#<\/span><span>Spelare<\/span><span style='text-align:center'>Start<\/span><span style='text-align:center'>Tot<\/span>";list.appendChild(hdr);
-  Object.values(stats).sort(function(a,b){return(b.starter+b.inhopp)-(a.starter+a.inhopp)||a.nr-b.nr;}).forEach(function(s){
-    var row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:30px 1fr 44px 44px;gap:4px;padding:3px 8px;font-size:0.78rem;border-bottom:1px solid #1a2e1f";
-    row.innerHTML="<span style='color:#7aaa88'>#"+s.nr+"<\/span><span>"+s.namn+"<\/span><span style='text-align:center;color:#4ae87a'>"+s.starter+"<\/span><span style='text-align:center;font-weight:700'>"+(s.starter+s.inhopp)+"<\/span>";
+  // Sort alphabetically
+  var sortedStats=Object.values(stats).sort(function(a,b){return a.namn.localeCompare(b.namn,"sv");});
+  sortedStats.forEach(function(sp){
+    var row=document.createElement("div");
+    row.style.cssText="display:grid;grid-template-columns:24px 30px 1fr 40px 40px;gap:4px;padding:5px 8px;font-size:0.78rem;border-bottom:1px solid #1a2e1f;cursor:pointer;align-items:center";
+    if(statSelections[sp.id])row.style.background="rgba(74,232,122,0.1)";
+    var chk=document.createElement("input");chk.type="checkbox";chk.checked=!!statSelections[sp.id];
+    chk.style.cssText="width:15px;height:15px;accent-color:#4ae87a;cursor:pointer;flex-shrink:0";
+    var nrEl=document.createElement("span");nrEl.style.color="#7aaa88";nrEl.textContent="#"+sp.nr;
+    var nmEl=document.createElement("span");nmEl.textContent=sp.namn;
+    var stEl=document.createElement("span");stEl.style.cssText="text-align:center;color:#4ae87a";stEl.textContent=sp.starter;
+    var totEl=document.createElement("span");totEl.style.cssText="text-align:center;font-weight:700";totEl.textContent=(sp.starter+sp.inhopp);
+    function toggleSel(){
+      if(statSelections[sp.id])delete statSelections[sp.id];else statSelections[sp.id]=true;
+      chk.checked=!!statSelections[sp.id];
+      row.style.background=statSelections[sp.id]?"rgba(74,232,122,0.1)":"";
+      renderStatActionBar();
+    }
+    chk.addEventListener("change",toggleSel);
+    row.addEventListener("click",function(e){if(e.target!==chk)toggleSel();});
+    row.appendChild(chk);row.appendChild(nrEl);row.appendChild(nmEl);row.appendChild(stEl);row.appendChild(totEl);
     list.appendChild(row);
   });
+  renderStatActionBar();
 }
 
 document.getElementById("btn-stat-filter").addEventListener("click",function(){statSelections={};renderStatistik();});
