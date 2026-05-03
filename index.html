@@ -289,7 +289,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.8</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -769,8 +769,11 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <script>
 window.onerror = function(msg,src,line,col,err){
-  document.body.style.overflow="auto";
-  document.body.innerHTML="<div style='padding:20px;font-family:monospace;color:#e84a4a;font-size:13px'><b>FEL rad "+line+":</b><br>"+msg+"<br><br>"+(err&&err.stack?err.stack:"")+"</div>";
+  // Show toast instead of destroying page
+  var t=document.getElementById("toast-msg");
+  if(t){t.textContent="FEL rad "+line+": "+msg;t.style.background="#e84a4a";t.style.color="#fff";t.classList.add("show");setTimeout(function(){t.classList.remove("show");},6000);}
+  console.error("FEL rad "+line+":",msg,err);
+  return true; // prevent default handling
 };
 
 var W=400,H=600,format=11,homeColor="#cc2200",awayColor="#002288",displayMode="number";
