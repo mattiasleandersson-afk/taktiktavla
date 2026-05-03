@@ -263,6 +263,30 @@ touch-action: manipulation;
 body.landscape #fs-enter-btn { display: none; }
 body.fullscreen-portrait #fs-enter-btn { display: none; }
 
+#bench-bar {
+display: none;
+background: rgba(14,23,16,0.92);
+border-bottom: 1px solid #2d4a35;
+padding: 5px 10px;
+flex-shrink: 0;
+flex-wrap: wrap;
+gap: 6px;
+align-items: center;
+}
+#bench-bar.active { display: flex; }
+.bench-player {
+display: flex;
+flex-direction: column;
+align-items: center;
+background: #1e2e22;
+border: 1px solid #2d4a35;
+border-radius: 20px;
+padding: 3px 10px;
+min-width: 44px;
+}
+.bench-player .bench-nr { font-size: 0.85rem; font-weight: 900; color: #4ae87a; line-height: 1.1; }
+.bench-player .bench-name { font-size: 0.65rem; color: #edf5ee; line-height: 1.1; white-space: nowrap; }
+.bench-label { font-size: 0.65rem; color: #7aaa88; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 2px; }
 .toast-msg { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: #4ae87a; color: #0a1a0d; padding: 5px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; white-space: nowrap; }
 .toast-msg.show { opacity: 1; }
 .zone-shape { cursor: move; }
@@ -294,7 +318,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.1</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -321,6 +345,10 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button>
 </div>
 
+<div id="bench-bar">
+  <span class="bench-label">Avbytare:</span>
+  <div id="bench-players" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+</div>
 <div id="pitch-wrapper">
   <svg id="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg"></svg>
   <div id="mode-badge"></div>
@@ -1326,14 +1354,14 @@ function render(){
         window.addEventListener("mousemove",_onMM2);
         window.addEventListener("mouseup",_onMU2);
       });})(labels[i]);}
-  for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);var dHome=daylightMode?"#cc2200":homeColor;var dAway=daylightMode?"#002288":awayColor;c.setAttribute("fill",playerColors[p.id]||(p.team==="home"?dHome:dAway));c.setAttribute("stroke",daylightMode?"rgba(0,0,0,0.4)":"#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill","#111");if(document.body.classList.contains("landscape"))t.setAttribute("transform","rotate(90,"+p.x+","+p.y+")");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);
+  for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);var dHome=daylightMode?"#cc2200":homeColor;var dAway=daylightMode?"#002288":awayColor;c.setAttribute("fill",playerColors[p.id]||(p.team==="home"?dHome:dAway));c.setAttribute("stroke",daylightMode?"rgba(0,0,0,0.4)":"#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill","#fff");if(document.body.classList.contains("landscape"))t.setAttribute("transform","rotate(90,"+p.x+","+p.y+")");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);
       // Name label below circle in match mode
       if(matchRoster.length&&p.team==="home"&&p.name){
         var ns4="http://www.w3.org/2000/svg";
         var nl=document.createElementNS(ns4,"text");
         nl.setAttribute("x",p.x);nl.setAttribute("y",p.y+26);
         nl.setAttribute("text-anchor","middle");nl.setAttribute("dominant-baseline","central");
-        nl.setAttribute("fill","#111");nl.setAttribute("font-size","8");
+        nl.setAttribute("fill","#111");nl.setAttribute("font-size","9");
         nl.setAttribute("font-weight","700");
         nl.setAttribute("font-family","Arial Narrow, Arial, sans-serif");
         nl.setAttribute("stroke","rgba(255,255,255,0.8)");nl.setAttribute("stroke-width","2");
@@ -2292,6 +2320,28 @@ document.getElementById("backup-download").addEventListener("click",function(){
   document.getElementById("modal-backup").classList.add("hidden");showToast("Backup nedladdad!");
 });
 
+// \u2500\u2500 BENCH \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function renderBench(){
+  var bar=document.getElementById("bench-bar");
+  var cont=document.getElementById("bench-players");
+  if(!bar||!cont)return;
+  if(!matchRoster.length){bar.classList.remove("active");return;}
+  // Get all assigned truppIds
+  var assignedTids={};
+  Object.values(matchAssignments).forEach(function(tid){assignedTids[tid]=true;});
+  // Bench = selected players not yet assigned
+  var bench=matchRoster.filter(function(sp){return !assignedTids[sp.id];});
+  cont.innerHTML="";
+  bench.forEach(function(sp){
+    var div=document.createElement("div");div.className="bench-player";
+    var nr=document.createElement("span");nr.className="bench-nr";nr.textContent="#"+sp.nr;
+    var nm=document.createElement("span");nm.className="bench-name";nm.textContent=sp.namn;
+    div.appendChild(nr);div.appendChild(nm);
+    cont.appendChild(div);
+  });
+  bar.classList.toggle("active",matchRoster.length>0);
+}
+
 // \u2500\u2500 PLAYER PICKER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 function getAssignedTruppIds(){
@@ -2340,6 +2390,7 @@ function assignPlayerToPosition(pitchPlayerId,truppId){
   var p=players.find(function(x){return x.id===pitchPlayerId;});
   if(sp&&p){p.number=sp.nr;p.name=sp.namn;}
   render();
+  renderBench();
 }
 
 document.getElementById("player-picker-cancel").addEventListener("click",function(){
@@ -2352,7 +2403,7 @@ document.getElementById("player-picker-clear").addEventListener("click",function
     delete matchAssignments[assigningPlayerId];
     var p=players.find(function(x){return x.id===assigningPlayerId;});
     if(p){p.number=0;p.name="";}
-    render();
+    render();renderBench();
   }
   document.getElementById("modal-player-picker").classList.add("hidden");
   assigningPlayerId=null;
@@ -2460,10 +2511,8 @@ function renderMatchTruppList(){
     var nr=document.createElement("span");nr.style.cssText="font-weight:900;color:#4ae87a;min-width:24px;font-size:0.82rem";nr.textContent="#"+sp.nr;
     var nm=document.createElement("span");nm.style.cssText="flex:1;font-size:0.82rem";nm.textContent=sp.namn;
     var btnS=document.createElement("button");btnS.className="btn"+(sel==="start"?" on":"");btnS.style.cssText="padding:2px 7px;font-size:0.65rem";btnS.textContent="Start";
-    var btnA=document.createElement("button");btnA.className="btn"+(sel==="avbytare"?" on":"");btnA.style.cssText="padding:2px 7px;font-size:0.65rem";if(sel==="avbytare"){btnA.style.color="#e8c84a";btnA.style.borderColor="#e8c84a";}btnA.textContent="Inhopp";
     btnS.addEventListener("click",function(){matchSelections[sp.id]=sel==="start"?null:"start";renderMatchTruppList();});
-    btnA.addEventListener("click",function(){matchSelections[sp.id]=sel==="avbytare"?null:"avbytare";renderMatchTruppList();});
-    row.appendChild(nr);row.appendChild(nm);row.appendChild(btnS);row.appendChild(btnA);list.appendChild(row);
+    row.appendChild(nr);row.appendChild(nm);row.appendChild(btnS);list.appendChild(row);
   });
 }
 
@@ -2480,6 +2529,7 @@ document.getElementById("btn-match-to-taktik").addEventListener("click",function
   document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});
   document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});
   render();
+  renderBench();
   showToast("Tryck p\u00e5 en position f\u00f6r att placera spelare!");
 });
 
