@@ -289,7 +289,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.8</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2249,7 +2249,7 @@ document.getElementById("share-close-btn").addEventListener("click",function(){d
 // Check if opened via share link
 // \u2500\u2500 LAG SYSTEM \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
-document.querySelectorAll("[data-lag]").forEach(function(btn){
+try{document.querySelectorAll("[data-lag]").forEach(function(btn){
   btn.addEventListener("click",function(){
     var target=this.getAttribute("data-lag");
     document.querySelectorAll("[data-lag]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-lag")===target);});
@@ -2398,7 +2398,7 @@ pdoc+=”</table></body></html>”;
 var w=window.open(””,”_blank”);if(w){w.document.write(pdoc);w.document.close();w.print();}showToast(“PDF \u00f6ppnad!”);
 });
 
-(function(){var d=new Date();var ds=d.toISOString().slice(0,10);document.getElementById(“match-datum”).value=ds;document.getElementById(“stat-to”).value=ds;var y=new Date(d);y.setMonth(y.getMonth()-6);document.getElementById(“stat-from”).value=y.toISOString().slice(0,10);})();
+try{(function(){var d=new Date();var ds=d.toISOString().slice(0,10);var md=document.getElementById(“match-datum”);if(md)md.value=ds;var st=document.getElementById(“stat-to”);if(st)st.value=ds;var sf=document.getElementById(“stat-from”);var y=new Date(d);y.setMonth(y.getMonth()-6);if(sf)sf.value=y.toISOString().slice(0,10);})();}catch(e){console.error(“Date IIFE error:”,e);}}catch(e){console.error(“Lag JS error:”,e);}
 
 function checkShareLink(){
 var params=new URLSearchParams(window.location.search);
