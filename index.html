@@ -289,7 +289,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v8.2</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v8.3</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1100,6 +1100,7 @@ function cloudRenameFolder(oldName,newName){
 }
 
 var svg=document.getElementById("pitch-svg");
+var _dbg=document.getElementById("debug-info");if(_dbg)_dbg.textContent="Steg 1: svg="+svg;
 
 function renderKorridorer(){
   var old=svg.querySelectorAll(".korridor-g");
@@ -1785,7 +1786,7 @@ function renderEditSteps(tk){
   }
 }
 
-document.getElementById("btn-edit-taktik-exit").addEventListener("click",exitEditTaktik);
+var _dbg3=document.getElementById("debug-info");if(_dbg3)_dbg3.textContent="Steg 1.5: halvägs";document.getElementById("btn-edit-taktik-exit").addEventListener("click",exitEditTaktik);
 document.getElementById("btn-edit-taktik-save").addEventListener("click",function(){
   if(editingTaktikIdx===null)return;
   var tk=taktikFilmer[editingTaktikIdx];
@@ -2528,7 +2529,7 @@ _orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=nul
 });
 
 // Init
-drawPitch();
+var _dbg2=document.getElementById(“debug-info”);if(_dbg2)_dbg2.textContent=“Steg 2: alla lyssnare OK”;drawPitch();
 handleOrientation();
 buildFormationBtns();
 initPlayers(“4-4-2”);
