@@ -321,7 +321,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v10.9</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.0</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -535,16 +535,13 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
       <!-- MATCH -->
       <div id="lag-match" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <span id="match-counter" style="font-size:0.78rem;color:#4ae87a;font-weight:700">0 valda</span>
+        <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;flex-wrap:wrap">
+          <button class="btn" id="btn-ny-match" style="color:#4ae87a;border-color:#4ae87a;padding:3px 7px;font-size:0.68rem">+ Ny</button>
+          <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1;min-width:0">
+          <input type="text" id="match-motstand" placeholder="Motst&#229;ndare" style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;min-width:60px">
+          <span id="match-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;white-space:nowrap">0 valda</span>
         </div>
-        <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
-          <button class="btn" id="btn-ny-match" style="color:#4ae87a;border-color:#4ae87a">+ Ny match</button>
-          <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem;flex:1">
-          <input type="text" id="match-motstand" placeholder="Motst&#229;ndare..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
-        </div>
-        <div style="font-size:0.72rem;color:#7aaa88;margin-bottom:4px;text-transform:uppercase;font-weight:700">V&#228;lj spelare</div>
-        <div class="list" id="match-trupp-list" style="max-height:90px"></div>
+        <div class="list" id="match-trupp-list" style="max-height:160px"></div>
         <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
           <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; Laguppst&#228;llning</button>
           <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
