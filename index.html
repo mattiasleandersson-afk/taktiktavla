@@ -322,7 +322,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v11.8</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -566,7 +566,9 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
           <div id="stat-action-bar" style="display:none;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap">
             <span id="stat-sel-count" style="font-size:0.75rem;color:#4ae87a;font-weight:700;flex:1">0 valda</span>
             <button class="btn" id="btn-stat-clear-sel">Rensa</button>
-            <button class="btn on" id="btn-stat-to-match">&#9917; Skapa match</button>
+            <select id="stat-match-sel" class="btn" style="flex:1;max-width:140px;font-size:0.65rem"></select>
+            <button class="btn" id="btn-stat-add-to-match">L&#228;gg till</button>
+            <button class="btn on" id="btn-stat-to-match">+ Ny match</button>
           </div>
           <div style="display:flex;gap:5px;margin-top:6px">
             <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
@@ -2616,7 +2618,7 @@ document.getElementById("btn-spara-match").addEventListener("click",function(){
   if(!datum){showToast("V\u00e4lj datum!");return;}
   var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";}).map(function(sp){return sp.id;});
   var avbytare=trupp.filter(function(sp){return matchSelections[sp.id]==="avbytare";}).map(function(sp){return sp.id;});
-  if(!startade.length){showToast("V\u00e4lj startspelare!");return;}
+  // Allow saving with no players selected (create empty match)
   var match={datum:datum,motstand:motstand||"Ok\u00e4nd",startade:startade,avbytare:avbytare};
   var editId=window._editingMatchId||null;
   if(editId){
@@ -2681,35 +2683,68 @@ function renderStatActionBar(){
   var n=Object.keys(statSelections).length;
   bar.style.display=n>0?"flex":"none";
   var cnt=document.getElementById("stat-sel-count");if(cnt)cnt.textContent=n+" vald"+(n===1?"":"a");
+  // Populate match dropdown
+  var sel=document.getElementById("stat-match-sel");
+  if(sel){
+    sel.innerHTML="";
+    var opt0=document.createElement("option");opt0.value="";opt0.textContent="V\u00e4lj match...";sel.appendChild(opt0);
+    var sorted=matcher.slice().sort(function(a,b){return b.datum.localeCompare(a.datum);});
+    sorted.forEach(function(m){
+      var o=document.createElement("option");o.value=m.dbId||"";
+      o.textContent=m.datum+" "+m.motstand;sel.appendChild(o);
+    });
+  }
 }
 
 document.getElementById("btn-stat-clear-sel").addEventListener("click",function(){
   statSelections={};renderStatistik();
 });
 
+document.getElementById("btn-stat-add-to-match").addEventListener("click",function(){
+  var sel=document.getElementById("stat-match-sel");
+  var dbId=sel?sel.value:"";
+  if(!dbId){showToast("V\u00e4lj en match!");return;}
+  var selectedIds=Object.keys(statSelections);
+  if(!selectedIds.length){showToast("V\u00e4lj spelare!");return;}
+  // Find the match
+  var m=matcher.find(function(x){return x.dbId===dbId;});
+  if(!m){showToast("Match ej hittad!");return;}
+  // Add selected players to match.startade (avoid duplicates)
+  selectedIds.forEach(function(id){
+    if((m.startade||[]).indexOf(id)<0)m.startade.push(id);
+  });
+  // Save to Supabase
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+dbId,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({data:m})
+  }).then(function(){
+    statSelections={};
+    renderStatistik();
+    showToast(selectedIds.length+" spelare tillagda i "+m.datum+" "+m.motstand+"!");
+  });
+});
+
 document.getElementById("btn-stat-to-match").addEventListener("click",function(){
   var selectedIds=Object.keys(statSelections);
-  if(!selectedIds.length)return;
-  // Set match selections
+  // Set match selections (can be empty)
   matchSelections={};
   selectedIds.forEach(function(id){matchSelections[id]="start";});
-  // Set match roster from trupp
-  matchRoster=trupp.filter(function(sp){return statSelections[sp.id];});
+  matchRoster=selectedIds.length?trupp.filter(function(sp){return statSelections[sp.id];}):[];
   matchAssignments={};
-  // Reset home players
   players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
-  // Switch to match tab to set date/opponent first
+  // Switch to match tab
   document.querySelectorAll("[data-lag]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-lag")==="match");});
   document.getElementById("lag-trupp").style.display="none";
   document.getElementById("lag-match").style.display="";
   document.getElementById("lag-statistik").style.display="none";
   document.getElementById("bottompanel").classList.remove("expanded");
-  // Set today's date
   var d=new Date();document.getElementById("match-datum").value=d.toISOString().slice(0,10);
   document.getElementById("match-motstand").value="";
   window._editingMatchId=null;
+  statSelections={};
   renderMatchTruppList();
-  showToast(matchRoster.length+" spelare valda! Fyll i motst\u00e5ndare och tryck Laguppst\u00e4llning");
+  showToast(selectedIds.length?selectedIds.length+" spelare valda!":"Ny match skapad \u2013 l\u00e4gg till spelare");
 });
 
 // Stat sub-tabs
