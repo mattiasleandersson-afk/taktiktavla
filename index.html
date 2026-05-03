@@ -289,7 +289,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.4</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.7</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -307,6 +307,9 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <button class="btn" id="btn-backup" title="Exportera backup">&#128190;</button>
   <label style="display:flex;align-items:center;gap:3px;font-size:0.68rem;color:var(--text-sub);cursor:pointer;white-space:nowrap;font-family:Arial Narrow,Arial,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.4px">
     <input type="checkbox" id="chk-korridorer" style="width:13px;height:13px;accent-color:var(--accent)"> Korr.
+  </label>
+  <label style="display:flex;align-items:center;gap:3px;font-size:0.68rem;color:var(--text-sub);cursor:pointer;white-space:nowrap;font-family:Arial Narrow,Arial,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.4px">
+    <input type="checkbox" id="chk-arrow-numbers" style="width:13px;height:13px;accent-color:var(--accent)"> Pilnr
   </label>
   <button class="btn" id="btn-daylight" title="Dagsljusl&#228;ge">&#9728; Dag</button>
   <button class="btn" id="btn-fs-topbar" style="color:#4ae87a;border-color:#4ae87a" title="Helsk\u00e4rm">&#x26F6;</button>
@@ -379,6 +382,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
     <option value="300">Snabb</option>
   </select>
   <label style="display:flex;align-items:center;gap:3px;font-size:0.72rem;color:#7aaa88;cursor:pointer"><input type="checkbox" id="play-loop"> Loop</label>
+  <button class="btn" id="btn-copy-drawings" style="padding:4px 8px;font-size:0.72rem;color:#e8c84a;border-color:#e8c84a" title="Kopiera ritningar till n&#228;sta steg">&#9000;</button>
   <button class="btn" id="btn-copy-step" style="padding:4px 8px;font-size:0.72rem;color:#4ae8e8;border-color:#4ae8e8" title="Kopiera steg">&#9112;</button>
   <button class="btn" id="btn-paste-step" style="padding:4px 8px;font-size:0.72rem;color:#4ae8e8;border-color:#4ae8e8;opacity:0.3" title="Klistra in steg">&#9113;</button>
   <button class="btn on" id="btn-edit-update-step2" style="padding:4px 8px;font-size:0.72rem">&#10003; Spara steg</button>
@@ -397,6 +401,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
     <button class="tab on" data-panel="formations">Formation</button>
     <button class="tab" data-panel="taktik">&#127916; Taktik</button>
     <button class="tab" data-panel="saves">Sparade</button>
+    <button class="tab" data-panel="lag">Lag</button>
   </div>
   <div class="panel on" id="panel-formations">
     <div class="frow" id="formation-btns"></div>
@@ -411,39 +416,91 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
         </div>
         <div class="list" id="rec-steps-list"></div>
       </div>
-      <div id="edit-taktik-ui" style="display:none">
-        <!-- Row 1: step navigation + name + actions -->
-        <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px">
-          <button class="btn" id="btn-edit-step-prev" style="padding:4px 10px;font-size:1rem">&#9664;</button>
-          <span id="edit-step-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;min-width:38px;text-align:center;flex-shrink:0">Start</span>
-          <button class="btn" id="btn-edit-step-next" style="padding:4px 10px;font-size:1rem">&#9654;</button>
-          <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem;min-width:0">
-          <button class="btn on" id="btn-edit-update-step" style="padding:4px 8px" title="Spara steg">&#10003;</button>
-          <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a;padding:4px 8px" title="L&#228;gg till steg">+</button>
-          <button class="btn danger" id="btn-edit-del-step" style="padding:4px 8px" title="Ta bort steg">&#10005;</button>
-        </div>
-        <!-- Row 2: film title + save/exit -->
-        <div style="display:flex;gap:4px;align-items:center">
-          <span style="font-size:0.72rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="edit-taktik-title-lbl"></span>
-          <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a;padding:3px 7px;font-size:0.68rem">&#9998; Info</button>
-          <button class="btn on" id="btn-edit-taktik-save" style="padding:3px 7px;font-size:0.68rem">Spara</button>
-          <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
-        </div>
-        <!-- Hidden step list (still used by renderEditSteps internally) -->
-        <div class="list" id="edit-taktik-steps" style="display:none"></div>
+
+```
+  <!-- LAG PANEL -->
+  <div id="panel-lag" class="panel">
+    <div style="display:flex;gap:5px;margin-bottom:6px">
+      <button class="tab on" data-lag="trupp" id="lag-tab-trupp">Trupp</button>
+      <button class="tab" data-lag="match" id="lag-tab-match">Match</button>
+      <button class="tab" data-lag="statistik" id="lag-tab-statistik">Statistik</button>
+    </div>
+
+    <!-- TRUPP -->
+    <div id="lag-trupp">
+      <div style="display:flex;gap:5px;margin-bottom:6px">
+        <input type="number" id="ny-spelare-nr" placeholder="Nr" min="1" max="99" style="width:52px;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+        <input type="text" id="ny-spelare-namn" placeholder="Spelarnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+        <button class="btn on" id="btn-add-trupp">+ L&#228;gg till</button>
       </div>
-      <div id="no-rec-ui">
-        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
-          <button class="btn on" id="btn-new-taktik">+ Ny film</button>
-          <button class="btn" id="btn-export-taktik">Exportera</button>
-          <button class="btn" id="btn-import-taktik-btn">Importera</button>
-          <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
-        </div>
-        <input type="text" id="taktik-search" placeholder="S&#246;k taktikfilm..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
-        <div id="taktik-folder-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px"></div>
-        <div class="list" id="taktik-list"></div>
+      <div class="list" id="trupp-list" style="max-height:130px"></div>
+    </div>
+
+    <!-- MATCH -->
+    <div id="lag-match" style="display:none">
+      <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+        <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem;flex:1">
+        <input type="text" id="match-motstand" placeholder="Motst&#229;ndare..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+      </div>
+      <div style="font-size:0.72rem;color:#7aaa88;margin-bottom:4px;text-transform:uppercase;font-weight:700">V&#228;lj spelare</div>
+      <div class="list" id="match-trupp-list" style="max-height:90px"></div>
+      <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
+        <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; &#214;ppna i taktik</button>
+        <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
       </div>
     </div>
+
+    <!-- STATISTIK -->
+    <div id="lag-statistik" style="display:none">
+      <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+        <input type="date" id="stat-from" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+        <span style="color:#7aaa88;font-size:0.72rem">&#8211;</span>
+        <input type="date" id="stat-to" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+        <button class="btn" id="btn-stat-filter">Filtrera</button>
+      </div>
+      <div class="list" id="stat-list" style="max-height:120px"></div>
+      <div style="display:flex;gap:5px;margin-top:6px">
+        <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
+        <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="edit-taktik-ui" style="display:none">
+    <!-- Row 1: step navigation + name + actions -->
+    <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px">
+      <button class="btn" id="btn-edit-step-prev" style="padding:4px 10px;font-size:1rem">&#9664;</button>
+      <span id="edit-step-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;min-width:38px;text-align:center;flex-shrink:0">Start</span>
+      <button class="btn" id="btn-edit-step-next" style="padding:4px 10px;font-size:1rem">&#9654;</button>
+      <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem;min-width:0">
+      <button class="btn on" id="btn-edit-update-step" style="padding:4px 8px" title="Spara steg">&#10003;</button>
+      <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a;padding:4px 8px" title="L&#228;gg till steg">+</button>
+      <button class="btn danger" id="btn-edit-del-step" style="padding:4px 8px" title="Ta bort steg">&#10005;</button>
+    </div>
+    <!-- Row 2: film title + save/exit -->
+    <div style="display:flex;gap:4px;align-items:center">
+      <span style="font-size:0.72rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="edit-taktik-title-lbl"></span>
+      <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a;padding:3px 7px;font-size:0.68rem">&#9998; Info</button>
+      <button class="btn on" id="btn-edit-taktik-save" style="padding:3px 7px;font-size:0.68rem">Spara</button>
+      <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
+    </div>
+    <!-- Hidden step list (still used by renderEditSteps internally) -->
+    <div class="list" id="edit-taktik-steps" style="display:none"></div>
+  </div>
+  <div id="no-rec-ui">
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+      <button class="btn on" id="btn-new-taktik">+ Ny film</button>
+      <button class="btn" id="btn-export-taktik">Exportera</button>
+      <button class="btn" id="btn-import-taktik-btn">Importera</button>
+      <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
+    </div>
+    <input type="text" id="taktik-search" placeholder="S&#246;k taktikfilm..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
+    <div id="taktik-folder-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px"></div>
+    <div class="list" id="taktik-list"></div>
+  </div>
+</div>
+```
+
   </div>
   <div class="panel" id="panel-saves">
     <div style="width:100%">
@@ -726,8 +783,12 @@ var animFrame=null,animSpeed=600,dragging=null;
 var folders=["Allm\u00e4nt"],currentFolder="Alla";
 var taktikFolders=["Allm\u00e4nt"],currentTaktikFolder="Alla",taktikSearch="";
 var freehandPaths=[],zones=[]; // new drawing types
-var activeFormationId=null,activeFormationName=null; // currently loaded formation
+var activeFormationId=null,activeFormationName=null;
+var trupp=[]; // [{id,nr,namn}]
+var matcher=[]; // [{id,datum,motstand,startade:[id,...],avbytare:[id,...]}]
+var matchSelections={}; // {playerId: 'start'|'avbytare'|null} // currently loaded formation
 var showKorridorer=false;
+var showArrowNumbers=false;
 var taktikUndoStack=[],taktikRedoStack=[];
 var copiedStep=null;
 var editingArrowId=null;
@@ -1189,7 +1250,22 @@ function render(){
     })(freehandPaths[i]);
   }
 
-  for(var i=0;i<arrows.length;i++){(function(a){var g=document.createElementNS(ns,"g");g.setAttribute("class","arrow-g");var vis=document.createElementNS(ns,"line");vis.setAttribute("class","arrow-vis");vis.setAttribute("x1",a.x1);vis.setAttribute("y1",a.y1);vis.setAttribute("x2",a.x2);vis.setAttribute("y2",a.y2);var ac=a.color||"#ffdd44";vis.setAttribute("marker-end","url(#arrowhead-"+ac.replace("#","")+")");vis.style.stroke=ac;vis.style.strokeWidth=a.width||3;if((a.atype||"solid")==="dashed"){vis.style.strokeDasharray=(a.width||3)*3+" "+(a.width||3)*2;}else{vis.style.strokeDasharray="none";}var hit=document.createElementNS(ns,"line");hit.setAttribute("class","arrow-hit");hit.setAttribute("x1",a.x1);hit.setAttribute("y1",a.y1);hit.setAttribute("x2",a.x2);hit.setAttribute("y2",a.y2);g.appendChild(vis);g.appendChild(hit);svg.appendChild(g);function selectArrow(ev){ev.stopPropagation();selectedId=a.id;render();}hit.addEventListener("touchstart",function(ev){ev.preventDefault();selectArrow(ev);},{passive:false});hit.addEventListener("mousedown",selectArrow);if(selectedId===a.id){var mx=(a.x1+a.x2)/2,my=(a.y1+a.y2)/2;var dg=document.createElementNS(ns,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";var dc=document.createElementNS(ns,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",mx);dc.setAttribute("cy",my);dc.setAttribute("r",11);var dt=document.createElementNS(ns,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",mx);dt.setAttribute("y",my);dt.textContent="\u00d7";dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);function delArrow(ev){_delHappened=true;ev.stopPropagation();ev.preventDefault();saveUndo();arrows=arrows.filter(function(x){return x.id!==a.id;});selectedId=null;render();}dg.addEventListener("touchstart",delArrow,{passive:false});dg.addEventListener("mousedown",delArrow);};})(arrows[i]);}
+  for(var i=0;i<arrows.length;i++){(function(a){var g=document.createElementNS(ns,"g");g.setAttribute("class","arrow-g");var vis=document.createElementNS(ns,"line");vis.setAttribute("class","arrow-vis");vis.setAttribute("x1",a.x1);vis.setAttribute("y1",a.y1);vis.setAttribute("x2",a.x2);vis.setAttribute("y2",a.y2);var ac=a.color||"#ffdd44";vis.setAttribute("marker-end","url(#arrowhead-"+ac.replace("#","")+")");vis.style.stroke=ac;vis.style.strokeWidth=a.width||3;if((a.atype||"solid")==="dashed"){vis.style.strokeDasharray=(a.width||3)*3+" "+(a.width||3)*2;}else{vis.style.strokeDasharray="none";}var hit=document.createElementNS(ns,"line");hit.setAttribute("class","arrow-hit");hit.setAttribute("x1",a.x1);hit.setAttribute("y1",a.y1);hit.setAttribute("x2",a.x2);hit.setAttribute("y2",a.y2);g.appendChild(vis);g.appendChild(hit);
+      if(showArrowNumbers){
+        var mx=(a.x1+a.x2)/2,my=(a.y1+a.y2)/2;
+        var ac2=a.color||"#ffdd44";
+        var nbg=document.createElementNS(ns,"circle");
+        nbg.setAttribute("cx",mx);nbg.setAttribute("cy",my);nbg.setAttribute("r",9);
+        nbg.setAttribute("fill","#111a14");nbg.setAttribute("stroke",ac2);nbg.setAttribute("stroke-width","1.5");
+        var ntxt=document.createElementNS(ns,"text");
+        ntxt.setAttribute("x",mx);ntxt.setAttribute("y",my);
+        ntxt.setAttribute("text-anchor","middle");ntxt.setAttribute("dominant-baseline","central");
+        ntxt.setAttribute("fill",ac2);ntxt.setAttribute("font-size","10");
+        ntxt.setAttribute("font-weight","700");ntxt.setAttribute("font-family","Arial Narrow,Arial,sans-serif");
+        ntxt.textContent=String(i+1);
+        g.appendChild(nbg);g.appendChild(ntxt);
+      }
+      svg.appendChild(g);function selectArrow(ev){ev.stopPropagation();selectedId=a.id;render();}hit.addEventListener("touchstart",function(ev){ev.preventDefault();selectArrow(ev);},{passive:false});hit.addEventListener("mousedown",selectArrow);if(selectedId===a.id){var mx=(a.x1+a.x2)/2,my=(a.y1+a.y2)/2;var dg=document.createElementNS(ns,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";var dc=document.createElementNS(ns,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",mx);dc.setAttribute("cy",my);dc.setAttribute("r",11);var dt=document.createElementNS(ns,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",mx);dt.setAttribute("y",my);dt.textContent="\u00d7";dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);function delArrow(ev){_delHappened=true;ev.stopPropagation();ev.preventDefault();saveUndo();arrows=arrows.filter(function(x){return x.id!==a.id;});selectedId=null;render();}dg.addEventListener("touchstart",delArrow,{passive:false});dg.addEventListener("mousedown",delArrow);};})(arrows[i]);}
   if(mode==="arrow"&&arrowStart&&arrowCurrent){var pg=document.createElementNS(ns,"line");pg.setAttribute("class","preview-arrow");pg.setAttribute("x1",arrowStart.x);pg.setAttribute("y1",arrowStart.y);pg.setAttribute("x2",arrowCurrent.x);pg.setAttribute("y2",arrowCurrent.y);pg.setAttribute("stroke","#ffdd44");pg.setAttribute("stroke-width","3");pg.setAttribute("stroke-dasharray","6 4");pg.setAttribute("stroke-linecap","round");pg.setAttribute("fill","none");pg.setAttribute("marker-end","url(#arrowhead-"+(arrowColor||"#ffdd44").replace("#","")+")");pg.setAttribute("stroke",arrowColor||"#ffdd44");pg.style.pointerEvents="none";svg.appendChild(pg);}
   for(var i=0;i<labels.length;i++){(function(l){var fs=l.size||13,tw=l.text.length*(fs*0.55)+12,th=fs+10;var g=document.createElementNS(ns,"g");g.setAttribute("class","label-g pitch-label");g.dataset.lid=l.id;var bg=document.createElementNS(ns,"rect");bg.setAttribute("class","pitch-label-bg");bg.setAttribute("rx","4");bg.setAttribute("x",l.x-tw/2);bg.setAttribute("y",l.y-th/2);bg.setAttribute("width",tw);bg.setAttribute("height",th);var tx=document.createElementNS(ns,"text");tx.setAttribute("class","pitch-label-txt");tx.setAttribute("x",l.x);tx.setAttribute("y",l.y);tx.setAttribute("font-size",fs);tx.textContent=l.text;g.appendChild(bg);g.appendChild(tx);svg.appendChild(g);if(selectedId===l.id){var dg=document.createElementNS(ns,"g");dg.setAttribute("class","del-g");dg.style.cursor="pointer";var dc=document.createElementNS(ns,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",l.x+tw/2-2);dc.setAttribute("cy",l.y-th/2-2);dc.setAttribute("r",9);var dt=document.createElementNS(ns,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",l.x+tw/2-2);dt.setAttribute("y",l.y-th/2-2);dt.textContent="\u00d7";dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);function delLabel(ev){_delHappened=true;ev.stopPropagation();ev.preventDefault();saveUndo();labels=labels.filter(function(x){return x.id!==l.id;});selectedId=null;render();}dg.addEventListener("touchstart",delLabel,{passive:false});dg.addEventListener("mousedown",delLabel);}function startLabelDrag(cx,cy){if(mode!=="move")return;dragging={type:"label",id:l.id,ox:l.x-cx,oy:l.y-cy};}g.addEventListener("touchstart",function(ev){
         ev.stopPropagation();
@@ -1476,6 +1552,7 @@ document.getElementById("edit-text-del").addEventListener("click",function(){if(
 document.getElementById("edit-text-inp").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("edit-text-ok").click();});
 document.getElementById("btn-arrow").addEventListener("click",function(){setMode(mode==="arrow"?"move":"arrow");});
 document.getElementById("chk-korridorer").addEventListener("change",function(){showKorridorer=this.checked;render();});
+document.getElementById("chk-arrow-numbers").addEventListener("change",function(){showArrowNumbers=this.checked;render();});
 
 var daylightMode=false;
 document.getElementById("btn-daylight").addEventListener("click",function(){
@@ -2058,6 +2135,23 @@ function cloudLoadTaktik(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.takti
 
 
 // \u2500\u2500 COPY/PASTE STEP \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+document.getElementById("btn-copy-drawings").addEventListener("click",function(){
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  var nextIdx=editingStepIdx+1;
+  if(nextIdx>=tk.steps.length){showToast("Inget n\u00e4sta steg");return;}
+  saveTaktikUndo();
+  // Copy arrows, labels, freehandPaths, zones from current step to next
+  var cur=tk.steps[editingStepIdx];
+  var next=tk.steps[nextIdx];
+  next.arrows=JSON.parse(JSON.stringify(cur.arrows||[]));
+  next.labels=JSON.parse(JSON.stringify(cur.labels||[]));
+  next.freehandPaths=JSON.parse(JSON.stringify(cur.freehandPaths||[]));
+  next.zones=JSON.parse(JSON.stringify(cur.zones||[]));
+  showToast("Ritningar kopierade till steg "+(nextIdx===0?"start":nextIdx)+"!");
+  cloudStatus("\u2705 Ritningar kopierade","#4ae87a");
+});
+
 document.getElementById("btn-copy-step").addEventListener("click",function(){
   if(editingTaktikIdx===null)return;
   copiedStep=JSON.parse(JSON.stringify(taktikFilmer[editingTaktikIdx].steps[editingStepIdx]));
@@ -2282,6 +2376,8 @@ initPlayers("4-4-2");
 render();
 cloudLoadSaves();
 cloudLoadTaktik();
+loadTrupp();
+loadMatcher();
 checkShareLink();
 </script>
 
