@@ -289,7 +289,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v8.0</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v8.1</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -317,7 +317,8 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <div id="pitch-wrapper">
-  <svg id="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div id="debug-info" style="position:absolute;top:5px;left:5px;z-index:999;background:rgba(0,0,0,0.8);color:#4ae87a;font-size:10px;padding:4px 8px;border-radius:4px;pointer-events:none">Laddar...</div>
+<svg id="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg"></svg>
   <div id="mode-badge"></div>
   <div id="arrow-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:5;pointer-events:auto">
     <select id="arrow-color-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
@@ -1179,6 +1180,7 @@ function updateViewBox(){
 }
 
 function render(){
+  var dbg=document.getElementById("debug-info");if(dbg)dbg.textContent="render k\u00f6rs "+new Date().toLocaleTimeString();
   var old=svg.querySelectorAll(".player-token,.ball-token,.arrow-g,.label-g,.preview-arrow,.del-g,.zone-g,.freehand-g,.zone-preview,.freehand-preview,.korridor-g");for(var i=0;i<old.length;i++)old[i].remove();
   renderKorridorer();
   var ns="http://www.w3.org/2000/svg";
