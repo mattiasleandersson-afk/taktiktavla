@@ -289,7 +289,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.2</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v7.3</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -448,7 +448,8 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <div class="panel" id="panel-saves">
     <div style="width:100%">
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
-        <button class="btn on" id="btn-cloud-save">&#9729; Spara</button>
+        <button class="btn" id="btn-save-over" style="display:none">&#128190; Spara</button>
+        <button class="btn on" id="btn-cloud-save">&#128190; Spara som</button>
         <button class="btn" id="btn-cloud-refresh">&#8635; Ladda</button>
         <button class="btn" id="btn-export">&#8595; Exportera</button>
         <button class="btn" id="btn-import-btn">&#8593; Importera</button>
@@ -725,6 +726,7 @@ var animFrame=null,animSpeed=600,dragging=null;
 var folders=["Allm\u00e4nt"],currentFolder="Alla";
 var taktikFolders=["Allm\u00e4nt"],currentTaktikFolder="Alla",taktikSearch="";
 var freehandPaths=[],zones=[]; // new drawing types
+var activeFormationId=null,activeFormationName=null; // currently loaded formation
 var showKorridorer=false;
 var taktikUndoStack=[],taktikRedoStack=[];
 var copiedStep=null;
@@ -877,7 +879,7 @@ function renderSavesList(){
       var ld=document.createElement("button");ld.className="sa load";ld.textContent="Ladda";
       var mv=document.createElement("button");mv.className="sa";mv.style.cssText="color:#e8c84a;border-color:#e8c84a";mv.textContent="\u21c6 Flytta";
       var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";
-      ld.addEventListener("click",function(){applyState(JSON.parse(JSON.stringify(s.state)));});
+      ld.addEventListener("click",function(){applyState(JSON.parse(JSON.stringify(s.state)));activeFormationId=s.id;activeFormationName=s.name;updateSaveButtons();});
       mv.addEventListener("click",function(){openMoveFolder(s);});
       dl.addEventListener("click",function(){if(s.id)cloudDelete(s.id);else{savedFormations=savedFormations.filter(function(x){return x.id!==s.id;});renderSavesList();}});
       row.appendChild(nm);row.appendChild(fl);row.appendChild(mv);row.appendChild(ld);row.appendChild(dl);
@@ -1997,13 +1999,34 @@ document.getElementById("btn-import-taktik-btn").addEventListener("click",functi
 document.getElementById("btn-import-taktik").addEventListener("change",function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){try{var data=JSON.parse(ev.target.result);if(data.taktikFilmer)taktikFilmer=data.taktikFilmer;renderTaktikList();}catch(err){alert("Kunde inte l\u00e4sa filen.");}};reader.readAsText(file);e.target.value="";});
 
 // Quick save button
-var saveBtn=document.createElement("button");saveBtn.className="btn on";saveBtn.textContent="Spara";saveBtn.style.marginLeft="2px";
+var saveBtn=document.createElement("button");saveBtn.className="btn on";saveBtn.textContent="Spara som";saveBtn.id="btn-save-as-topbar";saveBtn.className="btn";saveBtn.style.marginLeft="2px";
 saveBtn.addEventListener("click",function(){var d=new Date();document.getElementById("save-name-inp").value="Uppst\u00e4llning "+d.getDate()+"/"+(d.getMonth()+1)+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);updateFolderSelect();document.getElementById("modal-savename").classList.remove("hidden");});
 document.getElementById("topbar").insertBefore(saveBtn,document.getElementById("btn-half"));
 document.getElementById("btn-cloud-save").addEventListener("click",function(){var d=new Date();document.getElementById("save-name-inp").value="Uppst\u00e4llning "+d.getDate()+"/"+(d.getMonth()+1)+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);updateFolderSelect();document.getElementById("modal-savename").classList.remove("hidden");});
 document.getElementById("btn-cloud-refresh").addEventListener("click",function(){cloudLoadSaves();cloudLoadTaktik();});
 document.getElementById("savename-cancel").addEventListener("click",function(){document.getElementById("modal-savename").classList.add("hidden");});
 document.getElementById("savename-ok").addEventListener("click",function(){var name=document.getElementById("save-name-inp").value.trim()||"Uppst\u00e4llning";document.getElementById("modal-savename").classList.add("hidden");cloudSaveWithName(name);});
+
+function updateSaveButtons(){
+  var hasActive=activeFormationId&&activeFormationName;
+  var btn=document.getElementById("btn-save-over");
+  if(btn){btn.style.display=hasActive?"":"none";btn.textContent="\u2665 Spara"+(activeFormationName?" \u201e"+activeFormationName+"\u201c":"");}
+  var savedBtn=document.querySelector("#topbar button.btn.on:not(#btn-cloud-save)");
+}
+
+document.getElementById("btn-save-over").addEventListener("click",function(){
+  if(!activeFormationId)return;
+  cloudStatus("Sparar...","#7aaa88");
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+activeFormationId,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({data:buildState()})
+  }).then(function(r){return r.json();}).then(function(){
+    cloudStatus("\u2705 Sparat: "+activeFormationName,"#4ae87a");
+    showToast("Sparat!");
+    cloudLoadSaves();
+  }).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");});
+});
 
 // New folder modal (no window.prompt)
 document.getElementById("btn-new-folder").addEventListener("click",function(){document.getElementById("new-folder-inp").value="";document.getElementById("modal-new-folder").classList.remove("hidden");setTimeout(function(){document.getElementById("new-folder-inp").focus();},100);});
