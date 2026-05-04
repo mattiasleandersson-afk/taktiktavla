@@ -337,7 +337,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v14.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v14.8</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -382,6 +382,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   </div>
   <div style="display:flex;flex-direction:column;flex:1;min-width:0;gap:2px">
     <span class="bench-label">Avbytare:</span>
+    <span id="bench-motstand-lbl" style="font-size:0.62rem;color:#e8c84a;font-weight:700;white-space:nowrap"></span>
     <div id="bench-players" style="display:flex;gap:4px;flex-wrap:wrap;flex:1"></div>
   </div>
   <div style="display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0">
@@ -1468,7 +1469,31 @@ document.getElementById("ny-spelare-namn").addEventListener("keydown",function(e
 document.getElementById("btn-ny-match").addEventListener("click",function(){matchSelections={};var d=new Date();document.getElementById("match-datum").value=d.toISOString().slice(0,10);document.getElementById("match-motstand").value="";window._editingMatchId=null;renderMatchTruppList();showToast("Ny match!");});
 function getPlayerMatchCount(truppId){var from=document.getElementById("stat-from")?document.getElementById("stat-from").value:"";var to=document.getElementById("stat-to")?document.getElementById("stat-to").value:"";return matcher.filter(function(m){if(from&&m.datum<from)return false;if(to&&m.datum>to)return false;return(m.startade||[]).indexOf(truppId)>=0||(m.avbytare||[]).indexOf(truppId)>=0;}).length;}
 function renderMatchTruppList(){var list=document.getElementById("match-trupp-list");if(!list)return;list.innerHTML="";var nSelected=Object.values(matchSelections).filter(function(v){return v==="start";}).length;var counter=document.getElementById("match-counter");if(counter)counter.textContent=nSelected+" vald"+(nSelected===1?"":"a");var sorted=trupp.slice().sort(function(a,b){return(a.nr||0)-(b.nr||0);});if(!sorted.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>L\u00e4gg till spelare i truppen f\u00f6rst<\/span>";return;}sorted.forEach(function(sp){var sel=matchSelections[sp.id]||null;var row=document.createElement("div");row.className="row";row.style.padding="4px 8px";var nr=document.createElement("span");nr.style.cssText="font-weight:900;color:#4ae87a;min-width:24px;font-size:0.82rem";nr.textContent="#"+sp.nr;var nm=document.createElement("span");nm.style.cssText="flex:1;font-size:0.82rem";nm.textContent=sp.namn;var cnt=getPlayerMatchCount(sp.id);var cntEl=document.createElement("span");cntEl.style.cssText="font-size:0.68rem;color:#7aaa88;white-space:nowrap";cntEl.textContent=cnt+" mat.";var btnS=document.createElement("button");btnS.className="btn"+(sel==="start"?" on":"");btnS.style.cssText="padding:2px 7px;font-size:0.65rem";btnS.textContent="Start";btnS.addEventListener("click",function(){matchSelections[sp.id]=sel==="start"?null:"start";renderMatchTruppList();});row.appendChild(nr);row.appendChild(nm);row.appendChild(cntEl);row.appendChild(btnS);list.appendChild(row);});}
-document.getElementById("btn-match-to-taktik").addEventListener("click",function(){var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";});if(!startade.length){showToast("V\u00e4lj startspelare f\u00f6rst!");return;}matchRoster=startade.slice();matchAssignments={};var homeP=players.filter(function(p){return p.team==="home";});homeP.forEach(function(p){p.name="";p.number=0;});document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});halfMode=1;updateViewBox();render();renderBench();showToast("Tryck p\u00e5 en position f\u00f6r att placera spelare!");});
+document.getElementById("btn-match-to-taktik").addEventListener("click",function(){var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";});if(!startade.length){showToast("V\u00e4lj startspelare f\u00f6rst!");return;}matchRoster=startade.slice();
+  matchAssignments={};
+  matchVariants=[];
+  activeVariantIdx=0;
+  // Restore saved variants if editing an existing match
+  var editingM=window._editingMatchId?matcher.find(function(x){return String(x.dbId)===String(window._editingMatchId);}):null;
+  if(editingM&&editingM.uppstallningar&&editingM.uppstallningar.length){
+    matchVariants=JSON.parse(JSON.stringify(editingM.uppstallningar));
+    activeVariantIdx=0;
+    var v0=matchVariants[0];
+    matchAssignments=JSON.parse(JSON.stringify(v0.assignments||{}));
+    players.filter(function(p){return p.team==="home";}).forEach(function(p){
+      var ps=(v0.playerStates||[]).find(function(x){return x.id===p.id;});
+      if(ps){p.number=ps.number;p.name=ps.name;}else{p.name="";p.number=0;}
+    });
+  } else {
+    players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
+  }
+  // Show motståndare in bench-bar
+  var motEl=document.getElementById("bench-motstand-lbl");
+  if(motEl){var editM2=window._editingMatchId?matcher.find(function(x){return String(x.dbId)===String(window._editingMatchId);}):null;motEl.textContent=editM2?(editM2.datum+" vs "+editM2.motstand):document.getElementById("match-motstand").value||"";}
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});
+  document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});
+  halfMode=1;updateViewBox();render();renderBench();
+  showToast(matchVariants.length?"Uppst\u00e4llning laddad!":"Tryck p\u00e5 en position f\u00f6r att placera spelare!");});
 document.getElementById("btn-spara-match").addEventListener("click",function(){var datum=document.getElementById("match-datum").value;var motstand=document.getElementById("match-motstand").value.trim();if(!datum){showToast("V\u00e4lj datum!");return;}var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";}).map(function(sp){return sp.id;});var avbytare=trupp.filter(function(sp){return matchSelections[sp.id]==="avbytare";}).map(function(sp){return sp.id;});// Save current variant state before building match
 if(matchVariants.length>0)saveCurrentVariant();
 else if(Object.keys(matchAssignments).length>0){
