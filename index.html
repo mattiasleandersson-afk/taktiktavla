@@ -317,7 +317,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v12.8</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v12.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -797,7 +797,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
     <option value="600" selected>N</option>
     <option value="300">F</option>
   </select>
-  <label class="ls-label"><input type="checkbox" id="ls-loop" style="width:12px;height:12px"> Loop</label>
+  <label class="ls-label" style="writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);display:flex;align-items:center;gap:3px"><input type="checkbox" id="ls-loop" style="width:12px;height:12px"> Loop</label>
   <button class="ls-btn" id="ls-day-btn3" style="font-size:0.9rem;padding:8px 8px" title="Dagsljus">&#9728;</button>
 </div>
 <!-- Landscape bottom strip: nav + extras, replaces side panels -->
@@ -1392,7 +1392,7 @@ function render(){
         window.addEventListener("mousemove",_onMM2);
         window.addEventListener("mouseup",_onMU2);
       });})(labels[i]);}
-  for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);var dHome=daylightMode?"#cc2200":homeColor;var dAway=daylightMode?"#002288":awayColor;c.setAttribute("fill",playerColors[p.id]||(p.team==="home"?dHome:dAway));c.setAttribute("stroke",daylightMode?"rgba(0,0,0,0.4)":"#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill","#fff");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);
+  for(var i=0;i<players.length;i++){(function(p){var g=document.createElementNS(ns,"g");g.setAttribute("class","player-token");g.setAttribute("data-id",p.id);var c=document.createElementNS(ns,"circle");c.setAttribute("cx",p.x);c.setAttribute("cy",p.y);c.setAttribute("r",16);var dHome=daylightMode?"#cc2200":homeColor;var dAway=daylightMode?"#002288":awayColor;c.setAttribute("fill",playerColors[p.id]||(p.team==="home"?dHome:dAway));c.setAttribute("stroke",daylightMode?"rgba(0,0,0,0.4)":"#fff");c.setAttribute("stroke-width","2");var t=document.createElementNS(ns,"text");t.setAttribute("class","token-text");t.setAttribute("x",p.x);t.setAttribute("y",p.y);t.setAttribute("fill","#fff");if(document.body.classList.contains("landscape"))t.setAttribute("transform","rotate(90,"+p.x+","+p.y+")");t.textContent=tokenLabel(p);g.appendChild(c);g.appendChild(t);
       // Name label below circle in match mode
       if(matchRoster.length&&p.team==="home"&&p.name){
         var ns4="http://www.w3.org/2000/svg";
@@ -1465,12 +1465,6 @@ function render(){
 
 function svgPt(cx,cy){
   var r=svg.getBoundingClientRect();
-  if(document.body.classList.contains("landscape")){
-    // SVG rotated -90deg CSS: screen right=SVG top, screen top=SVG left
-    var px=1-(cy-r.top)/r.height;
-    var py=(cx-r.left)/r.width;
-    return{x:px*W,y:py*H};
-  }
   return{x:(cx-r.left)/r.width*W,y:(cy-r.top)/r.height*H};
 }
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
