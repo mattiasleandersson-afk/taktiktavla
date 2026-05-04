@@ -337,7 +337,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v14.8</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v14.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1321,15 +1321,16 @@ document.getElementById("bench-next-var").addEventListener("click",function(){
 function saveCurrentVariant(){
   if(matchVariants.length===0)return;
   matchVariants[activeVariantIdx].assignments=JSON.parse(JSON.stringify(matchAssignments));
-  matchVariants[activeVariantIdx].playerStates=players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,number:p.number,name:p.name};});
+  matchVariants[activeVariantIdx].playerStates=players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,number:p.number,name:p.name,x:p.x,y:p.y};});
 }
 function loadVariant(idx){
   var v=matchVariants[idx];
   if(!v)return;
-  matchAssignments=JSON.parse(JSON.stringify(v.assignments));
+  matchAssignments=JSON.parse(JSON.stringify(v.assignments||{}));
   players.filter(function(p){return p.team==="home";}).forEach(function(p){
-    var ps=v.playerStates.find(function(x){return x.id===p.id;});
-    if(ps){p.number=ps.number;p.name=ps.name;}else{p.number=0;p.name="";}
+    var ps=(v.playerStates||[]).find(function(x){return x.id===p.id;});
+    if(ps){p.number=ps.number;p.name=ps.name;if(ps.x!==undefined)p.x=ps.x;if(ps.y!==undefined)p.y=ps.y;}
+    else{p.number=0;p.name="";}
   });
   render();renderBench();updateVariantUI();
 }
@@ -1353,7 +1354,7 @@ document.getElementById("bench-clear-btn").addEventListener("click",function(){
 document.getElementById("bench-save-btn").addEventListener("click",function(){
   // Save current variant state then open match save dialog
   if(matchVariants.length===0&&Object.keys(matchAssignments).length>0){
-    matchVariants=[{namn:"Uppst. 1",assignments:JSON.parse(JSON.stringify(matchAssignments)),playerStates:players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,number:p.number,name:p.name};})}];
+    matchVariants=[{namn:"Uppst. 1",assignments:JSON.parse(JSON.stringify(matchAssignments)),playerStates:players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,number:p.number,name:p.name,x:p.x,y:p.y};})}];
     activeVariantIdx=0;
   } else if(matchVariants.length>0){
     saveCurrentVariant();
@@ -1482,7 +1483,8 @@ document.getElementById("btn-match-to-taktik").addEventListener("click",function
     matchAssignments=JSON.parse(JSON.stringify(v0.assignments||{}));
     players.filter(function(p){return p.team==="home";}).forEach(function(p){
       var ps=(v0.playerStates||[]).find(function(x){return x.id===p.id;});
-      if(ps){p.number=ps.number;p.name=ps.name;}else{p.name="";p.number=0;}
+      if(ps){p.number=ps.number;p.name=ps.name;if(ps.x!==undefined)p.x=ps.x;if(ps.y!==undefined)p.y=ps.y;}
+      else{p.name="";p.number=0;}
     });
   } else {
     players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
