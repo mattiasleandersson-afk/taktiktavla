@@ -1317,7 +1317,7 @@ function renderBench(){
 
 function highlightNearestPlayer(clientX,clientY){
   clearPlayerHighlights();
-  var pid=findNearestHomePitchPlayer(clientX,clientY,80);
+  var pid=findNearestHomePitchPlayer(clientX,clientY,50);
   if(pid){
     var el=svg.querySelector(".player-token[data-id=\'"+pid+"\']");
     if(el){var c=el.querySelector("circle");if(c)c.setAttribute("stroke","#4ae87a");}
@@ -1328,9 +1328,10 @@ function clearPlayerHighlights(){
   for(var i=0;i<tokens.length;i++){tokens[i].setAttribute("stroke",daylightMode?"rgba(0,0,0,0.4)":"#fff");}
 }
 function findNearestHomePitchPlayer(clientX,clientY,maxDist){
-  var r=svg.getBoundingClientRect();
   var pt=svgPt(clientX,clientY);
-  var best=null,bestDist=maxDist*maxDist*(W/r.width)*(W/r.width);
+  // maxDist is in SVG units (0-400 x 0-600 space), use 50 as generous threshold
+  var threshold=50*50;
+  var best=null,bestDist=threshold;
   for(var i=0;i<players.length;i++){
     if(players[i].team!=="home")continue;
     var dx=players[i].x-pt.x,dy=players[i].y-pt.y;
