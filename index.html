@@ -99,9 +99,10 @@ body.landscape #panel-toggle-strip { display: none !important; }
 body.landscape #taktikbar { display: none !important; }
 body.landscape #rec-badge { display: none !important; }
 body.landscape #mode-badge { display: none !important; }
-body.landscape #ls-prev-side { display: flex !important; }
-body.landscape #ls-next-side { display: flex !important; }
+body.landscape #ls-prev-side { display: none !important; }
+body.landscape #ls-next-side { display: none !important; }
 body.landscape #ls-title-top { display: block !important; }
+body.landscape #ls-bottom-strip { display: flex !important; }
 
 /* Side panels sit just inside the pitch wrapper */
 #ls-prev-side, #ls-next-side {
@@ -322,7 +323,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v12.1</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v12.2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -802,6 +803,20 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
     <option value="300">F</option>
   </select>
   <label class="ls-label"><input type="checkbox" id="ls-loop" style="width:12px;height:12px"> Loop</label>
+</div>
+<!-- Landscape bottom strip: nav + extras, replaces side panels -->
+<div id="ls-bottom-strip" style="display:none;position:fixed;bottom:max(6px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:51;background:rgba(14,23,16,0.9);border:1px solid #3a6b46;border-radius:12px;padding:5px 12px;align-items:center;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,0.5)">
+  <button class="ls-btn" id="ls-first-btn2" style="padding:8px 10px;font-size:1rem">&#9646;&#9664;</button>
+  <button class="ls-btn" id="ls-prev-btn2" style="padding:8px 10px;font-size:1rem">&#9664;</button>
+  <span id="ls-step-label2" style="color:#4ae87a;font-weight:700;font-size:0.75rem;min-width:60px;text-align:center">-</span>
+  <button class="ls-btn" id="ls-next-btn2" style="padding:8px 10px;font-size:1rem">&#9654;</button>
+  <select class="ls-select" id="ls-speed-sel2" style="width:36px">
+    <option value="1200">S</option>
+    <option value="600" selected>N</option>
+    <option value="300">F</option>
+  </select>
+  <label style="display:flex;align-items:center;gap:3px;font-size:0.65rem;color:#7aaa88;cursor:pointer"><input type="checkbox" id="ls-loop2" style="width:12px;height:12px"> Loop</label>
+  <button class="ls-btn" id="ls-day-btn2" style="font-size:0.75rem;padding:5px 8px">&#9728;</button>
 </div>
 <div id="ls-title-top" style="display:none">
   <span id="ls-step-label" style="color:#4ae87a;font-weight:700;font-size:0.78rem;text-transform:uppercase;font-family:Arial Narrow,Arial,sans-serif;letter-spacing:0.5px">-</span>
