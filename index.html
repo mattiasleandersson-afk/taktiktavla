@@ -99,9 +99,9 @@ body.landscape #panel-toggle-strip { display: none !important; }
 body.landscape #taktikbar { display: none !important; }
 body.landscape #rec-badge { display: none !important; }
 body.landscape #mode-badge { display: none !important; }
-body.landscape body.landscape body.landscape #ls-title-top { display: none !important; }
 body.landscape #ls-prev-side { display: flex !important; }
 body.landscape #ls-next-side { display: flex !important; }
+body.landscape #ls-title-top { display: none !important; }
 /* ls-bottom-strip not used */
 
 /* Side panels sit just inside the pitch wrapper */
@@ -118,10 +118,12 @@ justify-content: center;
 #ls-prev-side {
 left: max(4px,env(safe-area-inset-left));
 padding: 0 4px;
+max-width: calc((100vw - 100vh) / 2 - 8px);
 }
 #ls-next-side {
 right: max(4px,env(safe-area-inset-right));
 padding: 0 4px;
+max-width: calc((100vw - 100vh) / 2 - 8px);
 }
 
 #ls-title-top {
@@ -190,7 +192,21 @@ text-orientation: mixed;
 box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
-/* landscape pitch handled by JS */
+/* Rotate pitch wrapper in landscape */
+body.landscape #pitch-wrapper {
+position: fixed;
+inset: 0;
+z-index: 40;
+background: #0e1710;
+}
+body.landscape #pitch-svg {
+transform: rotate(-90deg);
+transform-origin: center center;
+max-width: none !important;
+max-height: none !important;
+width: 100vh !important;
+height: 100vw !important;
+}
 
 .star-btn { background:transparent; border:none; cursor:pointer; font-size:1rem; padding:2px 4px; line-height:1; }
 .star-btn.on { color:#ffdd44; }
@@ -204,8 +220,6 @@ body.fullscreen-portrait #taktikbar { display: none !important; }
 body.fullscreen-portrait #mode-badge { display: none !important; }
 body.fullscreen-portrait #fs-restore-btn { display: flex !important; }
 body.fullscreen-portrait #fs-portrait-nav { display: flex !important; }
-body.landscape #fs-portrait-nav { display: none !important; }
-body.landscape #fs-restore-btn { display: none !important; }
 
 #fs-restore-btn {
 display: none;
@@ -317,7 +331,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v13.0</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v12.4</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -797,24 +811,26 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
     <option value="600" selected>N</option>
     <option value="300">F</option>
   </select>
-  <label class="ls-label" style="writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);display:flex;align-items:center;gap:3px"><input type="checkbox" id="ls-loop" style="width:12px;height:12px"> Loop</label>
+  <label class="ls-label"><input type="checkbox" id="ls-loop" style="width:12px;height:12px"> Loop</label>
   <button class="ls-btn" id="ls-day-btn3" style="font-size:0.9rem;padding:8px 8px" title="Dagsljus">&#9728;</button>
 </div>
 <!-- Landscape bottom strip: nav + extras, replaces side panels -->
-TYPE html>
-<html lang="sv">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Taktiktavla">
-<meta name="theme-color" content="#111a14">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla</title>
-
-</head>
-<body>
+<div id="ls-bottom-strip" style="display:none;position:fixed;bottom:max(6px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:51;background:rgba(14,23,16,0.9);border:1px solid #3a6b46;border-radius:12px;padding:5px 12px;align-items:center;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,0.5)">
+  <button class="ls-btn" id="ls-first-btn2" style="padding:8px 10px;font-size:1rem">&#9646;&#9664;</button>
+  <button class="ls-btn" id="ls-prev-btn2" style="padding:8px 10px;font-size:1rem">&#9664;</button>
+  <span id="ls-step-label2" style="color:#4ae87a;font-weight:700;font-size:0.75rem;min-width:60px;text-align:center">-</span>
+  <button class="ls-btn" id="ls-next-btn2" style="padding:8px 10px;font-size:1rem">&#9654;</button>
+  <select class="ls-select" id="ls-speed-sel2" style="width:36px">
+    <option value="1200">S</option>
+    <option value="600" selected>N</option>
+    <option value="300">F</option>
+  </select>
+  <label style="display:flex;align-items:center;gap:3px;font-size:0.65rem;color:#7aaa88;cursor:pointer"><input type="checkbox" id="ls-loop2" style="width:12px;height:12px"> Loop</label>
+  <button class="ls-btn" id="ls-day-btn2" style="font-size:0.75rem;padding:5px 8px">&#9728;</button>
+</div>
+<div id="ls-title-top" style="display:none">
+  <span id="ls-step-label" style="color:#4ae87a;font-weight:700;font-size:0.78rem;text-transform:uppercase;font-family:Arial Narrow,Arial,sans-serif;letter-spacing:0.5px">-</span>
+</div>
 
 <!-- PLAYER PICKER MODAL -->
 
@@ -1405,7 +1421,7 @@ function render(){
         nl.setAttribute("stroke","rgba(255,255,255,0.8)");nl.setAttribute("stroke-width","2");
         nl.setAttribute("paint-order","stroke");
         nl.textContent=p.name;
-        
+        if(document.body.classList.contains("landscape"))nl.setAttribute("transform","rotate(90,"+p.x+","+(p.y+26)+")");
         g.appendChild(nl);
       }
       svg.appendChild(g);if(true){
@@ -1465,10 +1481,16 @@ function render(){
 
 function svgPt(cx,cy){
   var r=svg.getBoundingClientRect();
+  if(document.body.classList.contains("landscape")){
+    // SVG rotated -90deg CSS: screen right=SVG top, screen top=SVG left
+    var px=1-(cy-r.top)/r.height;
+    var py=(cx-r.left)/r.width;
+    return{x:px*W,y:py*H};
+  }
   return{x:(cx-r.left)/r.width*W,y:(cy-r.top)/r.height*H};
 }
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
-function moveDrag(nx,ny){nx=clamp(nx,10,W-10);ny=clamp(ny,10,H-10);if(!dragging)return;if(dragging.type==="ball"){ball.x=nx;ball.y=ny;var bg=svg.querySelector(".ball-token");if(bg){var t=bg.querySelector("text"),h=bg.querySelector("circle");if(t){t.setAttribute("x",nx);t.setAttribute("y",ny);}if(h){h.setAttribute("cx",nx);h.setAttribute("cy",ny);}}}else if(dragging.type==="player"){for(var i=0;i<players.length;i++)if(players[i].id===dragging.id){players[i].x=nx;players[i].y=ny;break;}var g=svg.querySelector(".player-token[data-id='"+dragging.id+"']");if(g){var c=g.querySelector("circle"),t=g.querySelector("text");if(c){c.setAttribute("cx",nx);c.setAttribute("cy",ny);}if(t){t.setAttribute("x",nx);t.setAttribute("y",ny);}}}else if(dragging.type==="label"){for(var i=0;i<labels.length;i++)if(labels[i].id===dragging.id){labels[i].x=nx;labels[i].y=ny;break;}}}
+function moveDrag(nx,ny){nx=clamp(nx,10,W-10);ny=clamp(ny,10,H-10);if(!dragging)return;if(dragging.type==="ball"){ball.x=nx;ball.y=ny;var bg=svg.querySelector(".ball-token");if(bg){var t=bg.querySelector("text"),h=bg.querySelector("circle");if(t){t.setAttribute("x",nx);t.setAttribute("y",ny);if(document.body.classList.contains("landscape"))t.setAttribute("transform","rotate(90,"+nx+","+ny+")");}if(h){h.setAttribute("cx",nx);h.setAttribute("cy",ny);}}}else if(dragging.type==="player"){for(var i=0;i<players.length;i++)if(players[i].id===dragging.id){players[i].x=nx;players[i].y=ny;break;}var g=svg.querySelector(".player-token[data-id='"+dragging.id+"']");if(g){var c=g.querySelector("circle"),t=g.querySelector("text");if(c){c.setAttribute("cx",nx);c.setAttribute("cy",ny);}if(t){t.setAttribute("x",nx);t.setAttribute("y",ny);if(document.body.classList.contains("landscape"))t.setAttribute("transform","rotate(90,"+nx+","+ny+")");}}}else if(dragging.type==="label"){for(var i=0;i<labels.length;i++)if(labels[i].id===dragging.id){labels[i].x=nx;labels[i].y=ny;break;}}}
 function onTM(ev){
   ev.preventDefault();
   var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);
@@ -2166,7 +2188,7 @@ function animateToStep(targetIdx){
         if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}
         if(tx){
           tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);
-          
+          if(document.body.classList.contains("landscape"))tx.setAttribute("transform","rotate(90,"+players[i].x+","+players[i].y+")");
         }
       }
     }
@@ -2904,13 +2926,6 @@ document.getElementById("fs-next-btn").addEventListener("click",function(){docum
 document.getElementById("fs-day-btn").addEventListener("click",function(){document.getElementById("btn-daylight").click();this.classList.toggle("active",daylightMode);});
 
 // \u2500\u2500 LANDSCAPE / ORIENTATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-document.getElementById("ls-day-btn3").addEventListener("click",function(){
-  daylightMode=!daylightMode;
-  document.body.classList.toggle("daylight",daylightMode);
-  document.getElementById("btn-daylight").innerHTML=daylightMode?"\u2602 Normal":"\u2600 Dag";
-  drawPitch();render();
-});
-
 function handleOrientation(){
   var isLandscape = window.innerWidth > window.innerHeight;
   document.body.classList.toggle("landscape", isLandscape);
