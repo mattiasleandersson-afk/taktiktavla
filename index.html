@@ -99,10 +99,10 @@ body.landscape #panel-toggle-strip { display: none !important; }
 body.landscape #taktikbar { display: none !important; }
 body.landscape #rec-badge { display: none !important; }
 body.landscape #mode-badge { display: none !important; }
-body.landscape #ls-prev-side { display: none !important; }
-body.landscape #ls-next-side { display: none !important; }
+body.landscape #ls-prev-side { display: flex !important; }
+body.landscape #ls-next-side { display: flex !important; }
 body.landscape #ls-title-top { display: block !important; }
-body.landscape #ls-bottom-strip { display: flex !important; }
+/* ls-bottom-strip not used */
 
 /* Side panels sit just inside the pitch wrapper */
 #ls-prev-side, #ls-next-side {
@@ -115,8 +115,16 @@ align-items: center;
 gap: 10px;
 justify-content: center;
 }
-#ls-prev-side { left: max(4px,env(safe-area-inset-left)); padding: 0 4px; }
-#ls-next-side { right: max(4px,env(safe-area-inset-right)); padding: 0 4px; }
+#ls-prev-side {
+left: max(4px,env(safe-area-inset-left));
+padding: 0 4px;
+max-width: calc((100vw - 100vh) / 2 - 8px);
+}
+#ls-next-side {
+right: max(4px,env(safe-area-inset-right));
+padding: 0 4px;
+max-width: calc((100vw - 100vh) / 2 - 8px);
+}
 
 #ls-title-top {
 position: fixed;
@@ -323,7 +331,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v12.2</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v12.3</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
