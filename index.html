@@ -1275,6 +1275,19 @@ document.getElementById("backup-download").addEventListener("click",function(){v
 document.getElementById("bench-size-up").addEventListener("click",function(){matchNameSize=Math.min(20,matchNameSize+1);document.getElementById("bench-size-lbl").textContent=matchNameSize;render();});
 document.getElementById("bench-size-down").addEventListener("click",function(){matchNameSize=Math.max(7,matchNameSize-1);document.getElementById("bench-size-lbl").textContent=matchNameSize;render();});
 document.getElementById("bench-exit-btn").addEventListener("click",function(){matchRoster=[];matchAssignments={};window._editingMatchId=null;halfMode=0;updateViewBox();players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});render();document.getElementById("bench-bar").classList.remove("active");showToast("Laguppst\u00e4llning avslutad");});
+document.getElementById("bench-save-btn").addEventListener("click",function(){
+  var d=new Date();
+  var name="Laguppst\u00e4llning "+d.getDate()+"/"+(d.getMonth()+1)+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);
+  document.getElementById("save-name-inp").value=name;
+  updateFolderSelect();
+  document.getElementById("modal-savename").classList.remove("hidden");
+});
+document.getElementById("bench-clear-btn").addEventListener("click",function(){
+  matchAssignments={};
+  players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
+  render();renderBench();
+  showToast("Alla spelare \u00e5terlagda till avbytare");
+});
 var _draggingBenchPlayer=null;
 var _benchDragEl=null;
 
