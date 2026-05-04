@@ -1274,14 +1274,61 @@ document.getElementById("backup-cancel").addEventListener("click",function(){doc
 document.getElementById("backup-download").addEventListener("click",function(){var data={savedFormations:savedFormations,taktikFilmer:taktikFilmer,exported:new Date().toISOString()};var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="taktiktavla-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(url);document.getElementById("modal-backup").classList.add("hidden");showToast("Backup nedladdad!");});
 document.getElementById("bench-size-up").addEventListener("click",function(){matchNameSize=Math.min(20,matchNameSize+1);document.getElementById("bench-size-lbl").textContent=matchNameSize;render();});
 document.getElementById("bench-size-down").addEventListener("click",function(){matchNameSize=Math.max(7,matchNameSize-1);document.getElementById("bench-size-lbl").textContent=matchNameSize;render();});
-document.getElementById("bench-exit-btn").addEventListener("click",function(){matchRoster=[];matchAssignments={};window._editingMatchId=null;halfMode=0;updateViewBox();players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});render();document.getElementById("bench-bar").classList.remove("active");showToast("Laguppst\u00e4llning avslutad");});
-document.getElementById("bench-save-btn").addEventListener("click",function(){
-  var d=new Date();
-  var name="Laguppst\u00e4llning "+d.getDate()+"/"+(d.getMonth()+1)+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);
-  document.getElementById("save-name-inp").value=name;
-  updateFolderSelect();
-  document.getElementById("modal-savename").classList.remove("hidden");
+document.getElementById("bench-exit-btn").addEventListener("click",function(){matchRoster=[];matchAssignments={};matchVariants=[];activeVariantIdx=0;window._editingMatchId=null;halfMode=0;updateViewBox();players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});render();document.getElementById("bench-bar").classList.remove("active");showToast("Laguppst\u00e4llning avslutad");});
+document.getElementById("bench-add-var").addEventListener("click",function(){
+  // Save current state as new variant
+  saveCurrentVariant();
+  var newVariant={
+    namn:"Uppst. "+(matchVariants.length+1),
+    assignments:JSON.parse(JSON.stringify(matchAssignments)),
+    playerStates:players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,number:p.number,name:p.name};})
+  };
+  matchVariants.push(newVariant);
+  activeVariantIdx=matchVariants.length-1;
+  // Reset assignments for new variant
+  matchAssignments={};
+  players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
+  render();renderBench();updateVariantUI();
+  showToast("Ny variant skapad!");
 });
+document.getElementById("bench-prev-var").addEventListener("click",function(){
+  if(matchVariants.length===0||activeVariantIdx<=0)return;
+  saveCurrentVariant();
+  activeVariantIdx--;
+  loadVariant(activeVariantIdx);
+});
+document.getElementById("bench-next-var").addEventListener("click",function(){
+  if(matchVariants.length===0||activeVariantIdx>=matchVariants.length-1)return;
+  saveCurrentVariant();
+  activeVariantIdx++;
+  loadVariant(activeVariantIdx);
+});
+function saveCurrentVariant(){
+  if(matchVariants.length===0)return;
+  matchVariants[activeVariantIdx].assignments=JSON.parse(JSON.stringify(matchAssignments));
+  matchVariants[activeVariantIdx].playerStates=players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,number:p.number,name:p.name};});
+}
+function loadVariant(idx){
+  var v=matchVariants[idx];
+  if(!v)return;
+  matchAssignments=JSON.parse(JSON.stringify(v.assignments));
+  players.filter(function(p){return p.team==="home";}).forEach(function(p){
+    var ps=v.playerStates.find(function(x){return x.id===p.id;});
+    if(ps){p.number=ps.number;p.name=ps.name;}else{p.number=0;p.name="";}
+  });
+  render();renderBench();updateVariantUI();
+}
+function updateVariantUI(){
+  var lbl=document.getElementById("bench-var-label");
+  var prev=document.getElementById("bench-prev-var");
+  var next=document.getElementById("bench-next-var");
+  if(!lbl)return;
+  var total=matchVariants.length||1;
+  var cur=matchVariants.length===0?1:activeVariantIdx+1;
+  lbl.textContent=matchVariants.length===0?"Uppst. 1/1":(matchVariants[activeVariantIdx].namn||("Uppst. "+cur))+"/"+total;
+  if(prev)prev.style.opacity=activeVariantIdx>0?"1":"0.3";
+  if(next)next.style.opacity=activeVariantIdx<matchVariants.length-1?"1":"0.3";
+}
 document.getElementById("bench-clear-btn").addEventListener("click",function(){
   matchAssignments={};
   players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
@@ -1290,6 +1337,8 @@ document.getElementById("bench-clear-btn").addEventListener("click",function(){
 });
 var _draggingBenchPlayer=null;
 var _benchDragEl=null;
+var matchVariants=[]; // [{namn:"Uppst. 1", assignments:{}, playerStates:[{id,number,name}]}]
+var activeVariantIdx=0;
 
 function renderBench(){
   var bar=document.getElementById("bench-bar");var cont=document.getElementById("bench-players");
@@ -1343,6 +1392,7 @@ function renderBench(){
     },{passive:false});
   });
   bar.classList.toggle("active",matchRoster.length>0);
+  updateVariantUI();
 }
 
 function highlightNearestPlayer(clientX,clientY){
@@ -1389,7 +1439,14 @@ document.getElementById("btn-ny-match").addEventListener("click",function(){matc
 function getPlayerMatchCount(truppId){var from=document.getElementById("stat-from")?document.getElementById("stat-from").value:"";var to=document.getElementById("stat-to")?document.getElementById("stat-to").value:"";return matcher.filter(function(m){if(from&&m.datum<from)return false;if(to&&m.datum>to)return false;return(m.startade||[]).indexOf(truppId)>=0||(m.avbytare||[]).indexOf(truppId)>=0;}).length;}
 function renderMatchTruppList(){var list=document.getElementById("match-trupp-list");if(!list)return;list.innerHTML="";var nSelected=Object.values(matchSelections).filter(function(v){return v==="start";}).length;var counter=document.getElementById("match-counter");if(counter)counter.textContent=nSelected+" vald"+(nSelected===1?"":"a");var sorted=trupp.slice().sort(function(a,b){return(a.nr||0)-(b.nr||0);});if(!sorted.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>L\u00e4gg till spelare i truppen f\u00f6rst<\/span>";return;}sorted.forEach(function(sp){var sel=matchSelections[sp.id]||null;var row=document.createElement("div");row.className="row";row.style.padding="4px 8px";var nr=document.createElement("span");nr.style.cssText="font-weight:900;color:#4ae87a;min-width:24px;font-size:0.82rem";nr.textContent="#"+sp.nr;var nm=document.createElement("span");nm.style.cssText="flex:1;font-size:0.82rem";nm.textContent=sp.namn;var cnt=getPlayerMatchCount(sp.id);var cntEl=document.createElement("span");cntEl.style.cssText="font-size:0.68rem;color:#7aaa88;white-space:nowrap";cntEl.textContent=cnt+" mat.";var btnS=document.createElement("button");btnS.className="btn"+(sel==="start"?" on":"");btnS.style.cssText="padding:2px 7px;font-size:0.65rem";btnS.textContent="Start";btnS.addEventListener("click",function(){matchSelections[sp.id]=sel==="start"?null:"start";renderMatchTruppList();});row.appendChild(nr);row.appendChild(nm);row.appendChild(cntEl);row.appendChild(btnS);list.appendChild(row);});}
 document.getElementById("btn-match-to-taktik").addEventListener("click",function(){var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";});if(!startade.length){showToast("V\u00e4lj startspelare f\u00f6rst!");return;}matchRoster=startade.slice();matchAssignments={};var homeP=players.filter(function(p){return p.team==="home";});homeP.forEach(function(p){p.name="";p.number=0;});document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});halfMode=1;updateViewBox();render();renderBench();showToast("Tryck p\u00e5 en position f\u00f6r att placera spelare!");});
-document.getElementById("btn-spara-match").addEventListener("click",function(){var datum=document.getElementById("match-datum").value;var motstand=document.getElementById("match-motstand").value.trim();if(!datum){showToast("V\u00e4lj datum!");return;}var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";}).map(function(sp){return sp.id;});var avbytare=trupp.filter(function(sp){return matchSelections[sp.id]==="avbytare";}).map(function(sp){return sp.id;});var match={datum:datum,motstand:motstand||"Ok\u00e4nd",startade:startade,avbytare:avbytare};var editId=window._editingMatchId||null;if(editId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+editId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match})}).then(function(){matcher=matcher.map(function(x){return x.dbId===editId?Object.assign({},match,{dbId:editId}):x;});matchSelections={};window._editingMatchId=null;renderMatchTruppList();renderStatistik();showToast("Match uppdaterad!");});}else{fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match,type:"match",folder:"Allm\u00e4nt"})}).then(function(r){return r.json();}).then(function(data){if(data&&data[0])match.dbId=data[0].id;matcher.push(match);matchSelections={};renderMatchTruppList();renderStatistik();renderMatchHistory();showToast("Match sparad: "+datum+" vs "+match.motstand);}).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");matcher.push(match);renderMatchTruppList();renderStatistik();showToast("Match sparad lokalt");});}});
+document.getElementById("btn-spara-match").addEventListener("click",function(){var datum=document.getElementById("match-datum").value;var motstand=document.getElementById("match-motstand").value.trim();if(!datum){showToast("V\u00e4lj datum!");return;}var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";}).map(function(sp){return sp.id;});var avbytare=trupp.filter(function(sp){return matchSelections[sp.id]==="avbytare";}).map(function(sp){return sp.id;});// Save current variant state before building match
+if(matchVariants.length>0)saveCurrentVariant();
+else if(Object.keys(matchAssignments).length>0){
+  // Auto-save first variant
+  matchVariants=[{namn:"Uppst. 1",assignments:JSON.parse(JSON.stringify(matchAssignments)),playerStates:players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,number:p.number,name:p.name};})}];
+  activeVariantIdx=0;
+}
+var match={datum:datum,motstand:motstand||"Ok\u00e4nd",startade:startade,avbytare:avbytare,uppstallningar:JSON.parse(JSON.stringify(matchVariants))};var editId=window._editingMatchId||null;if(editId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+editId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match})}).then(function(){matcher=matcher.map(function(x){return x.dbId===editId?Object.assign({},match,{dbId:editId}):x;});matchSelections={};window._editingMatchId=null;renderMatchTruppList();renderStatistik();showToast("Match uppdaterad!");});}else{fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match,type:"match",folder:"Allm\u00e4nt"})}).then(function(r){return r.json();}).then(function(data){if(data&&data[0])match.dbId=data[0].id;matcher.push(match);matchSelections={};renderMatchTruppList();renderStatistik();renderMatchHistory();showToast("Match sparad: "+datum+" vs "+match.motstand);}).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");matcher.push(match);renderMatchTruppList();renderStatistik();showToast("Match sparad lokalt");});}});
 var statSelections={};
 function renderStatistik(){var list=document.getElementById("stat-list");if(!list)return;var from=document.getElementById("stat-from").value;var to=document.getElementById("stat-to").value;var filtered=matcher.filter(function(m){if(from&&m.datum<from)return false;if(to&&m.datum>to)return false;return true;});var stats={};trupp.forEach(function(sp){stats[sp.id]={id:sp.id,namn:sp.namn,nr:sp.nr,starter:0,inhopp:0};});filtered.forEach(function(m){(m.startade||[]).forEach(function(id){if(stats[id])stats[id].starter++;});(m.avbytare||[]).forEach(function(id){if(stats[id])stats[id].inhopp++;});});list.innerHTML="";if(!trupp.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga spelare<\/span>";return;}var hdr=document.createElement("div");hdr.style.cssText="display:grid;grid-template-columns:24px 30px 1fr 40px 40px;gap:4px;padding:3px 8px;font-size:0.65rem;color:#7aaa88;font-weight:700;text-transform:uppercase;border-bottom:1px solid #2d4a35;margin-bottom:3px";hdr.innerHTML="<span><\/span><span>#<\/span><span>Spelare<\/span><span style='text-align:center'>Start<\/span><span style='text-align:center'>Tot<\/span>";list.appendChild(hdr);var sortedStats=Object.values(stats).sort(function(a,b){var totA=a.starter+a.inhopp,totB=b.starter+b.inhopp;return totB-totA||a.namn.localeCompare(b.namn,"sv");});sortedStats.forEach(function(sp){var row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:24px 30px 1fr 40px 40px;gap:4px;padding:5px 8px;font-size:0.78rem;border-bottom:1px solid #1a2e1f;cursor:pointer;align-items:center";if(statSelections[sp.id])row.style.background="rgba(74,232,122,0.1)";var chk=document.createElement("input");chk.type="checkbox";chk.checked=!!statSelections[sp.id];chk.style.cssText="width:15px;height:15px;accent-color:#4ae87a;cursor:pointer;flex-shrink:0";var nrEl=document.createElement("span");nrEl.style.color="#7aaa88";nrEl.textContent="#"+sp.nr;var nmEl=document.createElement("span");nmEl.textContent=sp.namn;var stEl=document.createElement("span");stEl.style.cssText="text-align:center;color:#4ae87a";stEl.textContent=sp.starter;var totEl=document.createElement("span");totEl.style.cssText="text-align:center;font-weight:700";totEl.textContent=(sp.starter+sp.inhopp);function toggleSel(){if(statSelections[sp.id])delete statSelections[sp.id];else statSelections[sp.id]=true;chk.checked=!!statSelections[sp.id];row.style.background=statSelections[sp.id]?"rgba(74,232,122,0.1)":"";renderStatActionBar();}chk.addEventListener("change",toggleSel);row.addEventListener("click",function(e){if(e.target!==chk)toggleSel();});row.appendChild(chk);row.appendChild(nrEl);row.appendChild(nmEl);row.appendChild(stEl);row.appendChild(totEl);list.appendChild(row);});renderStatActionBar();}
 document.getElementById("btn-stat-filter").addEventListener("click",function(){statSelections={};renderStatistik();});
