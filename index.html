@@ -337,7 +337,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v14.9</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.0</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1321,17 +1321,31 @@ document.getElementById("bench-next-var").addEventListener("click",function(){
 function saveCurrentVariant(){
   if(matchVariants.length===0)return;
   matchVariants[activeVariantIdx].assignments=JSON.parse(JSON.stringify(matchAssignments));
-  matchVariants[activeVariantIdx].playerStates=players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,number:p.number,name:p.name,x:p.x,y:p.y};});
+  matchVariants[activeVariantIdx].format=format;
+  var activeFormBtn=document.querySelector("#formation-btns .btn.on");
+  matchVariants[activeVariantIdx].formation=activeFormBtn?activeFormBtn.textContent:"";
+  matchVariants[activeVariantIdx].playerStates=players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};});
 }
 function loadVariant(idx){
   var v=matchVariants[idx];
   if(!v)return;
   matchAssignments=JSON.parse(JSON.stringify(v.assignments||{}));
-  players.filter(function(p){return p.team==="home";}).forEach(function(p){
-    var ps=(v.playerStates||[]).find(function(x){return x.id===p.id;});
-    if(ps){p.number=ps.number;p.name=ps.name;if(ps.x!==undefined)p.x=ps.x;if(ps.y!==undefined)p.y=ps.y;}
-    else{p.number=0;p.name="";}
-  });
+  // Restore format + formation if saved
+  if(v.format&&v.format!==format){
+    format=v.format;
+    document.getElementById("fmt-sel").value=String(format);
+    buildFormationBtns();
+  }
+  if(v.formation){
+    var btns=document.querySelectorAll("#formation-btns .btn");
+    for(var i=0;i<btns.length;i++){btns[i].classList.toggle("on",btns[i].textContent===v.formation);}
+  }
+  // Restore ALL player positions from saved state
+  if(v.playerStates&&v.playerStates.length){
+    players=v.playerStates.map(function(ps){return{id:ps.id,team:ps.team||( ps.id.indexOf("h")===0?"home":"away"),number:ps.number,name:ps.name||"",x:ps.x,y:ps.y};});
+  } else {
+    players.filter(function(p){return p.team==="home";}).forEach(function(p){p.number=0;p.name="";});
+  }
   render();renderBench();updateVariantUI();
 }
 function updateVariantUI(){
@@ -1354,7 +1368,7 @@ document.getElementById("bench-clear-btn").addEventListener("click",function(){
 document.getElementById("bench-save-btn").addEventListener("click",function(){
   // Save current variant state then open match save dialog
   if(matchVariants.length===0&&Object.keys(matchAssignments).length>0){
-    matchVariants=[{namn:"Uppst. 1",assignments:JSON.parse(JSON.stringify(matchAssignments)),playerStates:players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,number:p.number,name:p.name,x:p.x,y:p.y};})}];
+    matchVariants=[{namn:"Uppst. 1",format:format,formation:(document.querySelector("#formation-btns .btn.on")||{}).textContent||"",assignments:JSON.parse(JSON.stringify(matchAssignments)),playerStates:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};})}];
     activeVariantIdx=0;
   } else if(matchVariants.length>0){
     saveCurrentVariant();
@@ -1481,11 +1495,20 @@ document.getElementById("btn-match-to-taktik").addEventListener("click",function
     activeVariantIdx=0;
     var v0=matchVariants[0];
     matchAssignments=JSON.parse(JSON.stringify(v0.assignments||{}));
-    players.filter(function(p){return p.team==="home";}).forEach(function(p){
-      var ps=(v0.playerStates||[]).find(function(x){return x.id===p.id;});
-      if(ps){p.number=ps.number;p.name=ps.name;if(ps.x!==undefined)p.x=ps.x;if(ps.y!==undefined)p.y=ps.y;}
-      else{p.name="";p.number=0;}
-    });
+    if(v0.format&&v0.format!==format){
+      format=v0.format;
+      document.getElementById("fmt-sel").value=String(format);
+      buildFormationBtns();
+    }
+    if(v0.formation){
+      var fbtns=document.querySelectorAll("#formation-btns .btn");
+      for(var fi=0;fi<fbtns.length;fi++){fbtns[fi].classList.toggle("on",fbtns[fi].textContent===v0.formation);}
+    }
+    if(v0.playerStates&&v0.playerStates.length){
+      players=v0.playerStates.map(function(ps){return{id:ps.id,team:ps.team||(ps.id.indexOf("h")===0?"home":"away"),number:ps.number,name:ps.name||"",x:ps.x,y:ps.y};});
+    } else {
+      players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
+    }
   } else {
     players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
   }
