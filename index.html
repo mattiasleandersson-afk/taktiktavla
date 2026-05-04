@@ -371,6 +371,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <button id="bench-next-var" style="background:transparent;border:1px solid #2d4a35;border-radius:5px;color:#7aaa88;padding:2px 7px;font-size:0.75rem;font-weight:900;cursor:pointer;flex-shrink:0">&#9654;</button>
   <button id="bench-add-var" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:2px 8px;font-size:0.65rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">+ Variant</button>
   <button id="bench-clear-btn" style="background:transparent;border:1px solid #e8c84a;border-radius:5px;color:#e8c84a;padding:2px 8px;font-size:0.65rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">&#8635; Rensa</button>
+  <button id="bench-save-btn" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:2px 8px;font-size:0.65rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128190; Spara match</button>
   <span class="bench-label">Avbytare:</span>
   <div id="bench-players" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
   <div style="display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0">
@@ -1337,6 +1338,22 @@ document.getElementById("bench-clear-btn").addEventListener("click",function(){
   players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
   render();renderBench();
   showToast("Alla spelare \u00e5terlagda till avbytare");
+});
+document.getElementById("bench-save-btn").addEventListener("click",function(){
+  // Save current variant state then open match save dialog
+  if(matchVariants.length===0&&Object.keys(matchAssignments).length>0){
+    matchVariants=[{namn:"Uppst. 1",assignments:JSON.parse(JSON.stringify(matchAssignments)),playerStates:players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,number:p.number,name:p.name};})}];
+    activeVariantIdx=0;
+  } else if(matchVariants.length>0){
+    saveCurrentVariant();
+  }
+  // Switch to match tab and trigger save
+  document.querySelectorAll("[data-lag]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-lag")==="match");});
+  document.getElementById("lag-trupp").style.display="none";
+  document.getElementById("lag-match").style.display="";
+  document.getElementById("lag-statistik").style.display="none";
+  var lagSparade=document.getElementById("lag-sparade");if(lagSparade)lagSparade.style.display="none";
+  document.getElementById("btn-spara-match").click();
 });
 var _draggingBenchPlayer=null;
 var _benchDragEl=null;
