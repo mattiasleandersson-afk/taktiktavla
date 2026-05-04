@@ -366,6 +366,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="bench-bar">
   <button id="bench-exit-btn" style="background:transparent;border:1px solid #e84a4a;border-radius:5px;color:#e84a4a;padding:2px 8px;font-size:0.65rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">&#10005; Avsluta</button>
+  <button id="bench-save-btn" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:2px 8px;font-size:0.65rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">&#128190; Spara uppst&#228;llning</button>
   <span class="bench-label">Avbytare:</span>
   <div id="bench-players" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
   <div style="display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0">
@@ -1257,7 +1258,87 @@ document.getElementById("backup-download").addEventListener("click",function(){v
 document.getElementById("bench-size-up").addEventListener("click",function(){matchNameSize=Math.min(20,matchNameSize+1);document.getElementById("bench-size-lbl").textContent=matchNameSize;render();});
 document.getElementById("bench-size-down").addEventListener("click",function(){matchNameSize=Math.max(7,matchNameSize-1);document.getElementById("bench-size-lbl").textContent=matchNameSize;render();});
 document.getElementById("bench-exit-btn").addEventListener("click",function(){matchRoster=[];matchAssignments={};window._editingMatchId=null;halfMode=0;updateViewBox();players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});render();document.getElementById("bench-bar").classList.remove("active");showToast("Laguppst\u00e4llning avslutad");});
-function renderBench(){var bar=document.getElementById("bench-bar");var cont=document.getElementById("bench-players");if(!bar||!cont)return;if(!matchRoster.length){bar.classList.remove("active");return;}var assignedTids={};Object.values(matchAssignments).forEach(function(tid){assignedTids[tid]=true;});var bench=matchRoster.filter(function(sp){return !assignedTids[sp.id];});cont.innerHTML="";bench.forEach(function(sp){var div=document.createElement("div");div.className="bench-player";var nr=document.createElement("span");nr.className="bench-nr";nr.textContent="#"+sp.nr;var nm=document.createElement("span");nm.className="bench-name";nm.textContent=sp.namn;div.appendChild(nr);div.appendChild(nm);cont.appendChild(div);});bar.classList.toggle("active",matchRoster.length>0);}
+var _draggingBenchPlayer=null;
+var _benchDragEl=null;
+
+function renderBench(){
+  var bar=document.getElementById("bench-bar");var cont=document.getElementById("bench-players");
+  if(!bar||!cont)return;
+  if(!matchRoster.length){bar.classList.remove("active");return;}
+  var assignedTids={};Object.values(matchAssignments).forEach(function(tid){assignedTids[tid]=true;});
+  var bench=matchRoster.filter(function(sp){return !assignedTids[sp.id];});
+  cont.innerHTML="";
+  bench.forEach(function(sp){
+    var div=document.createElement("div");div.className="bench-player";
+    div.style.cursor="grab";div.style.touchAction="none";
+    var nr=document.createElement("span");nr.className="bench-nr";nr.textContent="#"+sp.nr;
+    var nm=document.createElement("span");nm.className="bench-name";nm.textContent=sp.namn;
+    div.appendChild(nr);div.appendChild(nm);cont.appendChild(div);
+    div.addEventListener("touchstart",function(ev){
+      ev.preventDefault();ev.stopPropagation();
+      _draggingBenchPlayer=sp;
+      // Create floating drag element
+      if(_benchDragEl)_benchDragEl.remove();
+      _benchDragEl=document.createElement("div");
+      _benchDragEl.style.cssText="position:fixed;z-index:9999;pointer-events:none;background:#4ae87a;color:#0a1a0d;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.8rem;transform:translate(-50%,-50%)";
+      _benchDragEl.textContent="#"+sp.nr;
+      document.body.appendChild(_benchDragEl);
+      var t=ev.touches[0];
+      _benchDragEl.style.left=t.clientX+"px";_benchDragEl.style.top=t.clientY+"px";
+      function onMove(ev2){
+        ev2.preventDefault();
+        var t2=ev2.touches[0];
+        _benchDragEl.style.left=t2.clientX+"px";_benchDragEl.style.top=t2.clientY+"px";
+        // Highlight nearest player circle
+        highlightNearestPlayer(t2.clientX,t2.clientY);
+      }
+      function onEnd(ev2){
+        window.removeEventListener("touchmove",onMove);
+        window.removeEventListener("touchend",onEnd);
+        if(_benchDragEl){_benchDragEl.remove();_benchDragEl=null;}
+        clearPlayerHighlights();
+        // Find nearest home player to drop on
+        if(ev2.changedTouches.length){
+          var t3=ev2.changedTouches[0];
+          var pid=findNearestHomePitchPlayer(t3.clientX,t3.clientY,60);
+          if(pid&&_draggingBenchPlayer){
+            assignPlayerToPosition(pid,_draggingBenchPlayer.id);
+            showToast("#"+_draggingBenchPlayer.nr+" "+_draggingBenchPlayer.namn+" placerad!");
+          }
+        }
+        _draggingBenchPlayer=null;
+      }
+      window.addEventListener("touchmove",onMove,{passive:false});
+      window.addEventListener("touchend",onEnd);
+    },{passive:false});
+  });
+  bar.classList.toggle("active",matchRoster.length>0);
+}
+
+function highlightNearestPlayer(clientX,clientY){
+  clearPlayerHighlights();
+  var pid=findNearestHomePitchPlayer(clientX,clientY,80);
+  if(pid){
+    var el=svg.querySelector(".player-token[data-id=\'"+pid+"\']");
+    if(el){var c=el.querySelector("circle");if(c)c.setAttribute("stroke","#4ae87a");}
+  }
+}
+function clearPlayerHighlights(){
+  var tokens=svg.querySelectorAll(".player-token circle");
+  for(var i=0;i<tokens.length;i++){tokens[i].setAttribute("stroke",daylightMode?"rgba(0,0,0,0.4)":"#fff");}
+}
+function findNearestHomePitchPlayer(clientX,clientY,maxDist){
+  var r=svg.getBoundingClientRect();
+  var pt=svgPt(clientX,clientY);
+  var best=null,bestDist=maxDist*maxDist*(W/r.width)*(W/r.width);
+  for(var i=0;i<players.length;i++){
+    if(players[i].team!=="home")continue;
+    var dx=players[i].x-pt.x,dy=players[i].y-pt.y;
+    var dist=dx*dx+dy*dy;
+    if(dist<bestDist){bestDist=dist;best=players[i].id;}
+  }
+  return best;
+}
 function getAssignedTruppIds(){var assigned={};Object.values(matchAssignments).forEach(function(tid){assigned[tid]=true;});return assigned;}
 function openPlayerPicker(pitchPlayerId){if(!matchRoster.length)return;assigningPlayerId=pitchPlayerId;var assigned=getAssignedTruppIds();var list=document.getElementById("player-picker-list");list.innerHTML="";var available=matchRoster.filter(function(sp){return !assigned[sp.id]||(matchAssignments[pitchPlayerId]===sp.id);});if(!available.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.85rem'>Alla spelare placerade<\/span>";}available.forEach(function(sp){var isCurrent=matchAssignments[pitchPlayerId]===sp.id;var btn=document.createElement("button");btn.className="btn"+(isCurrent?" on":"");btn.style.cssText="width:100%;text-align:left;padding:8px 12px;font-size:0.85rem";btn.innerHTML="<b style='color:#4ae87a'>#"+sp.nr+"<\/b> "+sp.namn;btn.addEventListener("click",function(){assignPlayerToPosition(pitchPlayerId,sp.id);document.getElementById("modal-player-picker").classList.add("hidden");assigningPlayerId=null;});list.appendChild(btn);});document.getElementById("modal-player-picker").classList.remove("hidden");}
 function assignPlayerToPosition(pitchPlayerId,truppId){Object.keys(matchAssignments).forEach(function(pid){if(matchAssignments[pid]===truppId&&pid!==pitchPlayerId)delete matchAssignments[pid];});matchAssignments[pitchPlayerId]=truppId;var sp=matchRoster.find(function(x){return x.id===truppId;});var p=players.find(function(x){return x.id===pitchPlayerId;});if(sp&&p){p.number=sp.nr;p.name=sp.namn;}render();renderBench();}
@@ -1308,11 +1389,6 @@ function handleOrientation(){
   var isLandscape=window.innerWidth>window.innerHeight;
   document.body.classList.toggle("landscape",isLandscape);
   if(isLandscape){updateLandscapeStrip();}
-  // Debug overlay
-  var dbg=document.getElementById("debug-overlay");
-  if(!dbg){dbg=document.createElement("div");dbg.id="debug-overlay";dbg.style.cssText="position:fixed;bottom:0;left:0;background:rgba(0,0,0,0.8);color:#4ae87a;font-size:11px;padding:4px 8px;z-index:9999;pointer-events:none;font-family:monospace";document.body.appendChild(dbg);}
-  var r=svg.getBoundingClientRect();
-  dbg.textContent="win:"+window.innerWidth+"x"+window.innerHeight+" svg:"+Math.round(r.width)+"x"+Math.round(r.height)+" landscape:"+isLandscape+" body:"+document.body.classList.contains("landscape");
 }
 function updateLandscapeStrip(){var label=document.getElementById("ls-step-label");var label2=document.getElementById("ls-side-label");var prevBtn=document.getElementById("ls-prev-btn");var nextBtn=document.getElementById("ls-next-btn");var firstBtn=document.getElementById("ls-first-btn");if(!label)return;if(playback){var cur=playback.stepIndex,total=playback.tk.steps.length-1;label.textContent=playback.tk.name+"  "+(cur===0?"Start":cur+"/"+total);if(label2)label2.textContent=playback.tk.name;var hasPrev=cur>0,hasNext=cur<total;prevBtn.disabled=!hasPrev;nextBtn.disabled=!hasNext;firstBtn.disabled=cur===0;prevBtn.classList.toggle("active",hasPrev);nextBtn.classList.toggle("active",hasNext);}else{label.textContent="-";if(label2)label2.textContent="";prevBtn.disabled=true;nextBtn.disabled=true;firstBtn.disabled=true;prevBtn.classList.remove("active");nextBtn.classList.remove("active");}}
 document.getElementById("ls-first-btn").addEventListener("click",function(){document.getElementById("btn-first").click();setTimeout(updateLandscapeStrip,100);});
