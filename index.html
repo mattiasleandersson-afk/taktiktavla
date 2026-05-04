@@ -1079,12 +1079,15 @@ function render(){
 
 function svgPt(cx,cy){
   var r=svg.getBoundingClientRect();
+  var vb=svg.getAttribute("viewBox")||("0 0 "+W+" "+H);
+  var vbParts=vb.split(" ").map(Number);
+  var vbX=vbParts[0],vbY=vbParts[1],vbW=vbParts[2],vbH=vbParts[3];
   if(document.body.classList.contains("landscape")){
     var normX=(cx-r.left)/r.width;
     var normY=(cy-r.top)/r.height;
-    return{x:normY*W, y:(1-normX)*H};
+    return{x:vbX+normY*vbW, y:vbY+(1-normX)*vbH};
   }
-  return{x:(cx-r.left)/r.width*W,y:(cy-r.top)/r.height*H};
+  return{x:vbX+(cx-r.left)/r.width*vbW, y:vbY+(cy-r.top)/r.height*vbH};
 }
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
 function moveDrag(nx,ny){nx=clamp(nx,10,W-10);ny=clamp(ny,10,H-10);if(!dragging)return;if(dragging.type==="ball"){ball.x=nx;ball.y=ny;var bg=svg.querySelector(".ball-token");if(bg){var t=bg.querySelector("text"),h=bg.querySelector("circle");if(t){t.setAttribute("x",nx);t.setAttribute("y",ny);}if(h){h.setAttribute("cx",nx);h.setAttribute("cy",ny);}}}else if(dragging.type==="player"){for(var i=0;i<players.length;i++)if(players[i].id===dragging.id){players[i].x=nx;players[i].y=ny;break;}var g=svg.querySelector(".player-token[data-id='"+dragging.id+"']");if(g){var c=g.querySelector("circle"),t=g.querySelector("text");if(c){c.setAttribute("cx",nx);c.setAttribute("cy",ny);}if(t){t.setAttribute("x",nx);t.setAttribute("y",ny);}}}else if(dragging.type==="label"){for(var i=0;i<labels.length;i++)if(labels[i].id===dragging.id){labels[i].x=nx;labels[i].y=ny;break;}}}
