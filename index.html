@@ -338,7 +338,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.3</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.4</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1082,18 +1082,30 @@ function render(){
         if(_benchDragEl){_benchDragEl.remove();_benchDragEl=null;}clearPlayerHighlights();
         if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}
         if(_assignMoved&&ev2.changedTouches.length){
-          var targetPid=findNearestHomePitchPlayer(ev2.changedTouches[0].clientX,ev2.changedTouches[0].clientY,50);
-          if(targetPid&&targetPid!==p.id){
-            var srcTid=matchAssignments[p.id]||null,tgtTid=matchAssignments[targetPid]||null;
-            if(srcTid)matchAssignments[targetPid]=srcTid;else delete matchAssignments[targetPid];
-            if(tgtTid)matchAssignments[p.id]=tgtTid;else delete matchAssignments[p.id];
-            var srcSp=srcTid?matchRoster.find(function(x){return x.id===srcTid;}):null;
-            var tgtSp2=tgtTid?matchRoster.find(function(x){return x.id===tgtTid;}):null;
-            var srcP=players.find(function(x){return x.id===p.id;});
-            var tgtP=players.find(function(x){return x.id===targetPid;});
-            if(srcP){srcP.number=tgtSp2?tgtSp2.nr:0;srcP.name=tgtSp2?tgtSp2.namn:"";}
-            if(tgtP){tgtP.number=srcSp?srcSp.nr:0;tgtP.name=srcSp?srcSp.namn:"";}
-            render();renderBench();showToast("Spelare bytte plats!");
+          var dropX=ev2.changedTouches[0].clientX,dropY=ev2.changedTouches[0].clientY;
+          var benchBar=document.getElementById("bench-bar");
+          var benchRect=benchBar?benchBar.getBoundingClientRect():null;
+          var droppedOnBench=benchRect&&dropX>=benchRect.left&&dropX<=benchRect.right&&dropY>=benchRect.top&&dropY<=benchRect.bottom;
+          if(droppedOnBench){
+            // Clear this player's assignment → back to bench
+            delete matchAssignments[p.id];
+            var srcP2=players.find(function(x){return x.id===p.id;});
+            if(srcP2){srcP2.number=0;srcP2.name="";}
+            render();renderBench();showToast("Spelare återlagd till avbytare!");
+          } else {
+            var targetPid=findNearestHomePitchPlayer(dropX,dropY,50);
+            if(targetPid&&targetPid!==p.id){
+              var srcTid=matchAssignments[p.id]||null,tgtTid=matchAssignments[targetPid]||null;
+              if(srcTid)matchAssignments[targetPid]=srcTid;else delete matchAssignments[targetPid];
+              if(tgtTid)matchAssignments[p.id]=tgtTid;else delete matchAssignments[p.id];
+              var srcSp=srcTid?matchRoster.find(function(x){return x.id===srcTid;}):null;
+              var tgtSp2=tgtTid?matchRoster.find(function(x){return x.id===tgtTid;}):null;
+              var srcP=players.find(function(x){return x.id===p.id;});
+              var tgtP=players.find(function(x){return x.id===targetPid;});
+              if(srcP){srcP.number=tgtSp2?tgtSp2.nr:0;srcP.name=tgtSp2?tgtSp2.namn:"";}
+              if(tgtP){tgtP.number=srcSp?srcSp.nr:0;tgtP.name=srcSp?srcSp.namn:"";}
+              render();renderBench();showToast("Spelare bytte plats!");
+            }
           }
         }
       }
@@ -1201,7 +1213,15 @@ document.getElementById("panel-show-btn").addEventListener("click",function(){pa
 var topbarOpen=true;
 document.getElementById("btn-topbar-toggle").addEventListener("click",function(){topbarOpen=!topbarOpen;var tb=document.getElementById("topbar");var btn=document.getElementById("btn-topbar-toggle");var children=tb.children;for(var i=0;i<children.length;i++){if(children[i]!==btn)children[i].style.display=topbarOpen?"":"none";}btn.innerHTML=topbarOpen?"\u25b2":"\u25bc";btn.title=topbarOpen?"Minimera menyn":"Visa menyn";});
 document.getElementById("taktik-search").addEventListener("input",function(e){taktikSearch=e.target.value;renderTaktikList();});
-document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="lag"){halfMode=1;updateViewBox();}else{document.getElementById("bottompanel").classList.remove("expanded");}if(name!=="lag"&&halfMode===1&&matchRoster.length===0){halfMode=0;updateViewBox();}if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
+document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="lag"){
+      // Reset to formation positions (clear match assignments)
+      if(matchRoster.length===0){
+        var activeFormText=document.querySelector("#formation-btns .btn.on");
+        initPlayers(activeFormText?activeFormText.textContent:"4-4-2");
+        render();
+      }
+      halfMode=1;updateViewBox();
+    }else{document.getElementById("bottompanel").classList.remove("expanded");}if(name!=="lag"&&halfMode===1&&matchRoster.length===0){halfMode=0;updateViewBox();}if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
 function startRecording(name){activeTaktik={name:name,steps:[currentSnap()]};document.getElementById("rec-badge").style.display="block";document.getElementById("rec-ui").style.display="block";document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-name-lbl").textContent="\u25cf "+name;renderRecSteps();}
 document.getElementById("btn-add-step").addEventListener("click",function(){if(!activeTaktik)return;activeTaktik.steps.push(currentSnap());renderRecSteps();});
 document.getElementById("btn-stop-rec").addEventListener("click",function(){if(!activeTaktik||activeTaktik.steps.length<2)return;var newFilm={name:activeTaktik.name,steps:activeTaktik.steps};taktikFilmer.push(newFilm);cloudSaveTaktik(newFilm);activeTaktik=null;document.getElementById("rec-badge").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("no-rec-ui").style.display="block";renderTaktikList();});
