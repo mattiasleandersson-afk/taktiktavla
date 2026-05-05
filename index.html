@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
@@ -105,113 +106,111 @@ body.landscape #ls-next-side { display: flex !important; }
 
 /* Side panels sit just inside the pitch wrapper */
 #ls-prev-side, #ls-next-side {
-  position: fixed;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 51;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  justify-content: center;
+position: fixed;
+top: 50%;
+transform: translateY(-50%);
+z-index: 51;
+flex-direction: column;
+align-items: center;
+gap: 10px;
+justify-content: center;
 }
-#ls-prev-side { 
-  left: max(4px,env(safe-area-inset-left)); 
-  padding: 0 4px;
+#ls-prev-side {
+left: max(4px,env(safe-area-inset-left));
+padding: 0 4px;
 }
-#ls-next-side { 
-  right: max(4px,env(safe-area-inset-right)); 
-  padding: 0 4px;
+#ls-next-side {
+right: max(4px,env(safe-area-inset-right));
+padding: 0 4px;
 }
-
 
 #ls-title-top {
-  position: fixed;
-  top: max(6px,env(safe-area-inset-top));
-  left: 0; right: 0;
-  z-index: 51;
-  text-align: center;
-  padding: 0 60px;
-  pointer-events: none;
+position: fixed;
+top: max(6px,env(safe-area-inset-top));
+left: 0; right: 0;
+z-index: 51;
+text-align: center;
+padding: 0 60px;
+pointer-events: none;
 }
 #ls-step-label {
-  background: rgba(14,23,16,0.75);
-  border-radius: 20px;
-  padding: 3px 14px;
-  display: inline-block;
+background: rgba(14,23,16,0.75);
+border-radius: 20px;
+padding: 3px 14px;
+display: inline-block;
 }
 
 .ls-btn {
-  background: rgba(14,23,16,0.92);
-  border: 1px solid #3a6b46;
-  border-radius: 10px;
-  color: #7aaa88;
-  cursor: pointer;
-  font-family: Arial Narrow, Arial, sans-serif;
-  touch-action: manipulation;
-  padding: 14px 11px;
-  font-size: 1.2rem;
-  min-width: 40px;
-  text-align: center;
-  line-height: 1;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+background: rgba(14,23,16,0.92);
+border: 1px solid #3a6b46;
+border-radius: 10px;
+color: #7aaa88;
+cursor: pointer;
+font-family: Arial Narrow, Arial, sans-serif;
+touch-action: manipulation;
+padding: 14px 11px;
+font-size: 1.2rem;
+min-width: 40px;
+text-align: center;
+line-height: 1;
+box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 .ls-btn.active { color: #4ae87a; border-color: #4ae87a; background: rgba(74,232,122,0.1); }
 .ls-btn:disabled { opacity: 0.25; }
 .ls-select {
-  background: rgba(14,23,16,0.92);
-  border: 1px solid #3a6b46;
-  border-radius: 8px;
-  color: #7aaa88;
-  font-family: Arial Narrow, Arial, sans-serif;
-  font-weight: 700;
-  font-size: 0.72rem;
-  padding: 6px 3px;
-  width: 40px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-  -webkit-appearance: none;
+background: rgba(14,23,16,0.92);
+border: 1px solid #3a6b46;
+border-radius: 8px;
+color: #7aaa88;
+font-family: Arial Narrow, Arial, sans-serif;
+font-weight: 700;
+font-size: 0.72rem;
+padding: 6px 3px;
+width: 40px;
+text-align: center;
+box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+-webkit-appearance: none;
 }
 .ls-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  color: #7aaa88;
-  font-family: Arial Narrow, Arial, sans-serif;
-  cursor: pointer;
-  background: rgba(14,23,16,0.92);
-  border: 1px solid #3a6b46;
-  border-radius: 8px;
-  padding: 8px 6px;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 4px;
+font-size: 0.62rem;
+font-weight: 700;
+color: #7aaa88;
+font-family: Arial Narrow, Arial, sans-serif;
+cursor: pointer;
+background: rgba(14,23,16,0.92);
+border: 1px solid #3a6b46;
+border-radius: 8px;
+padding: 8px 6px;
+writing-mode: vertical-rl;
+text-orientation: mixed;
+box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 /* Landscape: rotate SVG -90deg so pitch appears horizontal */
 body.landscape #pitch-wrapper {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  height: 100dvh;
-  width: 100dvw;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+position: fixed;
+top: 0; left: 0; right: 0; bottom: 0;
+height: 100dvh;
+width: 100dvw;
+align-items: center;
+justify-content: center;
+overflow: hidden;
 }
 body.landscape #pitch-svg {
-  /* After -90deg rotation: visual width = SVG height, visual height = SVG width */
-  /* We want visual height = 100dvh, so SVG width = 100dvh */
-  /* We want visual width = 100dvh*(600/400), so SVG height = 100dvh*(600/400) */
-  width: 100dvh;
-  height: calc(100dvh * 600 / 400);
-  max-width: none;
-  max-height: none;
-  transform: rotate(-90deg);
-  transform-origin: center center;
+/* After -90deg rotation: visual width = SVG height, visual height = SVG width */
+/* We want visual height = 100dvh, so SVG width = 100dvh */
+/* We want visual width = 100dvh*(600/400), so SVG height = 100dvh*(600/400) */
+width: 100dvh;
+height: calc(100dvh * 600 / 400);
+max-width: none;
+max-height: none;
+transform: rotate(-90deg);
+transform-origin: center center;
 }
-
 
 .star-btn { background:transparent; border:none; cursor:pointer; font-size:1rem; padding:2px 4px; line-height:1; }
 .star-btn.on { color:#ffdd44; }
@@ -229,80 +228,80 @@ body.landscape #fs-portrait-nav { display: none !important; }
 body.landscape #fs-restore-btn { display: none !important; }
 
 #fs-restore-btn {
-  display: none;
-  position: fixed;
-  top: max(8px, env(safe-area-inset-top));
-  right: max(8px, env(safe-area-inset-right));
-  z-index: 60;
-  background: rgba(14,23,16,0.88);
-  border: 1px solid #3a6b46;
-  border-radius: 8px;
-  color: #4ae87a;
-  padding: 8px 12px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  font-family: Arial Narrow, Arial, sans-serif;
-  cursor: pointer;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+display: none;
+position: fixed;
+top: max(8px, env(safe-area-inset-top));
+right: max(8px, env(safe-area-inset-right));
+z-index: 60;
+background: rgba(14,23,16,0.88);
+border: 1px solid #3a6b46;
+border-radius: 8px;
+color: #4ae87a;
+padding: 8px 12px;
+font-size: 0.8rem;
+font-weight: 700;
+font-family: Arial Narrow, Arial, sans-serif;
+cursor: pointer;
+align-items: center;
+gap: 6px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 #fs-portrait-nav {
-  display: none;
-  position: fixed;
-  bottom: max(12px, env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 60;
-  background: rgba(14,23,16,0.88);
-  border: 1px solid #3a6b46;
-  border-radius: 12px;
-  padding: 6px 12px;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+display: none;
+position: fixed;
+bottom: max(12px, env(safe-area-inset-bottom));
+left: 50%;
+transform: translateX(-50%);
+z-index: 60;
+background: rgba(14,23,16,0.88);
+border: 1px solid #3a6b46;
+border-radius: 12px;
+padding: 6px 12px;
+align-items: center;
+gap: 10px;
+box-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
 
 #fs-enter-btn {
-  background: transparent;
-  border: 1px solid #4ae87a;
-  border-radius: 6px;
-  color: #4ae87a;
-  padding: 2px 8px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  font-family: Arial Narrow, Arial, sans-serif;
-  cursor: pointer;
-  margin-left: auto;
-  touch-action: manipulation;
+background: transparent;
+border: 1px solid #4ae87a;
+border-radius: 6px;
+color: #4ae87a;
+padding: 2px 8px;
+font-size: 0.7rem;
+font-weight: 700;
+font-family: Arial Narrow, Arial, sans-serif;
+cursor: pointer;
+margin-left: auto;
+touch-action: manipulation;
 }
 body.landscape #fs-enter-btn { display: none; }
 body.fullscreen-portrait #fs-enter-btn { display: none; }
 
 #bench-bar {
-  display: none;
-  background: rgba(14,23,16,0.92);
-  border-bottom: 1px solid #2d4a35;
-  padding: 3px 8px;
-  flex-shrink: 0;
-  flex-wrap: nowrap;
-  gap: 4px;
-  align-items: center;
-  overflow-x: auto;
-  min-height: 0;
+display: none;
+background: rgba(14,23,16,0.92);
+border-bottom: 1px solid #2d4a35;
+padding: 3px 8px;
+flex-shrink: 0;
+flex-wrap: nowrap;
+gap: 4px;
+align-items: center;
+overflow-x: auto;
+min-height: 0;
 }
 #bench-bar.active { display: flex; }
 .bench-player {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 3px;
-  background: #1e2e22;
-  border: 1px solid #2d4a35;
-  border-radius: 12px;
-  padding: 2px 7px;
-  flex-shrink: 0;
+display: flex;
+flex-direction: row;
+align-items: center;
+gap: 3px;
+background: #1e2e22;
+border: 1px solid #2d4a35;
+border-radius: 12px;
+padding: 2px 7px;
+flex-shrink: 0;
 }
 .bench-player .bench-nr { font-size: 0.78rem; font-weight: 900; color: #4ae87a; white-space: nowrap; }
 .bench-player .bench-name { font-size: 0.72rem; color: #edf5ee; white-space: nowrap; }
@@ -317,11 +316,11 @@ body.fullscreen-portrait #fs-enter-btn { display: none; }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
 .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
 .modal-bg.hidden { display: none; }
-.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 100%; max-width: 390px; max-height: 90dvh; overflow-y: auto; }
+.modal { background: var(–surface); border: 1px solid var(–border); border-radius: 12px; padding: 20px; width: 100%; max-width: 390px; max-height: 90dvh; overflow-y: auto; }
 .modal h2 { font-weight: 900; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 1px; color: #4ae87a; margin-bottom: 13px; }
 .mrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; gap: 8px; }
 .mrow label { font-size: 0.82rem; color: #7aaa88; text-transform: uppercase; letter-spacing: 0.5px; }
-.minput { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; font-family: Arial Narrow, Arial, sans-serif; }
+.minput { background: var(–bg); color: var(–text); border: 1px solid var(–border); border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; font-family: Arial Narrow, Arial, sans-serif; }
 .minput.wide { width: 210px; }
 input[type=color].minput { padding: 2px 4px; height: 34px; width: 56px; cursor: pointer; }
 .mactions { display: flex; gap: 8px; margin-top: 13px; justify-content: flex-end; }
@@ -338,7 +337,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.5</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -446,6 +445,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- COMBINED TAKTIK BAR (edit + play merged) -->
+
 <div id="taktikbar" style="display:none;background:var(--bg);border-top:2px solid var(--accent);padding:7px 12px;flex-shrink:0;flex-wrap:wrap;gap:5px;align-items:center">
   <span id="taktikbar-title" style="color:#4ae87a;font-weight:700;font-size:0.82rem;text-transform:uppercase;flex:1;min-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
   <button class="btn" id="btn-first" style="font-size:1rem;padding:4px 11px" title="Till start">&#9646;&#9664;</button>
@@ -466,7 +466,8 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
   <button class="btn danger" id="btn-stop-play" style="padding:4px 8px;font-size:0.72rem">&#10005;</button>
 </div>
 
-<button id="panel-show-btn" style="display:none;position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:60;background:rgba(14,23,16,0.9);border:1px solid #4ae87a;border-radius:20px;color:#4ae87a;padding:5px 20px;font-size:0.8rem;font-weight:700;cursor:pointer;touch-action:manipulation">&#9650; Meny</button>
+<button id="panel-show-btn" style="display:none;position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:60;background:rgba(14,23,16,0.9);border:1px solid #4ae87a;border-radius:20px;color:#4ae87a;padding:5px 20px;font-size:0.8rem;font-weight:700;cursor:pointer;touch-action:manipulation">▲ Meny</button>
+
 <div id="panel-toggle-strip" style="background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;flex-shrink:0;position:relative;z-index:10;padding:0 8px;">
   <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 0;font-size:0.72rem;cursor:pointer;flex:1">&#9660;</button>
   <button id="fs-enter-btn" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:3px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:Arial Narrow,Arial,sans-serif;display:block">&#x26F6; FS</button>
@@ -492,41 +493,44 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
         <div class="list" id="rec-steps-list"></div>
       </div>
 
-      <!-- LAG PANEL -->
+```
+  <!-- LAG PANEL -->
 
-      <div id="edit-taktik-ui" style="display:none">
-        <!-- Row 1: step navigation + name + actions -->
-        <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px">
-          <button class="btn" id="btn-edit-step-prev" style="padding:4px 10px;font-size:1rem">&#9664;</button>
-          <span id="edit-step-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;min-width:38px;text-align:center;flex-shrink:0">Start</span>
-          <button class="btn" id="btn-edit-step-next" style="padding:4px 10px;font-size:1rem">&#9654;</button>
-          <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem;min-width:0">
-          <button class="btn on" id="btn-edit-update-step" style="padding:4px 8px" title="Spara steg">&#10003;</button>
-          <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a;padding:4px 8px" title="L&#228;gg till steg">+</button>
-          <button class="btn danger" id="btn-edit-del-step" style="padding:4px 8px" title="Ta bort steg">&#10005;</button>
-        </div>
-        <!-- Row 2: film title + save/exit -->
-        <div style="display:flex;gap:4px;align-items:center">
-          <span style="font-size:0.72rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="edit-taktik-title-lbl"></span>
-          <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a;padding:3px 7px;font-size:0.68rem">&#9998; Info</button>
-          <button class="btn on" id="btn-edit-taktik-save" style="padding:3px 7px;font-size:0.68rem">Spara</button>
-          <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
-        </div>
-        <!-- Hidden step list (still used by renderEditSteps internally) -->
-        <div class="list" id="edit-taktik-steps" style="display:none"></div>
-      </div>
-      <div id="no-rec-ui">
-        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
-          <button class="btn on" id="btn-new-taktik">+ Ny film</button>
-          <button class="btn" id="btn-export-taktik">Exportera</button>
-          <button class="btn" id="btn-import-taktik-btn">Importera</button>
-          <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
-        </div>
-        <input type="text" id="taktik-search" placeholder="S&#246;k taktikfilm..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
-        <div id="taktik-folder-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px"></div>
-        <div class="list" id="taktik-list"></div>
-      </div>
+  <div id="edit-taktik-ui" style="display:none">
+    <!-- Row 1: step navigation + name + actions -->
+    <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px">
+      <button class="btn" id="btn-edit-step-prev" style="padding:4px 10px;font-size:1rem">&#9664;</button>
+      <span id="edit-step-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;min-width:38px;text-align:center;flex-shrink:0">Start</span>
+      <button class="btn" id="btn-edit-step-next" style="padding:4px 10px;font-size:1rem">&#9654;</button>
+      <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem;min-width:0">
+      <button class="btn on" id="btn-edit-update-step" style="padding:4px 8px" title="Spara steg">&#10003;</button>
+      <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a;padding:4px 8px" title="L&#228;gg till steg">+</button>
+      <button class="btn danger" id="btn-edit-del-step" style="padding:4px 8px" title="Ta bort steg">&#10005;</button>
     </div>
+    <!-- Row 2: film title + save/exit -->
+    <div style="display:flex;gap:4px;align-items:center">
+      <span style="font-size:0.72rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="edit-taktik-title-lbl"></span>
+      <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a;padding:3px 7px;font-size:0.68rem">&#9998; Info</button>
+      <button class="btn on" id="btn-edit-taktik-save" style="padding:3px 7px;font-size:0.68rem">Spara</button>
+      <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
+    </div>
+    <!-- Hidden step list (still used by renderEditSteps internally) -->
+    <div class="list" id="edit-taktik-steps" style="display:none"></div>
+  </div>
+  <div id="no-rec-ui">
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+      <button class="btn on" id="btn-new-taktik">+ Ny film</button>
+      <button class="btn" id="btn-export-taktik">Exportera</button>
+      <button class="btn" id="btn-import-taktik-btn">Importera</button>
+      <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
+    </div>
+    <input type="text" id="taktik-search" placeholder="S&#246;k taktikfilm..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
+    <div id="taktik-folder-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px"></div>
+    <div class="list" id="taktik-list"></div>
+  </div>
+</div>
+```
+
   </div>
   <div class="panel" id="panel-saves">
     <div style="width:100%">
@@ -551,68 +555,72 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
             <button class="lag-tab" data-lag="match" id="lag-tab-match">Match</button>
             <button class="lag-tab" data-lag="sparade" id="lag-tab-sparade">Sparade matcher</button>
           </div>
-  
-          <!-- TRUPP -->
-          <div id="lag-trupp">
-            <div style="display:flex;gap:5px;margin-bottom:6px">
-              <input type="number" id="ny-spelare-nr" placeholder="Nr" min="1" max="99" style="width:52px;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
-              <input type="text" id="ny-spelare-namn" placeholder="Spelarnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
-              <button class="btn on" id="btn-add-trupp">+ L&#228;gg till</button>
-            </div>
-            <div class="list" id="trupp-list" style="max-height:130px"></div>
-          </div>
-  
-          <!-- MATCH -->
-          <div id="lag-match" style="display:none">
-            <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;flex-wrap:wrap">
-              <button class="btn" id="btn-ny-match" style="color:#4ae87a;border-color:#4ae87a;padding:3px 7px;font-size:0.68rem">+ Ny</button>
-              <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1;min-width:0">
-              <input type="text" id="match-motstand" placeholder="Motst&#229;ndare" style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;min-width:60px">
-              <span id="match-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;white-space:nowrap">0 valda</span>
-            </div>
-            <div class="list" id="match-trupp-list" style="max-height:160px"></div>
-            <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
-              <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; Laguppst&#228;llning</button>
-              <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
-            </div>
-          </div>
-  
-          <!-- STATISTIK -->
-          <div id="lag-statistik" style="display:none">
-            <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
-              <input type="date" id="stat-from" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
-              <span style="color:#7aaa88;font-size:0.72rem">&#8211;</span>
-              <input type="date" id="stat-to" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
-              <button class="btn" id="btn-stat-filter">Filtrera</button>
-            </div>
-            <div id="stat-spelare-view">
-              <div class="list" id="stat-list" style="max-height:200px"></div>
-              <div id="stat-action-bar" style="display:none;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap">
-                <span id="stat-sel-count" style="font-size:0.75rem;color:#4ae87a;font-weight:700;flex:1">0 valda</span>
-                <button class="btn" id="btn-stat-clear-sel">Rensa</button>
-                <select id="stat-match-sel" class="btn" style="flex:1;max-width:140px;font-size:0.65rem"></select>
-                <button class="btn" id="btn-stat-add-to-match">L&#228;gg till</button>
-                <button class="btn on" id="btn-stat-to-match">+ Ny match</button>
-              </div>
-              <div style="display:flex;gap:5px;margin-top:6px">
-                <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
-                <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
-              </div>
-            </div>
-          </div>
+
+```
+      <!-- TRUPP -->
+      <div id="lag-trupp">
+        <div style="display:flex;gap:5px;margin-bottom:6px">
+          <input type="number" id="ny-spelare-nr" placeholder="Nr" min="1" max="99" style="width:52px;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+          <input type="text" id="ny-spelare-namn" placeholder="Spelarnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+          <button class="btn on" id="btn-add-trupp">+ L&#228;gg till</button>
+        </div>
+        <div class="list" id="trupp-list" style="max-height:130px"></div>
+      </div>
+
+      <!-- MATCH -->
+      <div id="lag-match" style="display:none">
+        <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;flex-wrap:wrap">
+          <button class="btn" id="btn-ny-match" style="color:#4ae87a;border-color:#4ae87a;padding:3px 7px;font-size:0.68rem">+ Ny</button>
+          <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1;min-width:0">
+          <input type="text" id="match-motstand" placeholder="Motst&#229;ndare" style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;min-width:60px">
+          <span id="match-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;white-space:nowrap">0 valda</span>
+        </div>
+        <div class="list" id="match-trupp-list" style="max-height:160px"></div>
+        <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
+          <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; Laguppst&#228;llning</button>
+          <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
         </div>
       </div>
 
-      <!-- SPARADE MATCHER -->
-      <div id="lag-sparade" style="display:none">
-        <div class="list" id="sparade-match-list" style="max-height:200px"></div>
+      <!-- STATISTIK -->
+      <div id="lag-statistik" style="display:none">
+        <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+          <input type="date" id="stat-from" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+          <span style="color:#7aaa88;font-size:0.72rem">&#8211;</span>
+          <input type="date" id="stat-to" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+          <button class="btn" id="btn-stat-filter">Filtrera</button>
+        </div>
+        <div id="stat-spelare-view">
+          <div class="list" id="stat-list" style="max-height:200px"></div>
+          <div id="stat-action-bar" style="display:none;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap">
+            <span id="stat-sel-count" style="font-size:0.75rem;color:#4ae87a;font-weight:700;flex:1">0 valda</span>
+            <button class="btn" id="btn-stat-clear-sel">Rensa</button>
+            <select id="stat-match-sel" class="btn" style="flex:1;max-width:140px;font-size:0.65rem"></select>
+            <button class="btn" id="btn-stat-add-to-match">L&#228;gg till</button>
+            <button class="btn on" id="btn-stat-to-match">+ Ny match</button>
+          </div>
+          <div style="display:flex;gap:5px;margin-top:6px">
+            <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
+            <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
+          </div>
+        </div>
       </div>
-
     </div>
+  </div>
+
+  <!-- SPARADE MATCHER -->
+  <div id="lag-sparade" style="display:none">
+    <div class="list" id="sparade-match-list" style="max-height:200px"></div>
+  </div>
+
+</div>
+```
+
   </div>
 </div>
 
 <!-- SETUP MODAL -->
+
 <div class="modal-bg hidden" id="modal-setup">
   <div class="modal">
     <h2>Spelarinst&#228;llningar</h2>
@@ -637,6 +645,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- NEW TAKTIK MODAL -->
+
 <div class="modal-bg hidden" id="modal-new-taktik">
   <div class="modal">
     <h2>Ny taktikfilm</h2>
@@ -649,6 +658,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- SAVE NAME MODAL -->
+
 <div class="modal-bg hidden" id="modal-savename">
   <div class="modal">
     <h2>Spara uppst&#228;llning</h2>
@@ -668,6 +678,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- NEW FOLDER MODAL -->
+
 <div class="modal-bg hidden" id="modal-new-folder">
   <div class="modal">
     <h2>Ny mapp</h2>
@@ -680,6 +691,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- TEXT LABEL MODAL -->
+
 <div class="modal-bg hidden" id="modal-text">
   <div class="modal">
     <h2>L&#228;gg till text</h2>
@@ -698,6 +710,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- EDIT LABEL MODAL -->
+
 <div class="modal-bg hidden" id="modal-edit-text">
   <div class="modal">
     <h2>Redigera text</h2>
@@ -717,6 +730,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- MOVE TO FOLDER MODAL -->
+
 <div class="modal-bg hidden" id="modal-move-folder">
   <div class="modal">
     <h2>Flytta till mapp</h2>
@@ -728,6 +742,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- RENAME FOLDER MODAL -->
+
 <div class="modal-bg hidden" id="modal-rename-folder">
   <div class="modal">
     <h2>Byt namn p&#229; mapp</h2>
@@ -740,6 +755,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- EDIT TAKTIK: inline panel, no modal needed -->
+
 <div class="modal-bg hidden" id="modal-edit-taktik-meta">
   <div class="modal" style="max-width:360px">
     <h2>Filminfo</h2>
@@ -753,6 +769,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- DELETE FOLDER CONFIRM -->
+
 <div class="modal-bg hidden" id="modal-delete-folder">
   <div class="modal">
     <h2>Radera mapp</h2>
@@ -766,6 +783,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- SHARE MODAL -->
+
 <div class="modal-bg hidden" id="modal-share">
   <div class="modal">
     <h2>Dela taktikfilm</h2>
@@ -780,6 +798,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- MERGE TAKTIK MODAL -->
+
 <div class="modal-bg hidden" id="modal-merge-taktik">
   <div class="modal">
     <h2>Sammanfoga filmer</h2>
@@ -792,8 +811,11 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- Landscape nav -->
+
 <!-- Fullscreen portrait controls -->
-<button id="fs-restore-btn">&#x2715; &#197;terst&#228;ll</button>
+
+<button id="fs-restore-btn">✕ Återställ</button>
+
 <div id="fs-portrait-nav">
   <button class="ls-btn" id="fs-first-btn" style="padding:8px 12px;font-size:1rem">&#9646;&#9664;</button>
   <button class="ls-btn" id="fs-prev-btn" style="padding:8px 12px;font-size:1rem">&#9664;</button>
@@ -819,6 +841,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- PLAYER PICKER MODAL -->
+
 <div class="modal-bg hidden" id="modal-player-picker">
   <div class="modal" style="max-width:320px">
     <h2>V&#228;lj spelare</h2>
@@ -831,6 +854,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- PLAYER COLOR MODAL -->
+
 <div class="modal-bg hidden" id="modal-player-color">
   <div class="modal">
     <h2>Spelarf&#228;rg</h2>
@@ -843,6 +867,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 </div>
 
 <!-- BACKUP MODAL -->
+
 <div class="modal-bg hidden" id="modal-backup">
   <div class="modal">
     <h2>Exportera backup</h2>
@@ -853,7 +878,6 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
     </div>
   </div>
 </div>
-
 
 <script>
 
@@ -1154,18 +1178,50 @@ function renderZonePreview(){var old=svg.querySelectorAll(".zone-preview");for(v
 function buildZoneShape(start,end,preview){var ns3="http://www.w3.org/2000/svg";var col=zoneColor;if(zoneShapeType==="circle"){var el=document.createElementNS(ns3,"ellipse");var cx=(start.x+end.x)/2,cy=(start.y+end.y)/2;var rx=Math.abs(end.x-start.x)/2,ry=Math.abs(end.y-start.y)/2;el.setAttribute("cx",cx);el.setAttribute("cy",cy);el.setAttribute("rx",rx);el.setAttribute("ry",ry);el.setAttribute("fill",col);el.setAttribute("stroke",col.replace(/,[0-9.]+\)/,",0.8)"));el.setAttribute("stroke-width","1.5");if(!preview)el._zdata={type:"circle",x:cx,y:cy,r:Math.max(rx,ry),color:col};return el;}else{var x=Math.min(start.x,end.x),y=Math.min(start.y,end.y);var w=Math.abs(end.x-start.x),h=Math.abs(end.y-start.y);var r=document.createElementNS(ns3,"rect");r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",w);r.setAttribute("height",h);r.setAttribute("rx","3");r.setAttribute("fill",col);r.setAttribute("stroke",col.replace(/,[0-9.]+\)/,",0.8)"));r.setAttribute("stroke-width","1.5");if(!preview)r._zdata={type:"rect",x:x,y:y,w:w,h:h,color:col};return r;}}
 function finalizeZone(){if(!zoneStart||!zonePreview)return;var dx=zonePreview.x-zoneStart.x,dy=zonePreview.y-zoneStart.y;if(Math.abs(dx)<10&&Math.abs(dy)<10)return;var zd;if(zoneShapeType==="circle"){var cx=(zoneStart.x+zonePreview.x)/2,cy=(zoneStart.y+zonePreview.y)/2;var rx=Math.abs(dx)/2,ry=Math.abs(dy)/2;zd={id:"zone"+(idCounter++),type:"circle",x:cx,y:cy,r:Math.max(rx,ry),w:rx*2,h:ry*2,color:zoneColor};}else{var x=Math.min(zoneStart.x,zonePreview.x),y=Math.min(zoneStart.y,zonePreview.y);zd={id:"zone"+(idCounter++),type:"rect",x:x,y:y,w:Math.abs(dx),h:Math.abs(dy),color:zoneColor};}zones.push(zd);}
 function setMode(m){mode=m;document.getElementById("btn-arrow").classList.toggle("on",m==="arrow");document.getElementById("btn-text").classList.toggle("on",m==="text");document.getElementById("btn-freehand").classList.toggle("on",m==="freehand");document.getElementById("btn-zone").classList.toggle("on",m==="zone");svg.style.cursor=m==="arrow"||m==="freehand"||m==="zone"?"crosshair":m==="text"?"text":"default";var badge=document.getElementById("mode-badge");var ao=document.getElementById("arrow-options");var zo=document.getElementById("zone-options");var fo=document.getElementById("freehand-options");if(ao)ao.style.display=m==="arrow"?"flex":"none";if(zo)zo.style.display=m==="zone"?"flex":"none";if(fo)fo.style.display=m==="freehand"?"flex":"none";if(m==="arrow"){badge.style.display="block";badge.style.background="#2a4a8a";badge.style.color="#9ac4ff";badge.textContent="Dra f\u00f6r att rita pil";}else if(m==="text"){badge.style.display="block";badge.style.background="#4ae87a";badge.style.color="#0a1a0d";badge.textContent="Tryck p\u00e5 planen";}else if(m==="freehand"){badge.style.display="block";badge.style.background="#8b4ae8";badge.style.color="#fff";badge.textContent="Rita fritt";}else if(m==="zone"){badge.style.display="block";badge.style.background="#e87a4a";badge.style.color="#fff";badge.textContent="Dra f\u00f6r att rita zon";}else badge.style.display="none";}
-function buildFormationBtns(){var c=document.getElementById("formation-btns");c.innerHTML="";var list=FORMATIONS[format]||FORMATIONS[11];for(var i=0;i<list.length;i++){(function(f){var b=document.createElement("button");b.className="btn";b.textContent=f;b.style.flexShrink="0";b.addEventListener("click",function(){
-  document.querySelectorAll("#formation-btns .btn").forEach(function(x){x.classList.remove("on");});
-  b.classList.add("on");
-  initPlayers(f);
-  // Re-apply match assignments after formation change
-  if(matchRoster.length){
-    matchAssignments={};
-    players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
-    renderBench();
-  }
-  render();
-});c.appendChild(b);})(list[i]);}if(c.firstChild)c.firstChild.classList.add("on");}
+function buildFormationBtns(){
+  var c=document.getElementById("formation-btns");c.innerHTML="";
+  var list=FORMATIONS[format]||FORMATIONS[11];
+  for(var i=0;i<list.length;i++){(function(f){
+    var b=document.createElement("button");b.className="btn";b.textContent=f;b.style.flexShrink="0";
+    if(f===_defaultFormation&&format===_defaultFormat)b.style.borderColor="#ffdd44";
+    b.addEventListener("click",function(){
+      document.querySelectorAll("#formation-btns .btn").forEach(function(x){x.classList.remove("on");});
+      b.classList.add("on");
+      initPlayers(f);
+      if(matchRoster.length){matchAssignments={};players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});renderBench();}
+      render();
+      var star=document.getElementById("btn-set-default");
+      if(star)star.textContent=f===_defaultFormation&&format===_defaultFormat?"\u2605":"\u2606";
+    });
+    c.appendChild(b);
+  })(list[i]);}
+  // Star button for default
+  var star=document.createElement("button");
+  star.id="btn-set-default";star.className="btn";
+  star.style.cssText="flex-shrink:0;font-size:1rem;padding:4px 8px;color:#ffdd44;border-color:#2d4a35";
+  var curActive=document.querySelector("#formation-btns .btn.on");
+  var curF=curActive?curActive.textContent:(list[0]||"");
+  star.textContent=curF===_defaultFormation&&format===_defaultFormat?"\u2605":"\u2606";
+  star.title="S\u00e4tt som standardformation";
+  star.addEventListener("click",function(){
+    var ab=document.querySelector("#formation-btns .btn.on");
+    if(!ab||ab.id==="btn-set-default")return;
+    setDefaultFormation(format,ab.textContent);
+    // Update all buttons border
+    document.querySelectorAll("#formation-btns .btn").forEach(function(x){x.style.borderColor="";});
+    ab.style.borderColor="#ffdd44";
+    star.textContent="\u2605";
+  });
+  c.appendChild(star);
+  // Select default formation if available, else first
+  var matched=null;
+  document.querySelectorAll("#formation-btns .btn").forEach(function(b){
+    if(b.id==="btn-set-default")return;
+    if(b.textContent===_defaultFormation&&format===_defaultFormat)matched=b;
+  });
+  if(matched)matched.classList.add("on");
+  else if(c.firstChild&&c.firstChild.id!=="btn-set-default")c.firstChild.classList.add("on");
+}
 function openSetup(){document.getElementById("home-color").value=homeColor;document.getElementById("away-color").value=awayColor;document.querySelectorAll("[data-dm]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-dm")===displayMode);});buildSetupTeam("home");buildSetupTeam("away");document.getElementById("modal-setup").classList.remove("hidden");}
 function buildSetupTeam(team){var c=document.getElementById("setup-"+team),tp=players.filter(function(p){return p.team===team;}),color=team==="home"?homeColor:awayColor;var html="<div style='display:flex;align-items:center;gap:8px;margin-bottom:8px'><span class='dot' id='dot-"+team+"' style='background:"+color+"'><\/span><span style='font-size:0.78rem;color:#7aaa88;text-transform:uppercase;letter-spacing:0.5px;flex:1'>"+(team==="home"?"Hemmalag":"Bortalag")+"<\/span><button class='btn' onclick='removePlayer(\""+team+"\")' style='padding:3px 9px'>&#8722;<\/button><span style='font-weight:900;font-size:1rem;color:#4ae87a;min-width:20px;text-align:center'>"+tp.length+"<\/span><button class='btn' onclick='addPlayer(\""+team+"\")' style='padding:3px 9px'>+<\/button><\/div><div class='num-grid'>";for(var i=0;i<tp.length;i++){var p=tp[i];html+="<div class='num-cell'><span>"+(i===0?"MV":"#"+i)+"<\/span><input type='number' data-pid='"+p.id+"' value='"+p.number+"' min='1' max='99'><input type='text' data-name='"+p.id+"' value='"+p.name+"' placeholder='Namn' style='background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.78rem;width:100%'><\/div>";}html+="<\/div>";c.innerHTML=html;}
 function addPlayer(team){var tp=players.filter(function(p){return p.team===team;});if(tp.length>=11)return;players.push({id:team[0]+"x"+Date.now(),team:team,number:tp.length+1,name:"",x:W/2+(Math.random()-0.5)*80,y:team==="home"?430:170});buildSetupTeam(team);render();}
@@ -1218,8 +1274,9 @@ document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("cl
       var benchActive=document.getElementById("bench-bar").classList.contains("active");
       if(!benchActive){
         matchRoster=[];matchAssignments={};matchVariants=[];activeVariantIdx=0;
-        var activeFormText=document.querySelector("#formation-btns .btn.on");
-        initPlayers(activeFormText?activeFormText.textContent:"4-4-2");
+        if(_defaultFormat!==format){format=_defaultFormat;document.getElementById("fmt-sel").value=String(format);buildFormationBtns();}
+        var activeFormText=document.querySelector("#formation-btns .btn.on:not(.star-default)");
+        initPlayers(activeFormText?activeFormText.textContent:_defaultFormation);
         render();
       }
       halfMode=1;updateViewBox();
@@ -1309,6 +1366,11 @@ document.getElementById("btn-copy-step").addEventListener("click",function(){if(
 document.getElementById("btn-paste-step").addEventListener("click",function(){if(!copiedStep||editingTaktikIdx===null)return;saveTaktikUndo();var tk=taktikFilmer[editingTaktikIdx];var paste=JSON.parse(JSON.stringify(copiedStep));tk.steps.splice(editingStepIdx+1,0,paste);editingStepIdx++;updateEditStepUI();showToast("Steg inklistrat!");});
 document.addEventListener("keydown",function(e){if((e.metaKey||e.ctrlKey)&&e.key==="z"&&!e.shiftKey&&editingTaktikIdx!==null){taktikUndo();}if((e.metaKey||e.ctrlKey)&&(e.key==="y"||(e.key==="z"&&e.shiftKey))&&editingTaktikIdx!==null){taktikRedo();}});
 var favorites={};try{var _fav=localStorage.getItem("taktik_favorites");if(_fav)favorites=JSON.parse(_fav);}catch(e){}
+var _defaultFormat=11,_defaultFormation="4-4-2";
+try{var _df=localStorage.getItem("taktik_default_formation");if(_df){var _dfo=JSON.parse(_df);_defaultFormat=_dfo.format||11;_defaultFormation=_dfo.formation||"4-4-2";}}catch(e){}
+function getDefaultFormat(){return _defaultFormat;}
+function getDefaultFormation(){return _defaultFormation;}
+function setDefaultFormation(fmt,formation){_defaultFormat=fmt;_defaultFormation=formation;try{localStorage.setItem("taktik_default_formation",JSON.stringify({format:fmt,formation:formation}));}catch(e){}showToast("\u2605 Standard: "+formation+" ("+fmt+"v"+fmt+") sparad!");}
 function toggleFavorite(dbId){if(favorites[dbId])delete favorites[dbId];else favorites[dbId]=true;try{localStorage.setItem("taktik_favorites",JSON.stringify(favorites));}catch(e){}renderTaktikList();}
 var _pendingColorPlayerId=null;
 var _colorSwatches=["#ffdd44","#e84a4a","#4ae8e8","#4ae87a","#a78bfa","#f97316","#ffffff","#111111"];
@@ -1590,23 +1652,32 @@ function renderSparadeMatcherList(){
     if(m.uppstallningar&&m.uppstallningar.length){
       var loadBtn=document.createElement("button");loadBtn.className="sa load";loadBtn.textContent="Ladda uppst.";
       loadBtn.addEventListener("click",function(){
-        // Populate matchRoster from match startade if not already in bench mode
-        if(!matchRoster.length){
-          matchRoster=trupp.filter(function(sp){return(m.startade||[]).indexOf(sp.id)>=0;});
-          matchAssignments={};
-          players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
-        }
-        matchVariants=JSON.parse(JSON.stringify(m.uppstallningar));
-        activeVariantIdx=0;window._editingMatchId=m.dbId||null;
+        // Always reset and load fresh from this match
+        matchRoster=trupp.filter(function(sp){return(m.startade||[]).indexOf(sp.id)>=0;});
+        matchAssignments={};
+        matchVariants=[];activeVariantIdx=0;
+        players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
+        window._editingMatchId=m.dbId||null;
         var motEl=document.getElementById("bench-motstand-lbl");
         if(motEl)motEl.textContent=m.datum+" vs "+m.motstand;
-        loadVariant(0);
+        if(m.uppstallningar&&m.uppstallningar.length){
+          matchVariants=JSON.parse(JSON.stringify(m.uppstallningar));
+          loadVariant(0);
+        } else {
+          // No saved lineup - use default formation
+          var defF=getDefaultFormation();
+          var fmt=getDefaultFormat();
+          if(fmt!==format){format=fmt;document.getElementById("fmt-sel").value=String(format);buildFormationBtns();}
+          var btns=document.querySelectorAll("#formation-btns .btn");
+          for(var i=0;i<btns.length;i++){btns[i].classList.toggle("on",btns[i].textContent===defF);}
+          initPlayers(defF);render();renderBench();updateVariantUI();
+          showToast("Tom uppst\u00e4llning - placera spelare!");
+        }
         halfMode=1;updateViewBox();
         document.getElementById("bench-bar").classList.add("active");
-        // Switch to formations panel
         document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});
         document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});
-        showToast("Uppst\u00e4llning laddad!");
+        if(m.uppstallningar&&m.uppstallningar.length)showToast("Uppst\u00e4llning laddad: "+m.datum+" vs "+m.motstand);
       });
       row.appendChild(loadBtn);
     }
@@ -1652,8 +1723,10 @@ window.addEventListener("orientationchange",function(){if(_orientTimer)clearTime
 // Init
 drawPitch();
 handleOrientation();
+// Apply default format
+if(_defaultFormat!==11){format=_defaultFormat;document.getElementById("fmt-sel").value=String(format);}
 buildFormationBtns();
-initPlayers("4-4-2");
+initPlayers(_defaultFormation);
 render();
 cloudLoadSaves();
 cloudLoadTaktik();
@@ -1662,5 +1735,6 @@ loadMatcher();
 checkShareLink();
 
 </script>
+
 </body>
 </html>
