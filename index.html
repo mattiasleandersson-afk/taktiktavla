@@ -338,7 +338,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.2</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.3</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1565,30 +1565,38 @@ function renderSparadeMatcherList(){
     var cnt=document.createElement("span");cnt.className="row-sub";cnt.style.display="block";cnt.textContent=(m.startade||[]).length+" startade";
     info.appendChild(datum);info.appendChild(mot);info.appendChild(cnt);
     row.appendChild(info);
-    if(inBenchMode&&m.uppstallningar&&m.uppstallningar.length){
+    if(m.uppstallningar&&m.uppstallningar.length){
       var loadBtn=document.createElement("button");loadBtn.className="sa load";loadBtn.textContent="Ladda uppst.";
       loadBtn.addEventListener("click",function(){
+        // Populate matchRoster from match startade if not already in bench mode
+        if(!matchRoster.length){
+          matchRoster=trupp.filter(function(sp){return(m.startade||[]).indexOf(sp.id)>=0;});
+          matchAssignments={};
+          players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
+        }
         matchVariants=JSON.parse(JSON.stringify(m.uppstallningar));
         activeVariantIdx=0;window._editingMatchId=m.dbId||null;
         var motEl=document.getElementById("bench-motstand-lbl");
         if(motEl)motEl.textContent=m.datum+" vs "+m.motstand;
         loadVariant(0);
+        halfMode=1;updateViewBox();
+        document.getElementById("bench-bar").classList.add("active");
+        // Switch to formations panel
         document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="formations");});
         document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-formations");});
         showToast("Uppst\u00e4llning laddad!");
       });
       row.appendChild(loadBtn);
-    } else {
-      var editBtn=document.createElement("button");editBtn.className="sa";editBtn.style.cssText="color:#e8c84a;border-color:#e8c84a";editBtn.textContent="\u270f";
-      editBtn.addEventListener("click",function(){openEditMatch(m);});
-      var delBtn=document.createElement("button");delBtn.className="sa del";delBtn.textContent="\u00d7";
-      delBtn.addEventListener("click",function(){
-        if(!confirm("Ta bort match "+m.datum+" vs "+m.motstand+"?"))return;
-        if(m.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+m.dbId,{method:"DELETE",headers:supaHeaders()}).then(function(){matcher=matcher.filter(function(x){return x.dbId!==m.dbId;});renderSparadeMatcherList();renderStatistik();showToast("Match borttagen!");});}
-        else{matcher=matcher.filter(function(x){return x!==m;});renderSparadeMatcherList();renderStatistik();showToast("Match borttagen!");}
-      });
-      row.appendChild(editBtn);row.appendChild(delBtn);
     }
+    var editBtn=document.createElement("button");editBtn.className="sa";editBtn.style.cssText="color:#e8c84a;border-color:#e8c84a";editBtn.textContent="\u270f";
+    editBtn.addEventListener("click",function(){openEditMatch(m);});
+    var delBtn=document.createElement("button");delBtn.className="sa del";delBtn.textContent="\u00d7";
+    delBtn.addEventListener("click",function(){
+      if(!confirm("Ta bort match "+m.datum+" vs "+m.motstand+"?"))return;
+      if(m.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+m.dbId,{method:"DELETE",headers:supaHeaders()}).then(function(){matcher=matcher.filter(function(x){return x.dbId!==m.dbId;});renderSparadeMatcherList();renderStatistik();showToast("Match borttagen!");});}
+      else{matcher=matcher.filter(function(x){return x!==m;});renderSparadeMatcherList();renderStatistik();showToast("Match borttagen!");}
+    });
+    row.appendChild(editBtn);row.appendChild(delBtn);
     list.appendChild(row);
   });
 }
