@@ -343,7 +343,7 @@ if("serviceWorker" in navigator){
 <div id="topbar">
   <h1>&#9917;</h1>
   <span id="sync-indicator" style="display:none;font-size:0.6rem;font-weight:700;white-space:nowrap"></span>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.3</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.4</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1484,6 +1484,13 @@ document.getElementById("bench-add-var").addEventListener("click",function(){
   render();renderBench();updateVariantUI();
   showToast("Ny variant skapad!");
 });
+
+function updateGoalDisplay(){
+  var h=document.getElementById("bench-goal-home");
+  var a=document.getElementById("bench-goal-away");
+  if(h)h.textContent=matchGoals.home;
+  if(a)a.textContent=matchGoals.away;
+}
 (function(){
   var bprev=document.getElementById("bench-prev-var");
   var bnext=document.getElementById("bench-next-var");
@@ -1577,12 +1584,6 @@ bpv.addEventListener("click",function(){
   loadVariant(activeVariantIdx);
   showToast("Uppst\u00e4llning inklistrad!");
 });
-function updateGoalDisplay(){
-  var h=document.getElementById("bench-goal-home");
-  var a=document.getElementById("bench-goal-away");
-  if(h)h.textContent=matchGoals.home;
-  if(a)a.textContent=matchGoals.away;
-}
 })();
 (function(){
   var ghp=document.getElementById("bench-goal-home-plus");
