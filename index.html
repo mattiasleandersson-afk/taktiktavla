@@ -342,8 +342,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span id="sync-indicator" style="display:none;font-size:0.6rem;font-weight:700;white-space:nowrap"></span>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.4</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.5</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -943,37 +942,6 @@ var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 var SUPA_TABLE="saves";
 
 function supaHeaders(){return{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY};}
-
-// ── OFFLINE SYNC ──────────────────────────────────────────────────────────────
-var _syncQueue=[];
-try{var _sq=localStorage.getItem("taktik_sync_queue");if(_sq)_syncQueue=JSON.parse(_sq);}catch(e){}
-function saveSyncQueue(){try{localStorage.setItem("taktik_sync_queue",JSON.stringify(_syncQueue));}catch(e){}}
-function addToSyncQueue(item){_syncQueue.push(item);saveSyncQueue();updateSyncIndicator();}
-function updateSyncIndicator(){
-  var ind=document.getElementById("sync-indicator");
-  if(!ind)return;
-  if(!navigator.onLine){ind.textContent="\u25cf Offline";ind.style.color="#e84a4a";ind.style.display="";}
-  else if(_syncQueue.length>0){ind.textContent="\u26a1 "+_syncQueue.length+" ej synkad";ind.style.color="#e8c84a";ind.style.display="";}
-  else{ind.style.display="none";}
-}
-function trySyncQueue(){
-  if(!navigator.onLine||_syncQueue.length===0)return;
-  var item=_syncQueue[0];
-  fetch(item.url,{method:item.method,headers:Object.assign({},supaHeaders(),item.extraHeaders||{}),body:item.body})
-  .then(function(r){if(r.ok||r.status===201||r.status===200){_syncQueue.shift();saveSyncQueue();updateSyncIndicator();if(_syncQueue.length>0)setTimeout(trySyncQueue,300);else showToast("\u2705 Synkad!");cloudLoadSaves();cloudLoadTaktik();loadMatcher();}})
-  .catch(function(){});
-}
-function fetchWithOffline(url,opts,onSuccess,onError){
-  if(!navigator.onLine){
-    addToSyncQueue({url:url,method:opts.method||"GET",body:opts.body,extraHeaders:{"Prefer":"return=representation"}});
-    showToast("\u26a1 Sparad lokalt - synkas n\u00e4r du f\u00e5r internet");
-    if(onSuccess)onSuccess(null);
-    return;
-  }
-  fetch(url,opts).then(function(r){return r.json();}).then(onSuccess).catch(onError||function(){});
-}
-window.addEventListener("online",function(){updateSyncIndicator();setTimeout(trySyncQueue,500);showToast("\u2705 Ansluten - synkar...");});
-window.addEventListener("offline",function(){updateSyncIndicator();showToast("\u25cf Offline - \u00e4ndringar sparas lokalt");});
 
 var _toastTimer=null;
 function showToast(msg,ok){
@@ -1887,7 +1855,6 @@ window.addEventListener("resize",function(){if(_orientTimer)clearTimeout(_orient
 window.addEventListener("orientationchange",function(){if(_orientTimer)clearTimeout(_orientTimer);_orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=null;},350);});
 
 // Init
-try{updateSyncIndicator();}catch(e){}
 drawPitch();
 handleOrientation();
 // Apply default format
