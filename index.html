@@ -337,7 +337,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.6</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.7</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1656,6 +1656,9 @@ function renderSparadeMatcherList(){
         matchRoster=trupp.filter(function(sp){return(m.startade||[]).indexOf(sp.id)>=0;});
         matchAssignments={};
         matchVariants=[];activeVariantIdx=0;
+        // Restore matchSelections so manual save also works
+        matchSelections={};
+        matchRoster.forEach(function(sp){matchSelections[sp.id]="start";});
         players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
         window._editingMatchId=m.dbId||null;
         var motEl=document.getElementById("bench-motstand-lbl");
