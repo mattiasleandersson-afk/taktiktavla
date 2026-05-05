@@ -338,7 +338,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.4</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v15.5</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1214,8 +1214,10 @@ var topbarOpen=true;
 document.getElementById("btn-topbar-toggle").addEventListener("click",function(){topbarOpen=!topbarOpen;var tb=document.getElementById("topbar");var btn=document.getElementById("btn-topbar-toggle");var children=tb.children;for(var i=0;i<children.length;i++){if(children[i]!==btn)children[i].style.display=topbarOpen?"":"none";}btn.innerHTML=topbarOpen?"\u25b2":"\u25bc";btn.title=topbarOpen?"Minimera menyn":"Visa menyn";});
 document.getElementById("taktik-search").addEventListener("input",function(e){taktikSearch=e.target.value;renderTaktikList();});
 document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="lag"){
-      // Reset to formation positions (clear match assignments)
-      if(matchRoster.length===0){
+      // Reset to formation positions unless bench-bar is actively showing
+      var benchActive=document.getElementById("bench-bar").classList.contains("active");
+      if(!benchActive){
+        matchRoster=[];matchAssignments={};matchVariants=[];activeVariantIdx=0;
         var activeFormText=document.querySelector("#formation-btns .btn.on");
         initPlayers(activeFormText?activeFormText.textContent:"4-4-2");
         render();
