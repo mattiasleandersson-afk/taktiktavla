@@ -343,7 +343,7 @@ if("serviceWorker" in navigator){
 <div id="topbar">
   <h1>&#9917;</h1>
   <span id="sync-indicator" style="display:none;font-size:0.6rem;font-weight:700;white-space:nowrap"></span>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.2</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.3</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1484,13 +1484,20 @@ document.getElementById("bench-add-var").addEventListener("click",function(){
   render();renderBench();updateVariantUI();
   showToast("Ny variant skapad!");
 });
-document.getElementById("bench-prev-var").addEventListener("click",function(){
+(function(){
+  var bprev=document.getElementById("bench-prev-var");
+  var bnext=document.getElementById("bench-next-var");
+  var badd=document.getElementById("bench-add-var");
+  var bsave=document.getElementById("bench-save-btn");
+  var bclear=document.getElementById("bench-clear-btn");
+  if(!bprev)return;
+bprev.addEventListener("click",function(){
   if(matchVariants.length===0||activeVariantIdx<=0)return;
   saveCurrentVariant();
   activeVariantIdx--;
   loadVariant(activeVariantIdx);
 });
-document.getElementById("bench-next-var").addEventListener("click",function(){
+bnext.addEventListener("click",function(){
   if(matchVariants.length===0||activeVariantIdx>=matchVariants.length-1)return;
   saveCurrentVariant();
   activeVariantIdx++;
@@ -1528,8 +1535,8 @@ function loadVariant(idx){
 }
 function updateVariantUI(){
   var lbl=document.getElementById("bench-var-label");
-  var prev=document.getElementById("bench-prev-var");
-  var next=document.getElementById("bench-next-var");
+  var prev=bprev;
+  var next=bnext;
   if(!lbl)return;
   var total=matchVariants.length||1;
   var cur=matchVariants.length===0?1:activeVariantIdx+1;
@@ -1537,23 +1544,27 @@ function updateVariantUI(){
   if(prev)prev.style.opacity=activeVariantIdx>0?"1":"0.3";
   if(next)next.style.opacity=activeVariantIdx<matchVariants.length-1?"1":"0.3";
 }
-document.getElementById("bench-clear-btn").addEventListener("click",function(){
+bclear.addEventListener("click",function(){
   matchAssignments={};
   players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});
   render();renderBench();
   showToast("Alla spelare \u00e5terlagda till avbytare");
 });
-document.getElementById("bench-copy-var").addEventListener("click",function(){
+(function(){
+  var bcv=document.getElementById("bench-copy-var");
+  var bpv=document.getElementById("bench-paste-var");
+  if(!bcv||!bpv)return;
+  bcv.addEventListener("click",function(){
   saveCurrentVariant();
   if(matchVariants.length===0){
     _copiedVariant={assignments:JSON.parse(JSON.stringify(matchAssignments)),playerStates:players.filter(function(p){return p.team==="home";}).map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};})};
   } else {
     _copiedVariant=JSON.parse(JSON.stringify(matchVariants[activeVariantIdx]));
   }
-  document.getElementById("bench-paste-var").style.opacity="1";
+  bpv.style.opacity="1";
   showToast("Uppst\u00e4llning kopierad!");
 });
-document.getElementById("bench-paste-var").addEventListener("click",function(){
+bpv.addEventListener("click",function(){
   if(!_copiedVariant)return;
   // If no variants yet, create one first
   if(matchVariants.length===0){
@@ -1572,11 +1583,18 @@ function updateGoalDisplay(){
   if(h)h.textContent=matchGoals.home;
   if(a)a.textContent=matchGoals.away;
 }
-document.getElementById("bench-goal-home-plus").addEventListener("click",function(){matchGoals.home++;updateGoalDisplay();});
-document.getElementById("bench-goal-home-minus").addEventListener("click",function(){if(matchGoals.home>0){matchGoals.home--;updateGoalDisplay();}});
-document.getElementById("bench-goal-away-plus").addEventListener("click",function(){matchGoals.away++;updateGoalDisplay();});
-document.getElementById("bench-goal-away-minus").addEventListener("click",function(){if(matchGoals.away>0){matchGoals.away--;updateGoalDisplay();}});
-document.getElementById("bench-save-btn").addEventListener("click",function(){
+})();
+(function(){
+  var ghp=document.getElementById("bench-goal-home-plus");
+  var ghm=document.getElementById("bench-goal-home-minus");
+  var gap=document.getElementById("bench-goal-away-plus");
+  var gam=document.getElementById("bench-goal-away-minus");
+  if(ghp)ghp.addEventListener("click",function(){matchGoals.home++;updateGoalDisplay();});
+  if(ghm)ghm.addEventListener("click",function(){if(matchGoals.home>0){matchGoals.home--;updateGoalDisplay();}});
+  if(gap)gap.addEventListener("click",function(){matchGoals.away++;updateGoalDisplay();});
+  if(gam)gam.addEventListener("click",function(){if(matchGoals.away>0){matchGoals.away--;updateGoalDisplay();}});
+})();
+bsave.addEventListener("click",function(){
   // Save current variant state then open match save dialog
   if(matchVariants.length===0&&Object.keys(matchAssignments).length>0){
     matchVariants=[{namn:"Uppst. 1",format:format,formation:(document.querySelector("#formation-btns .btn.on")||{}).textContent||"",assignments:JSON.parse(JSON.stringify(matchAssignments)),playerStates:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};})}];
@@ -1868,7 +1886,7 @@ window.addEventListener("resize",function(){if(_orientTimer)clearTimeout(_orient
 window.addEventListener("orientationchange",function(){if(_orientTimer)clearTimeout(_orientTimer);_orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=null;},350);});
 
 // Init
-updateSyncIndicator();
+try{updateSyncIndicator();}catch(e){}
 drawPitch();
 handleOrientation();
 // Apply default format
@@ -1882,6 +1900,7 @@ loadTrupp();
 loadMatcher();
 checkShareLink();
 
+})();
 </script>
 
 </body>
