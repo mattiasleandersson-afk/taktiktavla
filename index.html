@@ -342,7 +342,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.6</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.7</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1468,13 +1468,11 @@ function updateGoalDisplay(){
   if(h)h.textContent=matchGoals.home;
   if(a)a.textContent=matchGoals.away;
 }
-(function(){
-  var bprev=document.getElementById("bench-prev-var");
-  var bnext=document.getElementById("bench-next-var");
-  var badd=document.getElementById("bench-add-var");
-  var bsave=document.getElementById("bench-save-btn");
-  var bclear=document.getElementById("bench-clear-btn");
-  if(!bprev)return;
+var bprev=document.getElementById("bench-prev-var");
+var bnext=document.getElementById("bench-next-var");
+var badd=document.getElementById("bench-add-var");
+var bsave=document.getElementById("bench-save-btn");
+var bclear=document.getElementById("bench-clear-btn");
 bprev.addEventListener("click",function(){
   if(matchVariants.length===0||activeVariantIdx<=0)return;
   saveCurrentVariant();
@@ -1879,7 +1877,6 @@ loadTrupp();
 loadMatcher();
 checkShareLink();
 
-})();
 </script>
 
 </body>
