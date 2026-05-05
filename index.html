@@ -342,7 +342,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.5</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -448,6 +448,15 @@ if("serviceWorker" in navigator){
     </select>
   </div>
   <div class="toast-msg" id="toast-msg"></div>
+  <div id="goal-overlay" style="display:none;position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:20;background:rgba(14,23,16,0.92);border:1px solid #3a6b46;border-radius:12px;padding:5px 10px;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
+    <button id="bench-goal-home-minus" style="background:transparent;border:1px solid #2d4a35;border-radius:4px;color:#e84a4a;padding:2px 8px;font-size:1rem;font-weight:900;cursor:pointer">&#8722;</button>
+    <span id="bench-goal-home" style="font-size:1.1rem;color:#4ae87a;font-weight:900;min-width:20px;text-align:center">0</span>
+    <button id="bench-goal-home-plus" style="background:transparent;border:1px solid #2d4a35;border-radius:4px;color:#4ae87a;padding:2px 8px;font-size:1rem;font-weight:900;cursor:pointer">+</button>
+    <span style="font-size:0.8rem;color:#7aaa88;margin:0 2px">&#8211;</span>
+    <button id="bench-goal-away-minus" style="background:transparent;border:1px solid #2d4a35;border-radius:4px;color:#e84a4a;padding:2px 8px;font-size:1rem;font-weight:900;cursor:pointer">&#8722;</button>
+    <span id="bench-goal-away" style="font-size:1.1rem;color:#4ae87a;font-weight:900;min-width:20px;text-align:center">0</span>
+    <button id="bench-goal-away-plus" style="background:transparent;border:1px solid #2d4a35;border-radius:4px;color:#4ae87a;padding:2px 8px;font-size:1rem;font-weight:900;cursor:pointer">+</button>
+  </div>
   <div class="rec-badge" id="rec-badge">&#9679; Spelar in</div>
 </div>
 
@@ -1435,7 +1444,7 @@ document.getElementById("backup-cancel").addEventListener("click",function(){doc
 document.getElementById("backup-download").addEventListener("click",function(){var data={savedFormations:savedFormations,taktikFilmer:taktikFilmer,exported:new Date().toISOString()};var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="taktiktavla-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(url);document.getElementById("modal-backup").classList.add("hidden");showToast("Backup nedladdad!");});
 document.getElementById("bench-size-up").addEventListener("click",function(){matchNameSize=Math.min(20,matchNameSize+1);document.getElementById("bench-size-lbl").textContent=matchNameSize;render();});
 document.getElementById("bench-size-down").addEventListener("click",function(){matchNameSize=Math.max(7,matchNameSize-1);document.getElementById("bench-size-lbl").textContent=matchNameSize;render();});
-document.getElementById("bench-exit-btn").addEventListener("click",function(){matchRoster=[];matchAssignments={};matchVariants=[];activeVariantIdx=0;matchGoals={home:0,away:0};updateGoalDisplay();window._editingMatchId=null;halfMode=0;updateViewBox();players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});render();document.getElementById("bench-bar").classList.remove("active");showToast("Laguppst\u00e4llning avslutad");});
+document.getElementById("bench-exit-btn").addEventListener("click",function(){matchRoster=[];matchAssignments={};matchVariants=[];activeVariantIdx=0;matchGoals={home:0,away:0};updateGoalDisplay();window._editingMatchId=null;halfMode=0;updateViewBox();players.filter(function(p){return p.team==="home";}).forEach(function(p){p.name="";p.number=0;});render();document.getElementById("bench-bar").classList.remove("active");var go2=document.getElementById("goal-overlay");if(go2)go2.style.display="none";showToast("Laguppst\u00e4llning avslutad");});
 document.getElementById("bench-add-var").addEventListener("click",function(){
   // Save current state as new variant
   saveCurrentVariant();
@@ -1637,6 +1646,8 @@ function renderBench(){
     },{passive:false});
   });
   bar.classList.toggle("active",matchRoster.length>0);
+  var go=document.getElementById("goal-overlay");
+  if(go)go.style.display=matchRoster.length>0?"flex":"none";
   updateVariantUI();
 }
 
