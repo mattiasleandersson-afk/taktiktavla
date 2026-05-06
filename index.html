@@ -358,7 +358,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.6</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.7</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -480,31 +480,34 @@ if("serviceWorker" in navigator){
 
 <!-- COMBINED TAKTIK BAR (edit + play merged) -->
 
-<div id="taktikbar" style="display:none;background:var(--bg);border-top:2px solid var(--accent);padding:7px 12px;flex-shrink:0;flex-wrap:wrap;gap:5px;align-items:center">
-  <span id="taktikbar-title" style="color:#4ae87a;font-weight:700;font-size:0.82rem;text-transform:uppercase;flex:1;min-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
-  <button class="btn" id="btn-first" style="font-size:1rem;padding:4px 11px" title="Till start">&#9646;&#9664;</button>
-  <button class="btn" id="btn-prev" style="font-size:1rem;padding:4px 11px">&#9664;</button>
-  <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.82rem;min-width:52px;text-align:center">Start</span>
-  <button class="btn" id="btn-next" style="font-size:1rem;padding:4px 11px">&#9654;</button>
-  <select class="btn" id="play-speed" style="padding:4px 16px 4px 6px;font-size:0.7rem">
-    <option value="1200">Sakta</option>
-    <option value="600" selected>Normal</option>
-    <option value="300">Snabb</option>
-  </select>
-  <label style="display:flex;align-items:center;gap:3px;font-size:0.72rem;color:#7aaa88;cursor:pointer"><input type="checkbox" id="play-loop"> Loop</label>
-  <button class="btn" id="btn-copy-drawings" style="padding:4px 8px;font-size:0.72rem;color:#e8c84a;border-color:#e8c84a" title="Kopiera ritningar till n&#228;sta steg">&#9000;</button>
-  <button class="btn" id="btn-copy-step" style="padding:4px 8px;font-size:0.72rem;color:#4ae8e8;border-color:#4ae8e8" title="Kopiera steg">&#9112;</button>
-  <button class="btn" id="btn-paste-step" style="padding:4px 8px;font-size:0.72rem;color:#4ae8e8;border-color:#4ae8e8;opacity:0.3" title="Klistra in steg">&#9113;</button>
-  <span style="width:1px;background:#2d4a35;align-self:stretch;margin:2px 2px"></span>
-  <button class="btn" id="btn-tb-arrow" title="Pil">&#8599;</button>
-  <button class="btn" id="btn-tb-freehand" title="Fri">&#9998;</button>
-  <button class="btn" id="btn-tb-zone" title="Zon">&#9633;</button>
-  <button class="btn" id="btn-tb-text" title="Text">T</button>
-  <button class="btn" id="btn-tb-movement" title="R&#246;relse">&#8594;</button>
-  <span style="width:1px;background:#2d4a35;align-self:stretch;margin:2px 2px"></span>
-  <button class="btn on" id="btn-edit-update-step2" style="padding:4px 8px;font-size:0.72rem">&#10003; Spara steg</button>
-  <button class="btn" id="btn-taktikbar-save" style="padding:4px 8px;font-size:0.72rem;color:#4ae87a;border-color:#4ae87a">Spara film</button>
-  <button class="btn danger" id="btn-stop-play" style="padding:4px 8px;font-size:0.72rem">&#10005;</button>
+<div id="taktikbar" style="display:none;background:var(--bg);border-top:2px solid var(--accent);padding:4px 8px;flex-shrink:0;flex-direction:column;gap:3px;align-items:stretch">
+  <div style="display:flex;gap:4px;align-items:center;flex-wrap:nowrap;overflow:hidden">
+    <span id="taktikbar-title" style="color:#4ae87a;font-weight:700;font-size:0.75rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+    <button class="btn" id="btn-first" style="font-size:0.9rem;padding:3px 8px;flex-shrink:0" title="Till start">&#9646;&#9664;</button>
+    <button class="btn" id="btn-prev" style="font-size:0.9rem;padding:3px 8px;flex-shrink:0">&#9664;</button>
+    <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.78rem;min-width:44px;text-align:center;flex-shrink:0">Start</span>
+    <button class="btn" id="btn-next" style="font-size:0.9rem;padding:3px 8px;flex-shrink:0">&#9654;</button>
+    <select class="btn" id="play-speed" style="padding:3px 14px 3px 5px;font-size:0.65rem;flex-shrink:0">
+      <option value="1200">Sakta</option>
+      <option value="600" selected>Normal</option>
+      <option value="300">Snabb</option>
+    </select>
+    <label style="display:flex;align-items:center;gap:2px;font-size:0.68rem;color:#7aaa88;cursor:pointer;flex-shrink:0"><input type="checkbox" id="play-loop"> Loop</label>
+    <button class="btn" id="btn-copy-drawings" style="padding:3px 6px;font-size:0.68rem;color:#e8c84a;border-color:#e8c84a;flex-shrink:0" title="Kopiera ritningar">&#9000;</button>
+    <button class="btn" id="btn-copy-step" style="padding:3px 6px;font-size:0.68rem;color:#4ae8e8;border-color:#4ae8e8;flex-shrink:0" title="Kopiera steg">&#9112;</button>
+    <button class="btn" id="btn-paste-step" style="padding:3px 6px;font-size:0.68rem;color:#4ae8e8;border-color:#4ae8e8;opacity:0.3;flex-shrink:0" title="Klistra in steg">&#9113;</button>
+    <button class="btn on" id="btn-edit-update-step2" style="padding:3px 7px;font-size:0.68rem;flex-shrink:0">&#10003;</button>
+    <button class="btn" id="btn-taktikbar-save" style="padding:3px 7px;font-size:0.68rem;color:#4ae87a;border-color:#4ae87a;flex-shrink:0">&#128190;</button>
+    <button class="btn danger" id="btn-stop-play" style="padding:3px 7px;font-size:0.68rem;flex-shrink:0">&#10005;</button>
+  </div>
+  <div style="display:flex;gap:4px;align-items:center">
+    <span style="font-size:0.65rem;color:#7aaa88;flex-shrink:0">Rita:</span>
+    <button class="btn" id="btn-tb-arrow" title="Pil" style="padding:3px 7px">&#8599; Pil</button>
+    <button class="btn" id="btn-tb-freehand" title="Frihand" style="padding:3px 7px">&#9998; Fri</button>
+    <button class="btn" id="btn-tb-zone" title="Zon" style="padding:3px 7px">&#9633; Zon</button>
+    <button class="btn" id="btn-tb-text" title="Text" style="padding:3px 7px">T Text</button>
+    <button class="btn" id="btn-tb-movement" title="R&#246;relse" style="padding:3px 7px">&#8594; R&#246;relse</button>
+  </div>
 </div>
 
 <button id="panel-show-btn" style="display:none;position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:60;background:rgba(14,23,16,0.9);border:1px solid #4ae87a;border-radius:20px;color:#4ae87a;padding:5px 20px;font-size:0.8rem;font-weight:700;cursor:pointer;touch-action:manipulation">▲ Meny</button>
@@ -1509,9 +1512,36 @@ function updateEditStepUI_silent(){if(editingTaktikIdx===null)return;var tk=takt
 function stopPlayback(){if(animFrame)cancelAnimationFrame(animFrame);playback=null;document.getElementById("taktikbar").style.display="none";exitEditTaktik();render();}
 document.getElementById("btn-stop-play").addEventListener("click",stopPlayback);
 document.getElementById("btn-edit-update-step2").addEventListener("click",function(){
-  if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];var oldSnap=JSON.parse(JSON.stringify(tk.steps[editingStepIdx]));var snap=currentSnap();var lbl=document.getElementById("edit-step-name-inp").value.trim();if(lbl)snap.label=lbl;
-  for(var pi=0;pi<snap.players.length;pi++){var newP=snap.players[pi];var oldP=null;if(oldSnap&&oldSnap.players){for(var oi=0;oi<oldSnap.players.length;oi++){if(oldSnap.players[oi].id===newP.id){oldP=oldSnap.players[oi];break;}}}if(!oldP)continue;var movedX=Math.abs(newP.x-oldP.x)>1;var movedY=Math.abs(newP.y-oldP.y)>1;if(!movedX&&!movedY)continue;for(var si=editingStepIdx+1;si<tk.steps.length;si++){var futureStep=tk.steps[si];if(!futureStep||!futureStep.players)continue;var futureP=null;for(var fi=0;fi<futureStep.players.length;fi++){if(futureStep.players[fi].id===newP.id){futureP=futureStep.players[fi];break;}}if(!futureP)continue;var sameAsOld=Math.abs(futureP.x-oldP.x)<2&&Math.abs(futureP.y-oldP.y)<2;if(sameAsOld){futureP.x=newP.x;futureP.y=newP.y;}else{break;}}}
-  saveTaktikUndo();tk.steps[editingStepIdx]=snap;if(playback)playback.tk=taktikFilmer[editingTaktikIdx];showToast("Steg sparat!");cloudStatus("\u2705 Steg sparat","#4ae87a");renderEditSteps(tk);
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  var oldSnap=JSON.parse(JSON.stringify(tk.steps[editingStepIdx]));
+  var snap=currentSnap();
+  var lbl=document.getElementById("edit-step-name-inp").value.trim();if(lbl)snap.label=lbl;
+  // Apply movement path endpoints to snapshot player positions
+  (snap.movementPaths||[]).forEach(function(mp){
+    if(!mp.pts||!mp.pts.length)return;
+    var ep=mp.pts[mp.pts.length-1];
+    if(mp.playerId==="ball"){snap.ball.x=ep.x;snap.ball.y=ep.y;}
+    else{var pp=snap.players.find(function(x){return x.id===mp.playerId;});if(pp){pp.x=ep.x;pp.y=ep.y;}}
+  });
+  // Propagate position changes to future steps
+  for(var pi=0;pi<snap.players.length;pi++){
+    var newP=snap.players[pi];var oldP=null;
+    if(oldSnap&&oldSnap.players){for(var oi=0;oi<oldSnap.players.length;oi++){if(oldSnap.players[oi].id===newP.id){oldP=oldSnap.players[oi];break;}}}
+    if(!oldP)continue;
+    var movedX=Math.abs(newP.x-oldP.x)>1,movedY=Math.abs(newP.y-oldP.y)>1;
+    if(!movedX&&!movedY)continue;
+    for(var si=editingStepIdx+1;si<tk.steps.length;si++){
+      var futureStep=tk.steps[si];if(!futureStep||!futureStep.players)continue;
+      var futureP=null;for(var fi=0;fi<futureStep.players.length;fi++){if(futureStep.players[fi].id===newP.id){futureP=futureStep.players[fi];break;}}
+      if(!futureP)continue;
+      var sameAsOld=Math.abs(futureP.x-oldP.x)<2&&Math.abs(futureP.y-oldP.y)<2;
+      if(sameAsOld){futureP.x=newP.x;futureP.y=newP.y;}else{break;}
+    }
+  }
+  saveTaktikUndo();tk.steps[editingStepIdx]=snap;
+  if(playback)playback.tk=taktikFilmer[editingTaktikIdx];
+  showToast("Steg sparat!");cloudStatus("\u2705 Steg sparat","#4ae87a");renderEditSteps(tk);
 });
 document.getElementById("btn-taktikbar-save").addEventListener("click",function(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder||"Allm\u00e4nt"})}).then(function(){showToast("Film sparad!");cloudStatus("\u2705 Film sparad","#4ae87a");});}else{showToast("Film sparad!");cloudStatus("\u2705 Sparad lokalt","#4ae87a");}});
 document.getElementById("btn-first").addEventListener("click",function(){if(!playback||playback.animating)return;editingStepIdx=0;playback.stepIndex=0;restoreSnap(taktikFilmer[editingTaktikIdx]?taktikFilmer[editingTaktikIdx].steps[0]:playback.tk.steps[0]);render();updatePlaybar();updateEditStepUI_silent();});
@@ -1521,7 +1551,7 @@ document.getElementById("play-speed").addEventListener("change",function(){animS
 function updatePlaybar(){if(!playback)return;var cur=playback.stepIndex,total=playback.tk.steps.length-1;document.getElementById("taktikbar-title").textContent=playback.tk.name;document.getElementById("play-counter").textContent=cur===0?"Start":cur+"/"+total;document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";renderPlayStepList();updateLandscapeStrip();updateFsPortraitNav();}
 function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
 function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx];var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});var fromBall={x:ball.x,y:ball.y};var start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed);var hasMovement=(target.movementPaths||[]).length>0;
-      var tScaled=hasMovement?Math.min(1,t/1.4):t;
+      var tScaled=hasMovement?Math.min(1,t/1.7):t;
       var ease=tScaled<0.5?2*tScaled*tScaled:1-Math.pow(-2*tScaled+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){
           var mvPath=null;var fromSnap2=playback.tk.steps[playback.stepIndex>0?playback.stepIndex-1:0];
           var fromMvs=(fromSnap2&&fromSnap2.movementPaths)||[];
