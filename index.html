@@ -358,7 +358,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.5</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -495,6 +495,13 @@ if("serviceWorker" in navigator){
   <button class="btn" id="btn-copy-drawings" style="padding:4px 8px;font-size:0.72rem;color:#e8c84a;border-color:#e8c84a" title="Kopiera ritningar till n&#228;sta steg">&#9000;</button>
   <button class="btn" id="btn-copy-step" style="padding:4px 8px;font-size:0.72rem;color:#4ae8e8;border-color:#4ae8e8" title="Kopiera steg">&#9112;</button>
   <button class="btn" id="btn-paste-step" style="padding:4px 8px;font-size:0.72rem;color:#4ae8e8;border-color:#4ae8e8;opacity:0.3" title="Klistra in steg">&#9113;</button>
+  <span style="width:1px;background:#2d4a35;align-self:stretch;margin:2px 2px"></span>
+  <button class="btn" id="btn-tb-arrow" title="Pil">&#8599;</button>
+  <button class="btn" id="btn-tb-freehand" title="Fri">&#9998;</button>
+  <button class="btn" id="btn-tb-zone" title="Zon">&#9633;</button>
+  <button class="btn" id="btn-tb-text" title="Text">T</button>
+  <button class="btn" id="btn-tb-movement" title="R&#246;relse">&#8594;</button>
+  <span style="width:1px;background:#2d4a35;align-self:stretch;margin:2px 2px"></span>
   <button class="btn on" id="btn-edit-update-step2" style="padding:4px 8px;font-size:0.72rem">&#10003; Spara steg</button>
   <button class="btn" id="btn-taktikbar-save" style="padding:4px 8px;font-size:0.72rem;color:#4ae87a;border-color:#4ae87a">Spara film</button>
   <button class="btn danger" id="btn-stop-play" style="padding:4px 8px;font-size:0.72rem">&#10005;</button>
@@ -549,7 +556,7 @@ if("serviceWorker" in navigator){
       <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
     </div>
     <!-- Hidden step list (still used by renderEditSteps internally) -->
-    <div class="list" id="edit-taktik-steps" style="display:none"></div>
+    <div class="list" id="edit-taktik-steps" style="max-height:140px;margin-top:4px"></div>
   </div>
   <div id="no-rec-ui">
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
@@ -1513,7 +1520,9 @@ document.getElementById("btn-prev").addEventListener("click",function(){if(!play
 document.getElementById("play-speed").addEventListener("change",function(){animSpeed=parseInt(this.value);});
 function updatePlaybar(){if(!playback)return;var cur=playback.stepIndex,total=playback.tk.steps.length-1;document.getElementById("taktikbar-title").textContent=playback.tk.name;document.getElementById("play-counter").textContent=cur===0?"Start":cur+"/"+total;document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";renderPlayStepList();updateLandscapeStrip();updateFsPortraitNav();}
 function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
-function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx];var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});var fromBall={x:ball.x,y:ball.y};var start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed);var ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){
+function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx];var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});var fromBall={x:ball.x,y:ball.y};var start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed);var hasMovement=(target.movementPaths||[]).length>0;
+      var tScaled=hasMovement?Math.min(1,t/1.4):t;
+      var ease=tScaled<0.5?2*tScaled*tScaled:1-Math.pow(-2*tScaled+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){
           var mvPath=null;var fromSnap2=playback.tk.steps[playback.stepIndex>0?playback.stepIndex-1:0];
           var fromMvs=(fromSnap2&&fromSnap2.movementPaths)||[];
           for(var k=0;k<fromMvs.length;k++){if(fromMvs[k].playerId===players[i].id){mvPath=fromMvs[k];break;}}
@@ -1530,7 +1539,16 @@ function animateToStep(targetIdx){if(!playback)return;playback.animating=true;pl
         var bSeg=ballMvPath.pts.length-1,bPos=ease*bSeg,bS=Math.min(Math.floor(bPos),bSeg-1),bT=bPos-bS;
         ball.x=ballMvPath.pts[bS].x+(ballMvPath.pts[bS+1].x-ballMvPath.pts[bS].x)*bT;
         ball.y=ballMvPath.pts[bS].y+(ballMvPath.pts[bS+1].y-ballMvPath.pts[bS].y)*bT;
-      } else {ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;}var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}};animFrame=requestAnimationFrame(frame);}
+      } else {ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;}var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);
+          // Apply movement path end positions
+          var endMvs=(target.movementPaths||[]);
+          endMvs.forEach(function(mp){
+            if(!mp.pts||!mp.pts.length)return;
+            var ep=mp.pts[mp.pts.length-1];
+            if(mp.playerId==="ball"){ball.x=ep.x;ball.y=ep.y;}
+            else{var pp=players.find(function(x){return x.id===mp.playerId;});if(pp){pp.x=ep.x;pp.y=ep.y;}}
+          });
+          render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}};animFrame=requestAnimationFrame(frame);}
 function buildState(){return{format:format,homeColor:homeColor,awayColor:awayColor,displayMode:displayMode,players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};})};}
 function applyState(s){format=s.format||11;homeColor=s.homeColor||"#e8c84a";awayColor=s.awayColor||"#e84a4a";displayMode=s.displayMode||"number";document.getElementById("fmt-sel").value=String(format);players=(s.players||[]).map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball=s.ball||{x:W/2,y:H/2};arrows=(s.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};});labels=(s.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});buildFormationBtns();render();}
 document.getElementById("btn-export").addEventListener("click",function(){var data={savedFormations:savedFormations,current:buildState()};var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));var a=document.createElement("a");a.href=url;a.download="taktik.json";a.click();URL.revokeObjectURL(url);});
