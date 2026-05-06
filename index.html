@@ -358,7 +358,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.8</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1225,7 +1225,7 @@ function render(){
       var dt=document.createElementNS(ns,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",mx);dt.setAttribute("y",my);dt.textContent="\u00d7";
       dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);
       (function(mpId){
-        function delMp(ev){ev.stopPropagation();ev.preventDefault();saveUndo();movementPaths=movementPaths.filter(function(x){return x.id!==mpId;});selectedId=null;render();}
+        function delMp(ev){_delHappened=true;ev.stopPropagation();ev.preventDefault();saveUndo();movementPaths=movementPaths.filter(function(x){return x.id!==mpId;});selectedId=null;render();}
         dg.addEventListener("touchstart",delMp,{passive:false});dg.addEventListener("mousedown",delMp);
       })(mp.id);
     }
