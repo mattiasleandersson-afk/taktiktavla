@@ -358,7 +358,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.3</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.4</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1403,7 +1403,8 @@ document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("cl
       halfMode=1;updateViewBox();
     }else{document.getElementById("bottompanel").classList.remove("expanded");}if(name!=="lag"&&halfMode===1&&matchRoster.length===0){halfMode=0;updateViewBox();}if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
 function startRecording(name){activeTaktik={name:name,steps:[currentSnap()]};document.getElementById("rec-badge").style.display="block";document.getElementById("rec-ui").style.display="block";document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-name-lbl").textContent="\u25cf "+name;renderRecSteps();}
-document.getElementById("btn-add-step").addEventListener("click",function(){if(!activeTaktik)return;activeTaktik.// Move to end of movement paths before recording step
+document.getElementById("btn-add-step").addEventListener("click",function(){if(!activeTaktik)return;
+// Move to end of movement paths before recording step
 movementPaths.forEach(function(mp){
   if(!mp.pts||!mp.pts.length)return;
   var ep=mp.pts[mp.pts.length-1];
@@ -1491,7 +1492,8 @@ function mergeTaktik(idxA,idxB){var tkA=taktikFilmer[idxA],tkB=taktikFilmer[idxB
 document.getElementById("merge-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-merge-taktik").classList.add("hidden");mergingTaktikIdx=null;});
 document.getElementById("btn-new-taktik").addEventListener("click",function(){document.getElementById("taktik-name-inp").value="";document.getElementById("modal-new-taktik").classList.remove("hidden");});
 document.getElementById("new-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-new-taktik").classList.add("hidden");});
-document.getElementById("new-taktik-ok").addEventListener("click",function(){var name=document.getElementById("taktik-name-inp").value.trim();if(!name)return;document.getElementById("modal-new-taktik").classList.add("hidden");startRecording(name);});
+document.getElementById("new-taktik-ok").addEventListener("click",function(){var name=document.getElementById("taktik-name-inp").value.trim();if(!name)return;document.getElementById("modal-new-taktik").classList.add("hidden");startRecording(name);// Auto-save first step and open edit mode
+var newFilm={name:name,steps:[currentSnap()]};taktikFilmer.push(newFilm);cloudSaveTaktik(newFilm);activeTaktik=null;document.getElementById("rec-badge").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("no-rec-ui").style.display="block";var idx=taktikFilmer.length-1;startPlayback(idx);});
 function startPlayback(idx){var tk=taktikFilmer[idx];if(!tk||!tk.steps||!tk.steps.length){cloudStatus("\u274c Ogiltig taktikfilm","#e84a4a");return;}if(animFrame)cancelAnimationFrame(animFrame);playback={tk:tk,stepIndex:0,animating:false};var s0=tk.steps[0];restoreSnap(s0);render();document.getElementById("taktikbar").style.display="flex";document.getElementById("taktikbar-title").textContent=tk.name;updatePlaybar();editingTaktikIdx=idx;editingStepIdx=0;isEditingTaktik=true;document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("edit-taktik-ui").style.display="block";document.getElementById("edit-taktik-title-lbl").textContent="\u270f "+tk.name;updateEditStepUI_silent();document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-taktik");});}
 function updateEditStepUI_silent(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];if(!tk||!tk.steps)return;var s=tk.steps[editingStepIdx];var total=tk.steps.length-1;document.getElementById("edit-step-counter").textContent=(editingStepIdx===0?"Start":"Steg "+editingStepIdx)+"/"+total;document.getElementById("edit-step-name-inp").value=s.label||(editingStepIdx===0?"Startl\u00e4ge":"Steg "+editingStepIdx);document.getElementById("btn-edit-step-prev").style.opacity=editingStepIdx>0?"1":"0.3";document.getElementById("btn-edit-step-next").style.opacity=editingStepIdx<total?"1":"0.3";document.getElementById("btn-edit-del-step").style.opacity=editingStepIdx>0?"1":"0.3";renderEditSteps(tk);}
 function stopPlayback(){if(animFrame)cancelAnimationFrame(animFrame);playback=null;document.getElementById("taktikbar").style.display="none";exitEditTaktik();render();}
