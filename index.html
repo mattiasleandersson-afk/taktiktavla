@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
@@ -106,111 +105,113 @@ body.landscape #ls-next-side { display: flex !important; }
 
 /* Side panels sit just inside the pitch wrapper */
 #ls-prev-side, #ls-next-side {
-position: fixed;
-top: 50%;
-transform: translateY(-50%);
-z-index: 51;
-flex-direction: column;
-align-items: center;
-gap: 10px;
-justify-content: center;
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 51;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
 }
-#ls-prev-side {
-left: max(4px,env(safe-area-inset-left));
-padding: 0 4px;
+#ls-prev-side { 
+  left: max(4px,env(safe-area-inset-left)); 
+  padding: 0 4px;
 }
-#ls-next-side {
-right: max(4px,env(safe-area-inset-right));
-padding: 0 4px;
+#ls-next-side { 
+  right: max(4px,env(safe-area-inset-right)); 
+  padding: 0 4px;
 }
 
+
 #ls-title-top {
-position: fixed;
-top: max(6px,env(safe-area-inset-top));
-left: 0; right: 0;
-z-index: 51;
-text-align: center;
-padding: 0 60px;
-pointer-events: none;
+  position: fixed;
+  top: max(6px,env(safe-area-inset-top));
+  left: 0; right: 0;
+  z-index: 51;
+  text-align: center;
+  padding: 0 60px;
+  pointer-events: none;
 }
 #ls-step-label {
-background: rgba(14,23,16,0.75);
-border-radius: 20px;
-padding: 3px 14px;
-display: inline-block;
+  background: rgba(14,23,16,0.75);
+  border-radius: 20px;
+  padding: 3px 14px;
+  display: inline-block;
 }
 
 .ls-btn {
-background: rgba(14,23,16,0.92);
-border: 1px solid #3a6b46;
-border-radius: 10px;
-color: #7aaa88;
-cursor: pointer;
-font-family: Arial Narrow, Arial, sans-serif;
-touch-action: manipulation;
-padding: 14px 11px;
-font-size: 1.2rem;
-min-width: 40px;
-text-align: center;
-line-height: 1;
-box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  background: rgba(14,23,16,0.92);
+  border: 1px solid #3a6b46;
+  border-radius: 10px;
+  color: #7aaa88;
+  cursor: pointer;
+  font-family: Arial Narrow, Arial, sans-serif;
+  touch-action: manipulation;
+  padding: 14px 11px;
+  font-size: 1.2rem;
+  min-width: 40px;
+  text-align: center;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 .ls-btn.active { color: #4ae87a; border-color: #4ae87a; background: rgba(74,232,122,0.1); }
 .ls-btn:disabled { opacity: 0.25; }
 .ls-select {
-background: rgba(14,23,16,0.92);
-border: 1px solid #3a6b46;
-border-radius: 8px;
-color: #7aaa88;
-font-family: Arial Narrow, Arial, sans-serif;
-font-weight: 700;
-font-size: 0.72rem;
-padding: 6px 3px;
-width: 40px;
-text-align: center;
-box-shadow: 0 2px 8px rgba(0,0,0,0.4);
--webkit-appearance: none;
+  background: rgba(14,23,16,0.92);
+  border: 1px solid #3a6b46;
+  border-radius: 8px;
+  color: #7aaa88;
+  font-family: Arial Narrow, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 6px 3px;
+  width: 40px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  -webkit-appearance: none;
 }
 .ls-label {
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 4px;
-font-size: 0.62rem;
-font-weight: 700;
-color: #7aaa88;
-font-family: Arial Narrow, Arial, sans-serif;
-cursor: pointer;
-background: rgba(14,23,16,0.92);
-border: 1px solid #3a6b46;
-border-radius: 8px;
-padding: 8px 6px;
-writing-mode: vertical-rl;
-text-orientation: mixed;
-box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #7aaa88;
+  font-family: Arial Narrow, Arial, sans-serif;
+  cursor: pointer;
+  background: rgba(14,23,16,0.92);
+  border: 1px solid #3a6b46;
+  border-radius: 8px;
+  padding: 8px 6px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 /* Landscape: rotate SVG -90deg so pitch appears horizontal */
 body.landscape #pitch-wrapper {
-position: fixed;
-top: 0; left: 0; right: 0; bottom: 0;
-height: 100dvh;
-width: 100dvw;
-align-items: center;
-justify-content: center;
-overflow: hidden;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  height: 100dvh;
+  width: 100dvw;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 body.landscape #pitch-svg {
-/* After -90deg rotation: visual width = SVG height, visual height = SVG width */
-/* We want visual height = 100dvh, so SVG width = 100dvh */
-/* We want visual width = 100dvh*(600/400), so SVG height = 100dvh*(600/400) */
-width: 100dvh;
-height: calc(100dvh * 600 / 400);
-max-width: none;
-max-height: none;
-transform: rotate(-90deg);
-transform-origin: center center;
+  /* After -90deg rotation: visual width = SVG height, visual height = SVG width */
+  /* We want visual height = 100dvh, so SVG width = 100dvh */
+  /* We want visual width = 100dvh*(600/400), so SVG height = 100dvh*(600/400) */
+  width: 100dvh;
+  height: calc(100dvh * 600 / 400);
+  max-width: none;
+  max-height: none;
+  transform: rotate(-90deg);
+  transform-origin: center center;
 }
+
 
 .star-btn { background:transparent; border:none; cursor:pointer; font-size:1rem; padding:2px 4px; line-height:1; }
 .star-btn.on { color:#ffdd44; }
@@ -228,80 +229,80 @@ body.landscape #fs-portrait-nav { display: none !important; }
 body.landscape #fs-restore-btn { display: none !important; }
 
 #fs-restore-btn {
-display: none;
-position: fixed;
-top: max(8px, env(safe-area-inset-top));
-right: max(8px, env(safe-area-inset-right));
-z-index: 60;
-background: rgba(14,23,16,0.88);
-border: 1px solid #3a6b46;
-border-radius: 8px;
-color: #4ae87a;
-padding: 8px 12px;
-font-size: 0.8rem;
-font-weight: 700;
-font-family: Arial Narrow, Arial, sans-serif;
-cursor: pointer;
-align-items: center;
-gap: 6px;
-box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  display: none;
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+  z-index: 60;
+  background: rgba(14,23,16,0.88);
+  border: 1px solid #3a6b46;
+  border-radius: 8px;
+  color: #4ae87a;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: Arial Narrow, Arial, sans-serif;
+  cursor: pointer;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 #fs-portrait-nav {
-display: none;
-position: fixed;
-bottom: max(12px, env(safe-area-inset-bottom));
-left: 50%;
-transform: translateX(-50%);
-z-index: 60;
-background: rgba(14,23,16,0.88);
-border: 1px solid #3a6b46;
-border-radius: 12px;
-padding: 6px 12px;
-align-items: center;
-gap: 10px;
-box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  display: none;
+  position: fixed;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: rgba(14,23,16,0.88);
+  border: 1px solid #3a6b46;
+  border-radius: 12px;
+  padding: 6px 12px;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
 
 #fs-enter-btn {
-background: transparent;
-border: 1px solid #4ae87a;
-border-radius: 6px;
-color: #4ae87a;
-padding: 2px 8px;
-font-size: 0.7rem;
-font-weight: 700;
-font-family: Arial Narrow, Arial, sans-serif;
-cursor: pointer;
-margin-left: auto;
-touch-action: manipulation;
+  background: transparent;
+  border: 1px solid #4ae87a;
+  border-radius: 6px;
+  color: #4ae87a;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: Arial Narrow, Arial, sans-serif;
+  cursor: pointer;
+  margin-left: auto;
+  touch-action: manipulation;
 }
 body.landscape #fs-enter-btn { display: none; }
 body.fullscreen-portrait #fs-enter-btn { display: none; }
 
 #bench-bar {
-display: none;
-background: rgba(14,23,16,0.92);
-border-bottom: 1px solid #2d4a35;
-padding: 3px 8px;
-flex-shrink: 0;
-flex-wrap: nowrap;
-gap: 4px;
-align-items: center;
-overflow-x: auto;
-min-height: 0;
+  display: none;
+  background: rgba(14,23,16,0.92);
+  border-bottom: 1px solid #2d4a35;
+  padding: 3px 8px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+  overflow-x: auto;
+  min-height: 0;
 }
 #bench-bar.active { display: flex; }
 .bench-player {
-display: flex;
-flex-direction: row;
-align-items: center;
-gap: 3px;
-background: #1e2e22;
-border: 1px solid #2d4a35;
-border-radius: 12px;
-padding: 2px 7px;
-flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+  background: #1e2e22;
+  border: 1px solid #2d4a35;
+  border-radius: 12px;
+  padding: 2px 7px;
+  flex-shrink: 0;
 }
 .bench-player .bench-nr { font-size: 0.78rem; font-weight: 900; color: #4ae87a; white-space: nowrap; }
 .bench-player .bench-name { font-size: 0.72rem; color: #edf5ee; white-space: nowrap; }
@@ -316,11 +317,11 @@ flex-shrink: 0;
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
 .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
 .modal-bg.hidden { display: none; }
-.modal { background: var(–surface); border: 1px solid var(–border); border-radius: 12px; padding: 20px; width: 100%; max-width: 390px; max-height: 90dvh; overflow-y: auto; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 100%; max-width: 390px; max-height: 90dvh; overflow-y: auto; }
 .modal h2 { font-weight: 900; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 1px; color: #4ae87a; margin-bottom: 13px; }
 .mrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; gap: 8px; }
 .mrow label { font-size: 0.82rem; color: #7aaa88; text-transform: uppercase; letter-spacing: 0.5px; }
-.minput { background: var(–bg); color: var(–text); border: 1px solid var(–border); border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; font-family: Arial Narrow, Arial, sans-serif; }
+.minput { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; font-family: Arial Narrow, Arial, sans-serif; }
 .minput.wide { width: 210px; }
 input[type=color].minput { padding: 2px 4px; height: 34px; width: 56px; cursor: pointer; }
 .mactions { display: flex; gap: 8px; margin-top: 13px; justify-content: flex-end; }
@@ -342,7 +343,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.8</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -367,6 +368,7 @@ if("serviceWorker" in navigator){
   <button class="btn" id="btn-daylight" title="Dagsljusl&#228;ge">&#9728; Dag</button>
   <button class="btn" id="btn-fs-topbar" style="color:#4ae87a;border-color:#4ae87a" title="Helsk\u00e4rm">&#x26F6;</button>
   <button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button>
+  <button class="btn" id="btn-orientation-toggle" style="display:none;color:#4ae8e8;border-color:#4ae8e8" title="V&#228;xla liggande/st&#229;ende">&#8645;</button>
 </div>
 
 <div id="bench-bar">
@@ -461,7 +463,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- COMBINED TAKTIK BAR (edit + play merged) -->
-
 <div id="taktikbar" style="display:none;background:var(--bg);border-top:2px solid var(--accent);padding:7px 12px;flex-shrink:0;flex-wrap:wrap;gap:5px;align-items:center">
   <span id="taktikbar-title" style="color:#4ae87a;font-weight:700;font-size:0.82rem;text-transform:uppercase;flex:1;min-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
   <button class="btn" id="btn-first" style="font-size:1rem;padding:4px 11px" title="Till start">&#9646;&#9664;</button>
@@ -482,8 +483,7 @@ if("serviceWorker" in navigator){
   <button class="btn danger" id="btn-stop-play" style="padding:4px 8px;font-size:0.72rem">&#10005;</button>
 </div>
 
-<button id="panel-show-btn" style="display:none;position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:60;background:rgba(14,23,16,0.9);border:1px solid #4ae87a;border-radius:20px;color:#4ae87a;padding:5px 20px;font-size:0.8rem;font-weight:700;cursor:pointer;touch-action:manipulation">▲ Meny</button>
-
+<button id="panel-show-btn" style="display:none;position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:60;background:rgba(14,23,16,0.9);border:1px solid #4ae87a;border-radius:20px;color:#4ae87a;padding:5px 20px;font-size:0.8rem;font-weight:700;cursor:pointer;touch-action:manipulation">&#9650; Meny</button>
 <div id="panel-toggle-strip" style="background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;flex-shrink:0;position:relative;z-index:10;padding:0 8px;">
   <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 0;font-size:0.72rem;cursor:pointer;flex:1">&#9660;</button>
   <button id="fs-enter-btn" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:3px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:Arial Narrow,Arial,sans-serif;display:block">&#x26F6; FS</button>
@@ -509,44 +509,41 @@ if("serviceWorker" in navigator){
         <div class="list" id="rec-steps-list"></div>
       </div>
 
-```
-  <!-- LAG PANEL -->
+      <!-- LAG PANEL -->
 
-  <div id="edit-taktik-ui" style="display:none">
-    <!-- Row 1: step navigation + name + actions -->
-    <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px">
-      <button class="btn" id="btn-edit-step-prev" style="padding:4px 10px;font-size:1rem">&#9664;</button>
-      <span id="edit-step-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;min-width:38px;text-align:center;flex-shrink:0">Start</span>
-      <button class="btn" id="btn-edit-step-next" style="padding:4px 10px;font-size:1rem">&#9654;</button>
-      <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem;min-width:0">
-      <button class="btn on" id="btn-edit-update-step" style="padding:4px 8px" title="Spara steg">&#10003;</button>
-      <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a;padding:4px 8px" title="L&#228;gg till steg">+</button>
-      <button class="btn danger" id="btn-edit-del-step" style="padding:4px 8px" title="Ta bort steg">&#10005;</button>
+      <div id="edit-taktik-ui" style="display:none">
+        <!-- Row 1: step navigation + name + actions -->
+        <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px">
+          <button class="btn" id="btn-edit-step-prev" style="padding:4px 10px;font-size:1rem">&#9664;</button>
+          <span id="edit-step-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;min-width:38px;text-align:center;flex-shrink:0">Start</span>
+          <button class="btn" id="btn-edit-step-next" style="padding:4px 10px;font-size:1rem">&#9654;</button>
+          <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem;min-width:0">
+          <button class="btn on" id="btn-edit-update-step" style="padding:4px 8px" title="Spara steg">&#10003;</button>
+          <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a;padding:4px 8px" title="L&#228;gg till steg">+</button>
+          <button class="btn danger" id="btn-edit-del-step" style="padding:4px 8px" title="Ta bort steg">&#10005;</button>
+        </div>
+        <!-- Row 2: film title + save/exit -->
+        <div style="display:flex;gap:4px;align-items:center">
+          <span style="font-size:0.72rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="edit-taktik-title-lbl"></span>
+          <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a;padding:3px 7px;font-size:0.68rem">&#9998; Info</button>
+          <button class="btn on" id="btn-edit-taktik-save" style="padding:3px 7px;font-size:0.68rem">Spara</button>
+          <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
+        </div>
+        <!-- Hidden step list (still used by renderEditSteps internally) -->
+        <div class="list" id="edit-taktik-steps" style="display:none"></div>
+      </div>
+      <div id="no-rec-ui">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+          <button class="btn on" id="btn-new-taktik">+ Ny film</button>
+          <button class="btn" id="btn-export-taktik">Exportera</button>
+          <button class="btn" id="btn-import-taktik-btn">Importera</button>
+          <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
+        </div>
+        <input type="text" id="taktik-search" placeholder="S&#246;k taktikfilm..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
+        <div id="taktik-folder-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px"></div>
+        <div class="list" id="taktik-list"></div>
+      </div>
     </div>
-    <!-- Row 2: film title + save/exit -->
-    <div style="display:flex;gap:4px;align-items:center">
-      <span style="font-size:0.72rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="edit-taktik-title-lbl"></span>
-      <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a;padding:3px 7px;font-size:0.68rem">&#9998; Info</button>
-      <button class="btn on" id="btn-edit-taktik-save" style="padding:3px 7px;font-size:0.68rem">Spara</button>
-      <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
-    </div>
-    <!-- Hidden step list (still used by renderEditSteps internally) -->
-    <div class="list" id="edit-taktik-steps" style="display:none"></div>
-  </div>
-  <div id="no-rec-ui">
-    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
-      <button class="btn on" id="btn-new-taktik">+ Ny film</button>
-      <button class="btn" id="btn-export-taktik">Exportera</button>
-      <button class="btn" id="btn-import-taktik-btn">Importera</button>
-      <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
-    </div>
-    <input type="text" id="taktik-search" placeholder="S&#246;k taktikfilm..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
-    <div id="taktik-folder-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px"></div>
-    <div class="list" id="taktik-list"></div>
-  </div>
-</div>
-```
-
   </div>
   <div class="panel" id="panel-saves">
     <div style="width:100%">
@@ -571,72 +568,68 @@ if("serviceWorker" in navigator){
             <button class="lag-tab" data-lag="match" id="lag-tab-match">Match</button>
             <button class="lag-tab" data-lag="sparade" id="lag-tab-sparade">Sparade matcher</button>
           </div>
-
-```
-      <!-- TRUPP -->
-      <div id="lag-trupp">
-        <div style="display:flex;gap:5px;margin-bottom:6px">
-          <input type="number" id="ny-spelare-nr" placeholder="Nr" min="1" max="99" style="width:52px;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
-          <input type="text" id="ny-spelare-namn" placeholder="Spelarnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
-          <button class="btn on" id="btn-add-trupp">+ L&#228;gg till</button>
-        </div>
-        <div class="list" id="trupp-list" style="max-height:130px"></div>
-      </div>
-
-      <!-- MATCH -->
-      <div id="lag-match" style="display:none">
-        <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;flex-wrap:wrap">
-          <button class="btn" id="btn-ny-match" style="color:#4ae87a;border-color:#4ae87a;padding:3px 7px;font-size:0.68rem">+ Ny</button>
-          <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1;min-width:0">
-          <input type="text" id="match-motstand" placeholder="Motst&#229;ndare" style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;min-width:60px">
-          <span id="match-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;white-space:nowrap">0 valda</span>
-        </div>
-        <div class="list" id="match-trupp-list" style="max-height:160px"></div>
-        <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
-          <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; Laguppst&#228;llning</button>
-          <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
-        </div>
-      </div>
-
-      <!-- STATISTIK -->
-      <div id="lag-statistik" style="display:none">
-        <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
-          <input type="date" id="stat-from" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
-          <span style="color:#7aaa88;font-size:0.72rem">&#8211;</span>
-          <input type="date" id="stat-to" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
-          <button class="btn" id="btn-stat-filter">Filtrera</button>
-        </div>
-        <div id="stat-spelare-view">
-          <div class="list" id="stat-list" style="max-height:200px"></div>
-          <div id="stat-action-bar" style="display:none;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap">
-            <span id="stat-sel-count" style="font-size:0.75rem;color:#4ae87a;font-weight:700;flex:1">0 valda</span>
-            <button class="btn" id="btn-stat-clear-sel">Rensa</button>
-            <select id="stat-match-sel" class="btn" style="flex:1;max-width:140px;font-size:0.65rem"></select>
-            <button class="btn" id="btn-stat-add-to-match">L&#228;gg till</button>
-            <button class="btn on" id="btn-stat-to-match">+ Ny match</button>
+  
+          <!-- TRUPP -->
+          <div id="lag-trupp">
+            <div style="display:flex;gap:5px;margin-bottom:6px">
+              <input type="number" id="ny-spelare-nr" placeholder="Nr" min="1" max="99" style="width:52px;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+              <input type="text" id="ny-spelare-namn" placeholder="Spelarnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+              <button class="btn on" id="btn-add-trupp">+ L&#228;gg till</button>
+            </div>
+            <div class="list" id="trupp-list" style="max-height:130px"></div>
           </div>
-          <div style="display:flex;gap:5px;margin-top:6px">
-            <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
-            <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
+  
+          <!-- MATCH -->
+          <div id="lag-match" style="display:none">
+            <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;flex-wrap:wrap">
+              <button class="btn" id="btn-ny-match" style="color:#4ae87a;border-color:#4ae87a;padding:3px 7px;font-size:0.68rem">+ Ny</button>
+              <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1;min-width:0">
+              <input type="text" id="match-motstand" placeholder="Motst&#229;ndare" style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;min-width:60px">
+              <span id="match-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;white-space:nowrap">0 valda</span>
+            </div>
+            <div class="list" id="match-trupp-list" style="max-height:160px"></div>
+            <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
+              <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; Laguppst&#228;llning</button>
+              <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
+            </div>
+          </div>
+  
+          <!-- STATISTIK -->
+          <div id="lag-statistik" style="display:none">
+            <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+              <input type="date" id="stat-from" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+              <span style="color:#7aaa88;font-size:0.72rem">&#8211;</span>
+              <input type="date" id="stat-to" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+              <button class="btn" id="btn-stat-filter">Filtrera</button>
+            </div>
+            <div id="stat-spelare-view">
+              <div class="list" id="stat-list" style="max-height:200px"></div>
+              <div id="stat-action-bar" style="display:none;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap">
+                <span id="stat-sel-count" style="font-size:0.75rem;color:#4ae87a;font-weight:700;flex:1">0 valda</span>
+                <button class="btn" id="btn-stat-clear-sel">Rensa</button>
+                <select id="stat-match-sel" class="btn" style="flex:1;max-width:140px;font-size:0.65rem"></select>
+                <button class="btn" id="btn-stat-add-to-match">L&#228;gg till</button>
+                <button class="btn on" id="btn-stat-to-match">+ Ny match</button>
+              </div>
+              <div style="display:flex;gap:5px;margin-top:6px">
+                <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
+                <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- SPARADE MATCHER -->
+      <div id="lag-sparade" style="display:none">
+        <div class="list" id="sparade-match-list" style="max-height:200px"></div>
+      </div>
+
     </div>
-  </div>
-
-  <!-- SPARADE MATCHER -->
-  <div id="lag-sparade" style="display:none">
-    <div class="list" id="sparade-match-list" style="max-height:200px"></div>
-  </div>
-
-</div>
-```
-
   </div>
 </div>
 
 <!-- SETUP MODAL -->
-
 <div class="modal-bg hidden" id="modal-setup">
   <div class="modal">
     <h2>Spelarinst&#228;llningar</h2>
@@ -661,7 +654,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- NEW TAKTIK MODAL -->
-
 <div class="modal-bg hidden" id="modal-new-taktik">
   <div class="modal">
     <h2>Ny taktikfilm</h2>
@@ -674,7 +666,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- SAVE NAME MODAL -->
-
 <div class="modal-bg hidden" id="modal-savename">
   <div class="modal">
     <h2>Spara uppst&#228;llning</h2>
@@ -694,7 +685,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- NEW FOLDER MODAL -->
-
 <div class="modal-bg hidden" id="modal-new-folder">
   <div class="modal">
     <h2>Ny mapp</h2>
@@ -707,7 +697,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- TEXT LABEL MODAL -->
-
 <div class="modal-bg hidden" id="modal-text">
   <div class="modal">
     <h2>L&#228;gg till text</h2>
@@ -726,7 +715,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- EDIT LABEL MODAL -->
-
 <div class="modal-bg hidden" id="modal-edit-text">
   <div class="modal">
     <h2>Redigera text</h2>
@@ -746,7 +734,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- MOVE TO FOLDER MODAL -->
-
 <div class="modal-bg hidden" id="modal-move-folder">
   <div class="modal">
     <h2>Flytta till mapp</h2>
@@ -758,7 +745,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- RENAME FOLDER MODAL -->
-
 <div class="modal-bg hidden" id="modal-rename-folder">
   <div class="modal">
     <h2>Byt namn p&#229; mapp</h2>
@@ -771,7 +757,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- EDIT TAKTIK: inline panel, no modal needed -->
-
 <div class="modal-bg hidden" id="modal-edit-taktik-meta">
   <div class="modal" style="max-width:360px">
     <h2>Filminfo</h2>
@@ -785,7 +770,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- DELETE FOLDER CONFIRM -->
-
 <div class="modal-bg hidden" id="modal-delete-folder">
   <div class="modal">
     <h2>Radera mapp</h2>
@@ -799,7 +783,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- SHARE MODAL -->
-
 <div class="modal-bg hidden" id="modal-share">
   <div class="modal">
     <h2>Dela taktikfilm</h2>
@@ -814,7 +797,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- MERGE TAKTIK MODAL -->
-
 <div class="modal-bg hidden" id="modal-merge-taktik">
   <div class="modal">
     <h2>Sammanfoga filmer</h2>
@@ -827,11 +809,8 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- Landscape nav -->
-
 <!-- Fullscreen portrait controls -->
-
-<button id="fs-restore-btn">✕ Återställ</button>
-
+<button id="fs-restore-btn">&#x2715; &#197;terst&#228;ll</button>
 <div id="fs-portrait-nav">
   <button class="ls-btn" id="fs-first-btn" style="padding:8px 12px;font-size:1rem">&#9646;&#9664;</button>
   <button class="ls-btn" id="fs-prev-btn" style="padding:8px 12px;font-size:1rem">&#9664;</button>
@@ -857,7 +836,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- PLAYER PICKER MODAL -->
-
 <div class="modal-bg hidden" id="modal-player-picker">
   <div class="modal" style="max-width:320px">
     <h2>V&#228;lj spelare</h2>
@@ -870,7 +848,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- PLAYER COLOR MODAL -->
-
 <div class="modal-bg hidden" id="modal-player-color">
   <div class="modal">
     <h2>Spelarf&#228;rg</h2>
@@ -883,7 +860,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- BACKUP MODAL -->
-
 <div class="modal-bg hidden" id="modal-backup">
   <div class="modal">
     <h2>Exportera backup</h2>
@@ -894,6 +870,7 @@ if("serviceWorker" in navigator){
     </div>
   </div>
 </div>
+
 
 <script>
 
@@ -1737,7 +1714,14 @@ else if(Object.keys(matchAssignments).length>0){
 var match={datum:datum,motstand:motstand||"Ok\u00e4nd",startade:startade,avbytare:avbytare,uppstallningar:JSON.parse(JSON.stringify(matchVariants)),mal_hemma:matchGoals.home,mal_borta:matchGoals.away};var editId=window._editingMatchId||null;if(editId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+editId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match})}).then(function(){matcher=matcher.map(function(x){return x.dbId===editId?Object.assign({},match,{dbId:editId}):x;});matchSelections={};window._editingMatchId=null;renderMatchTruppList();renderStatistik();showToast("Match uppdaterad!");});}else{fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:datum+" "+match.motstand,data:match,type:"match",folder:"Allm\u00e4nt"})}).then(function(r){return r.json();}).then(function(data){if(data&&data[0])match.dbId=data[0].id;matcher.push(match);matchSelections={};renderMatchTruppList();renderStatistik();renderMatchHistory();showToast("Match sparad: "+datum+" vs "+match.motstand);}).catch(function(err){cloudStatus("\u274c Fel: "+err.message,"#e84a4a");matcher.push(match);renderMatchTruppList();renderStatistik();showToast("Match sparad lokalt");});}});
 var statSelections={};
 function renderStatistik(){var list=document.getElementById("stat-list");if(!list)return;var from=document.getElementById("stat-from").value;var to=document.getElementById("stat-to").value;var filtered=matcher.filter(function(m){if(from&&m.datum<from)return false;if(to&&m.datum>to)return false;return true;});var stats={};trupp.forEach(function(sp){stats[sp.id]={id:sp.id,namn:sp.namn,nr:sp.nr,starter:0,inhopp:0};});filtered.forEach(function(m){(m.startade||[]).forEach(function(id){if(stats[id])stats[id].starter++;});(m.avbytare||[]).forEach(function(id){if(stats[id])stats[id].inhopp++;});});list.innerHTML="";if(!trupp.length){list.innerHTML="<span style='color:#7aaa88;font-size:0.8rem'>Inga spelare<\/span>";return;}var hdr=document.createElement("div");hdr.style.cssText="display:grid;grid-template-columns:24px 30px 1fr 40px 40px;gap:4px;padding:3px 8px;font-size:0.65rem;color:#7aaa88;font-weight:700;text-transform:uppercase;border-bottom:1px solid #2d4a35;margin-bottom:3px";hdr.innerHTML="<span><\/span><span>#<\/span><span>Spelare<\/span><span style='text-align:center'>Start<\/span><span style='text-align:center'>Tot<\/span>";list.appendChild(hdr);var sortedStats=Object.values(stats).sort(function(a,b){var totA=a.starter+a.inhopp,totB=b.starter+b.inhopp;return totB-totA||a.namn.localeCompare(b.namn,"sv");});sortedStats.forEach(function(sp){var row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:24px 30px 1fr 40px 40px;gap:4px;padding:5px 8px;font-size:0.78rem;border-bottom:1px solid #1a2e1f;cursor:pointer;align-items:center";if(statSelections[sp.id])row.style.background="rgba(74,232,122,0.1)";var chk=document.createElement("input");chk.type="checkbox";chk.checked=!!statSelections[sp.id];chk.style.cssText="width:15px;height:15px;accent-color:#4ae87a;cursor:pointer;flex-shrink:0";var nrEl=document.createElement("span");nrEl.style.color="#7aaa88";nrEl.textContent="#"+sp.nr;var nmEl=document.createElement("span");nmEl.textContent=sp.namn;var stEl=document.createElement("span");stEl.style.cssText="text-align:center;color:#4ae87a";stEl.textContent=sp.starter;var totEl=document.createElement("span");totEl.style.cssText="text-align:center;font-weight:700";totEl.textContent=(sp.starter+sp.inhopp);function toggleSel(){if(statSelections[sp.id])delete statSelections[sp.id];else statSelections[sp.id]=true;chk.checked=!!statSelections[sp.id];row.style.background=statSelections[sp.id]?"rgba(74,232,122,0.1)":"";renderStatActionBar();}chk.addEventListener("change",toggleSel);row.addEventListener("click",function(e){if(e.target!==chk)toggleSel();});row.appendChild(chk);row.appendChild(nrEl);row.appendChild(nmEl);row.appendChild(stEl);row.appendChild(totEl);list.appendChild(row);});renderStatActionBar();}
-document.getElementById("btn-stat-filter").addEventListener("click",function(){statSelections={};renderStatistik();});
+document.getElementById("btn-stat-filter").addEventListener("click",function(){
+  statSelections={};
+  try{localStorage.setItem("taktik_stat_from",document.getElementById("stat-from").value);localStorage.setItem("taktik_stat_to",document.getElementById("stat-to").value);}catch(e){}
+  renderStatistik();
+});
+// Auto-save dates on change
+document.getElementById("stat-from").addEventListener("change",function(){try{localStorage.setItem("taktik_stat_from",this.value);}catch(e){}});
+document.getElementById("stat-to").addEventListener("change",function(){try{localStorage.setItem("taktik_stat_to",this.value);}catch(e){}});
 function renderStatActionBar(){var bar=document.getElementById("stat-action-bar");if(!bar)return;var n=Object.keys(statSelections).length;bar.style.display=n>0?"flex":"none";var cnt=document.getElementById("stat-sel-count");if(cnt)cnt.textContent=n+" vald"+(n===1?"":"a");var sel=document.getElementById("stat-match-sel");if(sel){sel.innerHTML="";var opt0=document.createElement("option");opt0.value="";opt0.textContent="V\u00e4lj match...";sel.appendChild(opt0);var sorted=matcher.slice().sort(function(a,b){return b.datum.localeCompare(a.datum);});sorted.forEach(function(m){var o=document.createElement("option");o.value=m.dbId||("__local__"+m.datum+"_"+m.motstand);o.textContent=m.datum+" "+m.motstand;sel.appendChild(o);});}}
 document.getElementById("btn-stat-clear-sel").addEventListener("click",function(){statSelections={};renderStatistik();});
 document.getElementById("btn-stat-add-to-match").addEventListener("click",function(){var sel=document.getElementById("stat-match-sel");var dbId=sel?sel.value:"";if(!dbId){showToast("V\u00e4lj en match!");return;}var selectedIds=Object.keys(statSelections);if(!selectedIds.length){showToast("V\u00e4lj spelare!");return;}var m;if(dbId.indexOf("__local__")===0){var parts=dbId.replace("__local__","").split("_");var mDatum=parts[0],mMotstand=parts.slice(1).join("_");m=matcher.find(function(x){return x.datum===mDatum&&x.motstand===mMotstand;});}else{m=matcher.find(function(x){return String(x.dbId)===String(dbId);});}if(!m){showToast("Match ej hittad!");return;}selectedIds.forEach(function(id){if((m.startade||[]).indexOf(id)<0)m.startade.push(id);});fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({data:m})}).then(function(){statSelections={};renderStatistik();showToast(selectedIds.length+" spelare tillagda i "+m.datum+" "+m.motstand+"!");});});
@@ -1747,7 +1731,19 @@ function renderMatchHistory(){var list=document.getElementById("match-history-li
 function openEditMatch(m){document.querySelectorAll("[data-lag]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-lag")==="match");});document.getElementById("lag-trupp").style.display="none";document.getElementById("lag-match").style.display="";document.getElementById("lag-statistik").style.display="none";document.getElementById("match-datum").value=m.datum;document.getElementById("match-motstand").value=m.motstand||"";matchSelections={};(m.startade||[]).forEach(function(id){matchSelections[id]="start";});renderMatchTruppList();window._editingMatchId=m.dbId||null;showToast("Redigerar match "+m.datum+" vs "+m.motstand);}
 document.getElementById("btn-export-stat-csv").addEventListener("click",function(){var from=document.getElementById("stat-from").value,to=document.getElementById("stat-to").value;var filtered=matcher.filter(function(m){if(from&&m.datum<from)return false;if(to&&m.datum>to)return false;return true;});var stats={};trupp.forEach(function(sp){stats[sp.id]={namn:sp.namn,nr:sp.nr,starter:0,inhopp:0};});filtered.forEach(function(m){(m.startade||[]).forEach(function(id){if(stats[id])stats[id].starter++;});(m.avbytare||[]).forEach(function(id){if(stats[id])stats[id].inhopp++;});});var rows=["#,Spelare,Starter,Totalt"];Object.values(stats).sort(function(a,b){return a.nr-b.nr;}).forEach(function(s){rows.push(s.nr+","+s.namn+","+s.starter+","+(s.starter+s.inhopp));});var blob=new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8;"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="spelarstatistik.csv";a.click();URL.revokeObjectURL(url);showToast("CSV exporterad!");});
 document.getElementById("btn-export-stat-pdf").addEventListener("click",function(){var from=document.getElementById("stat-from").value,to=document.getElementById("stat-to").value;var filtered=matcher.filter(function(m){if(from&&m.datum<from)return false;if(to&&m.datum>to)return false;return true;});var stats={};trupp.forEach(function(sp){stats[sp.id]={namn:sp.namn,nr:sp.nr,starter:0,inhopp:0};});filtered.forEach(function(m){(m.startade||[]).forEach(function(id){if(stats[id])stats[id].starter++;});(m.avbytare||[]).forEach(function(id){if(stats[id])stats[id].inhopp++;});});var rows=Object.values(stats).sort(function(a,b){return a.nr-b.nr;});var pdoc="<html><head><style>body{font-family:Arial,sans-serif;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#f0f0f0}<\/style><\/head><body><h2>Spelarstatistik<\/h2><p>"+(from?"Fr\u00e5n: "+from:"")+(to?" \u2013 Till: "+to:"")+" ("+filtered.length+" matcher)<\/p><table><tr><th>#<\/th><th>Spelare<\/th><th>Starter<\/th><th>Inhopp<\/th><th>Totalt<\/th><\/tr>";rows.forEach(function(s){pdoc+="<tr><td>"+s.nr+"<\/td><td>"+s.namn+"<\/td><td>"+s.starter+"<\/td><td>"+s.inhopp+"<\/td><td>"+(s.starter+s.inhopp)+"<\/td><\/tr>";});pdoc+="<\/table><\/body><\/html>";var w=window.open("","_blank");if(w){w.document.write(pdoc);w.document.close();w.print();}showToast("PDF \u00f6ppnad!");});
-try{(function(){var d=new Date();var ds=d.toISOString().slice(0,10);var md=document.getElementById("match-datum");if(md)md.value=ds;var st=document.getElementById("stat-to");if(st)st.value=ds;var sf=document.getElementById("stat-from");var y=new Date(d);y.setMonth(y.getMonth()-6);if(sf)sf.value=y.toISOString().slice(0,10);})();}catch(e){console.error("Date IIFE error:",e);}
+try{(function(){
+  var d=new Date();var ds=d.toISOString().slice(0,10);
+  var md=document.getElementById("match-datum");if(md)md.value=ds;
+  // Load saved stat dates or use defaults
+  var savedFrom=null,savedTo=null;
+  try{savedFrom=localStorage.getItem("taktik_stat_from");savedTo=localStorage.getItem("taktik_stat_to");}catch(e){}
+  var st=document.getElementById("stat-to");
+  var sf=document.getElementById("stat-from");
+  if(savedTo&&st)st.value=savedTo;
+  else if(st)st.value=ds;
+  if(savedFrom&&sf)sf.value=savedFrom;
+  else if(sf){var y=new Date(d);y.setMonth(y.getMonth()-6);sf.value=y.toISOString().slice(0,10);}
+})();}catch(e){console.error("Date IIFE error:",e);}
 }catch(e){console.error("Lag JS error:",e);}
 function renderSparadeMatcherList(){
   var list=document.getElementById("sparade-match-list");
@@ -1848,11 +1844,33 @@ document.getElementById("fs-prev-btn").addEventListener("click",function(){docum
 document.getElementById("fs-next-btn").addEventListener("click",function(){document.getElementById("btn-next").click();setTimeout(updateFsPortraitNav,100);});
 document.getElementById("fs-day-btn").addEventListener("click",function(){document.getElementById("btn-daylight").click();this.classList.toggle("active",daylightMode);});
 document.getElementById("ls-day-btn3").addEventListener("click",function(){daylightMode=!daylightMode;document.body.classList.toggle("daylight",daylightMode);document.getElementById("btn-daylight").innerHTML=daylightMode?"&#9790; Normal":"&#9728; Dag";drawPitch();render();});
+var _manualLandscape=null; // null=auto, true=forced landscape, false=forced portrait
+var _isDesktop=navigator.maxTouchPoints===0;
+
 function handleOrientation(){
-  var isLandscape=window.innerWidth>window.innerHeight;
+  var isLandscape;
+  if(_manualLandscape!==null){
+    isLandscape=_manualLandscape;
+  } else {
+    isLandscape=window.innerWidth>window.innerHeight;
+  }
   document.body.classList.toggle("landscape",isLandscape);
   if(isLandscape){updateLandscapeStrip();}
+  // Show orientation toggle only on desktop
+  var togBtn=document.getElementById("btn-orientation-toggle");
+  if(togBtn)togBtn.style.display=_isDesktop?"":"none";
 }
+
+document.getElementById("btn-orientation-toggle").addEventListener("click",function(){
+  if(_manualLandscape===null){
+    // Currently auto - force opposite of current
+    _manualLandscape=!document.body.classList.contains("landscape");
+  } else {
+    _manualLandscape=!_manualLandscape;
+  }
+  handleOrientation();render();
+  this.textContent=document.body.classList.contains("landscape")?"\u2195":"\u8645";
+});
 function updateLandscapeStrip(){var label=document.getElementById("ls-step-label");var label2=document.getElementById("ls-side-label");var prevBtn=document.getElementById("ls-prev-btn");var nextBtn=document.getElementById("ls-next-btn");var firstBtn=document.getElementById("ls-first-btn");if(!label)return;if(playback){var cur=playback.stepIndex,total=playback.tk.steps.length-1;label.textContent=playback.tk.name+"  "+(cur===0?"Start":cur+"/"+total);if(label2)label2.textContent=playback.tk.name;var hasPrev=cur>0,hasNext=cur<total;prevBtn.disabled=!hasPrev;nextBtn.disabled=!hasNext;firstBtn.disabled=cur===0;prevBtn.classList.toggle("active",hasPrev);nextBtn.classList.toggle("active",hasNext);}else{label.textContent="-";if(label2)label2.textContent="";prevBtn.disabled=true;nextBtn.disabled=true;firstBtn.disabled=true;prevBtn.classList.remove("active");nextBtn.classList.remove("active");}}
 document.getElementById("ls-first-btn").addEventListener("click",function(){document.getElementById("btn-first").click();setTimeout(updateLandscapeStrip,100);});
 document.getElementById("ls-prev-btn").addEventListener("click",function(){if(!playback||playback.animating)return;if(playback.stepIndex<=0)return;var idx=playback.stepIndex-1;editingStepIdx=idx;animateToStep(idx);updateEditStepUI_silent();setTimeout(updateLandscapeStrip,100);});
@@ -1878,6 +1896,5 @@ loadMatcher();
 checkShareLink();
 
 </script>
-
 </body>
 </html>
