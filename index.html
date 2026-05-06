@@ -91,6 +91,12 @@ select.btn { appearance: none; padding-right: 18px; background-image: url("data:
 .del-txt { fill: #fff; font-size: 13px; font-weight: bold; dominant-baseline: central; text-anchor: middle; pointer-events: none; }
 /* &#9472;&#9472; LANDSCAPE MODE &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; */
 body.landscape #topbar { display: none !important; }
+body.landscape.desktop #topbar { display: flex !important; }
+body.landscape.desktop #bottompanel { display: flex !important; }
+body.landscape.desktop #panel-toggle-strip { display: flex !important; }
+body.landscape.desktop #taktikbar { display: flex !important; }
+body.landscape.desktop #pitch-wrapper { position: relative; }
+body.landscape.desktop #pitch-svg { transform: none; width: auto; height: auto; max-width: 100%; max-height: 100%; }
 body.fullscreen-portrait #btn-fs-topbar { display: none !important; }
 body.landscape #topbar h1 { display: none !important; }
 body.landscape #bottompanel { display: none !important; }
@@ -343,7 +349,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.8</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v16.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1844,21 +1850,26 @@ document.getElementById("fs-prev-btn").addEventListener("click",function(){docum
 document.getElementById("fs-next-btn").addEventListener("click",function(){document.getElementById("btn-next").click();setTimeout(updateFsPortraitNav,100);});
 document.getElementById("fs-day-btn").addEventListener("click",function(){document.getElementById("btn-daylight").click();this.classList.toggle("active",daylightMode);});
 document.getElementById("ls-day-btn3").addEventListener("click",function(){daylightMode=!daylightMode;document.body.classList.toggle("daylight",daylightMode);document.getElementById("btn-daylight").innerHTML=daylightMode?"&#9790; Normal":"&#9728; Dag";drawPitch();render();});
-var _manualLandscape=null; // null=auto, true=forced landscape, false=forced portrait
+var _manualLandscape=null;
 var _isDesktop=navigator.maxTouchPoints===0;
+if(_isDesktop)document.body.classList.add("desktop");
 
 function handleOrientation(){
   var isLandscape;
-  if(_manualLandscape!==null){
-    isLandscape=_manualLandscape;
+  if(_isDesktop){
+    // On desktop: use manual override if set, else default to portrait (false)
+    isLandscape=_manualLandscape===null?false:_manualLandscape;
   } else {
-    isLandscape=window.innerWidth>window.innerHeight;
+    isLandscape=_manualLandscape!==null?_manualLandscape:window.innerWidth>window.innerHeight;
   }
   document.body.classList.toggle("landscape",isLandscape);
   if(isLandscape){updateLandscapeStrip();}
-  // Show orientation toggle only on desktop
   var togBtn=document.getElementById("btn-orientation-toggle");
-  if(togBtn)togBtn.style.display=_isDesktop?"":"none";
+  if(togBtn){
+    togBtn.style.display=_isDesktop?"":"none";
+    togBtn.textContent=isLandscape?"\u2195":"\u21c4";
+    togBtn.title=isLandscape?"V\u00e4xla till st\u00e5ende":"V\u00e4xla till liggande";
+  }
 }
 
 document.getElementById("btn-orientation-toggle").addEventListener("click",function(){
