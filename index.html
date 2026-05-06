@@ -358,7 +358,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.8</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -861,11 +861,17 @@ if("serviceWorker" in navigator){
 <button id="fs-restore-btn">✕ Återställ</button>
 
 <div id="fs-portrait-nav">
-  <button class="ls-btn" id="fs-first-btn" style="padding:8px 12px;font-size:1rem">&#9646;&#9664;</button>
-  <button class="ls-btn" id="fs-prev-btn" style="padding:8px 12px;font-size:1rem">&#9664;</button>
-  <span id="fs-step-label" style="color:#4ae87a;font-weight:700;font-size:0.8rem;min-width:70px;text-align:center">-</span>
-  <button class="ls-btn" id="fs-next-btn" style="padding:8px 12px;font-size:1rem">&#9654;</button>
-  <button class="ls-btn" id="fs-day-btn" style="font-size:0.8rem;padding:6px 10px">&#9728;</button>
+  <button class="ls-btn" id="fs-first-btn" style="padding:6px 10px;font-size:0.9rem">&#9646;&#9664;</button>
+  <button class="ls-btn" id="fs-prev-btn" style="padding:6px 10px;font-size:0.9rem">&#9664;</button>
+  <span id="fs-step-label" style="color:#4ae87a;font-weight:700;font-size:0.78rem;min-width:60px;text-align:center">-</span>
+  <button class="ls-btn" id="fs-next-btn" style="padding:6px 10px;font-size:0.9rem">&#9654;</button>
+  <button class="ls-btn" id="fs-day-btn" style="font-size:0.78rem;padding:5px 8px">&#9728;</button>
+  <span style="width:1px;background:rgba(255,255,255,0.2);align-self:stretch;margin:3px 2px"></span>
+  <button class="ls-btn" id="fs-tb-arrow" title="Pil" style="font-size:0.78rem;padding:5px 8px">&#8599;</button>
+  <button class="ls-btn" id="fs-tb-freehand" title="Fri" style="font-size:0.78rem;padding:5px 8px">&#9998;</button>
+  <button class="ls-btn" id="fs-tb-zone" title="Zon" style="font-size:0.78rem;padding:5px 8px">&#9633;</button>
+  <button class="ls-btn" id="fs-tb-text" title="Text" style="font-size:0.78rem;padding:5px 8px">T</button>
+  <button class="ls-btn" id="fs-tb-movement" title="R&#246;relse" style="font-size:0.78rem;padding:5px 8px">&#8594;</button>
 </div>
 
 <div id="ls-prev-side" style="display:none">
@@ -1550,14 +1556,15 @@ document.getElementById("btn-prev").addEventListener("click",function(){if(!play
 document.getElementById("play-speed").addEventListener("change",function(){animSpeed=parseInt(this.value);});
 function updatePlaybar(){if(!playback)return;var cur=playback.stepIndex,total=playback.tk.steps.length-1;document.getElementById("taktikbar-title").textContent=playback.tk.name;document.getElementById("play-counter").textContent=cur===0?"Start":cur+"/"+total;document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";renderPlayStepList();updateLandscapeStrip();updateFsPortraitNav();}
 function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
-function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx];var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});var fromBall={x:ball.x,y:ball.y};var start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed);var hasMovement=(target.movementPaths||[]).length>0;
-      var tScaled=hasMovement?Math.min(1,t/1.7):t;
-      var ease=tScaled<0.5?2*tScaled*tScaled:1-Math.pow(-2*tScaled+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){
+function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx];var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});var fromBall={x:ball.x,y:ball.y};var start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed);var ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){
           var mvPath=null;var fromSnap2=playback.tk.steps[playback.stepIndex>0?playback.stepIndex-1:0];
           var fromMvs=(fromSnap2&&fromSnap2.movementPaths)||[];
           for(var k=0;k<fromMvs.length;k++){if(fromMvs[k].playerId===players[i].id){mvPath=fromMvs[k];break;}}
           if(mvPath&&mvPath.pts.length>1){
-            var nSeg=mvPath.pts.length-1,pos2=ease*nSeg,seg=Math.min(Math.floor(pos2),nSeg-1),segT=pos2-seg;
+            // Smooth easing along path
+            var nSeg=mvPath.pts.length-1;
+            var smoothT=ease<0.5?2*ease*ease:1-Math.pow(-2*ease+2,2)/2;
+            var pos2=smoothT*nSeg,seg=Math.min(Math.floor(pos2),nSeg-1),segT=pos2-seg;
             players[i].x=mvPath.pts[seg].x+(mvPath.pts[seg+1].x-mvPath.pts[seg].x)*segT;
             players[i].y=mvPath.pts[seg].y+(mvPath.pts[seg+1].y-mvPath.pts[seg].y)*segT;
           } else {players[i].x=fp.x+(tp2.x-fp.x)*ease;players[i].y=fp.y+(tp2.y-fp.y)*ease;}
@@ -1566,18 +1573,11 @@ function animateToStep(targetIdx){if(!playback)return;playback.animating=true;pl
       var fromMvsBall=(fromSnap3&&fromSnap3.movementPaths)||[];
       for(var k2=0;k2<fromMvsBall.length;k2++){if(fromMvsBall[k2].playerId==="ball"){ballMvPath=fromMvsBall[k2];break;}}
       if(ballMvPath&&ballMvPath.pts.length>1){
-        var bSeg=ballMvPath.pts.length-1,bPos=ease*bSeg,bS=Math.min(Math.floor(bPos),bSeg-1),bT=bPos-bS;
+        var bSmoothT=ease<0.5?2*ease*ease:1-Math.pow(-2*ease+2,2)/2;
+        var bSeg=ballMvPath.pts.length-1,bPos=bSmoothT*bSeg,bS=Math.min(Math.floor(bPos),bSeg-1),bT=bPos-bS;
         ball.x=ballMvPath.pts[bS].x+(ballMvPath.pts[bS+1].x-ballMvPath.pts[bS].x)*bT;
         ball.y=ballMvPath.pts[bS].y+(ballMvPath.pts[bS+1].y-ballMvPath.pts[bS].y)*bT;
       } else {ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;}var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);
-          // Apply movement path end positions
-          var endMvs=(target.movementPaths||[]);
-          endMvs.forEach(function(mp){
-            if(!mp.pts||!mp.pts.length)return;
-            var ep=mp.pts[mp.pts.length-1];
-            if(mp.playerId==="ball"){ball.x=ep.x;ball.y=ep.y;}
-            else{var pp=players.find(function(x){return x.id===mp.playerId;});if(pp){pp.x=ep.x;pp.y=ep.y;}}
-          });
           render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}};animFrame=requestAnimationFrame(frame);}
 function buildState(){return{format:format,homeColor:homeColor,awayColor:awayColor,displayMode:displayMode,players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};})};}
 function applyState(s){format=s.format||11;homeColor=s.homeColor||"#e8c84a";awayColor=s.awayColor||"#e84a4a";displayMode=s.displayMode||"number";document.getElementById("fmt-sel").value=String(format);players=(s.players||[]).map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball=s.ball||{x:W/2,y:H/2};arrows=(s.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};});labels=(s.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});buildFormationBtns();render();}
@@ -2048,6 +2048,16 @@ document.getElementById("fs-first-btn").addEventListener("click",function(){docu
 document.getElementById("fs-prev-btn").addEventListener("click",function(){document.getElementById("btn-prev").click();setTimeout(updateFsPortraitNav,100);});
 document.getElementById("fs-next-btn").addEventListener("click",function(){document.getElementById("btn-next").click();setTimeout(updateFsPortraitNav,100);});
 document.getElementById("fs-day-btn").addEventListener("click",function(){document.getElementById("btn-daylight").click();this.classList.toggle("active",daylightMode);});
+(function(){
+  var fsMap={"fs-tb-arrow":"arrow","fs-tb-freehand":"freehand","fs-tb-zone":"zone","fs-tb-text":"text","fs-tb-movement":"movement"};
+  Object.keys(fsMap).forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    el.addEventListener("click",function(){
+      var m=fsMap[id];setMode(mode===m?"move":m);
+      Object.keys(fsMap).forEach(function(bid){var b=document.getElementById(bid);if(b)b.classList.toggle("active",mode===fsMap[bid]);});
+    });
+  });
+})();
 document.getElementById("ls-day-btn3").addEventListener("click",function(){daylightMode=!daylightMode;document.body.classList.toggle("daylight",daylightMode);document.getElementById("btn-daylight").innerHTML=daylightMode?"&#9790; Normal":"&#9728; Dag";drawPitch();render();});
 var _manualLandscape=null;
 var _isDesktop=navigator.maxTouchPoints===0;
