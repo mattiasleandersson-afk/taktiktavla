@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
@@ -122,111 +121,113 @@ body.landscape #ls-next-side { display: flex !important; }
 
 /* Side panels sit just inside the pitch wrapper */
 #ls-prev-side, #ls-next-side {
-position: fixed;
-top: 50%;
-transform: translateY(-50%);
-z-index: 51;
-flex-direction: column;
-align-items: center;
-gap: 10px;
-justify-content: center;
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 51;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
 }
-#ls-prev-side {
-left: max(4px,env(safe-area-inset-left));
-padding: 0 4px;
+#ls-prev-side { 
+  left: max(4px,env(safe-area-inset-left)); 
+  padding: 0 4px;
 }
-#ls-next-side {
-right: max(4px,env(safe-area-inset-right));
-padding: 0 4px;
+#ls-next-side { 
+  right: max(4px,env(safe-area-inset-right)); 
+  padding: 0 4px;
 }
 
+
 #ls-title-top {
-position: fixed;
-top: max(6px,env(safe-area-inset-top));
-left: 0; right: 0;
-z-index: 51;
-text-align: center;
-padding: 0 60px;
-pointer-events: none;
+  position: fixed;
+  top: max(6px,env(safe-area-inset-top));
+  left: 0; right: 0;
+  z-index: 51;
+  text-align: center;
+  padding: 0 60px;
+  pointer-events: none;
 }
 #ls-step-label {
-background: rgba(14,23,16,0.75);
-border-radius: 20px;
-padding: 3px 14px;
-display: inline-block;
+  background: rgba(14,23,16,0.75);
+  border-radius: 20px;
+  padding: 3px 14px;
+  display: inline-block;
 }
 
 .ls-btn {
-background: rgba(14,23,16,0.92);
-border: 1px solid #3a6b46;
-border-radius: 10px;
-color: #7aaa88;
-cursor: pointer;
-font-family: Arial Narrow, Arial, sans-serif;
-touch-action: manipulation;
-padding: 14px 11px;
-font-size: 1.2rem;
-min-width: 40px;
-text-align: center;
-line-height: 1;
-box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  background: rgba(14,23,16,0.92);
+  border: 1px solid #3a6b46;
+  border-radius: 10px;
+  color: #7aaa88;
+  cursor: pointer;
+  font-family: Arial Narrow, Arial, sans-serif;
+  touch-action: manipulation;
+  padding: 14px 11px;
+  font-size: 1.2rem;
+  min-width: 40px;
+  text-align: center;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 .ls-btn.active { color: #4ae87a; border-color: #4ae87a; background: rgba(74,232,122,0.1); }
 .ls-btn:disabled { opacity: 0.25; }
 .ls-select {
-background: rgba(14,23,16,0.92);
-border: 1px solid #3a6b46;
-border-radius: 8px;
-color: #7aaa88;
-font-family: Arial Narrow, Arial, sans-serif;
-font-weight: 700;
-font-size: 0.72rem;
-padding: 6px 3px;
-width: 40px;
-text-align: center;
-box-shadow: 0 2px 8px rgba(0,0,0,0.4);
--webkit-appearance: none;
+  background: rgba(14,23,16,0.92);
+  border: 1px solid #3a6b46;
+  border-radius: 8px;
+  color: #7aaa88;
+  font-family: Arial Narrow, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 6px 3px;
+  width: 40px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  -webkit-appearance: none;
 }
 .ls-label {
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 4px;
-font-size: 0.62rem;
-font-weight: 700;
-color: #7aaa88;
-font-family: Arial Narrow, Arial, sans-serif;
-cursor: pointer;
-background: rgba(14,23,16,0.92);
-border: 1px solid #3a6b46;
-border-radius: 8px;
-padding: 8px 6px;
-writing-mode: vertical-rl;
-text-orientation: mixed;
-box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #7aaa88;
+  font-family: Arial Narrow, Arial, sans-serif;
+  cursor: pointer;
+  background: rgba(14,23,16,0.92);
+  border: 1px solid #3a6b46;
+  border-radius: 8px;
+  padding: 8px 6px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 /* Landscape: rotate SVG -90deg so pitch appears horizontal */
 body.landscape #pitch-wrapper {
-position: fixed;
-top: 0; left: 0; right: 0; bottom: 0;
-height: 100dvh;
-width: 100dvw;
-align-items: center;
-justify-content: center;
-overflow: hidden;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  height: 100dvh;
+  width: 100dvw;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 body.landscape #pitch-svg {
-/* After -90deg rotation: visual width = SVG height, visual height = SVG width */
-/* We want visual height = 100dvh, so SVG width = 100dvh */
-/* We want visual width = 100dvh*(600/400), so SVG height = 100dvh*(600/400) */
-width: 100dvh;
-height: calc(100dvh * 600 / 400);
-max-width: none;
-max-height: none;
-transform: rotate(-90deg);
-transform-origin: center center;
+  /* After -90deg rotation: visual width = SVG height, visual height = SVG width */
+  /* We want visual height = 100dvh, so SVG width = 100dvh */
+  /* We want visual width = 100dvh*(600/400), so SVG height = 100dvh*(600/400) */
+  width: 100dvh;
+  height: calc(100dvh * 600 / 400);
+  max-width: none;
+  max-height: none;
+  transform: rotate(-90deg);
+  transform-origin: center center;
 }
+
 
 .star-btn { background:transparent; border:none; cursor:pointer; font-size:1rem; padding:2px 4px; line-height:1; }
 .star-btn.on { color:#ffdd44; }
@@ -244,80 +245,80 @@ body.landscape #fs-portrait-nav { display: none !important; }
 body.landscape #fs-restore-btn { display: none !important; }
 
 #fs-restore-btn {
-display: none;
-position: fixed;
-top: max(8px, env(safe-area-inset-top));
-right: max(8px, env(safe-area-inset-right));
-z-index: 60;
-background: rgba(14,23,16,0.88);
-border: 1px solid #3a6b46;
-border-radius: 8px;
-color: #4ae87a;
-padding: 8px 12px;
-font-size: 0.8rem;
-font-weight: 700;
-font-family: Arial Narrow, Arial, sans-serif;
-cursor: pointer;
-align-items: center;
-gap: 6px;
-box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  display: none;
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+  z-index: 60;
+  background: rgba(14,23,16,0.88);
+  border: 1px solid #3a6b46;
+  border-radius: 8px;
+  color: #4ae87a;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: Arial Narrow, Arial, sans-serif;
+  cursor: pointer;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 #fs-portrait-nav {
-display: none;
-position: fixed;
-bottom: max(12px, env(safe-area-inset-bottom));
-left: 50%;
-transform: translateX(-50%);
-z-index: 60;
-background: rgba(14,23,16,0.88);
-border: 1px solid #3a6b46;
-border-radius: 12px;
-padding: 6px 12px;
-align-items: center;
-gap: 10px;
-box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  display: none;
+  position: fixed;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: rgba(14,23,16,0.88);
+  border: 1px solid #3a6b46;
+  border-radius: 12px;
+  padding: 6px 12px;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
 
 #fs-enter-btn {
-background: transparent;
-border: 1px solid #4ae87a;
-border-radius: 6px;
-color: #4ae87a;
-padding: 2px 8px;
-font-size: 0.7rem;
-font-weight: 700;
-font-family: Arial Narrow, Arial, sans-serif;
-cursor: pointer;
-margin-left: auto;
-touch-action: manipulation;
+  background: transparent;
+  border: 1px solid #4ae87a;
+  border-radius: 6px;
+  color: #4ae87a;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: Arial Narrow, Arial, sans-serif;
+  cursor: pointer;
+  margin-left: auto;
+  touch-action: manipulation;
 }
 body.landscape #fs-enter-btn { display: none; }
 body.fullscreen-portrait #fs-enter-btn { display: none; }
 
 #bench-bar {
-display: none;
-background: rgba(14,23,16,0.92);
-border-bottom: 1px solid #2d4a35;
-padding: 3px 8px;
-flex-shrink: 0;
-flex-wrap: nowrap;
-gap: 4px;
-align-items: center;
-overflow-x: auto;
-min-height: 0;
+  display: none;
+  background: rgba(14,23,16,0.92);
+  border-bottom: 1px solid #2d4a35;
+  padding: 3px 8px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+  overflow-x: auto;
+  min-height: 0;
 }
 #bench-bar.active { display: flex; }
 .bench-player {
-display: flex;
-flex-direction: row;
-align-items: center;
-gap: 3px;
-background: #1e2e22;
-border: 1px solid #2d4a35;
-border-radius: 12px;
-padding: 2px 7px;
-flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+  background: #1e2e22;
+  border: 1px solid #2d4a35;
+  border-radius: 12px;
+  padding: 2px 7px;
+  flex-shrink: 0;
 }
 .bench-player .bench-nr { font-size: 0.78rem; font-weight: 900; color: #4ae87a; white-space: nowrap; }
 .bench-player .bench-name { font-size: 0.72rem; color: #edf5ee; white-space: nowrap; }
@@ -332,11 +333,11 @@ flex-shrink: 0;
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
 .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
 .modal-bg.hidden { display: none; }
-.modal { background: var(–surface); border: 1px solid var(–border); border-radius: 12px; padding: 20px; width: 100%; max-width: 390px; max-height: 90dvh; overflow-y: auto; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 100%; max-width: 390px; max-height: 90dvh; overflow-y: auto; }
 .modal h2 { font-weight: 900; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 1px; color: #4ae87a; margin-bottom: 13px; }
 .mrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; gap: 8px; }
 .mrow label { font-size: 0.82rem; color: #7aaa88; text-transform: uppercase; letter-spacing: 0.5px; }
-.minput { background: var(–bg); color: var(–text); border: 1px solid var(–border); border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; font-family: Arial Narrow, Arial, sans-serif; }
+.minput { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; font-family: Arial Narrow, Arial, sans-serif; }
 .minput.wide { width: 210px; }
 input[type=color].minput { padding: 2px 4px; height: 34px; width: 56px; cursor: pointer; }
 .mactions { display: flex; gap: 8px; margin-top: 13px; justify-content: flex-end; }
@@ -358,7 +359,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.2</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v17.0</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -372,7 +373,6 @@ if("serviceWorker" in navigator){
   <button class="btn" id="btn-reset">&#8635;</button>
   <button class="btn" id="btn-freehand">&#9998; Fri</button>
   <button class="btn" id="btn-zone">&#9633; Zon</button>
-  <button class="btn" id="btn-movement">&#8594; R&#246;relse</button>
   <button class="btn" id="btn-half">&#189;</button>
   <button class="btn" id="btn-backup" title="Exportera backup">&#128190;</button>
   <label style="display:flex;align-items:center;gap:3px;font-size:0.68rem;color:var(--text-sub);cursor:pointer;white-space:nowrap;font-family:Arial Narrow,Arial,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.4px">
@@ -479,7 +479,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- COMBINED TAKTIK BAR (edit + play merged) -->
-
 <div id="taktikbar" style="display:none;background:var(--bg);border-top:2px solid var(--accent);padding:7px 12px;flex-shrink:0;flex-wrap:wrap;gap:5px;align-items:center">
   <span id="taktikbar-title" style="color:#4ae87a;font-weight:700;font-size:0.82rem;text-transform:uppercase;flex:1;min-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
   <button class="btn" id="btn-first" style="font-size:1rem;padding:4px 11px" title="Till start">&#9646;&#9664;</button>
@@ -500,8 +499,7 @@ if("serviceWorker" in navigator){
   <button class="btn danger" id="btn-stop-play" style="padding:4px 8px;font-size:0.72rem">&#10005;</button>
 </div>
 
-<button id="panel-show-btn" style="display:none;position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:60;background:rgba(14,23,16,0.9);border:1px solid #4ae87a;border-radius:20px;color:#4ae87a;padding:5px 20px;font-size:0.8rem;font-weight:700;cursor:pointer;touch-action:manipulation">▲ Meny</button>
-
+<button id="panel-show-btn" style="display:none;position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:60;background:rgba(14,23,16,0.9);border:1px solid #4ae87a;border-radius:20px;color:#4ae87a;padding:5px 20px;font-size:0.8rem;font-weight:700;cursor:pointer;touch-action:manipulation">&#9650; Meny</button>
 <div id="panel-toggle-strip" style="background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;flex-shrink:0;position:relative;z-index:10;padding:0 8px;">
   <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 0;font-size:0.72rem;cursor:pointer;flex:1">&#9660;</button>
   <button id="fs-enter-btn" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:3px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:Arial Narrow,Arial,sans-serif;display:block">&#x26F6; FS</button>
@@ -527,44 +525,41 @@ if("serviceWorker" in navigator){
         <div class="list" id="rec-steps-list"></div>
       </div>
 
-```
-  <!-- LAG PANEL -->
+      <!-- LAG PANEL -->
 
-  <div id="edit-taktik-ui" style="display:none">
-    <!-- Row 1: step navigation + name + actions -->
-    <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px">
-      <button class="btn" id="btn-edit-step-prev" style="padding:4px 10px;font-size:1rem">&#9664;</button>
-      <span id="edit-step-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;min-width:38px;text-align:center;flex-shrink:0">Start</span>
-      <button class="btn" id="btn-edit-step-next" style="padding:4px 10px;font-size:1rem">&#9654;</button>
-      <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem;min-width:0">
-      <button class="btn on" id="btn-edit-update-step" style="padding:4px 8px" title="Spara steg">&#10003;</button>
-      <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a;padding:4px 8px" title="L&#228;gg till steg">+</button>
-      <button class="btn danger" id="btn-edit-del-step" style="padding:4px 8px" title="Ta bort steg">&#10005;</button>
+      <div id="edit-taktik-ui" style="display:none">
+        <!-- Row 1: step navigation + name + actions -->
+        <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px">
+          <button class="btn" id="btn-edit-step-prev" style="padding:4px 10px;font-size:1rem">&#9664;</button>
+          <span id="edit-step-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;min-width:38px;text-align:center;flex-shrink:0">Start</span>
+          <button class="btn" id="btn-edit-step-next" style="padding:4px 10px;font-size:1rem">&#9654;</button>
+          <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem;min-width:0">
+          <button class="btn on" id="btn-edit-update-step" style="padding:4px 8px" title="Spara steg">&#10003;</button>
+          <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a;padding:4px 8px" title="L&#228;gg till steg">+</button>
+          <button class="btn danger" id="btn-edit-del-step" style="padding:4px 8px" title="Ta bort steg">&#10005;</button>
+        </div>
+        <!-- Row 2: film title + save/exit -->
+        <div style="display:flex;gap:4px;align-items:center">
+          <span style="font-size:0.72rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="edit-taktik-title-lbl"></span>
+          <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a;padding:3px 7px;font-size:0.68rem">&#9998; Info</button>
+          <button class="btn on" id="btn-edit-taktik-save" style="padding:3px 7px;font-size:0.68rem">Spara</button>
+          <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
+        </div>
+        <!-- Hidden step list (still used by renderEditSteps internally) -->
+        <div class="list" id="edit-taktik-steps" style="display:none"></div>
+      </div>
+      <div id="no-rec-ui">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+          <button class="btn on" id="btn-new-taktik">+ Ny film</button>
+          <button class="btn" id="btn-export-taktik">Exportera</button>
+          <button class="btn" id="btn-import-taktik-btn">Importera</button>
+          <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
+        </div>
+        <input type="text" id="taktik-search" placeholder="S&#246;k taktikfilm..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
+        <div id="taktik-folder-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px"></div>
+        <div class="list" id="taktik-list"></div>
+      </div>
     </div>
-    <!-- Row 2: film title + save/exit -->
-    <div style="display:flex;gap:4px;align-items:center">
-      <span style="font-size:0.72rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="edit-taktik-title-lbl"></span>
-      <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a;padding:3px 7px;font-size:0.68rem">&#9998; Info</button>
-      <button class="btn on" id="btn-edit-taktik-save" style="padding:3px 7px;font-size:0.68rem">Spara</button>
-      <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
-    </div>
-    <!-- Hidden step list (still used by renderEditSteps internally) -->
-    <div class="list" id="edit-taktik-steps" style="display:none"></div>
-  </div>
-  <div id="no-rec-ui">
-    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
-      <button class="btn on" id="btn-new-taktik">+ Ny film</button>
-      <button class="btn" id="btn-export-taktik">Exportera</button>
-      <button class="btn" id="btn-import-taktik-btn">Importera</button>
-      <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
-    </div>
-    <input type="text" id="taktik-search" placeholder="S&#246;k taktikfilm..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
-    <div id="taktik-folder-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px"></div>
-    <div class="list" id="taktik-list"></div>
-  </div>
-</div>
-```
-
   </div>
   <div class="panel" id="panel-saves">
     <div style="width:100%">
@@ -589,72 +584,68 @@ if("serviceWorker" in navigator){
             <button class="lag-tab" data-lag="match" id="lag-tab-match">Match</button>
             <button class="lag-tab" data-lag="sparade" id="lag-tab-sparade">Sparade matcher</button>
           </div>
-
-```
-      <!-- TRUPP -->
-      <div id="lag-trupp">
-        <div style="display:flex;gap:5px;margin-bottom:6px">
-          <input type="number" id="ny-spelare-nr" placeholder="Nr" min="1" max="99" style="width:52px;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
-          <input type="text" id="ny-spelare-namn" placeholder="Spelarnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
-          <button class="btn on" id="btn-add-trupp">+ L&#228;gg till</button>
-        </div>
-        <div class="list" id="trupp-list" style="max-height:130px"></div>
-      </div>
-
-      <!-- MATCH -->
-      <div id="lag-match" style="display:none">
-        <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;flex-wrap:wrap">
-          <button class="btn" id="btn-ny-match" style="color:#4ae87a;border-color:#4ae87a;padding:3px 7px;font-size:0.68rem">+ Ny</button>
-          <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1;min-width:0">
-          <input type="text" id="match-motstand" placeholder="Motst&#229;ndare" style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;min-width:60px">
-          <span id="match-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;white-space:nowrap">0 valda</span>
-        </div>
-        <div class="list" id="match-trupp-list" style="max-height:160px"></div>
-        <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
-          <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; Laguppst&#228;llning</button>
-          <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
-        </div>
-      </div>
-
-      <!-- STATISTIK -->
-      <div id="lag-statistik" style="display:none">
-        <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
-          <input type="date" id="stat-from" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
-          <span style="color:#7aaa88;font-size:0.72rem">&#8211;</span>
-          <input type="date" id="stat-to" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
-          <button class="btn" id="btn-stat-filter">Filtrera</button>
-        </div>
-        <div id="stat-spelare-view">
-          <div class="list" id="stat-list" style="max-height:200px"></div>
-          <div id="stat-action-bar" style="display:none;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap">
-            <span id="stat-sel-count" style="font-size:0.75rem;color:#4ae87a;font-weight:700;flex:1">0 valda</span>
-            <button class="btn" id="btn-stat-clear-sel">Rensa</button>
-            <select id="stat-match-sel" class="btn" style="flex:1;max-width:140px;font-size:0.65rem"></select>
-            <button class="btn" id="btn-stat-add-to-match">L&#228;gg till</button>
-            <button class="btn on" id="btn-stat-to-match">+ Ny match</button>
+  
+          <!-- TRUPP -->
+          <div id="lag-trupp">
+            <div style="display:flex;gap:5px;margin-bottom:6px">
+              <input type="number" id="ny-spelare-nr" placeholder="Nr" min="1" max="99" style="width:52px;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+              <input type="text" id="ny-spelare-namn" placeholder="Spelarnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+              <button class="btn on" id="btn-add-trupp">+ L&#228;gg till</button>
+            </div>
+            <div class="list" id="trupp-list" style="max-height:130px"></div>
           </div>
-          <div style="display:flex;gap:5px;margin-top:6px">
-            <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
-            <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
+  
+          <!-- MATCH -->
+          <div id="lag-match" style="display:none">
+            <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;flex-wrap:wrap">
+              <button class="btn" id="btn-ny-match" style="color:#4ae87a;border-color:#4ae87a;padding:3px 7px;font-size:0.68rem">+ Ny</button>
+              <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1;min-width:0">
+              <input type="text" id="match-motstand" placeholder="Motst&#229;ndare" style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;min-width:60px">
+              <span id="match-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;white-space:nowrap">0 valda</span>
+            </div>
+            <div class="list" id="match-trupp-list" style="max-height:160px"></div>
+            <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
+              <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; Laguppst&#228;llning</button>
+              <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
+            </div>
+          </div>
+  
+          <!-- STATISTIK -->
+          <div id="lag-statistik" style="display:none">
+            <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+              <input type="date" id="stat-from" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+              <span style="color:#7aaa88;font-size:0.72rem">&#8211;</span>
+              <input type="date" id="stat-to" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+              <button class="btn" id="btn-stat-filter">Filtrera</button>
+            </div>
+            <div id="stat-spelare-view">
+              <div class="list" id="stat-list" style="max-height:200px"></div>
+              <div id="stat-action-bar" style="display:none;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap">
+                <span id="stat-sel-count" style="font-size:0.75rem;color:#4ae87a;font-weight:700;flex:1">0 valda</span>
+                <button class="btn" id="btn-stat-clear-sel">Rensa</button>
+                <select id="stat-match-sel" class="btn" style="flex:1;max-width:140px;font-size:0.65rem"></select>
+                <button class="btn" id="btn-stat-add-to-match">L&#228;gg till</button>
+                <button class="btn on" id="btn-stat-to-match">+ Ny match</button>
+              </div>
+              <div style="display:flex;gap:5px;margin-top:6px">
+                <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
+                <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- SPARADE MATCHER -->
+      <div id="lag-sparade" style="display:none">
+        <div class="list" id="sparade-match-list" style="max-height:200px"></div>
+      </div>
+
     </div>
-  </div>
-
-  <!-- SPARADE MATCHER -->
-  <div id="lag-sparade" style="display:none">
-    <div class="list" id="sparade-match-list" style="max-height:200px"></div>
-  </div>
-
-</div>
-```
-
   </div>
 </div>
 
 <!-- SETUP MODAL -->
-
 <div class="modal-bg hidden" id="modal-setup">
   <div class="modal">
     <h2>Spelarinst&#228;llningar</h2>
@@ -679,7 +670,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- NEW TAKTIK MODAL -->
-
 <div class="modal-bg hidden" id="modal-new-taktik">
   <div class="modal">
     <h2>Ny taktikfilm</h2>
@@ -692,7 +682,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- SAVE NAME MODAL -->
-
 <div class="modal-bg hidden" id="modal-savename">
   <div class="modal">
     <h2>Spara uppst&#228;llning</h2>
@@ -712,7 +701,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- NEW FOLDER MODAL -->
-
 <div class="modal-bg hidden" id="modal-new-folder">
   <div class="modal">
     <h2>Ny mapp</h2>
@@ -725,7 +713,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- TEXT LABEL MODAL -->
-
 <div class="modal-bg hidden" id="modal-text">
   <div class="modal">
     <h2>L&#228;gg till text</h2>
@@ -744,7 +731,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- EDIT LABEL MODAL -->
-
 <div class="modal-bg hidden" id="modal-edit-text">
   <div class="modal">
     <h2>Redigera text</h2>
@@ -764,7 +750,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- MOVE TO FOLDER MODAL -->
-
 <div class="modal-bg hidden" id="modal-move-folder">
   <div class="modal">
     <h2>Flytta till mapp</h2>
@@ -776,7 +761,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- RENAME FOLDER MODAL -->
-
 <div class="modal-bg hidden" id="modal-rename-folder">
   <div class="modal">
     <h2>Byt namn p&#229; mapp</h2>
@@ -789,7 +773,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- EDIT TAKTIK: inline panel, no modal needed -->
-
 <div class="modal-bg hidden" id="modal-edit-taktik-meta">
   <div class="modal" style="max-width:360px">
     <h2>Filminfo</h2>
@@ -803,7 +786,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- DELETE FOLDER CONFIRM -->
-
 <div class="modal-bg hidden" id="modal-delete-folder">
   <div class="modal">
     <h2>Radera mapp</h2>
@@ -817,7 +799,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- SHARE MODAL -->
-
 <div class="modal-bg hidden" id="modal-share">
   <div class="modal">
     <h2>Dela taktikfilm</h2>
@@ -832,7 +813,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- MERGE TAKTIK MODAL -->
-
 <div class="modal-bg hidden" id="modal-merge-taktik">
   <div class="modal">
     <h2>Sammanfoga filmer</h2>
@@ -845,11 +825,8 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- Landscape nav -->
-
 <!-- Fullscreen portrait controls -->
-
-<button id="fs-restore-btn">✕ Återställ</button>
-
+<button id="fs-restore-btn">&#x2715; &#197;terst&#228;ll</button>
 <div id="fs-portrait-nav">
   <button class="ls-btn" id="fs-first-btn" style="padding:8px 12px;font-size:1rem">&#9646;&#9664;</button>
   <button class="ls-btn" id="fs-prev-btn" style="padding:8px 12px;font-size:1rem">&#9664;</button>
@@ -875,7 +852,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- PLAYER PICKER MODAL -->
-
 <div class="modal-bg hidden" id="modal-player-picker">
   <div class="modal" style="max-width:320px">
     <h2>V&#228;lj spelare</h2>
@@ -888,7 +864,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- PLAYER COLOR MODAL -->
-
 <div class="modal-bg hidden" id="modal-player-color">
   <div class="modal">
     <h2>Spelarf&#228;rg</h2>
@@ -901,7 +876,6 @@ if("serviceWorker" in navigator){
 </div>
 
 <!-- BACKUP MODAL -->
-
 <div class="modal-bg hidden" id="modal-backup">
   <div class="modal">
     <h2>Exportera backup</h2>
@@ -912,6 +886,7 @@ if("serviceWorker" in navigator){
     </div>
   </div>
 </div>
+
 
 <script>
 
@@ -932,7 +907,7 @@ var savedFormations=[],taktikFilmer=[],activeTaktik=null,playback=null;
 var animFrame=null,animSpeed=600,dragging=null;
 var folders=["Allm\u00e4nt"],currentFolder="Alla";
 var taktikFolders=["Taktik","Tr\u00e4ning"],currentTaktikFolder="Alla",taktikSearch="";
-var freehandPaths=[],zones=[],movementPaths=[];
+var freehandPaths=[],zones=[];
 var activeFormationId=null,activeFormationName=null;
 var trupp=[];
 var matchRoster=[];
@@ -953,7 +928,6 @@ var arrowColor="#ffdd44",arrowType="solid";
 var freehandColor="#ffdd44",freehandWidth=4;
 var zoneShapeType="rect",zoneColor="rgba(232,76,76,0.25)";
 var freehandDrawing=false,freehandCurrent=null;
-var movementDrawing=false,movementCurrent=null,movementPlayerId=null;
 var zoneStart=null,zonePreview=null;
 var editingTaktikIdx=null,mergingTaktikIdx=null,isEditingTaktik=false;
 var daylightMode=false;
@@ -1170,115 +1144,8 @@ function render(){
         }
       }
       window.addEventListener("touchmove",_onTMassign,{passive:false});window.addEventListener("touchend",_onTEassign);
-      return;}if(mode==="movement"){
-      ev.preventDefault();
-      movementCurrent={id:"mv"+(idCounter++),playerId:p.id,pts:[{x:p.x,y:p.y}]};
-      saveUndo();
-      function _mvMoveA(ev2){
-        ev2.preventDefault();
-        if(movementCurrent) movementCurrent.pts.push(svgPt(ev2.touches[0].clientX,ev2.touches[0].clientY));
-        renderMovementPreview();
-      }
-      function _mvEndA(){
-        window.removeEventListener("touchmove",_mvMoveA);
-        window.removeEventListener("touchend",_mvEndA);
-        if(movementCurrent&&movementCurrent.pts.length>3) movementPaths.push(movementCurrent);
-        movementCurrent=null;
-        render();
-      }
-      window.addEventListener("touchmove",_mvMoveA,{passive:false});
-      window.addEventListener("touchend",_mvEndA);
-      return;
-    }
-    if(_lastTap.id===p.id&&now-_lastTap.time<400){_lastTap={id:null,time:0};openPlayerColor(p.id);return;}_lastTap={id:p.id,time:now};if(mode==="movement"){
-      // Start movement path from this player immediately
-      ev.preventDefault();
-      movementCurrent={id:"mv"+(idCounter++),playerId:p.id,pts:[{x:p.x,y:p.y}]};
-      saveUndo();
-      function _mvMoveImm(ev2){
-        ev2.preventDefault();
-        var pt2=svgPt(ev2.touches[0].clientX,ev2.touches[0].clientY);
-        if(movementCurrent) movementCurrent.pts.push({x:pt2.x,y:pt2.y});
-        renderMovementPreview();
-      }
-      function _mvEndImm(){
-        window.removeEventListener("touchmove",_mvMoveImm);
-        window.removeEventListener("touchend",_mvEndImm);
-        if(movementCurrent&&movementCurrent.pts.length>3){
-          movementPaths.push(movementCurrent);
-        }
-        movementCurrent=null;
-        render();
-      }
-      window.addEventListener("touchmove",_mvMoveImm,{passive:false});
-      window.addEventListener("touchend",_mvEndImm);
-      return;
-    }
-    if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});
+      return;}if(_lastTap.id===p.id&&now-_lastTap.time<400){_lastTap={id:null,time:0};openPlayerColor(p.id);return;}_lastTap={id:p.id,time:now};if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});
   g.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});})(players[i]);}
-  // Movement paths - show in edit mode, hide during playback
-  for(var mi=0;mi<movementPaths.length;mi++){
-    (function(mp){
-      if(!mp.pts||mp.pts.length<2)return;
-      var g=document.createElementNS(ns,"g");
-      // Build path string
-      var d="M"+mp.pts[0].x+","+mp.pts[0].y;
-      for(var pi=1;pi<mp.pts.length;pi++) d+=" L"+mp.pts[pi].x+","+mp.pts[pi].y;
-      // Main line
-      var line=document.createElementNS(ns,"path");
-      line.setAttribute("d",d);
-      line.setAttribute("stroke","#cc2200");
-      line.setAttribute("stroke-width","1.5");
-      line.setAttribute("stroke-dasharray","7 3");
-      line.setAttribute("fill","none");
-      line.setAttribute("stroke-linecap","round");
-      line.setAttribute("opacity","0.9");
-      // Arrowhead
-      var last=mp.pts[mp.pts.length-1];
-      var prev=mp.pts[Math.max(0,mp.pts.length-4)];
-      var ang=Math.atan2(last.y-prev.y,last.x-prev.x);
-      var al=9;
-      var arrow=document.createElementNS(ns,"path");
-      arrow.setAttribute("d","M"+(last.x-al*Math.cos(ang-0.4))+","+(last.y-al*Math.sin(ang-0.4))+" L"+last.x+","+last.y+" L"+(last.x-al*Math.cos(ang+0.4))+","+(last.y-al*Math.sin(ang+0.4)));
-      arrow.setAttribute("stroke","#cc2200");
-      arrow.setAttribute("stroke-width","1.5");
-      arrow.setAttribute("fill","none");
-      // Invisible hit area
-      var hit=document.createElementNS(ns,"path");
-      hit.setAttribute("d",d);
-      hit.setAttribute("stroke","transparent");
-      hit.setAttribute("stroke-width","18");
-      hit.setAttribute("fill","none");
-      hit.style.cursor="pointer";
-      g.appendChild(line);
-      g.appendChild(arrow);
-      g.appendChild(hit);
-      svg.appendChild(g);
-      // Select on tap
-      (function(mpId){
-        function selectMp(ev){ev.stopPropagation();_delHappened=true;selectedId=mpId;render();}
-        hit.addEventListener("touchstart",function(ev){ev.preventDefault();selectMp(ev);},{passive:false});
-        hit.addEventListener("mousedown",selectMp);
-      })(mp.id);
-      // Delete button when selected
-      if(selectedId===mp.id){
-        var mid=Math.floor(mp.pts.length/2);
-        var mx=mp.pts[mid].x, my=mp.pts[mid].y-14;
-        var dg=document.createElementNS(ns,"g");dg.style.cursor="pointer";
-        var dc=document.createElementNS(ns,"circle");
-        dc.setAttribute("class","del-circ");dc.setAttribute("cx",mx);dc.setAttribute("cy",my);dc.setAttribute("r",9);
-        var dt=document.createElementNS(ns,"text");
-        dt.setAttribute("class","del-txt");dt.setAttribute("x",mx);dt.setAttribute("y",my);dt.textContent="\u00d7";
-        dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);
-        (function(mpId){
-          function delMp(ev){ev.stopPropagation();ev.preventDefault();saveUndo();movementPaths=movementPaths.filter(function(x){return x.id!==mpId;});selectedId=null;render();}
-          dg.addEventListener("touchstart",delMp,{passive:false});
-          dg.addEventListener("mousedown",delMp);
-        })(mp.id);
-      }
-    })(movementPaths[mi]);
-  }
-
   var bg=document.createElementNS(ns,"g");bg.setAttribute("class","ball-token");var bhit=document.createElementNS(ns,"circle");bhit.setAttribute("cx",ball.x);bhit.setAttribute("cy",ball.y);bhit.setAttribute("r",18);bhit.setAttribute("fill","transparent");var bt=document.createElementNS(ns,"text");bt.setAttribute("class","ball-text");bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);bt.textContent="\u26bd";bg.appendChild(bhit);bg.appendChild(bt);svg.appendChild(bg);
   bg.addEventListener("touchstart",function(ev){ev.preventDefault();ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});
   bg.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});
@@ -1315,30 +1182,13 @@ function taktikUndo(){if(!taktikUndoStack.length||editingTaktikIdx===null)return
 function taktikRedo(){if(!taktikRedoStack.length||editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];taktikUndoStack.push(JSON.parse(JSON.stringify(tk.steps)));tk.steps=taktikRedoStack.pop();editingStepIdx=Math.min(editingStepIdx,tk.steps.length-1);updateEditStepUI();showToast("Gjort om!");}
 function saveUndo(){undoStack.push(currentSnap());if(undoStack.length>30)undoStack.shift();}
 function doUndo(){if(!undoStack.length)return;restoreSnap(undoStack.pop());render();}
-function currentSnap(){return{players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color,atype:a.atype,width:a.width||3};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};}),freehandPaths:freehandPaths.map(function(f){return{id:f.id,pts:f.pts.slice(),color:f.color,width:f.width};}),zones:zones.map(function(z){return{id:z.id,type:z.type,x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color};}),movementPaths:movementPaths.map(function(m){return{id:m.id,playerId:m.playerId,pts:m.pts.slice()};})};}
-function restoreSnap(snap){players=snap.players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball={x:snap.ball.x,y:snap.ball.y};arrows=(snap.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color||"#ffdd44",atype:a.atype||"solid",width:a.width||3};});labels=(snap.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});freehandPaths=(snap.freehandPaths||[]).map(function(f){return{id:f.id,pts:f.pts.slice(),color:f.color||"#ffdd44",width:f.width||4};});zones=(snap.zones||[]).map(function(z){return{id:z.id,type:z.type||"rect",x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color||"rgba(232,76,76,0.25)"};});movementPaths=(snap.movementPaths||[]).map(function(m){return{id:m.id,playerId:m.playerId,pts:m.pts.slice()};});}
-function renderMovementPreview(){
-  var old=svg.querySelectorAll(".mv-preview");
-  for(var i=0;i<old.length;i++) old[i].remove();
-  if(!movementCurrent||movementCurrent.pts.length<2) return;
-  var d="M"+movementCurrent.pts[0].x+","+movementCurrent.pts[0].y;
-  for(var i=1;i<movementCurrent.pts.length;i++) d+=" L"+movementCurrent.pts[i].x+","+movementCurrent.pts[i].y;
-  var path=document.createElementNS("http://www.w3.org/2000/svg","path");
-  path.setAttribute("class","mv-preview");
-  path.setAttribute("d",d);
-  path.setAttribute("stroke","#cc2200");
-  path.setAttribute("stroke-width","1.5");
-  path.setAttribute("stroke-dasharray","7 3");
-  path.setAttribute("fill","none");
-  path.style.pointerEvents="none";
-  svg.appendChild(path);
-}
+function currentSnap(){return{players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color,atype:a.atype,width:a.width||3};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};}),freehandPaths:freehandPaths.map(function(f){return{id:f.id,pts:f.pts.slice(),color:f.color,width:f.width};}),zones:zones.map(function(z){return{id:z.id,type:z.type,x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color};})};}
+function restoreSnap(snap){players=snap.players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball={x:snap.ball.x,y:snap.ball.y};arrows=(snap.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color||"#ffdd44",atype:a.atype||"solid",width:a.width||3};});labels=(snap.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});freehandPaths=(snap.freehandPaths||[]).map(function(f){return{id:f.id,pts:f.pts.slice(),color:f.color||"#ffdd44",width:f.width||4};});zones=(snap.zones||[]).map(function(z){return{id:z.id,type:z.type||"rect",x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color||"rgba(232,76,76,0.25)"};});}
 function renderFreehandPreview(){var old=svg.querySelectorAll(".freehand-preview");for(var i=0;i<old.length;i++)old[i].remove();if(!freehandCurrent||freehandCurrent.pts.length<2)return;var ns3="http://www.w3.org/2000/svg";var d="M"+freehandCurrent.pts[0].x+","+freehandCurrent.pts[0].y;for(var i=1;i<freehandCurrent.pts.length;i++)d+=" L"+freehandCurrent.pts[i].x+","+freehandCurrent.pts[i].y;var path=document.createElementNS(ns3,"path");path.setAttribute("class","freehand-preview freehand-path");path.setAttribute("d",d);path.setAttribute("stroke",freehandColor);path.setAttribute("stroke-width",freehandWidth);path.style.pointerEvents="none";svg.appendChild(path);}
 function renderZonePreview(){var old=svg.querySelectorAll(".zone-preview");for(var i=0;i<old.length;i++)old[i].remove();if(!zoneStart||!zonePreview)return;var ns3="http://www.w3.org/2000/svg";var shape=buildZoneShape(zoneStart,zonePreview,true);shape.setAttribute("class","zone-preview");shape.style.pointerEvents="none";svg.appendChild(shape);}
 function buildZoneShape(start,end,preview){var ns3="http://www.w3.org/2000/svg";var col=zoneColor;if(zoneShapeType==="circle"){var el=document.createElementNS(ns3,"ellipse");var cx=(start.x+end.x)/2,cy=(start.y+end.y)/2;var rx=Math.abs(end.x-start.x)/2,ry=Math.abs(end.y-start.y)/2;el.setAttribute("cx",cx);el.setAttribute("cy",cy);el.setAttribute("rx",rx);el.setAttribute("ry",ry);el.setAttribute("fill",col);el.setAttribute("stroke",col.replace(/,[0-9.]+\)/,",0.8)"));el.setAttribute("stroke-width","1.5");if(!preview)el._zdata={type:"circle",x:cx,y:cy,r:Math.max(rx,ry),color:col};return el;}else{var x=Math.min(start.x,end.x),y=Math.min(start.y,end.y);var w=Math.abs(end.x-start.x),h=Math.abs(end.y-start.y);var r=document.createElementNS(ns3,"rect");r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",w);r.setAttribute("height",h);r.setAttribute("rx","3");r.setAttribute("fill",col);r.setAttribute("stroke",col.replace(/,[0-9.]+\)/,",0.8)"));r.setAttribute("stroke-width","1.5");if(!preview)r._zdata={type:"rect",x:x,y:y,w:w,h:h,color:col};return r;}}
 function finalizeZone(){if(!zoneStart||!zonePreview)return;var dx=zonePreview.x-zoneStart.x,dy=zonePreview.y-zoneStart.y;if(Math.abs(dx)<10&&Math.abs(dy)<10)return;var zd;if(zoneShapeType==="circle"){var cx=(zoneStart.x+zonePreview.x)/2,cy=(zoneStart.y+zonePreview.y)/2;var rx=Math.abs(dx)/2,ry=Math.abs(dy)/2;zd={id:"zone"+(idCounter++),type:"circle",x:cx,y:cy,r:Math.max(rx,ry),w:rx*2,h:ry*2,color:zoneColor};}else{var x=Math.min(zoneStart.x,zonePreview.x),y=Math.min(zoneStart.y,zonePreview.y);zd={id:"zone"+(idCounter++),type:"rect",x:x,y:y,w:Math.abs(dx),h:Math.abs(dy),color:zoneColor};}zones.push(zd);}
-function setMode(m){mode=m;document.getElementById("btn-arrow").classList.toggle("on",m==="arrow");document.getElementById("btn-text").classList.toggle("on",m==="text");document.getElementById("btn-freehand").classList.toggle("on",m==="freehand");document.getElementById("btn-zone").classList.toggle("on",m==="zone");
-  document.getElementById("btn-movement").classList.toggle("on",m==="movement");svg.style.cursor=m==="arrow"||m==="freehand"||m==="zone"?"crosshair":m==="text"?"text":"default";var badge=document.getElementById("mode-badge");var ao=document.getElementById("arrow-options");var zo=document.getElementById("zone-options");var fo=document.getElementById("freehand-options");if(ao)ao.style.display=m==="arrow"?"flex":"none";if(zo)zo.style.display=m==="zone"?"flex":"none";if(fo)fo.style.display=m==="freehand"?"flex":"none";if(m==="arrow"){badge.style.display="block";badge.style.background="#2a4a8a";badge.style.color="#9ac4ff";badge.textContent="Dra f\u00f6r att rita pil";}else if(m==="text"){badge.style.display="block";badge.style.background="#4ae87a";badge.style.color="#0a1a0d";badge.textContent="Tryck p\u00e5 planen";}else if(m==="freehand"){badge.style.display="block";badge.style.background="#8b4ae8";badge.style.color="#fff";badge.textContent="Rita fritt";}else if(m==="zone"){badge.style.display="block";badge.style.background="#e87a4a";badge.style.color="#fff";badge.textContent="Dra f\u00f6r att rita zon";}else if(m==="movement"){badge.style.display="block";badge.style.background="#cc2200";badge.style.color="#fff";badge.textContent="H\u00e5ll p\u00e5 spelare och rita r\u00f6relsebana";}else badge.style.display="none";}
+function setMode(m){mode=m;document.getElementById("btn-arrow").classList.toggle("on",m==="arrow");document.getElementById("btn-text").classList.toggle("on",m==="text");document.getElementById("btn-freehand").classList.toggle("on",m==="freehand");document.getElementById("btn-zone").classList.toggle("on",m==="zone");svg.style.cursor=m==="arrow"||m==="freehand"||m==="zone"?"crosshair":m==="text"?"text":"default";var badge=document.getElementById("mode-badge");var ao=document.getElementById("arrow-options");var zo=document.getElementById("zone-options");var fo=document.getElementById("freehand-options");if(ao)ao.style.display=m==="arrow"?"flex":"none";if(zo)zo.style.display=m==="zone"?"flex":"none";if(fo)fo.style.display=m==="freehand"?"flex":"none";if(m==="arrow"){badge.style.display="block";badge.style.background="#2a4a8a";badge.style.color="#9ac4ff";badge.textContent="Dra f\u00f6r att rita pil";}else if(m==="text"){badge.style.display="block";badge.style.background="#4ae87a";badge.style.color="#0a1a0d";badge.textContent="Tryck p\u00e5 planen";}else if(m==="freehand"){badge.style.display="block";badge.style.background="#8b4ae8";badge.style.color="#fff";badge.textContent="Rita fritt";}else if(m==="zone"){badge.style.display="block";badge.style.background="#e87a4a";badge.style.color="#fff";badge.textContent="Dra f\u00f6r att rita zon";}else badge.style.display="none";}
 function buildFormationBtns(){
   var c=document.getElementById("formation-btns");c.innerHTML="";
   var list=FORMATIONS[format]||FORMATIONS[11];
@@ -1411,7 +1261,6 @@ document.getElementById("chk-arrow-numbers").addEventListener("change",function(
 document.getElementById("btn-daylight").addEventListener("click",function(){daylightMode=!daylightMode;document.body.classList.toggle("daylight",daylightMode);this.innerHTML=daylightMode?"&#9790; Normal":"&#9728; Dag";this.style.color=daylightMode?"var(--accent)":"";this.style.borderColor=daylightMode?"var(--accent)":"";drawPitch();render();});
 document.getElementById("btn-freehand").addEventListener("click",function(){setMode(mode==="freehand"?"move":"freehand");});
 document.getElementById("btn-zone").addEventListener("click",function(){setMode(mode==="zone"?"move":"zone");});
-document.getElementById("btn-movement").addEventListener("click",function(){setMode(mode==="movement"?"move":"movement");});
 document.getElementById("arrow-color-sel").addEventListener("change",function(){arrowColor=this.value;});
 document.getElementById("arrow-type-sel").addEventListener("change",function(){arrowType=this.value;});
 document.getElementById("arrow-width-sel").addEventListener("change",function(){arrowWidth=parseInt(this.value);});
@@ -1541,23 +1390,7 @@ document.getElementById("btn-prev").addEventListener("click",function(){if(!play
 document.getElementById("play-speed").addEventListener("change",function(){animSpeed=parseInt(this.value);});
 function updatePlaybar(){if(!playback)return;var cur=playback.stepIndex,total=playback.tk.steps.length-1;document.getElementById("taktikbar-title").textContent=playback.tk.name;document.getElementById("play-counter").textContent=cur===0?"Start":cur+"/"+total;document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";renderPlayStepList();updateLandscapeStrip();updateFsPortraitNav();}
 function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
-function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx];var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});var fromBall={x:ball.x,y:ball.y};var start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed);var ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){
-          var mvPath=null;
-          var fromSnap=playback.tk.steps[playback.stepIndex>0?playback.stepIndex-1:0];
-          var fromMvs=fromSnap?fromSnap.movementPaths||[]:[];
-          for(var k=0;k<fromMvs.length;k++){if(fromMvs[k].playerId===players[i].id){mvPath=fromMvs[k];break;}}
-          if(mvPath&&mvPath.pts.length>1){
-            var nSeg=mvPath.pts.length-1;
-            var pos=ease*nSeg;
-            var seg=Math.min(Math.floor(pos),nSeg-1);
-            var t=pos-seg;
-            players[i].x=mvPath.pts[seg].x+(mvPath.pts[seg+1].x-mvPath.pts[seg].x)*t;
-            players[i].y=mvPath.pts[seg].y+(mvPath.pts[seg+1].y-mvPath.pts[seg].y)*t;
-          } else {
-            players[i].x=fp.x+(tp2.x-fp.x)*ease;
-            players[i].y=fp.y+(tp2.y-fp.y)*ease;
-          }
-        }var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}if(tx){tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);if(document.body.classList.contains("landscape")&&!document.body.classList.contains("desktop"))tx.setAttribute("transform","rotate(90,"+players[i].x+","+players[i].y+")");else tx.removeAttribute("transform");}}}ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}};animFrame=requestAnimationFrame(frame);}
+function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx];var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});var fromBall={x:ball.x,y:ball.y};var start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed);var ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){players[i].x=fp.x+(tp2.x-fp.x)*ease;players[i].y=fp.y+(tp2.y-fp.y)*ease;}var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}if(tx){tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);if(document.body.classList.contains("landscape")&&!document.body.classList.contains("desktop"))tx.setAttribute("transform","rotate(90,"+players[i].x+","+players[i].y+")");else tx.removeAttribute("transform");}}}ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}};animFrame=requestAnimationFrame(frame);}
 function buildState(){return{format:format,homeColor:homeColor,awayColor:awayColor,displayMode:displayMode,players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};})};}
 function applyState(s){format=s.format||11;homeColor=s.homeColor||"#e8c84a";awayColor=s.awayColor||"#e84a4a";displayMode=s.displayMode||"number";document.getElementById("fmt-sel").value=String(format);players=(s.players||[]).map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball=s.ball||{x:W/2,y:H/2};arrows=(s.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};});labels=(s.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});buildFormationBtns();render();}
 document.getElementById("btn-export").addEventListener("click",function(){var data={savedFormations:savedFormations,current:buildState()};var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));var a=document.createElement("a");a.href=url;a.download="taktik.json";a.click();URL.revokeObjectURL(url);});
@@ -2085,6 +1918,5 @@ loadMatcher();
 checkShareLink();
 
 </script>
-
 </body>
 </html>
