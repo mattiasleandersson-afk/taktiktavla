@@ -348,18 +348,13 @@ input[type=color].minput { padding: 2px 4px; height: 34px; width: 56px; cursor: 
 hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 
 </style>
-<script>
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js").catch(function(){});
-}
-</script>
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v18.3</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v18.5d</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -386,6 +381,13 @@ if("serviceWorker" in navigator){
   <button class="btn" id="btn-fs-topbar" style="color:#4ae87a;border-color:#4ae87a" title="Helsk\u00e4rm">&#x26F6;</button>
   <button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button>
   <button class="btn" id="btn-orientation-toggle" style="display:none;color:#4ae8e8;border-color:#4ae8e8" title="V&#228;xla liggande/st&#229;ende">&#8645;</button>
+  </div>
+  <div style="display:flex;gap:0;padding-top:3px;border-top:1px solid #1a3020;overflow-x:auto;flex-shrink:0">
+    <button class="tab on" data-panel="formations" style="font-size:0.72rem;padding:3px 10px">Formation</button>
+    <button class="tab" data-panel="saves" style="font-size:0.72rem;padding:3px 10px">Utg&#229;ngsläge</button>
+    <button class="tab" data-panel="taktik" style="font-size:0.72rem;padding:3px 10px">&#127916; Taktik</button>
+    <button class="tab" data-panel="lag" style="font-size:0.72rem;padding:3px 10px">Lag</button>
+  </div>
 </div>
 
 <div id="bench-bar">
@@ -515,14 +517,7 @@ if("serviceWorker" in navigator){
 
 <div id="panel-toggle-strip" style="background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;flex-shrink:0;position:relative;z-index:10;padding:0 8px;">
   <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 0;font-size:0.72rem;cursor:pointer;flex:1">&#9660;</button>
-  <button id="fs-enter-btn" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:3px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:Arial Narrow,Arial,sans-serif;display:block">&#x26F6; FS</button>  </div>
-  <div style="display:flex;gap:0;padding-top:3px;border-top:1px solid #1a3020;overflow-x:auto">
-    <button class="tab on" data-panel="formations" style="font-size:0.72rem;padding:3px 10px">Formation</button>
-    <button class="tab" data-panel="saves" style="font-size:0.72rem;padding:3px 10px">Utg&#229;ngsläge</button>
-    <button class="tab" data-panel="taktik" style="font-size:0.72rem;padding:3px 10px">&#127916; Taktik</button>
-    <button class="tab" data-panel="lag" style="font-size:0.72rem;padding:3px 10px">Lag</button>
-  </div>
-</div>
+  <button id="fs-enter-btn" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:3px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:Arial Narrow,Arial,sans-serif;display:block">&#x26F6; FS</button></div>
 <div id="bottompanel">
 
   <div class="panel on" id="panel-formations">
@@ -936,8 +931,9 @@ if("serviceWorker" in navigator){
 
 window.onerror = function(msg,src,line,col,err){
   var t=document.getElementById("toast-msg");
-  if(t){t.textContent="FEL rad "+line+": "+msg;t.style.background="#e84a4a";t.style.color="#fff";t.style.display="block";t.style.opacity="1";t.style.zIndex="9999";t.style.position="fixed";t.style.top="20px";t.style.left="10px";t.style.right="10px";t.style.bottom="auto";t.style.borderRadius="8px";t.style.padding="12px 16px";t.style.fontSize="0.85rem";t.style.maxWidth="100%";}
-  else{var d=document.createElement("div");d.style.cssText="position:fixed;top:0;left:0;right:0;background:#e84a4a;color:#fff;padding:12px;font-family:monospace;font-size:12px;z-index:99999";d.textContent="FEL rad "+line+": "+msg;document.body.appendChild(d);}
+  var detail="FEL rad "+line+": "+msg+(err&&err.stack?" | "+err.stack.split("\n")[1]:"");
+  if(t){t.textContent=detail;t.style.background="#e84a4a";t.style.color="#fff";t.style.display="block";t.style.opacity="1";t.style.zIndex="9999";t.style.position="fixed";t.style.top="20px";t.style.left="10px";t.style.right="10px";t.style.bottom="auto";t.style.borderRadius="8px";t.style.padding="12px 16px";t.style.fontSize="0.75rem";t.style.maxWidth="100%";}
+  else{var d=document.createElement("div");d.style.cssText="position:fixed;top:0;left:0;right:0;background:#e84a4a;color:#fff;padding:12px;font-family:monospace;font-size:12px;z-index:99999";d.textContent=detail;document.body.appendChild(d);}
   console.error("FEL rad "+line+":",msg,err);
   return true;
 };
