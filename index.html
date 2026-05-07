@@ -358,7 +358,7 @@ if("serviceWorker" in navigator){
 
 <div id="topbar">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v18.0</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v18.1</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -480,33 +480,33 @@ if("serviceWorker" in navigator){
 
 <!-- COMBINED TAKTIK BAR (edit + play merged) -->
 
-<div id="taktikbar" style="display:none;background:var(--bg);border-top:2px solid var(--accent);padding:4px 8px;flex-shrink:0;flex-direction:column;gap:3px;align-items:stretch">
-  <div style="display:flex;gap:4px;align-items:center;flex-wrap:nowrap;overflow:hidden">
+<div id="taktikbar" style="display:none;background:var(--bg);border-top:2px solid var(--accent);padding:4px 8px;flex-shrink:0;flex-direction:column;gap:3px">
+  <div style="display:flex;gap:4px;align-items:center">
     <span id="taktikbar-title" style="color:#4ae87a;font-weight:700;font-size:0.75rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
-    <button class="btn" id="btn-first" style="font-size:0.9rem;padding:3px 8px;flex-shrink:0" title="Till start">&#9646;&#9664;</button>
-    <button class="btn" id="btn-prev" style="font-size:0.9rem;padding:3px 8px;flex-shrink:0">&#9664;</button>
-    <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.78rem;min-width:44px;text-align:center;flex-shrink:0">Start</span>
-    <button class="btn" id="btn-next" style="font-size:0.9rem;padding:3px 8px;flex-shrink:0">&#9654;</button>
-    <select class="btn" id="play-speed" style="padding:3px 14px 3px 5px;font-size:0.65rem;flex-shrink:0">
+    <button class="btn" id="btn-first" style="font-size:0.85rem;padding:3px 8px" title="Start">&#9646;&#9664;</button>
+    <button class="btn" id="btn-prev" style="font-size:0.85rem;padding:3px 8px">&#9664;</button>
+    <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.78rem;min-width:40px;text-align:center">Start</span>
+    <button class="btn" id="btn-next" style="font-size:0.85rem;padding:3px 8px">&#9654;</button>
+    <select class="btn" id="play-speed" style="padding:3px 12px 3px 5px;font-size:0.65rem">
       <option value="1200">Sakta</option>
       <option value="600" selected>Normal</option>
       <option value="300">Snabb</option>
     </select>
-    <label style="display:flex;align-items:center;gap:2px;font-size:0.68rem;color:#7aaa88;cursor:pointer;flex-shrink:0"><input type="checkbox" id="play-loop"> Loop</label>
-    <button class="btn" id="btn-copy-drawings" style="padding:3px 6px;font-size:0.68rem;color:#e8c84a;border-color:#e8c84a;flex-shrink:0" title="Kopiera ritningar">&#9000;</button>
-    <button class="btn" id="btn-copy-step" style="padding:3px 6px;font-size:0.68rem;color:#4ae8e8;border-color:#4ae8e8;flex-shrink:0" title="Kopiera steg">&#9112;</button>
-    <button class="btn" id="btn-paste-step" style="padding:3px 6px;font-size:0.68rem;color:#4ae8e8;border-color:#4ae8e8;opacity:0.3;flex-shrink:0" title="Klistra in steg">&#9113;</button>
-    <button class="btn on" id="btn-edit-update-step2" style="padding:3px 7px;font-size:0.68rem;flex-shrink:0">&#10003;</button>
-    <button class="btn" id="btn-taktikbar-save" style="padding:3px 7px;font-size:0.68rem;color:#4ae87a;border-color:#4ae87a;flex-shrink:0">&#128190;</button>
-    <button class="btn danger" id="btn-stop-play" style="padding:3px 7px;font-size:0.68rem;flex-shrink:0">&#10005;</button>
+    <label style="display:flex;align-items:center;gap:2px;font-size:0.65rem;color:#7aaa88;cursor:pointer"><input type="checkbox" id="play-loop"> Loop</label>
+    <button class="btn" id="btn-copy-drawings" style="padding:3px 6px;font-size:0.65rem;color:#e8c84a;border-color:#e8c84a" title="Kopiera ritningar">&#9000;</button>
+    <button class="btn" id="btn-copy-step" style="padding:3px 6px;font-size:0.65rem;color:#4ae8e8;border-color:#4ae8e8">&#9112;</button>
+    <button class="btn" id="btn-paste-step" style="padding:3px 6px;font-size:0.65rem;color:#4ae8e8;border-color:#4ae8e8;opacity:0.3">&#9113;</button>
+    <button class="btn on" id="btn-edit-update-step2" style="padding:3px 7px;font-size:0.65rem">&#10003; Spara</button>
+    <button class="btn" id="btn-taktikbar-save" style="padding:3px 7px;font-size:0.65rem;color:#4ae87a;border-color:#4ae87a">&#128190;</button>
+    <button class="btn danger" id="btn-stop-play" style="padding:3px 7px;font-size:0.65rem">&#10005;</button>
   </div>
-  <div style="display:flex;gap:4px;align-items:center">
-    <span style="font-size:0.65rem;color:#7aaa88;flex-shrink:0">Rita:</span>
-    <button class="btn" id="btn-tb-arrow" title="Pil" style="padding:3px 7px">&#8599; Pil</button>
-    <button class="btn" id="btn-tb-freehand" title="Frihand" style="padding:3px 7px">&#9998; Fri</button>
-    <button class="btn" id="btn-tb-zone" title="Zon" style="padding:3px 7px">&#9633; Zon</button>
-    <button class="btn" id="btn-tb-text" title="Text" style="padding:3px 7px">T Text</button>
-    <button class="btn" id="btn-tb-movement" title="R&#246;relse" style="padding:3px 7px">&#8594; R&#246;relse</button>
+  <div style="display:flex;gap:3px;align-items:center">
+    <span style="font-size:0.62rem;color:#7aaa88">Rita:</span>
+    <button class="btn" id="btn-tb-arrow" title="Pil" style="padding:2px 6px;font-size:0.65rem">&#8599; Pil</button>
+    <button class="btn" id="btn-tb-freehand" title="Fri" style="padding:2px 6px;font-size:0.65rem">&#9998; Fri</button>
+    <button class="btn" id="btn-tb-zone" title="Zon" style="padding:2px 6px;font-size:0.65rem">&#9633; Zon</button>
+    <button class="btn" id="btn-tb-text" title="Text" style="padding:2px 6px;font-size:0.65rem">T Text</button>
+    <button class="btn" id="btn-tb-movement" title="R&#246;relse" style="padding:2px 6px;font-size:0.65rem">&#8594; R&#246;relse</button>
   </div>
 </div>
 
@@ -559,7 +559,7 @@ if("serviceWorker" in navigator){
       <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
     </div>
     <!-- Hidden step list (still used by renderEditSteps internally) -->
-    <div class="list" id="edit-taktik-steps" style="max-height:140px;margin-top:4px"></div>
+    <div class="list" id="edit-taktik-steps" style="max-height:130px;margin-top:3px"></div>
   </div>
   <div id="no-rec-ui">
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
@@ -861,17 +861,17 @@ if("serviceWorker" in navigator){
 <button id="fs-restore-btn">✕ Återställ</button>
 
 <div id="fs-portrait-nav">
-  <button class="ls-btn" id="fs-first-btn" style="padding:6px 10px;font-size:0.9rem">&#9646;&#9664;</button>
-  <button class="ls-btn" id="fs-prev-btn" style="padding:6px 10px;font-size:0.9rem">&#9664;</button>
-  <span id="fs-step-label" style="color:#4ae87a;font-weight:700;font-size:0.78rem;min-width:60px;text-align:center">-</span>
-  <button class="ls-btn" id="fs-next-btn" style="padding:6px 10px;font-size:0.9rem">&#9654;</button>
-  <button class="ls-btn" id="fs-day-btn" style="font-size:0.78rem;padding:5px 8px">&#9728;</button>
-  <span style="width:1px;background:rgba(255,255,255,0.2);align-self:stretch;margin:3px 2px"></span>
-  <button class="ls-btn" id="fs-tb-arrow" title="Pil" style="font-size:0.78rem;padding:5px 8px">&#8599;</button>
-  <button class="ls-btn" id="fs-tb-freehand" title="Fri" style="font-size:0.78rem;padding:5px 8px">&#9998;</button>
-  <button class="ls-btn" id="fs-tb-zone" title="Zon" style="font-size:0.78rem;padding:5px 8px">&#9633;</button>
-  <button class="ls-btn" id="fs-tb-text" title="Text" style="font-size:0.78rem;padding:5px 8px">T</button>
-  <button class="ls-btn" id="fs-tb-movement" title="R&#246;relse" style="font-size:0.78rem;padding:5px 8px">&#8594;</button>
+  <button class="ls-btn" id="fs-first-btn" style="padding:6px 9px;font-size:0.9rem">&#9646;&#9664;</button>
+  <button class="ls-btn" id="fs-prev-btn" style="padding:6px 9px;font-size:0.9rem">&#9664;</button>
+  <span id="fs-step-label" style="color:#4ae87a;font-weight:700;font-size:0.75rem;min-width:55px;text-align:center">-</span>
+  <button class="ls-btn" id="fs-next-btn" style="padding:6px 9px;font-size:0.9rem">&#9654;</button>
+  <button class="ls-btn" id="fs-day-btn" style="font-size:0.75rem;padding:5px 8px">&#9728;</button>
+  <span style="width:1px;background:rgba(255,255,255,0.15);align-self:stretch;margin:3px 1px"></span>
+  <button class="ls-btn" id="fs-tb-arrow" style="font-size:0.75rem;padding:5px 7px">&#8599;</button>
+  <button class="ls-btn" id="fs-tb-freehand" style="font-size:0.75rem;padding:5px 7px">&#9998;</button>
+  <button class="ls-btn" id="fs-tb-zone" style="font-size:0.75rem;padding:5px 7px">&#9633;</button>
+  <button class="ls-btn" id="fs-tb-text" style="font-size:0.75rem;padding:5px 7px">T</button>
+  <button class="ls-btn" id="fs-tb-movement" style="font-size:0.75rem;padding:5px 7px">&#8594;</button>
 </div>
 
 <div id="ls-prev-side" style="display:none">
@@ -969,7 +969,7 @@ var arrowColor="#ffdd44",arrowType="solid";
 var freehandColor="#ffdd44",freehandWidth=4;
 var zoneShapeType="rect",zoneColor="rgba(232,76,76,0.25)";
 var freehandDrawing=false,freehandCurrent=null;
-var movementDrawing=false,movementCurrent=null,movementPlayerId=null;
+var movementCurrent=null;
 var zoneStart=null,zonePreview=null;
 var editingTaktikIdx=null,mergingTaktikIdx=null,isEditingTaktik=false;
 var daylightMode=false;
@@ -1191,45 +1191,52 @@ function render(){
       movementCurrent={id:"mv"+(idCounter++),playerId:p.id,pts:[{x:p.x,y:p.y}]};
       saveUndo();
       function _mvA(ev2){ev2.preventDefault();if(movementCurrent)movementCurrent.pts.push(svgPt(ev2.touches[0].clientX,ev2.touches[0].clientY));renderMovementPreview();}
-      function _mvAEnd(){window.removeEventListener("touchmove",_mvA);window.removeEventListener("touchend",_mvAEnd);if(movementCurrent&&movementCurrent.pts.length>3)movementPaths.push(movementCurrent);movementCurrent=null;render();}
+      function _mvAEnd(){
+        window.removeEventListener("touchmove",_mvA);window.removeEventListener("touchend",_mvAEnd);
+        if(movementCurrent&&movementCurrent.pts.length>3)movementPaths.push(movementCurrent);
+        movementCurrent=null;render();
+      }
       window.addEventListener("touchmove",_mvA,{passive:false});window.addEventListener("touchend",_mvAEnd);return;
     }
     if(_lastTap.id===p.id&&now-_lastTap.time<400){_lastTap={id:null,time:0};openPlayerColor(p.id);return;}_lastTap={id:p.id,time:now};if(mode!=="move")return;saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);},{passive:false});
   g.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});})(players[i]);}
-  // Movement paths
-  for(var mi=0;mi<movementPaths.length;mi++){(function(mp){
-    if(!mp.pts||mp.pts.length<2)return;
-    var g=document.createElementNS(ns,"g");
-    var d="M"+mp.pts[0].x+","+mp.pts[0].y;
-    for(var pi=1;pi<mp.pts.length;pi++)d+=" L"+mp.pts[pi].x+","+mp.pts[pi].y;
-    var line=document.createElementNS(ns,"path");
-    line.setAttribute("d",d);line.setAttribute("stroke","#cc2200");line.setAttribute("stroke-width","1.5");
-    line.setAttribute("stroke-dasharray","7 3");line.setAttribute("fill","none");line.setAttribute("stroke-linecap","round");
-    var last=mp.pts[mp.pts.length-1],prev=mp.pts[Math.max(0,mp.pts.length-4)];
-    var ang=Math.atan2(last.y-prev.y,last.x-prev.x),al=9;
-    var arrow=document.createElementNS(ns,"path");
-    arrow.setAttribute("d","M"+(last.x-al*Math.cos(ang-0.4))+","+(last.y-al*Math.sin(ang-0.4))+" L"+last.x+","+last.y+" L"+(last.x-al*Math.cos(ang+0.4))+","+(last.y-al*Math.sin(ang+0.4)));
-    arrow.setAttribute("stroke","#cc2200");arrow.setAttribute("stroke-width","1.5");arrow.setAttribute("fill","none");
-    var hit=document.createElementNS(ns,"path");
-    hit.setAttribute("d",d);hit.setAttribute("stroke","transparent");hit.setAttribute("stroke-width","18");hit.setAttribute("fill","none");hit.style.cursor="pointer";
-    g.appendChild(line);g.appendChild(arrow);g.appendChild(hit);svg.appendChild(g);
-    (function(mpId){
-      function selectMp(ev){ev.stopPropagation();_delHappened=true;selectedId=mpId;render();}
-      hit.addEventListener("touchstart",function(ev){ev.preventDefault();selectMp(ev);},{passive:false});
-      hit.addEventListener("mousedown",selectMp);
-    })(mp.id);
-    if(selectedId===mp.id){
-      var mid2=Math.floor(mp.pts.length/2),mx=mp.pts[mid2].x,my=mp.pts[mid2].y-14;
-      var dg=document.createElementNS(ns,"g");dg.style.cursor="pointer";
-      var dc=document.createElementNS(ns,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",mx);dc.setAttribute("cy",my);dc.setAttribute("r",9);
-      var dt=document.createElementNS(ns,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",mx);dt.setAttribute("y",my);dt.textContent="\u00d7";
-      dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);
+  // Draw movement paths (visible in edit mode, hidden during animation)
+  if(!playback||!playback.animating){
+    for(var mi=0;mi<movementPaths.length;mi++){(function(mp){
+      if(!mp.pts||mp.pts.length<2)return;
+      var g=document.createElementNS(ns,"g");
+      var d="M"+mp.pts[0].x+","+mp.pts[0].y;
+      for(var pi=1;pi<mp.pts.length;pi++)d+=" L"+mp.pts[pi].x+","+mp.pts[pi].y;
+      var line=document.createElementNS(ns,"path");
+      line.setAttribute("d",d);line.setAttribute("stroke","#cc2200");
+      line.setAttribute("stroke-width","1.5");line.setAttribute("stroke-dasharray","7 3");
+      line.setAttribute("fill","none");line.setAttribute("stroke-linecap","round");
+      var last=mp.pts[mp.pts.length-1],prev=mp.pts[Math.max(0,mp.pts.length-4)];
+      var ang=Math.atan2(last.y-prev.y,last.x-prev.x),al=9;
+      var arrow=document.createElementNS(ns,"path");
+      arrow.setAttribute("d","M"+(last.x-al*Math.cos(ang-0.4))+","+(last.y-al*Math.sin(ang-0.4))+" L"+last.x+","+last.y+" L"+(last.x-al*Math.cos(ang+0.4))+","+(last.y-al*Math.sin(ang+0.4)));
+      arrow.setAttribute("stroke","#cc2200");arrow.setAttribute("stroke-width","1.5");arrow.setAttribute("fill","none");
+      var hit=document.createElementNS(ns,"path");
+      hit.setAttribute("d",d);hit.setAttribute("stroke","transparent");hit.setAttribute("stroke-width","18");hit.setAttribute("fill","none");hit.style.cursor="pointer";
+      g.appendChild(line);g.appendChild(arrow);g.appendChild(hit);svg.appendChild(g);
       (function(mpId){
-        function delMp(ev){_delHappened=true;ev.stopPropagation();ev.preventDefault();saveUndo();movementPaths=movementPaths.filter(function(x){return x.id!==mpId;});selectedId=null;render();}
-        dg.addEventListener("touchstart",delMp,{passive:false});dg.addEventListener("mousedown",delMp);
+        function selectMp(ev){ev.stopPropagation();_delHappened=true;selectedId=mpId;render();}
+        hit.addEventListener("touchstart",function(ev){ev.preventDefault();selectMp(ev);},{passive:false});
+        hit.addEventListener("mousedown",selectMp);
       })(mp.id);
-    }
-  })(movementPaths[mi]);}
+      if(selectedId===mp.id){
+        var mid2=Math.floor(mp.pts.length/2),mx=mp.pts[mid2].x,my=mp.pts[mid2].y-14;
+        var dg=document.createElementNS(ns,"g");dg.style.cursor="pointer";
+        var dc=document.createElementNS(ns,"circle");dc.setAttribute("class","del-circ");dc.setAttribute("cx",mx);dc.setAttribute("cy",my);dc.setAttribute("r",9);
+        var dt=document.createElementNS(ns,"text");dt.setAttribute("class","del-txt");dt.setAttribute("x",mx);dt.setAttribute("y",my);dt.textContent="\u00d7";
+        dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);
+        (function(mpId){
+          function delMp(ev){_delHappened=true;ev.stopPropagation();ev.preventDefault();saveUndo();movementPaths=movementPaths.filter(function(x){return x.id!==mpId;});selectedId=null;render();}
+          dg.addEventListener("touchstart",delMp,{passive:false});dg.addEventListener("mousedown",delMp);
+        })(mp.id);
+      }
+    })(movementPaths[mi]);}
+  }
 
   var bg=document.createElementNS(ns,"g");bg.setAttribute("class","ball-token");var bhit=document.createElementNS(ns,"circle");bhit.setAttribute("cx",ball.x);bhit.setAttribute("cy",ball.y);bhit.setAttribute("r",18);bhit.setAttribute("fill","transparent");var bt=document.createElementNS(ns,"text");bt.setAttribute("class","ball-text");bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);bt.textContent="\u26bd";bg.appendChild(bhit);bg.appendChild(bt);svg.appendChild(bg);
   bg.addEventListener("touchstart",function(ev){
@@ -1237,23 +1244,17 @@ function render(){
   if(mode==="movement"){
     movementCurrent={id:"mv"+(idCounter++),playerId:"ball",pts:[{x:ball.x,y:ball.y}]};
     saveUndo();
-    function _mvBall(ev2){ev2.preventDefault();if(movementCurrent)movementCurrent.pts.push(svgPt(ev2.touches[0].clientX,ev2.touches[0].clientY));renderMovementPreview();}
-    function _mvBallEnd(){window.removeEventListener("touchmove",_mvBall);window.removeEventListener("touchend",_mvBallEnd);if(movementCurrent&&movementCurrent.pts.length>3)movementPaths.push(movementCurrent);movementCurrent=null;render();}
-    window.addEventListener("touchmove",_mvBall,{passive:false});window.addEventListener("touchend",_mvBallEnd);return;
+    function _mvB(ev2){ev2.preventDefault();if(movementCurrent)movementCurrent.pts.push(svgPt(ev2.touches[0].clientX,ev2.touches[0].clientY));renderMovementPreview();}
+    function _mvBEnd(){
+      window.removeEventListener("touchmove",_mvB);window.removeEventListener("touchend",_mvBEnd);
+      if(movementCurrent&&movementCurrent.pts.length>3)movementPaths.push(movementCurrent);
+      movementCurrent=null;render();
+    }
+    window.addEventListener("touchmove",_mvB,{passive:false});window.addEventListener("touchend",_mvBEnd);return;
   }
-  var _bLp=setTimeout(function(){
-    _bLp=null;window.removeEventListener("touchmove",_bLpMove);window.removeEventListener("touchend",_bLpEnd);
-    setMode("movement");
-    movementCurrent={id:"mv"+(idCounter++),playerId:"ball",pts:[{x:ball.x,y:ball.y}]};saveUndo();
-    function _bMv(ev2){ev2.preventDefault();if(movementCurrent)movementCurrent.pts.push(svgPt(ev2.touches[0].clientX,ev2.touches[0].clientY));renderMovementPreview();}
-    function _bMvEnd(){window.removeEventListener("touchmove",_bMv);window.removeEventListener("touchend",_bMvEnd);if(movementCurrent&&movementCurrent.pts.length>3)movementPaths.push(movementCurrent);movementCurrent=null;setMode("move");render();}
-    window.addEventListener("touchmove",_bMv,{passive:false});window.addEventListener("touchend",_bMvEnd);
-  },500);
-  function _bLpMove(ev2){if(_bLp){clearTimeout(_bLp);_bLp=null;}onTM(ev2);}
-  function _bLpEnd(ev2){window.removeEventListener("touchmove",_bLpMove);window.removeEventListener("touchend",_bLpEnd);if(_bLp){clearTimeout(_bLp);_bLp=null;}else onTE(ev2);}
-  if(mode!=="move"){clearTimeout(_bLp);window.removeEventListener("touchmove",_bLpMove);window.removeEventListener("touchend",_bLpEnd);return;}
+  if(mode!=="move")return;
   saveUndo();var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};
-  window.addEventListener("touchmove",_bLpMove,{passive:false});window.addEventListener("touchend",_bLpEnd);
+  window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);
 },{passive:false});
   bg.addEventListener("mousedown",function(ev){ev.stopPropagation();if(mode!=="move")return;saveUndo();var pt=svgPt(ev.clientX,ev.clientY);dragging={type:"ball",ox:ball.x-pt.x,oy:ball.y-pt.y};window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);});
 }
@@ -1306,7 +1307,7 @@ function renderZonePreview(){var old=svg.querySelectorAll(".zone-preview");for(v
 function buildZoneShape(start,end,preview){var ns3="http://www.w3.org/2000/svg";var col=zoneColor;if(zoneShapeType==="circle"){var el=document.createElementNS(ns3,"ellipse");var cx=(start.x+end.x)/2,cy=(start.y+end.y)/2;var rx=Math.abs(end.x-start.x)/2,ry=Math.abs(end.y-start.y)/2;el.setAttribute("cx",cx);el.setAttribute("cy",cy);el.setAttribute("rx",rx);el.setAttribute("ry",ry);el.setAttribute("fill",col);el.setAttribute("stroke",col.replace(/,[0-9.]+\)/,",0.8)"));el.setAttribute("stroke-width","1.5");if(!preview)el._zdata={type:"circle",x:cx,y:cy,r:Math.max(rx,ry),color:col};return el;}else{var x=Math.min(start.x,end.x),y=Math.min(start.y,end.y);var w=Math.abs(end.x-start.x),h=Math.abs(end.y-start.y);var r=document.createElementNS(ns3,"rect");r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",w);r.setAttribute("height",h);r.setAttribute("rx","3");r.setAttribute("fill",col);r.setAttribute("stroke",col.replace(/,[0-9.]+\)/,",0.8)"));r.setAttribute("stroke-width","1.5");if(!preview)r._zdata={type:"rect",x:x,y:y,w:w,h:h,color:col};return r;}}
 function finalizeZone(){if(!zoneStart||!zonePreview)return;var dx=zonePreview.x-zoneStart.x,dy=zonePreview.y-zoneStart.y;if(Math.abs(dx)<10&&Math.abs(dy)<10)return;var zd;if(zoneShapeType==="circle"){var cx=(zoneStart.x+zonePreview.x)/2,cy=(zoneStart.y+zonePreview.y)/2;var rx=Math.abs(dx)/2,ry=Math.abs(dy)/2;zd={id:"zone"+(idCounter++),type:"circle",x:cx,y:cy,r:Math.max(rx,ry),w:rx*2,h:ry*2,color:zoneColor};}else{var x=Math.min(zoneStart.x,zonePreview.x),y=Math.min(zoneStart.y,zonePreview.y);zd={id:"zone"+(idCounter++),type:"rect",x:x,y:y,w:Math.abs(dx),h:Math.abs(dy),color:zoneColor};}zones.push(zd);}
 function setMode(m){mode=m;document.getElementById("btn-arrow").classList.toggle("on",m==="arrow");document.getElementById("btn-text").classList.toggle("on",m==="text");document.getElementById("btn-freehand").classList.toggle("on",m==="freehand");document.getElementById("btn-zone").classList.toggle("on",m==="zone");
-  document.getElementById("btn-movement").classList.toggle("on",m==="movement");svg.style.cursor=m==="arrow"||m==="freehand"||m==="zone"?"crosshair":m==="text"?"text":"default";var badge=document.getElementById("mode-badge");var ao=document.getElementById("arrow-options");var zo=document.getElementById("zone-options");var fo=document.getElementById("freehand-options");if(ao)ao.style.display=m==="arrow"?"flex":"none";if(zo)zo.style.display=m==="zone"?"flex":"none";if(fo)fo.style.display=m==="freehand"?"flex":"none";if(m==="arrow"){badge.style.display="block";badge.style.background="#2a4a8a";badge.style.color="#9ac4ff";badge.textContent="Dra f\u00f6r att rita pil";}else if(m==="text"){badge.style.display="block";badge.style.background="#4ae87a";badge.style.color="#0a1a0d";badge.textContent="Tryck p\u00e5 planen";}else if(m==="freehand"){badge.style.display="block";badge.style.background="#8b4ae8";badge.style.color="#fff";badge.textContent="Rita fritt";}else if(m==="zone"){badge.style.display="block";badge.style.background="#e87a4a";badge.style.color="#fff";badge.textContent="Dra f\u00f6r att rita zon";}else if(m==="movement"){badge.style.display="block";badge.style.background="#cc2200";badge.style.color="#fff";badge.textContent="H\u00e5ll p\u00e5 spelare och rita r\u00f6relsebana";}else badge.style.display="none";}
+  document.getElementById("btn-movement").classList.toggle("on",m==="movement");svg.style.cursor=m==="arrow"||m==="freehand"||m==="zone"?"crosshair":m==="text"?"text":"default";var badge=document.getElementById("mode-badge");var ao=document.getElementById("arrow-options");var zo=document.getElementById("zone-options");var fo=document.getElementById("freehand-options");if(ao)ao.style.display=m==="arrow"?"flex":"none";if(zo)zo.style.display=m==="zone"?"flex":"none";if(fo)fo.style.display=m==="freehand"?"flex":"none";if(m==="arrow"){badge.style.display="block";badge.style.background="#2a4a8a";badge.style.color="#9ac4ff";badge.textContent="Dra f\u00f6r att rita pil";}else if(m==="text"){badge.style.display="block";badge.style.background="#4ae87a";badge.style.color="#0a1a0d";badge.textContent="Tryck p\u00e5 planen";}else if(m==="freehand"){badge.style.display="block";badge.style.background="#8b4ae8";badge.style.color="#fff";badge.textContent="Rita fritt";}else if(m==="zone"){badge.style.display="block";badge.style.background="#e87a4a";badge.style.color="#fff";badge.textContent="Dra f\u00f6r att rita zon";}else if(m==="movement"){badge.style.display="block";badge.style.background="#cc2200";badge.style.color="#fff";badge.textContent="Tryck p\u00e5 spelare och rita r\u00f6relsebana";}else badge.style.display="none";}
 function buildFormationBtns(){
   var c=document.getElementById("formation-btns");c.innerHTML="";
   var list=FORMATIONS[format]||FORMATIONS[11];
@@ -1412,16 +1413,7 @@ document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("cl
       halfMode=1;updateViewBox();
     }else{document.getElementById("bottompanel").classList.remove("expanded");}if(name!=="lag"&&halfMode===1&&matchRoster.length===0){halfMode=0;updateViewBox();}if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
 function startRecording(name){activeTaktik={name:name,steps:[currentSnap()]};document.getElementById("rec-badge").style.display="block";document.getElementById("rec-ui").style.display="block";document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-name-lbl").textContent="\u25cf "+name;renderRecSteps();}
-document.getElementById("btn-add-step").addEventListener("click",function(){if(!activeTaktik)return;
-// Move to end of movement paths before recording step
-movementPaths.forEach(function(mp){
-  if(!mp.pts||!mp.pts.length)return;
-  var ep=mp.pts[mp.pts.length-1];
-  if(mp.playerId==="ball"){ball.x=ep.x;ball.y=ep.y;}
-  else{var p2=players.find(function(x){return x.id===mp.playerId;});if(p2){p2.x=ep.x;p2.y=ep.y;}}
-});
-movementPaths=[];
-steps.push(currentSnap());renderRecSteps();render();});
+document.getElementById("btn-add-step").addEventListener("click",function(){if(!activeTaktik)return;activeTaktik.steps.push(currentSnap());renderRecSteps();});
 document.getElementById("btn-stop-rec").addEventListener("click",function(){if(!activeTaktik||activeTaktik.steps.length<2)return;var newFilm={name:activeTaktik.name,steps:activeTaktik.steps};taktikFilmer.push(newFilm);cloudSaveTaktik(newFilm);activeTaktik=null;document.getElementById("rec-badge").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("no-rec-ui").style.display="block";renderTaktikList();});
 function renderRecSteps(){var list=document.getElementById("rec-steps-list");list.innerHTML="";if(!activeTaktik)return;for(var i=0;i<activeTaktik.steps.length;i++){(function(idx){var row=document.createElement("div");row.className="row";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=activeTaktik.steps[idx]&&activeTaktik.steps[idx].label?activeTaktik.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);var jmp=document.createElement("button");jmp.className="sa jump";jmp.textContent="Hoppa";jmp.addEventListener("click",function(){restoreSnap(activeTaktik.steps[idx]);render();});var upd=document.createElement("button");upd.className="sa save2";upd.textContent="Spara";upd.addEventListener("click",function(){activeTaktik.steps[idx]=currentSnap();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);row.appendChild(upd);if(idx>0){var del=document.createElement("button");del.className="sa del";del.textContent="\u00d7";del.addEventListener("click",function(){activeTaktik.steps.splice(idx,1);renderRecSteps();});row.appendChild(del);}list.appendChild(row);})(i);}}
 function renderTaktikList(){
@@ -1499,21 +1491,17 @@ function duplicateTaktik(idx){var tk=taktikFilmer[idx];var copy={name:"Kopia av 
 function openMergeTaktik(idx){mergingTaktikIdx=idx;document.getElementById("merge-base-name").textContent=taktikFilmer[idx].name;var list=document.getElementById("merge-taktik-list");list.innerHTML="";for(var i=0;i<taktikFilmer.length;i++){if(i===idx)continue;(function(i2){var tk2=taktikFilmer[i2];var row=document.createElement("div");row.className="row";row.style.cursor="pointer";var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk2.name;var cnt=document.createElement("span");cnt.className="row-sub";cnt.textContent=(tk2.steps.length-1)+" steg";var btn=document.createElement("button");btn.className="sa play";btn.textContent="L\u00e4gg till";btn.addEventListener("click",function(){mergeTaktik(mergingTaktikIdx,i2);document.getElementById("modal-merge-taktik").classList.add("hidden");mergingTaktikIdx=null;});row.appendChild(nm);row.appendChild(cnt);row.appendChild(btn);list.appendChild(row);})(i);}document.getElementById("modal-merge-taktik").classList.remove("hidden");}
 function mergeTaktik(idxA,idxB){var tkA=taktikFilmer[idxA],tkB=taktikFilmer[idxB];var merged={name:tkA.name+" + "+tkB.name,folder:tkA.folder||"Allm\u00e4nt",steps:JSON.parse(JSON.stringify(tkA.steps)).concat(JSON.parse(JSON.stringify(tkB.steps)).slice(1))};taktikFilmer.push(merged);cloudSaveTaktik(merged);cloudStatus("\u2705 Filmer sammanfogade","#4ae87a");showToast("Filmer sammanfogade!");}
 document.getElementById("merge-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-merge-taktik").classList.add("hidden");mergingTaktikIdx=null;});
-document.getElementById("btn-new-taktik").addEventListener("click",function(){document.getElementById("taktik-name-inp").value="";document.getElementById("modal-new-taktik").classList.remove("hidden");setTimeout(function(){document.getElementById("taktik-name-inp").focus();},100);});
+document.getElementById("btn-new-taktik").addEventListener("click",function(){document.getElementById("taktik-name-inp").value="";document.getElementById("modal-new-taktik").classList.remove("hidden");setTimeout(function(){document.getElementById("taktik-name-inp").focus();},150);});
 document.getElementById("new-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-new-taktik").classList.add("hidden");});
 document.getElementById("new-taktik-ok").addEventListener("click",function(){
-  var name=document.getElementById("taktik-name-inp").value.trim();
-  if(!name)return;
+  var name=document.getElementById("taktik-name-inp").value.trim();if(!name)return;
   document.getElementById("modal-new-taktik").classList.add("hidden");
   var newFilm={name:name,folder:"Taktik",steps:[currentSnap()]};
-  taktikFilmer.push(newFilm);
-  cloudSaveTaktik(newFilm);
-  var idx=taktikFilmer.length-1;
-  startPlayback(idx);
+  taktikFilmer.push(newFilm);cloudSaveTaktik(newFilm);
+  startPlayback(taktikFilmer.length-1);
 });
 function startPlayback(idx){var tk=taktikFilmer[idx];if(!tk||!tk.steps||!tk.steps.length){cloudStatus("\u274c Ogiltig taktikfilm","#e84a4a");return;}if(animFrame)cancelAnimationFrame(animFrame);playback={tk:tk,stepIndex:0,animating:false};var s0=tk.steps[0];restoreSnap(s0);render();document.getElementById("taktikbar").style.display="flex";
-  document.getElementById("bottompanel").classList.add("hidden");
-  document.getElementById("panel-show-btn").classList.remove("visible");document.getElementById("taktikbar-title").textContent=tk.name;updatePlaybar();editingTaktikIdx=idx;editingStepIdx=0;isEditingTaktik=true;document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("edit-taktik-ui").style.display="block";document.getElementById("edit-taktik-title-lbl").textContent="\u270f "+tk.name;updateEditStepUI_silent();document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-taktik");});}
+  document.getElementById("bottompanel").classList.add("hidden");document.getElementById("taktikbar-title").textContent=tk.name;updatePlaybar();editingTaktikIdx=idx;editingStepIdx=0;isEditingTaktik=true;document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("edit-taktik-ui").style.display="block";document.getElementById("edit-taktik-title-lbl").textContent="\u270f "+tk.name;updateEditStepUI_silent();document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-taktik");});}
 function updateEditStepUI_silent(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];if(!tk||!tk.steps)return;var s=tk.steps[editingStepIdx];var total=tk.steps.length-1;document.getElementById("edit-step-counter").textContent=(editingStepIdx===0?"Start":"Steg "+editingStepIdx)+"/"+total;document.getElementById("edit-step-name-inp").value=s.label||(editingStepIdx===0?"Startl\u00e4ge":"Steg "+editingStepIdx);document.getElementById("btn-edit-step-prev").style.opacity=editingStepIdx>0?"1":"0.3";document.getElementById("btn-edit-step-next").style.opacity=editingStepIdx<total?"1":"0.3";document.getElementById("btn-edit-del-step").style.opacity=editingStepIdx>0?"1":"0.3";renderEditSteps(tk);}
 function stopPlayback(){if(animFrame)cancelAnimationFrame(animFrame);playback=null;document.getElementById("taktikbar").style.display="none";exitEditTaktik();render();}
 document.getElementById("btn-stop-play").addEventListener("click",stopPlayback);
@@ -1522,20 +1510,19 @@ document.getElementById("btn-edit-update-step2").addEventListener("click",functi
   var tk=taktikFilmer[editingTaktikIdx];
   var snap=currentSnap();
   var lbl=document.getElementById("edit-step-name-inp").value.trim();if(lbl)snap.label=lbl;
-  // Update next step positions to movement path endpoints
+  // Update NEXT step positions to movement path endpoints
   var nextStep=tk.steps[editingStepIdx+1];
   if(nextStep&&snap.movementPaths&&snap.movementPaths.length){
     snap.movementPaths.forEach(function(mp){
       if(!mp.pts||!mp.pts.length)return;
       var ep=mp.pts[mp.pts.length-1];
       if(mp.playerId==="ball"){nextStep.ball.x=ep.x;nextStep.ball.y=ep.y;}
-      else{var pp=nextStep.players.find(function(x){return x.id===mp.playerId;});if(pp){pp.x=ep.x;pp.y=ep.y;}}
+      else{var np=nextStep.players.find(function(x){return x.id===mp.playerId;});if(np){np.x=ep.x;np.y=ep.y;}}
     });
   }
-  movementPaths=[];
   saveTaktikUndo();tk.steps[editingStepIdx]=snap;
   if(playback)playback.tk=taktikFilmer[editingTaktikIdx];
-  showToast("Steg sparat!");cloudStatus("\u2705 Steg sparat","#4ae87a");renderEditSteps(tk);render();
+  showToast("Steg sparat!");cloudStatus("\u2705 Steg sparat","#4ae87a");renderEditSteps(tk);
 });
 document.getElementById("btn-taktikbar-save").addEventListener("click",function(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder||"Allm\u00e4nt"})}).then(function(){showToast("Film sparad!");cloudStatus("\u2705 Film sparad","#4ae87a");});}else{showToast("Film sparad!");cloudStatus("\u2705 Sparad lokalt","#4ae87a");}});
 document.getElementById("btn-first").addEventListener("click",function(){if(!playback||playback.animating)return;editingStepIdx=0;playback.stepIndex=0;restoreSnap(taktikFilmer[editingTaktikIdx]?taktikFilmer[editingTaktikIdx].steps[0]:playback.tk.steps[0]);render();updatePlaybar();updateEditStepUI_silent();});
@@ -1545,28 +1532,33 @@ document.getElementById("play-speed").addEventListener("change",function(){animS
 function updatePlaybar(){if(!playback)return;var cur=playback.stepIndex,total=playback.tk.steps.length-1;document.getElementById("taktikbar-title").textContent=playback.tk.name;document.getElementById("play-counter").textContent=cur===0?"Start":cur+"/"+total;document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";renderPlayStepList();updateLandscapeStrip();updateFsPortraitNav();}
 function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
 function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx];var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});var fromBall={x:ball.x,y:ball.y};var start=performance.now();function frame(now){var t=Math.min(1,(now-start)/animSpeed);var ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){
-          var mvPath=null;var fromSnap2=targetIdx>0?playback.tk.steps[targetIdx-1]:null;
-          var fromMvs=(fromSnap2&&fromSnap2.movementPaths)||[];
+          // Check for movement path in the step we're animating FROM
+          var mvPath=null;
+          var fromStep=targetIdx>0?playback.tk.steps[targetIdx-1]:null;
+          var fromMvs=(fromStep&&fromStep.movementPaths)||[];
           for(var k=0;k<fromMvs.length;k++){if(fromMvs[k].playerId===players[i].id){mvPath=fromMvs[k];break;}}
           if(mvPath&&mvPath.pts.length>1){
-            // Smooth easing along path
             var nSeg=mvPath.pts.length-1;
-            var smoothT=ease<0.5?2*ease*ease:1-Math.pow(-2*ease+2,2)/2;
-            var pos2=smoothT*nSeg,seg=Math.min(Math.floor(pos2),nSeg-1),segT=pos2-seg;
-            players[i].x=mvPath.pts[seg].x+(mvPath.pts[seg+1].x-mvPath.pts[seg].x)*segT;
-            players[i].y=mvPath.pts[seg].y+(mvPath.pts[seg+1].y-mvPath.pts[seg].y)*segT;
-          } else {players[i].x=fp.x+(tp2.x-fp.x)*ease;players[i].y=fp.y+(tp2.y-fp.y)*ease;}
+            var pos=ease*nSeg;
+            var seg=Math.min(Math.floor(pos),nSeg-1);
+            players[i].x=mvPath.pts[seg].x+(mvPath.pts[seg+1].x-mvPath.pts[seg].x)*(pos-seg);
+            players[i].y=mvPath.pts[seg].y+(mvPath.pts[seg+1].y-mvPath.pts[seg].y)*(pos-seg);
+          } else {
+            players[i].x=fp.x+(tp2.x-fp.x)*ease;
+            players[i].y=fp.y+(tp2.y-fp.y)*ease;
+          }
         }var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}if(tx){tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);if(document.body.classList.contains("landscape")&&!document.body.classList.contains("desktop"))tx.setAttribute("transform","rotate(90,"+players[i].x+","+players[i].y+")");else tx.removeAttribute("transform");}}}var ballMvPath=null;
-      var fromSnap3=targetIdx>0?playback.tk.steps[targetIdx-1]:null;
-      var fromMvsBall=(fromSnap3&&fromSnap3.movementPaths)||[];
-      for(var k2=0;k2<fromMvsBall.length;k2++){if(fromMvsBall[k2].playerId==="ball"){ballMvPath=fromMvsBall[k2];break;}}
+      var fromStepB=targetIdx>0?playback.tk.steps[targetIdx-1]:null;
+      var fromMvsB=(fromStepB&&fromStepB.movementPaths)||[];
+      for(var kb=0;kb<fromMvsB.length;kb++){if(fromMvsB[kb].playerId==="ball"){ballMvPath=fromMvsB[kb];break;}}
       if(ballMvPath&&ballMvPath.pts.length>1){
-        var bSmoothT=ease<0.5?2*ease*ease:1-Math.pow(-2*ease+2,2)/2;
-        var bSeg=ballMvPath.pts.length-1,bPos=bSmoothT*bSeg,bS=Math.min(Math.floor(bPos),bSeg-1),bT=bPos-bS;
-        ball.x=ballMvPath.pts[bS].x+(ballMvPath.pts[bS+1].x-ballMvPath.pts[bS].x)*bT;
-        ball.y=ballMvPath.pts[bS].y+(ballMvPath.pts[bS+1].y-ballMvPath.pts[bS].y)*bT;
-      } else {ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;}var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);
-          render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}};animFrame=requestAnimationFrame(frame);}
+        var bSeg=ballMvPath.pts.length-1,bPos=ease*bSeg,bS=Math.min(Math.floor(bPos),bSeg-1);
+        ball.x=ballMvPath.pts[bS].x+(ballMvPath.pts[bS+1].x-ballMvPath.pts[bS].x)*(bPos-bS);
+        ball.y=ballMvPath.pts[bS].y+(ballMvPath.pts[bS+1].y-ballMvPath.pts[bS].y)*(bPos-bS);
+      } else {
+        ball.x=fromBall.x+(target.ball.x-fromBall.x)*ease;
+        ball.y=fromBall.y+(target.ball.y-fromBall.y)*ease;
+      }var bg=svg.querySelector(".ball-token");if(bg){var bt=bg.querySelector("text"),bh=bg.querySelector("circle");if(bt){bt.setAttribute("x",ball.x);bt.setAttribute("y",ball.y);}if(bh){bh.setAttribute("cx",ball.x);bh.setAttribute("cy",ball.y);}}if(t<1){animFrame=requestAnimationFrame(frame);}else{restoreSnap(target);render();if(playback){playback.animating=false;var loopOn=document.getElementById("play-loop").checked;if(loopOn&&targetIdx>=playback.tk.steps.length-1){setTimeout(function(){if(!playback)return;restoreSnap(playback.tk.steps[0]);render();playback.stepIndex=0;updatePlaybar();setTimeout(function(){if(playback)animateToStep(1);},600);},800);}}}};animFrame=requestAnimationFrame(frame);}
 function buildState(){return{format:format,homeColor:homeColor,awayColor:awayColor,displayMode:displayMode,players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size};})};}
 function applyState(s){format=s.format||11;homeColor=s.homeColor||"#e8c84a";awayColor=s.awayColor||"#e84a4a";displayMode=s.displayMode||"number";document.getElementById("fmt-sel").value=String(format);players=(s.players||[]).map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball=s.ball||{x:W/2,y:H/2};arrows=(s.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2};});labels=(s.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13};});buildFormationBtns();render();}
 document.getElementById("btn-export").addEventListener("click",function(){var data={savedFormations:savedFormations,current:buildState()};var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));var a=document.createElement("a");a.href=url;a.download="taktik.json";a.click();URL.revokeObjectURL(url);});
@@ -2046,6 +2038,16 @@ document.getElementById("fs-day-btn").addEventListener("click",function(){docume
     });
   });
 })();
+(function(){
+  var tbMap={"btn-tb-arrow":"arrow","btn-tb-freehand":"freehand","btn-tb-zone":"zone","btn-tb-text":"text","btn-tb-movement":"movement"};
+  Object.keys(tbMap).forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    el.addEventListener("click",function(){
+      var m=tbMap[id];setMode(mode===m?"move":m);
+      Object.keys(tbMap).forEach(function(bid){var b=document.getElementById(bid);if(b)b.classList.toggle("on",mode===tbMap[bid]);});
+    });
+  });
+})();
 document.getElementById("ls-day-btn3").addEventListener("click",function(){daylightMode=!daylightMode;document.body.classList.toggle("daylight",daylightMode);document.getElementById("btn-daylight").innerHTML=daylightMode?"&#9790; Normal":"&#9728; Dag";drawPitch();render();});
 var _manualLandscape=null;
 var _isDesktop=navigator.maxTouchPoints===0;
@@ -2088,18 +2090,6 @@ document.getElementById("ls-loop").addEventListener("change",function(){document
 var _orientTimer=null;
 window.addEventListener("resize",function(){if(_orientTimer)clearTimeout(_orientTimer);_orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=null;},200);});
 window.addEventListener("orientationchange",function(){if(_orientTimer)clearTimeout(_orientTimer);_orientTimer=setTimeout(function(){handleOrientation();render();_orientTimer=null;},350);});
-
-// Taktikbar quick draw buttons
-(function(){
-  var tbMap={"btn-tb-arrow":"arrow","btn-tb-freehand":"freehand","btn-tb-zone":"zone","btn-tb-text":"text","btn-tb-movement":"movement"};
-  Object.keys(tbMap).forEach(function(id){
-    var el=document.getElementById(id);if(!el)return;
-    el.addEventListener("click",function(){
-      var m=tbMap[id];setMode(mode===m?"move":m);
-      Object.keys(tbMap).forEach(function(bid){var b=document.getElementById(bid);if(b)b.classList.toggle("on",mode===tbMap[bid]);});
-    });
-  });
-})();
 
 // Init
 drawPitch();
