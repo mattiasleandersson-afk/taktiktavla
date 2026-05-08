@@ -354,7 +354,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v19.6</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v19.7</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1594,7 +1594,19 @@ document.getElementById("btn-prev").addEventListener("click",function(){if(!play
 document.getElementById("play-speed").addEventListener("change",function(){animSpeed=parseInt(this.value);});
 function updatePlaybar(){if(!playback)return;var cur=playback.stepIndex,total=playback.tk.steps.length-1;document.getElementById("taktikbar-title").textContent=playback.tk.name;document.getElementById("play-counter").textContent=cur===0?"Start":cur+"/"+total;document.getElementById("btn-prev").style.opacity=cur>0?"1":"0.3";document.getElementById("btn-next").style.opacity=cur<total?"1":"0.3";renderPlayStepList();updateLandscapeStrip();updateFsPortraitNav();}
 function renderPlayStepList(){if(!playback)return;var list=document.getElementById("taktik-list");list.innerHTML="";var tk=playback.tk;for(var i=0;i<tk.steps.length;i++){(function(idx){var isCur=playback.stepIndex===idx;var row=document.createElement("div");row.className="row";row.style.borderColor=isCur?"#4ae87a":"#2d4a35";var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var lbl=document.createElement("span");lbl.className="row-name";lbl.textContent=tk.steps[idx]&&tk.steps[idx].label?tk.steps[idx].label:(idx===0?"Startl\u00e4ge":"Steg "+idx);var jmp=document.createElement("button");jmp.className="sa "+(isCur?"save2":"jump");jmp.textContent=isCur?"Aktiv":"Hoppa";if(!isCur)jmp.addEventListener("click",function(){if(playback.animating)return;playback.stepIndex=idx;restoreSnap(tk.steps[idx]);render();updatePlaybar();});row.appendChild(num);row.appendChild(lbl);row.appendChild(jmp);list.appendChild(row);})(i);}}
-function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx];var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});var fromBall={x:ball.x,y:ball.y};var fromStepMvs=(targetIdx>0&&playback.tk.steps[targetIdx-1]&&playback.tk.steps[targetIdx-1].movementPaths)||[];var stepAnimSpeed=fromStepMvs.length?animSpeed*2:animSpeed;var start=performance.now();function frame(now){var t=Math.min(1,(now-start)/stepAnimSpeed);var ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){
+function animateToStep(targetIdx){if(!playback)return;playback.animating=true;playback.stepIndex=targetIdx;updatePlaybar();var target=playback.tk.steps[targetIdx];var fromPlayers=players.map(function(p){return{id:p.id,x:p.x,y:p.y};});var fromBall={x:ball.x,y:ball.y};
+  // Calculate max movement distance to keep constant speed
+  var maxDist=0;
+  for(var _pi=0;_pi<fromPlayers.length;_pi++){
+    var _fp=fromPlayers[_pi];
+    var _tp=null;for(var _j=0;_j<target.players.length;_j++)if(target.players[_j].id===_fp.id){_tp=target.players[_j];break;}
+    if(_tp){var _dx=_tp.x-_fp.x,_dy=_tp.y-_fp.y;var _d=Math.sqrt(_dx*_dx+_dy*_dy);if(_d>maxDist)maxDist=_d;}
+  }
+  var _bdx=target.ball.x-fromBall.x,_bdy=target.ball.y-fromBall.y;
+  var _bd=Math.sqrt(_bdx*_bdx+_bdy*_bdy);if(_bd>maxDist)maxDist=_bd;
+  // animSpeed ms per 100px - so 200px takes 2x animSpeed, 50px takes 0.5x
+  var stepAnimSpeed=maxDist>2?(maxDist/100)*animSpeed:animSpeed*0.3;
+  var start=performance.now();function frame(now){var t=Math.min(1,(now-start)/stepAnimSpeed);var ease=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;for(var i=0;i<players.length;i++){var fp=null,tp2=null;for(var j=0;j<fromPlayers.length;j++)if(fromPlayers[j].id===players[i].id){fp=fromPlayers[j];break;}for(var j=0;j<target.players.length;j++)if(target.players[j].id===players[i].id){tp2=target.players[j];break;}if(fp&&tp2){
           // Check for movement path in the step we're animating FROM
           var mvPath=null;
           var fromStep=targetIdx>0?playback.tk.steps[targetIdx-1]:null;
