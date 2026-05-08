@@ -354,7 +354,7 @@ hr.mdiv { border: none; border-top: 1px solid #2d4a35; margin: 10px 0; }
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v19.8</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v19.9</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1137,6 +1137,40 @@ function updateViewBox(){
   else svg.setAttribute("viewBox","0 0 400 600");
 }
 
+
+// Resample path to evenly-spaced points for consistent animation speed
+function resamplePath(pts, numPts){
+  if(!pts||pts.length<2)return pts;
+  // Calculate total length
+  var totalLen=0;
+  var segLens=[];
+  for(var i=1;i<pts.length;i++){
+    var dx=pts[i].x-pts[i-1].x,dy=pts[i].y-pts[i-1].y;
+    var l=Math.sqrt(dx*dx+dy*dy);
+    segLens.push(l);
+    totalLen+=l;
+  }
+  if(totalLen<1)return pts;
+  // Resample to numPts evenly spaced points
+  var result=[{x:pts[0].x,y:pts[0].y}];
+  var step=totalLen/(numPts-1);
+  var traveled=0,segIdx=0,segTraveled=0;
+  for(var n=1;n<numPts-1;n++){
+    var target2=n*step;
+    while(segIdx<segLens.length&&traveled+segLens[segIdx]<target2){
+      traveled+=segLens[segIdx];segTraveled=0;segIdx++;
+    }
+    if(segIdx>=segLens.length)break;
+    var rem=target2-traveled;
+    var t2=segLens[segIdx]>0?rem/segLens[segIdx]:0;
+    result.push({
+      x:pts[segIdx].x+(pts[segIdx+1].x-pts[segIdx].x)*t2,
+      y:pts[segIdx].y+(pts[segIdx+1].y-pts[segIdx].y)*t2
+    });
+  }
+  result.push({x:pts[pts.length-1].x,y:pts[pts.length-1].y});
+  return result;
+}
 function render(){
   // Clear movement paths when leaving edit mode
   if(editingTaktikIdx===null){movementPaths=[];}
@@ -1203,7 +1237,7 @@ function render(){
       function _mvA(ev2){ev2.preventDefault();if(movementCurrent)movementCurrent.pts.push(svgPt(ev2.touches[0].clientX,ev2.touches[0].clientY));renderMovementPreview();}
       function _mvAEnd(){
         window.removeEventListener("touchmove",_mvA);window.removeEventListener("touchend",_mvAEnd);
-        if(movementCurrent&&movementCurrent.pts.length>3)movementPaths.push(movementCurrent);
+        if(movementCurrent&&movementCurrent.pts.length>3){movementCurrent.pts=resamplePath(movementCurrent.pts,30);movementPaths.push(movementCurrent);}
         movementCurrent=null;render();
       }
       window.addEventListener("touchmove",_mvA,{passive:false});window.addEventListener("touchend",_mvAEnd);return;
@@ -1295,7 +1329,7 @@ function render(){
     function _mvB(ev2){ev2.preventDefault();if(movementCurrent)movementCurrent.pts.push(svgPt(ev2.touches[0].clientX,ev2.touches[0].clientY));renderMovementPreview();}
     function _mvBEnd(){
       window.removeEventListener("touchmove",_mvB);window.removeEventListener("touchend",_mvBEnd);
-      if(movementCurrent&&movementCurrent.pts.length>3)movementPaths.push(movementCurrent);
+      if(movementCurrent&&movementCurrent.pts.length>3){movementCurrent.pts=resamplePath(movementCurrent.pts,30);movementPaths.push(movementCurrent);}
       movementCurrent=null;render();
     }
     window.addEventListener("touchmove",_mvB,{passive:false});window.addEventListener("touchend",_mvBEnd);return;
