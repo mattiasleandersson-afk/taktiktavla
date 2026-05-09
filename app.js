@@ -503,6 +503,33 @@ document.getElementById("edit-text-del").addEventListener("click",function(){if(
 document.getElementById("edit-text-inp").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("edit-text-ok").click();});
 document.getElementById("btn-undo").addEventListener("click",doUndo);
 document.getElementById("btn-reset").addEventListener("click",function(){initPlayers(document.querySelector("#formation-btns .on")?document.querySelector("#formation-btns .on").textContent:"4-4-2");arrows=[];labels=[];freehandPaths=[];zones=[];render();});
+// Återställ aktuell arbetsyta till markerad standardformation
+function resetCurrentWorkspaceToDefault(){
+  var key=typeof workspaceKeyFromPanel==="function"?workspaceKeyFromPanel(activeWorkspacePanel||"formations"):"formation";
+  if(typeof resetWorkspaceForKey==="function"){
+    resetWorkspaceForKey(key);
+    if(typeof workspaceStates!=="undefined")workspaceStates[key]=captureWorkspaceState();
+  }else{
+    format=typeof _defaultFormat!=="undefined"?_defaultFormat:11;
+    var fmtSel=document.getElementById("fmt-sel");if(fmtSel)fmtSel.value=String(format);
+    if(typeof buildFormationBtns==="function")buildFormationBtns();
+    initPlayers(typeof _defaultFormation!=="undefined"?_defaultFormation:"4-4-2");
+    arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];selectedId=null;
+    render();
+  }
+  showToast("Återställt till standardformation");
+}
+(function(){
+  var oldBtn=document.getElementById("btn-standard-reset");if(oldBtn)return;
+  var ref=document.getElementById("btn-reset");if(!ref||!ref.parentNode)return;
+  var b=document.createElement("button");
+  b.className="btn";
+  b.id="btn-standard-reset";
+  b.title="Återställ aktuell arbetsyta till din standardformation";
+  b.textContent="↺ Standard";
+  b.addEventListener("click",resetCurrentWorkspaceToDefault);
+  ref.parentNode.insertBefore(b,ref.nextSibling);
+})();
 var clearBtn=document.createElement("button");clearBtn.className="btn";clearBtn.title="Rensa pilar, frihand och zoner";clearBtn.textContent="Rensa";clearBtn.addEventListener("click",function(){saveUndo();arrows=[];labels=[];freehandPaths=[];zones=[];render();showToast("Ritningar rensade!");});
 document.getElementById("btn-freehand").parentNode.insertBefore(clearBtn,document.getElementById("btn-freehand"));
 document.getElementById("fmt-sel").addEventListener("change",function(e){format=parseInt(e.target.value);buildFormationBtns();initPlayers((FORMATIONS[format]||FORMATIONS[11])[0]);render();});
