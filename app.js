@@ -3625,3 +3625,69 @@ if(typeof renderTaktikList==="function")renderTaktikList();
 if(typeof renderSavesList==="function")renderSavesList();
 
 /* === slut v24 === */
+
+
+/* === v25: samma dela-UI för utgångslägen som taktik === */
+function formationShareIconV25(s){
+  try{
+    var meta=(typeof fileMetaV10==="function")?fileMetaV10(s):((s&&s._meta)||{});
+    return meta && meta.sharedWithTeam ? "👥" : "👤";
+  }catch(e){
+    return "👤";
+  }
+}
+
+var _renderSavesList_v25 = renderSavesList;
+renderSavesList = function(){
+  _renderSavesList_v25.apply(this, arguments);
+
+  var list=document.getElementById("saves-list");
+  if(!list)return;
+
+  // Lägg till/uppdatera delningsikon visuellt på samma sätt som i taktik.
+  Array.prototype.forEach.call(list.querySelectorAll(".row"), function(row){
+    try{
+      var txt=row.textContent||"";
+      var idxMatch=txt.match(/^\s*(\d+)/);
+      var idx = idxMatch ? parseInt(idxMatch[1],10)-1 : null;
+
+      // fallback: försök hitta dataset
+      if((idx===null || isNaN(idx)) && row.dataset && row.dataset.idx){
+        idx=parseInt(row.dataset.idx,10);
+      }
+      if(idx===null || isNaN(idx))return;
+
+      var s=savedFormations && savedFormations[idx];
+      if(!s)return;
+
+      var existing=row.querySelector(".share-badge-v25");
+      if(existing)existing.remove();
+
+      var badge=document.createElement("span");
+      badge.className="share-badge-v25";
+      badge.style.marginLeft="6px";
+      badge.style.fontSize="12px";
+      badge.style.opacity="0.9";
+
+      var meta=(typeof fileMetaV10==="function")?fileMetaV10(s):((s&&s._meta)||{});
+      if(meta && meta.sharedWithTeam){
+        badge.textContent="👥 Delad";
+      }else{
+        badge.textContent="";
+      }
+
+      // Lägg efter första label/text.
+      var first=row.querySelector("span,div");
+      if(first && badge.textContent){
+        first.appendChild(badge);
+      }
+
+      // Lagets = readonly markering
+      if(typeof saveScope!=="undefined" && saveScope==="team"){
+        row.style.opacity="0.96";
+      }
+
+    }catch(e){}
+  });
+};
+/* === slut v25 === */
