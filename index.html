@@ -570,5 +570,136 @@
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
 <script src="app.js"></script>
+
+<script>
+(function(){
+  function afterAppToolbarFix(){
+    var svg = document.getElementById("pitch-svg");
+    if(!svg || typeof window.render !== "function") return;
+
+    function repaintToolbar(){
+      var map={"btn-arrow":"arrow","btn-text":"text","btn-freehand":"freehand","btn-zone":"zone","btn-movement":"movement"};
+      Object.keys(map).forEach(function(id){
+        var b=document.getElementById(id);
+        if(b)b.classList.toggle("on", window.mode===map[id]);
+      });
+    }
+
+    function bindTool(id,tool){
+      var old=document.getElementById(id);
+      if(!old)return;
+      var btn=old.cloneNode(true);
+      old.parentNode.replaceChild(btn,old);
+      btn.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        if(typeof window.setMode==="function"){
+          window.setMode(window.mode===tool ? "move" : tool);
+        }else{
+          window.mode = window.mode===tool ? "move" : tool;
+          window.render();
+        }
+
+        setTimeout(repaintToolbar,0);
+        return false;
+      },true);
+    }
+
+    bindTool("btn-arrow","arrow");
+    bindTool("btn-text","text");
+    bindTool("btn-freehand","freehand");
+    bindTool("btn-zone","zone");
+    bindTool("btn-movement","movement");
+
+    function drawCorridors(){
+      var old=svg.querySelectorAll(".korridor-lastfix");
+      old.forEach(function(x){x.remove();});
+
+      var chk=document.getElementById("chk-korridorer");
+      if(!chk || !chk.checked)return;
+
+      window.showKorridorer=true;
+
+      var ns="http://www.w3.org/2000/svg";
+      var cols=[
+        {x:0,w:72,label:"Yttre korridor",fill:"rgba(74,232,232,0.18)",stroke:"rgba(74,232,232,0.85)"},
+        {x:72,w:72,label:"Inre korridor",fill:"rgba(160,120,255,0.18)",stroke:"rgba(160,120,255,0.85)"},
+        {x:144,w:112,label:"Central korridor",fill:"rgba(74,232,122,0.16)",stroke:"rgba(74,232,122,0.85)"},
+        {x:256,w:72,label:"Inre korridor",fill:"rgba(160,120,255,0.18)",stroke:"rgba(160,120,255,0.85)"},
+        {x:328,w:72,label:"Yttre korridor",fill:"rgba(74,232,232,0.18)",stroke:"rgba(74,232,232,0.85)"}
+      ];
+
+      var all=document.createElementNS(ns,"g");
+      all.setAttribute("class","korridor-lastfix");
+      all.style.pointerEvents="none";
+
+      cols.forEach(function(c){
+        var g=document.createElementNS(ns,"g");
+        var r=document.createElementNS(ns,"rect");
+        r.setAttribute("x",c.x);
+        r.setAttribute("y",0);
+        r.setAttribute("width",c.w);
+        r.setAttribute("height",600);
+        r.setAttribute("fill",c.fill);
+        r.setAttribute("stroke",c.stroke);
+        r.setAttribute("stroke-width","1.5");
+        g.appendChild(r);
+
+        [18,586].forEach(function(y){
+          var t=document.createElementNS(ns,"text");
+          t.setAttribute("x",c.x+c.w/2);
+          t.setAttribute("y",y);
+          t.setAttribute("text-anchor","middle");
+          t.setAttribute("fill",c.stroke);
+          t.setAttribute("font-size","8");
+          t.setAttribute("font-family","Arial Narrow, Arial, sans-serif");
+          t.setAttribute("font-weight","900");
+          t.textContent=c.label;
+          g.appendChild(t);
+        });
+
+        all.appendChild(g);
+      });
+
+      var first=svg.querySelector(".zone-g,.freehand-g,.arrow-g,.player-token,.ball-token");
+      if(first&&first.parentNode===svg)svg.insertBefore(all,first);
+      else svg.appendChild(all);
+    }
+
+    var oldRender=window.render;
+    window.render=function(){
+      var res=oldRender.apply(this,arguments);
+      drawCorridors();
+      repaintToolbar();
+      return res;
+    };
+
+    var chk=document.getElementById("chk-korridorer");
+    if(chk){
+      var newChk=chk.cloneNode(true);
+      newChk.checked=chk.checked;
+      chk.parentNode.replaceChild(newChk,chk);
+      newChk.addEventListener("change",function(){
+        window.showKorridorer=!!newChk.checked;
+        window.render();
+        drawCorridors();
+      },true);
+    }
+
+    repaintToolbar();
+    drawCorridors();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){setTimeout(afterAppToolbarFix,0);});
+  }else{
+    setTimeout(afterAppToolbarFix,0);
+  }
+  window.addEventListener("load",function(){setTimeout(afterAppToolbarFix,0);});
+})();
+</script>
+
 </body>
 </html>
