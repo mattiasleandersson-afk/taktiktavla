@@ -4101,3 +4101,109 @@ copyFormationToMineV10=copyFormationToMineV26;
 
 if(typeof cloudLoadSaves==="function")cloudLoadSaves();
 /* === slut v27 === */
+
+
+
+/* === v28: Ny uppställning + tajtare import/export === */
+function openSaveAsFormationModalV28(){
+  var d=new Date();
+  var inp=document.getElementById("save-name-inp");
+  if(inp)inp.value="Uppställning "+d.getDate()+"/"+(d.getMonth()+1)+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);
+  if(typeof updateFolderSelect==="function")updateFolderSelect();
+  var m=document.getElementById("modal-savename");
+  if(m)m.classList.remove("hidden");
+}
+
+function newFormationV28(){
+  // Skapa ny arbetsyta: återställ till standard/favorit och gör att nästa sparning blir ny fil.
+  activeFormationId=null;
+  activeFormationName=null;
+
+  if(typeof resetCurrentWorkspaceToDefault==="function"){
+    resetCurrentWorkspaceToDefault();
+  }else if(typeof clearCoachboardToFormation==="function"){
+    clearCoachboardToFormation();
+  }else{
+    try{
+      initPlayers(typeof getCurrentFormationForReset==="function"?getCurrentFormationForReset():"4-4-2");
+      ball={x:W/2,y:H/2};
+      arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];
+      selectedId=null;
+      if(typeof setMode==="function")setMode("move");
+      render();
+    }catch(e){}
+  }
+
+  if(typeof updateSaveButtons==="function")updateSaveButtons();
+  showToast("Ny uppställning – spara som ny fil när du är klar");
+}
+
+function compactBtnV28(id,txt,title){
+  var b=document.getElementById(id);
+  if(!b)return null;
+  b.textContent=txt;
+  b.title=title;
+  b.setAttribute("aria-label",title);
+  b.style.padding="3px 6px";
+  b.style.fontSize="0.72rem";
+  b.style.minWidth="28px";
+  b.style.whiteSpace="nowrap";
+  return b;
+}
+
+function setupFormationTopbarV28(){
+  // Gör befintliga knappar mindre.
+  compactBtnV28("btn-export","⇧","Exportera uppställningar/backup");
+  compactBtnV28("btn-import-btn","⇩","Importera uppställningar/backup");
+  compactBtnV28("btn-export-taktik","⇧T","Exportera taktikfilmer/backup");
+  compactBtnV28("btn-import-taktik-btn","⇩T","Importera taktikfilmer/backup");
+
+  var saveAs=document.getElementById("btn-save-as-topbar");
+  if(saveAs){
+    saveAs.textContent="Spara som";
+    saveAs.style.padding="4px 8px";
+    saveAs.style.fontSize="0.72rem";
+  }
+
+  if(!document.getElementById("btn-new-formation-v28")){
+    var btn=document.createElement("button");
+    btn.id="btn-new-formation-v28";
+    btn.className="btn";
+    btn.textContent="Ny";
+    btn.title="Ny uppställning";
+    btn.setAttribute("aria-label","Ny uppställning");
+    btn.style.padding="4px 8px";
+    btn.style.fontSize="0.72rem";
+    btn.style.color="#4ae8e8";
+    btn.style.borderColor="#4ae8e8";
+    btn.addEventListener("click",newFormationV28);
+
+    if(saveAs&&saveAs.parentNode){
+      saveAs.parentNode.insertBefore(btn,saveAs);
+    }else{
+      var ref=document.getElementById("btn-half")||document.getElementById("btn-cloud-save");
+      if(ref&&ref.parentNode)ref.parentNode.insertBefore(btn,ref);
+    }
+  }
+
+  // Om den stora moln-spara-knappen finns kvar: gör den kortare.
+  var cloud=document.getElementById("btn-cloud-save");
+  if(cloud){
+    cloud.textContent="Spara som";
+    cloud.title="Spara som ny uppställning";
+    cloud.style.padding="4px 8px";
+    cloud.style.fontSize="0.72rem";
+  }
+
+  var refresh=document.getElementById("btn-cloud-refresh");
+  if(refresh){
+    refresh.textContent="↻";
+    refresh.title="Uppdatera från molnet";
+    refresh.style.padding="4px 7px";
+    refresh.style.fontSize="0.72rem";
+    refresh.style.minWidth="28px";
+  }
+}
+
+setupFormationTopbarV28();
+/* === slut v28 === */
