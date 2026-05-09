@@ -2451,3 +2451,126 @@ renderTaktikList = function(){
   return _renderTaktikList_v13.apply(this, arguments);
 };
 /* === slut v13 === */
+
+
+
+/* === v15: stabila stegknappar + ren start för ny taktikfilm === */
+function replaceBtnHandlerV15(id,handler){
+  var old=document.getElementById(id);
+  if(!old)return null;
+  var neu=old.cloneNode(true);
+  old.parentNode.replaceChild(neu,old);
+  neu.addEventListener("click",handler);
+  return neu;
+}
+function getCleanTaktikStartSnapV15(){
+  // Ny taktikfilm ska inte ärva live-positioner från en nyss raderad/redigerad film.
+  var f=(typeof getCurrentFormationForReset==="function")?getCurrentFormationForReset():"4-4-2";
+  try{
+    initPlayers(f);
+  }catch(e){
+    initPlayers("4-4-2");
+  }
+  ball={x:W/2,y:H/2};
+  arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];
+  selectedId=null;arrowStart=null;arrowCurrent=null;freehandCurrent=null;zoneStart=null;zonePreview=null;movementCurrent=null;
+  setMode("move");
+  render();
+  return currentSnap();
+}
+function saveEditStepWithPropagationV15(){
+  if(editingTaktikIdx===null)return;
+  var tk=taktikFilmer[editingTaktikIdx];
+  if(!tk||!tk.steps||!tk.steps[editingStepIdx])return;
+
+  saveTaktikUndo();
+
+  var oldStep=JSON.parse(JSON.stringify(tk.steps[editingStepIdx]));
+  var snap=currentSnap();
+  var lbl=document.getElementById("edit-step-name-inp").value.trim();
+  if(lbl)snap.label=lbl;
+
+  if(typeof propagateManualStepPositionsV14==="function"){
+    propagateManualStepPositionsV14(tk,editingStepIdx,oldStep,snap);
+  }
+
+  if(snap.movementPaths&&snap.movementPaths.length){
+    snap.movementPaths.forEach(function(mp){
+      if(!mp.pts||!mp.pts.length)return;
+      var ep=mp.pts[mp.pts.length-1];
+      for(var si=editingStepIdx+1;si<tk.steps.length;si++){
+        var fs=tk.steps[si];if(!fs)continue;
+        if(typeof _stepHasMovementForV14==="function" && _stepHasMovementForV14(fs,mp.playerId))break;
+        if(typeof _setPosV14==="function")_setPosV14(fs,mp.playerId,ep);
+      }
+    });
+  }
+
+  tk.steps[editingStepIdx]=snap;
+  movementPaths=[];
+  if(playback)playback.tk=tk;
+  showToast("Steg sparat!");
+  cloudStatus("✅ Steg sparat","#4ae87a");
+  updateEditStepUI();
+}
+function initStableStepButtonsV15(){
+  replaceBtnHandlerV15("btn-edit-step-prev",function(){
+    if(editingTaktikIdx===null||editingStepIdx<=0)return;
+    editingStepIdx--;
+    updateEditStepUI();
+  });
+  replaceBtnHandlerV15("btn-edit-step-next",function(){
+    if(editingTaktikIdx===null)return;
+    var tk=taktikFilmer[editingTaktikIdx];
+    if(!tk||editingStepIdx>=tk.steps.length-1)return;
+    editingStepIdx++;
+    updateEditStepUI();
+  });
+  replaceBtnHandlerV15("btn-edit-add-step",function(){
+    if(editingTaktikIdx===null)return;
+    var tk=taktikFilmer[editingTaktikIdx];
+    if(!tk||!tk.steps)return;
+    saveTaktikUndo();
+    var snap=currentSnap();
+    tk.steps.splice(editingStepIdx+1,0,snap);
+    editingStepIdx++;
+    updateEditStepUI();
+  });
+  replaceBtnHandlerV15("btn-edit-del-step",function(){
+    if(editingTaktikIdx===null||editingStepIdx===0)return;
+    var tk=taktikFilmer[editingTaktikIdx];
+    if(!tk||!tk.steps)return;
+    saveTaktikUndo();
+    tk.steps.splice(editingStepIdx,1);
+    editingStepIdx=Math.min(editingStepIdx,tk.steps.length-1);
+    updateEditStepUI();
+  });
+  replaceBtnHandlerV15("btn-edit-update-step",function(){
+    saveEditStepWithPropagationV15();
+  });
+  replaceBtnHandlerV15("btn-edit-update-step2",function(){
+    saveEditStepWithPropagationV15();
+  });
+  replaceBtnHandlerV15("new-taktik-ok",function(){
+    var name=document.getElementById("taktik-name-inp").value.trim();
+    if(!name)return;
+    document.getElementById("modal-new-taktik").classList.add("hidden");
+
+    // Stoppa eventuell gammal film/redigering först.
+    if(animFrame)cancelAnimationFrame(animFrame);
+    playback=null;
+    editingTaktikIdx=null;
+    editingStepIdx=0;
+    isEditingTaktik=false;
+    activeTaktik=null;
+
+    var cleanSnap=getCleanTaktikStartSnapV15();
+    var newFilm={name:name,folder:"Taktik",steps:[cleanSnap],_isDraft:true};
+    taktikFilmer.push(newFilm);
+    renderTaktikList();
+    startPlayback(taktikFilmer.length-1);
+    showToast("Utkast skapat – lägg till minst ett steg innan sparning");
+  });
+}
+initStableStepButtonsV15();
+/* === slut v15 === */
