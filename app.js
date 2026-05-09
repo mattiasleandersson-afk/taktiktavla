@@ -1065,12 +1065,86 @@ function startPlayback(idx){movementPaths=[];selectedId=null;var tk=taktikFilmer
 function updateEditStepUI_silent(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];if(!tk||!tk.steps)return;var s=tk.steps[editingStepIdx];movementPaths=(s.movementPaths||[]).map(function(m){return{id:m.id,playerId:m.playerId,pts:m.pts.slice()};});var total=tk.steps.length-1;document.getElementById("edit-step-counter").textContent=(editingStepIdx===0?"Start":"Steg "+editingStepIdx)+"/"+total;document.getElementById("edit-step-name-inp").value=s.label||(editingStepIdx===0?"Startl\u00e4ge":"Steg "+editingStepIdx);document.getElementById("btn-edit-step-prev").style.opacity=editingStepIdx>0?"1":"0.3";document.getElementById("btn-edit-step-next").style.opacity=editingStepIdx<total?"1":"0.3";document.getElementById("btn-edit-del-step").style.opacity=editingStepIdx>0?"1":"0.3";renderEditSteps(tk);}
 function stopPlayback(){if(animFrame)cancelAnimationFrame(animFrame);playback=null;movementPaths=[];selectedId=null;document.getElementById("taktikbar").style.display="none";document.getElementById("bottompanel").classList.remove("hidden");exitEditTaktik();render();}
 document.getElementById("btn-stop-play").addEventListener("click",stopPlayback);
+
+/* === v14: propagera manuella positionsändringar framåt i taktiksteg === */
+function _posV14FromStep(step,id){
+  if(!step)return null;
+  if(id==="ball")return step.ball?{x:step.ball.x,y:step.ball.y}:null;
+  var p=(step.players||[]).find(function(x){return x.id===id;});
+  return p?{x:p.x,y:p.y}:null;
+}
+function _setPosV14(step,id,pos){
+  if(!step||!pos)return;
+  if(id==="ball"){
+    if(!step.ball)step.ball={x:W/2,y:H/2};
+    step.ball.x=pos.x;step.ball.y=pos.y;
+    return;
+  }
+  var p=(step.players||[]).find(function(x){return x.id===id;});
+  if(p){p.x=pos.x;p.y=pos.y;}
+}
+function _samePosV14(a,b){
+  if(!a||!b)return false;
+  var dx=(a.x||0)-(b.x||0),dy=(a.y||0)-(b.y||0);
+  return dx*dx+dy*dy<1;
+}
+function _stepHasMovementForV14(step,id){
+  return !!(step&&step.movementPaths&&step.movementPaths.some(function(mp){return mp.playerId===id;}));
+}
+function _propagatePositionChangeV14(tk,stepIdx,id,oldPos,newPos){
+  if(!tk||!tk.steps||!oldPos||!newPos||_samePosV14(oldPos,newPos))return;
+
+  for(var si=stepIdx+1;si<tk.steps.length;si++){
+    var fs=tk.steps[si];if(!fs)continue;
+
+    // Om ett senare steg själv har en rörelsebana för spelaren/bollen
+    // betraktar vi det som en aktiv ny förändring och slutar där.
+    if(_stepHasMovementForV14(fs,id))break;
+
+    var cur=_posV14FromStep(fs,id);
+    if(!cur)continue;
+
+    // Skriv bara över steg som fortfarande låg kvar på gamla positionen.
+    // Om positionen redan skiljer sig har tränaren sannolikt gjort en aktiv senare ändring.
+    if(_samePosV14(cur,oldPos)){
+      _setPosV14(fs,id,newPos);
+    }else{
+      break;
+    }
+  }
+}
+function propagateManualStepPositionsV14(tk,stepIdx,oldStep,newStep){
+  if(!tk||!oldStep||!newStep)return;
+
+  (newStep.players||[]).forEach(function(np){
+    var op=(oldStep.players||[]).find(function(x){return x.id===np.id;});
+    if(!op)return;
+    _propagatePositionChangeV14(tk,stepIdx,np.id,{x:op.x,y:op.y},{x:np.x,y:np.y});
+  });
+
+  if(oldStep.ball&&newStep.ball){
+    _propagatePositionChangeV14(tk,stepIdx,"ball",{x:oldStep.ball.x,y:oldStep.ball.y},{x:newStep.ball.x,y:newStep.ball.y});
+  }
+}
+/* === slut v14 === */
+
 document.getElementById("btn-edit-update-step2").addEventListener("click",function(){
   if(editingTaktikIdx===null)return;
   var tk=taktikFilmer[editingTaktikIdx];
+  if(!tk||!tk.steps||!tk.steps[editingStepIdx])return;
+
+  saveTaktikUndo();
+
+  var oldStep=JSON.parse(JSON.stringify(tk.steps[editingStepIdx]));
   var snap=currentSnap();
-  var lbl=document.getElementById("edit-step-name-inp").value.trim();if(lbl)snap.label=lbl;
-  // Update ALL future step positions to movement path endpoints
+  var lbl=document.getElementById("edit-step-name-inp").value.trim();
+  if(lbl)snap.label=lbl;
+
+  // 1. Manuell flytt: jämför gammalt steg med nytt sparat steg.
+  //    Positionen förs framåt tills ett senare steg redan har en egen ändring.
+  propagateManualStepPositionsV14(tk,editingStepIdx,oldStep,snap);
+
+  // 2. Ritad rörelsebana: endpoint ska fortsatt skrivas framåt.
   if(snap.movementPaths&&snap.movementPaths.length){
     snap.movementPaths.forEach(function(mp){
       if(!mp.pts||!mp.pts.length)return;
@@ -1078,16 +1152,21 @@ document.getElementById("btn-edit-update-step2").addEventListener("click",functi
       for(var si=editingStepIdx+1;si<tk.steps.length;si++){
         var fs=tk.steps[si];
         if(!fs)continue;
-        if(mp.playerId==="ball"){fs.ball.x=ep.x;fs.ball.y=ep.y;}
-        else{var np=fs.players.find(function(x){return x.id===mp.playerId;});if(np){np.x=ep.x;np.y=ep.y;}}
+        if(_stepHasMovementForV14(fs,mp.playerId))break;
+        var cur=_posV14FromStep(fs,mp.playerId);
+        if(!cur)continue;
+        _setPosV14(fs,mp.playerId,ep);
       }
     });
   }
-  // Keep movement paths in snap for animation, clear live drawing state
+
+  tk.steps[editingStepIdx]=snap;
   movementPaths=[];
-  saveTaktikUndo();tk.steps[editingStepIdx]=snap;
   if(playback)playback.tk=taktikFilmer[editingTaktikIdx];
-  showToast("Steg sparat!");cloudStatus("\u2705 Steg sparat","#4ae87a");renderEditSteps(tk);
+
+  showToast("Steg sparat!");
+  cloudStatus("✅ Steg sparat","#4ae87a");
+  renderEditSteps(tk);
 });
 document.getElementById("btn-taktikbar-save").addEventListener("click",function(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder||"Allm\u00e4nt"})}).then(function(){showToast("Film sparad!");cloudStatus("\u2705 Film sparad","#4ae87a");});}else{showToast("Film sparad!");cloudStatus("\u2705 Sparad lokalt","#4ae87a");}});
 document.getElementById("btn-first").addEventListener("click",function(){if(!playback||playback.animating)return;movementPaths=[];selectedId=null;editingStepIdx=0;playback.stepIndex=0;restoreSnap(taktikFilmer[editingTaktikIdx]?taktikFilmer[editingTaktikIdx].steps[0]:playback.tk.steps[0]);render();updatePlaybar();updateEditStepUI_silent();});
