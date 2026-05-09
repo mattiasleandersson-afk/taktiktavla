@@ -3455,3 +3455,173 @@ window.addEventListener("beforeunload",function(e){
 });
 
 /* === slut v23 === */
+
+
+
+/* === v24: Lagets är alltid skrivskyddad vy === */
+function isTeamScopeV24(){
+  return (typeof taktikScope!=="undefined" && taktikScope==="team") ||
+         (typeof saveScope!=="undefined" && saveScope==="team");
+}
+function markOpenedFromTeamV24(obj){
+  if(obj){
+    obj._openedFromTeam=true;
+    obj._readOnly=true;
+  }
+  return obj;
+}
+function isReadOnlyTeamFileV24(obj){
+  return !!(obj && (obj._readOnly || obj._openedFromTeam));
+}
+
+// Lagets-vyn ska vara en läsvy. Även egna delade filer ska öppnas skrivskyddat där.
+var _isReadOnlyFileV10_v24 = typeof isReadOnlyFileV10==="function" ? isReadOnlyFileV10 : null;
+isReadOnlyFileV10 = function(obj){
+  if(isReadOnlyTeamFileV24(obj))return true;
+  if(isTeamScopeV24() && fileMetaV10 && fileMetaV10(obj).sharedWithTeam)return true;
+  return _isReadOnlyFileV10_v24 ? _isReadOnlyFileV10_v24(obj) : false;
+};
+
+// Spara aldrig över en fil som öppnats från Lagets.
+var _cloudSaveTaktik_v24 = cloudSaveTaktik;
+cloudSaveTaktik = function(tk){
+  if(isReadOnlyTeamFileV24(tk)){
+    showToast("Filen är skrivskyddad i Lagets. Kopiera den först.",false);
+    cloudStatus("⚠️ Kopiera lagfilen för att redigera","#e8c84a");
+    return;
+  }
+  return _cloudSaveTaktik_v24.apply(this,arguments);
+};
+
+// Om man delar/döljer från Lagets ska det blockeras. Delning styrs från Mina.
+var _patchTaktikShareV10_v24 = patchTaktikShareV10;
+patchTaktikShareV10 = function(tk,share){
+  if(isTeamScopeV24() || isReadOnlyTeamFileV24(tk)){
+    showToast("Delning ändras från Mina, inte från Lagets",false);
+    return;
+  }
+  return _patchTaktikShareV10_v24.apply(this,arguments);
+};
+
+var _patchFormationShareV10_v24 = patchFormationShareV10;
+patchFormationShareV10 = function(s,share){
+  if(isTeamScopeV24() || isReadOnlyTeamFileV24(s)){
+    showToast("Delning ändras från Mina, inte från Lagets",false);
+    return;
+  }
+  return _patchFormationShareV10_v24.apply(this,arguments);
+};
+
+// Radering av taktik ska blockeras för Lagets.
+var _deleteTaktik_v24 = deleteTaktik;
+deleteTaktik = function(idx){
+  var tk=taktikFilmer[idx];
+  if(isTeamScopeV24() || isReadOnlyTeamFileV24(tk)){
+    showToast("Du kan inte radera filer från Lagets",false);
+    return;
+  }
+  return _deleteTaktik_v24.apply(this,arguments);
+};
+window.deleteTaktik=deleteTaktik;
+
+// Radering av utgångslägen ska blockeras för Lagets.
+var _cloudDelete_v24 = cloudDelete;
+cloudDelete = function(id){
+  if(isTeamScopeV24()){
+    showToast("Du kan inte radera filer från Lagets",false);
+    return;
+  }
+  return _cloudDelete_v24.apply(this,arguments);
+};
+
+// Rendera om taktiklistan så Lagets bara får Öppna/Kopiera, inte radera/dela/flytta.
+var _renderTaktikList_v24 = renderTaktikList;
+renderTaktikList = function(){
+  _renderTaktikList_v24.apply(this,arguments);
+
+  if(taktikScope!=="team")return;
+
+  var list=document.getElementById("taktik-list");
+  if(!list)return;
+
+  // Markera synliga lagobjekt som readonly i minnet.
+  (taktikFilmer||[]).forEach(function(tk){
+    if(fileMetaV10 && fileMetaV10(tk).sharedWithTeam){
+      markOpenedFromTeamV24(tk);
+    }
+  });
+
+  // Dölj riskknappar i Lagets-vyn. Behåll öppna/kopiera.
+  Array.prototype.forEach.call(list.querySelectorAll("button"),function(b){
+    var title=(b.title||"").toLowerCase();
+    var txt=(b.textContent||"").toLowerCase();
+    if(title.indexOf("radera")>=0 || txt==="×" ||
+       title.indexOf("flytta")>=0 ||
+       title.indexOf("dela")>=0 ||
+       title.indexOf("sluta dela")>=0 ||
+       title.indexOf("sammanfoga")>=0){
+      b.style.display="none";
+      b.disabled=true;
+    }
+  });
+};
+
+// När man öppnar från Lagets, gör aktiv film readonly direkt.
+var _startPlayback_v24 = startPlayback;
+startPlayback = function(idx){
+  var tk=taktikFilmer[idx];
+  if(taktikScope==="team")markOpenedFromTeamV24(tk);
+  return _startPlayback_v24.apply(this,arguments);
+};
+
+// Kopiera från Lagets ska skapa egen redigerbar kopia och inte ärva readonly/delning.
+var _copyTaktikToMineV10_v24 = copyTaktikToMineV10;
+copyTaktikToMineV10 = function(tk){
+  if(!tk)return;
+  var copy=JSON.parse(JSON.stringify(tk));
+  delete copy.dbId;
+  delete copy._readOnly;
+  delete copy._openedFromTeam;
+  delete copy._draftUid;
+  copy.name="Kopia av "+(copy.name||"taktikfilm");
+  if(copy._meta)delete copy._meta;
+  if(typeof addMetaToData==="function")copy=addMetaToData(copy);
+  if(copy._meta){
+    copy._meta.sharedWithTeam=false;
+    copy._meta.teamCanEdit=false;
+  }
+  cloudSaveTaktik(copy);
+};
+
+// Utgångslägen i Lagets: blockera delning/radering/flytt efter render.
+var _renderSavesList_v24 = renderSavesList;
+renderSavesList = function(){
+  _renderSavesList_v24.apply(this,arguments);
+  if(saveScope!=="team")return;
+
+  (savedFormations||[]).forEach(function(s){
+    if(fileMetaV10 && fileMetaV10(s).sharedWithTeam){
+      markOpenedFromTeamV24(s);
+    }
+  });
+
+  var list=document.getElementById("saves-list");
+  if(!list)return;
+  Array.prototype.forEach.call(list.querySelectorAll("button"),function(b){
+    var title=(b.title||"").toLowerCase();
+    var txt=(b.textContent||"").toLowerCase();
+    if(title.indexOf("radera")>=0 || txt==="×" ||
+       title.indexOf("flytta")>=0 ||
+       title.indexOf("dela")>=0 ||
+       title.indexOf("sluta dela")>=0 ||
+       title.indexOf("till taktik")>=0){
+      b.style.display="none";
+      b.disabled=true;
+    }
+  });
+};
+
+if(typeof renderTaktikList==="function")renderTaktikList();
+if(typeof renderSavesList==="function")renderSavesList();
+
+/* === slut v24 === */
