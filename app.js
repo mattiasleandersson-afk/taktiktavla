@@ -2933,3 +2933,123 @@ if(_enterFullscreenPortrait_v18){
 hideMovementInFullscreenV18();
 
 /* === slut v18 === */
+
+
+
+/* === v19: direkt fix för osparat-varning + Lagets visar delade filer === */
+
+// Dirty ska sättas vid alla praktiska ändringar i taktikläget.
+function markDirtyV19(){
+  if(editingTaktikIdx!==null || isEditingTaktik || playback){
+    taktikDirtyV17=true;
+  }
+}
+
+// Viktigt: wrappern i v17/v18 missar ibland om steget inte autosparas.
+// Här markerar vi dirty redan när användaren interagerar med planen i taktikläge.
+["touchstart","touchmove","touchend","mousedown","mousemove","mouseup"].forEach(function(evt){
+  var el=document.getElementById("pitch-svg");
+  if(el)el.addEventListener(evt,function(){
+    if(editingTaktikIdx!==null || isEditingTaktik || playback)markDirtyV19();
+  },true);
+});
+
+// Markera dirty vid stegknappar och namnändringar.
+["btn-edit-add-step","btn-edit-del-step","btn-edit-update-step","btn-edit-update-step2"].forEach(function(id){
+  var b=document.getElementById(id);
+  if(b)b.addEventListener("click",markDirtyV19,true);
+});
+var stepNameV19=document.getElementById("edit-step-name-inp");
+if(stepNameV19)stepNameV19.addEventListener("input",markDirtyV19,true);
+
+function confirmUnsavedV19(){
+  if(!taktikDirtyV17)return true;
+  return confirm("Du har osparade ändringar i taktiken. Vill du lämna utan att spara?");
+}
+
+// Ersätt faktiska knappar så gamla bundna listeners inte smiter förbi varningen.
+function replaceClickV19(id,fn){
+  var old=document.getElementById(id);
+  if(!old)return;
+  var neu=old.cloneNode(true);
+  old.parentNode.replaceChild(neu,old);
+  neu.addEventListener("click",fn);
+  return neu;
+}
+
+replaceClickV19("btn-edit-taktik-exit",function(){
+  if(!confirmUnsavedV19())return;
+  taktikDirtyV17=false;
+  if(typeof exitEditTaktik==="function"){
+    // Kör originalbeteendet utan att ny wrapper stoppar igen.
+    movementPaths=[];selectedId=null;editingTaktikIdx=null;editingStepIdx=0;isEditingTaktik=false;
+    var ui=document.getElementById("edit-taktik-ui");if(ui)ui.style.display="none";
+    var no=document.getElementById("no-rec-ui");if(no)no.style.display="block";
+    if(typeof renderTaktikList==="function")renderTaktikList();
+  }
+});
+
+replaceClickV19("btn-stop-play",function(){
+  if(!confirmUnsavedV19())return;
+  taktikDirtyV17=false;
+  if(animFrame)cancelAnimationFrame(animFrame);
+  playback=null;movementPaths=[];selectedId=null;
+  var tb=document.getElementById("taktikbar");if(tb)tb.style.display="none";
+  var bp=document.getElementById("bottompanel");if(bp)bp.classList.remove("hidden");
+  movementPaths=[];selectedId=null;editingTaktikIdx=null;editingStepIdx=0;isEditingTaktik=false;
+  var ui=document.getElementById("edit-taktik-ui");if(ui)ui.style.display="none";
+  var no=document.getElementById("no-rec-ui");if(no)no.style.display="block";
+  if(typeof renderTaktikList==="function")renderTaktikList();
+  if(typeof render==="function")render();
+});
+
+// Fånga panelbyte på säkrare nivå.
+document.addEventListener("click",function(e){
+  var tab=e.target.closest&&e.target.closest(".tab");
+  if(!tab)return;
+  var target=tab.getAttribute("data-panel");
+  if(target && target!=="taktik" && (editingTaktikIdx!==null || isEditingTaktik || playback) && taktikDirtyV17){
+    if(!confirmUnsavedV19()){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return false;
+    }
+    taktikDirtyV17=false;
+  }
+},true);
+
+// När riktig molnsparning görs: autospara aktuellt steg och rensa dirty med bekräftelse.
+var _cloudSaveTaktik_v19=cloudSaveTaktik;
+cloudSaveTaktik=function(tk){
+  if(editingTaktikIdx!==null && typeof autoSaveCurrentStepLocalV16==="function"){
+    autoSaveCurrentStepLocalV16();
+  }
+  var res=_cloudSaveTaktik_v19.apply(this,arguments);
+  setTimeout(function(){
+    taktikDirtyV17=false;
+    showToast("Film sparad!");
+    cloudStatus("✅ Film sparad","#4ae87a");
+  },600);
+  return res;
+};
+
+// Lagets: visa alla filer i samma lag som är markerade sharedWithTeam,
+// även dina egna. Det gör att man kan funktionstesta med bara en användare.
+function isSameTeamSharedV19(obj){
+  var p=getProfileSafeV10&&getProfileSafeV10();
+  var m=fileMetaV10?fileMetaV10(obj):{};
+  if(!p||!m)return false;
+  var fileTeam=String(m.teamId||m.teamCode||"");
+  var myTeam=String(p.teamId||p.teamCode||"");
+  return !!m.sharedWithTeam && fileTeam && myTeam && fileTeam===myTeam;
+}
+isSameTeamSharedV10=isSameTeamSharedV19;
+isFileVisibleInScopeV10=function(obj,scope){
+  return scope==="team" ? isSameTeamSharedV19(obj) : isMineV10(obj);
+};
+
+// Rendera om listor efter att filtren ändrats.
+if(typeof renderTaktikList==="function")renderTaktikList();
+if(typeof renderSavesList==="function")renderSavesList();
+
+/* === slut v19 === */
