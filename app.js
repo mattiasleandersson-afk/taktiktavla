@@ -624,7 +624,52 @@ document.getElementById("btn-half").addEventListener("click",function(){halfMode
 document.getElementById("btn-panel").addEventListener("click",function(){panelOpen=!panelOpen;document.getElementById("bottompanel").classList.toggle("hidden",!panelOpen);document.getElementById("btn-panel").textContent=panelOpen?"\u25bc":"\u25b2";document.getElementById("panel-show-btn").classList.toggle("visible",!panelOpen);});
 document.getElementById("panel-show-btn").addEventListener("click",function(){panelOpen=true;document.getElementById("bottompanel").classList.remove("hidden");document.getElementById("btn-panel").textContent="\u25bc";document.getElementById("panel-show-btn").classList.remove("visible");});
 var topbarOpen=true;
-document.getElementById("btn-topbar-toggle").addEventListener("click",function(){topbarOpen=!topbarOpen;var tb=document.getElementById("topbar");var btn=document.getElementById("btn-topbar-toggle");var children=tb.children;for(var i=0;i<children.length;i++){if(children[i]!==btn)children[i].style.display=topbarOpen?"":"none";}btn.innerHTML=topbarOpen?"\u25b2":"\u25bc";btn.title=topbarOpen?"Minimera menyn":"Visa menyn";});
+(function(){
+  var oldBtn=document.getElementById("btn-topbar-toggle");
+  if(!oldBtn)return;
+  var btn=oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(btn,oldBtn);
+
+  btn.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    topbarOpen=!topbarOpen;
+
+    var tb=document.getElementById("topbar");
+    if(!tb)return;
+
+    var topRow=tb.children[0];
+    var tabRow=tb.children[1];
+
+    if(topbarOpen){
+      if(topRow){
+        topRow.style.display="flex";
+        Array.prototype.forEach.call(topRow.children,function(ch){ch.style.display="";});
+      }
+      if(tabRow)tabRow.style.display="flex";
+      tb.style.minHeight="";
+      tb.style.padding="";
+      btn.innerHTML="▲";
+      btn.title="Minimera menyn";
+    }else{
+      if(topRow){
+        topRow.style.display="flex";
+        Array.prototype.forEach.call(topRow.children,function(ch){
+          ch.style.display=(ch.id==="btn-topbar-toggle")?"":"none";
+        });
+      }
+      if(tabRow)tabRow.style.display="none";
+      tb.style.minHeight="28px";
+      tb.style.padding="2px 6px";
+      btn.innerHTML="▼";
+      btn.title="Visa menyn";
+      btn.style.display="";
+      btn.style.position="relative";
+      btn.style.zIndex="100";
+    }
+  });
+})();
 document.getElementById("taktik-search").addEventListener("input",function(e){taktikSearch=e.target.value;renderTaktikList();});
 // ===== Arbetsytor per huvudflik =====
 // Första versionen: separerar framför allt Lag från Taktik/Formation,
@@ -1239,8 +1284,7 @@ document.getElementById("btn-import").addEventListener("change",function(e){var 
 document.getElementById("btn-export-taktik").addEventListener("click",function(){var data={taktikFilmer:taktikFilmer};var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));var a=document.createElement("a");a.href=url;a.download="taktikfilm.json";a.click();URL.revokeObjectURL(url);});
 document.getElementById("btn-import-taktik-btn").addEventListener("click",function(){document.getElementById("btn-import-taktik").click();});
 document.getElementById("btn-import-taktik").addEventListener("change",function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){try{var data=JSON.parse(ev.target.result);if(data.taktikFilmer)taktikFilmer=data.taktikFilmer;renderTaktikList();}catch(err){alert("Kunde inte l\u00e4sa filen.");}};reader.readAsText(file);e.target.value="";});
-var saveBtn=document.createElement("button");saveBtn.className="btn";saveBtn.textContent="Spara som";saveBtn.id="btn-save-as-topbar";saveBtn.style.marginLeft="2px";saveBtn.addEventListener("click",function(){var d=new Date();document.getElementById("save-name-inp").value="Uppst\u00e4llning "+d.getDate()+"/"+(d.getMonth()+1)+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);updateFolderSelect();document.getElementById("modal-savename").classList.remove("hidden");});
-document.getElementById("btn-half").parentNode.insertBefore(saveBtn,document.getElementById("btn-half"));
+/* v42: extra topbar-Spara som borttagen; använd btn-cloud-save i nedre menyn */
 document.getElementById("btn-cloud-save").addEventListener("click",function(){var d=new Date();document.getElementById("save-name-inp").value="Uppst\u00e4llning "+d.getDate()+"/"+(d.getMonth()+1)+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);updateFolderSelect();document.getElementById("modal-savename").classList.remove("hidden");});
 document.getElementById("btn-cloud-refresh").addEventListener("click",function(){cloudLoadSaves();cloudLoadTaktik();});
 document.getElementById("savename-cancel").addEventListener("click",function(){document.getElementById("modal-savename").classList.add("hidden");});
@@ -4165,3 +4209,20 @@ function bindNewFormationButtonV37(){
 
 bindNewFormationButtonV37();
 /* === slut v37 === */
+
+
+/* === v42: säker städning topbar-dubletter + synlig toppmeny-pil === */
+function cleanupTopbarV42(){
+  var extra=document.getElementById("btn-save-as-topbar");
+  if(extra)extra.remove();
+
+  // Om någon extra Ny-knapp finns i topbar från äldre patchar, ta bort den.
+  ["btn-new-formation-v28","btn-new-formation-v30","btn-new-formation-v31","btn-new-formation-v32","btn-new-formation-v33"].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.remove();
+  });
+}
+cleanupTopbarV42();
+setTimeout(cleanupTopbarV42,100);
+setTimeout(cleanupTopbarV42,500);
+/* === slut v42 === */
