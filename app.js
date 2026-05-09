@@ -4165,3 +4165,27 @@ function bindNewFormationButtonV37(){
 
 bindNewFormationButtonV37();
 /* === slut v37 === */
+
+
+
+/* === v38: återkoppla checkbox för korridorer === */
+function bindKorridorerV38(){
+  var chk=document.getElementById("chk-korridorer");
+  if(!chk)return;
+
+  chk.checked=!!showKorridorer;
+
+  chk.addEventListener("change",function(){
+    showKorridorer=!!chk.checked;
+    if(typeof render==="function")render();
+  });
+
+  // Om render redan hunnit köra och checkboxen är ibockad vid reload.
+  if(chk.checked){
+    showKorridorer=true;
+    if(typeof render==="function")render();
+  }
+}
+
+bindKorridorerV38();
+/* === slut v38 === */
