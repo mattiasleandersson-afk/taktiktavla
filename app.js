@@ -3053,3 +3053,60 @@ if(typeof renderTaktikList==="function")renderTaktikList();
 if(typeof renderSavesList==="function")renderSavesList();
 
 /* === slut v19 === */
+
+
+
+/* === v20: spara ska rensa osparat-flaggan på riktigt === */
+var suppressDirtyV20=false;
+
+function markDirtyV20Safe(){
+  if(suppressDirtyV20)return;
+  if(editingTaktikIdx!==null || isEditingTaktik || playback){
+    taktikDirtyV17=true;
+  }
+}
+
+// Ersätt dirty-markering på planen med en säkrare variant.
+// Obs: gamla listeners finns kvar, men suppressDirtyV20 stoppar effekten runt sparning.
+["touchstart","touchmove","touchend","mousedown","mousemove","mouseup"].forEach(function(evt){
+  var el=document.getElementById("pitch-svg");
+  if(el)el.addEventListener(evt,markDirtyV20Safe,true);
+});
+
+function saveCurrentTaktikFileV20(){
+  if(editingTaktikIdx===null)return;
+  suppressDirtyV20=true;
+  try{
+    if(typeof autoSaveCurrentStepLocalV16==="function"){
+      autoSaveCurrentStepLocalV16();
+    }
+    var tk=taktikFilmer[editingTaktikIdx];
+    if(!tk)return;
+    cloudSaveTaktik(tk);
+    taktikDirtyV17=false;
+    showToast("Film sparad!");
+    cloudStatus("✅ Film sparad","#4ae87a");
+    setTimeout(function(){
+      taktikDirtyV17=false;
+      suppressDirtyV20=false;
+    },900);
+  }catch(e){
+    suppressDirtyV20=false;
+    throw e;
+  }
+}
+
+// Byt ut själva spara-knappen så den inte går via gammal handler som kan sätta dirty igen.
+if(typeof replaceClickV19==="function"){
+  replaceClickV19("btn-edit-taktik-save",saveCurrentTaktikFileV20);
+}else if(typeof replaceBtnHandlerV15==="function"){
+  replaceBtnHandlerV15("btn-edit-taktik-save",saveCurrentTaktikFileV20);
+}
+
+// Justera confirm så den alltid respekterar senaste clean-state.
+confirmUnsavedV19=function(){
+  if(!taktikDirtyV17)return true;
+  return confirm("Du har osparade ändringar i taktiken. Vill du lämna utan att spara?");
+};
+
+/* === slut v20 === */
