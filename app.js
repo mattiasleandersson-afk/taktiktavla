@@ -625,10 +625,8 @@ document.getElementById("btn-panel").addEventListener("click",function(){panelOp
 document.getElementById("panel-show-btn").addEventListener("click",function(){panelOpen=true;document.getElementById("bottompanel").classList.remove("hidden");document.getElementById("btn-panel").textContent="\u25bc";document.getElementById("panel-show-btn").classList.remove("visible");});
 var topbarOpen=true;
 (function(){
-  var oldBtn=document.getElementById("btn-topbar-toggle");
-  if(!oldBtn)return;
-  var btn=oldBtn.cloneNode(true);
-  oldBtn.parentNode.replaceChild(btn,oldBtn);
+  var btn=document.getElementById("btn-topbar-toggle");
+  if(!btn)return;
 
   btn.addEventListener("click",function(e){
     e.preventDefault();
@@ -660,15 +658,15 @@ var topbarOpen=true;
         });
       }
       if(tabRow)tabRow.style.display="none";
-      tb.style.minHeight="28px";
+      tb.style.minHeight="30px";
       tb.style.padding="2px 6px";
       btn.innerHTML="▼";
       btn.title="Visa menyn";
       btn.style.display="";
       btn.style.position="relative";
-      btn.style.zIndex="100";
+      btn.style.zIndex="999";
     }
-  });
+  },true);
 })();
 document.getElementById("taktik-search").addEventListener("input",function(e){taktikSearch=e.target.value;renderTaktikList();});
 // ===== Arbetsytor per huvudflik =====
@@ -1284,7 +1282,7 @@ document.getElementById("btn-import").addEventListener("change",function(e){var 
 document.getElementById("btn-export-taktik").addEventListener("click",function(){var data={taktikFilmer:taktikFilmer};var url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));var a=document.createElement("a");a.href=url;a.download="taktikfilm.json";a.click();URL.revokeObjectURL(url);});
 document.getElementById("btn-import-taktik-btn").addEventListener("click",function(){document.getElementById("btn-import-taktik").click();});
 document.getElementById("btn-import-taktik").addEventListener("change",function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){try{var data=JSON.parse(ev.target.result);if(data.taktikFilmer)taktikFilmer=data.taktikFilmer;renderTaktikList();}catch(err){alert("Kunde inte l\u00e4sa filen.");}};reader.readAsText(file);e.target.value="";});
-/* v42: extra topbar-Spara som borttagen; använd btn-cloud-save i nedre menyn */
+/* v44: extra topbar-Spara som borttagen */
 document.getElementById("btn-cloud-save").addEventListener("click",function(){var d=new Date();document.getElementById("save-name-inp").value="Uppst\u00e4llning "+d.getDate()+"/"+(d.getMonth()+1)+" "+d.getHours()+":"+("0"+d.getMinutes()).slice(-2);updateFolderSelect();document.getElementById("modal-savename").classList.remove("hidden");});
 document.getElementById("btn-cloud-refresh").addEventListener("click",function(){cloudLoadSaves();cloudLoadTaktik();});
 document.getElementById("savename-cancel").addEventListener("click",function(){document.getElementById("modal-savename").classList.add("hidden");});
@@ -4211,18 +4209,16 @@ bindNewFormationButtonV37();
 /* === slut v37 === */
 
 
-/* === v42: säker städning topbar-dubletter + synlig toppmeny-pil === */
-function cleanupTopbarV42(){
+/* === v44 safety: ta bort gamla dublettknappar om browsern cacheat dem === */
+function cleanupTopbarDuplicatesV44(){
   var extra=document.getElementById("btn-save-as-topbar");
   if(extra)extra.remove();
 
-  // Om någon extra Ny-knapp finns i topbar från äldre patchar, ta bort den.
-  ["btn-new-formation-v28","btn-new-formation-v30","btn-new-formation-v31","btn-new-formation-v32","btn-new-formation-v33"].forEach(function(id){
+  ["btn-new-formation-v28","btn-new-formation-v30","btn-new-formation-v31","btn-new-formation-v32","btn-new-formation-v33","btn-new-formation-bottom-v34"].forEach(function(id){
     var el=document.getElementById(id);
     if(el)el.remove();
   });
 }
-cleanupTopbarV42();
-setTimeout(cleanupTopbarV42,100);
-setTimeout(cleanupTopbarV42,500);
-/* === slut v42 === */
+cleanupTopbarDuplicatesV44();
+setTimeout(cleanupTopbarDuplicatesV44,200);
+/* === slut v44 === */
