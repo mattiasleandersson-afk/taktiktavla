@@ -4207,3 +4207,76 @@ function setupFormationTopbarV28(){
 
 setupFormationTopbarV28();
 /* === slut v28 === */
+
+
+
+/* === v29: Ny uppställning ska lämna aktiv fil helt === */
+function resetToCleanDefaultFormationV29(){
+  // 1. Lämna aktiv sparad fil helt.
+  activeFormationId=null;
+  activeFormationName=null;
+
+  // 2. Rensa eventuell readonly/team-status från tidigare öppnad fil.
+  if(typeof saveScope!=="undefined")saveScope="mine";
+
+  // 3. Återställ arbetsytan till favorit/standard utan att behålla gammal filkoppling.
+  try{
+    if(typeof getDefaultFormat==="function")format=getDefaultFormat();
+    var f=(typeof getCurrentFormationForReset==="function")?getCurrentFormationForReset():"4-4-2";
+    if(typeof getDefaultFormation==="function")f=getDefaultFormation();
+
+    var fmtSel=document.getElementById("fmt-sel");
+    if(fmtSel)fmtSel.value=String(format);
+
+    if(typeof buildFormationBtns==="function")buildFormationBtns();
+    if(typeof initPlayers==="function")initPlayers(f);
+  }catch(e){
+    try{initPlayers("4-4-2");}catch(e2){}
+  }
+
+  ball={x:W/2,y:H/2};
+  arrows=[];
+  labels=[];
+  freehandPaths=[];
+  zones=[];
+  movementPaths=[];
+  selectedId=null;
+  arrowStart=null;
+  arrowCurrent=null;
+  freehandCurrent=null;
+  zoneStart=null;
+  zonePreview=null;
+  movementCurrent=null;
+
+  if(typeof setMode==="function")setMode("move");
+  if(typeof updateSaveButtons==="function")updateSaveButtons();
+  if(typeof renderSavesList==="function")renderSavesList();
+  if(typeof render==="function")render();
+
+  showToast("Ny uppställning – du är inte längre inne i den gamla filen");
+  cloudStatus("Ny uppställning. Spara som ny fil när du är klar.","#7aaa88");
+}
+
+// Ersätt tidigare Ny-knapp om den finns.
+if(typeof replaceClickV19==="function"){
+  replaceClickV19("btn-new-formation-v28",resetToCleanDefaultFormationV29);
+}else if(typeof replaceBtnHandlerV15==="function"){
+  replaceBtnHandlerV15("btn-new-formation-v28",resetToCleanDefaultFormationV29);
+}else{
+  var b=document.getElementById("btn-new-formation-v28");
+  if(b){
+    var c=b.cloneNode(true);
+    b.parentNode.replaceChild(c,b);
+    c.addEventListener("click",resetToCleanDefaultFormationV29);
+  }
+}
+
+// Förtydliga texten lite.
+var nb=document.getElementById("btn-new-formation-v28");
+if(nb){
+  nb.textContent="Ny";
+  nb.title="Lämna aktuell uppställning och börja på en ny";
+  nb.setAttribute("aria-label","Lämna aktuell uppställning och börja på en ny");
+}
+
+/* === slut v29 === */
