@@ -459,6 +459,7 @@ function buildZoneShape(start,end,preview){var ns3="http://www.w3.org/2000/svg";
 function finalizeZone(){if(!zoneStart||!zonePreview)return;var dx=zonePreview.x-zoneStart.x,dy=zonePreview.y-zoneStart.y;if(Math.abs(dx)<10&&Math.abs(dy)<10)return;var zd;if(zoneShapeType==="circle"){var cx=(zoneStart.x+zonePreview.x)/2,cy=(zoneStart.y+zonePreview.y)/2;var rx=Math.abs(dx)/2,ry=Math.abs(dy)/2;zd={id:"zone"+(idCounter++),type:"circle",x:cx,y:cy,r:Math.max(rx,ry),w:rx*2,h:ry*2,color:zoneColor};}else{var x=Math.min(zoneStart.x,zonePreview.x),y=Math.min(zoneStart.y,zonePreview.y);zd={id:"zone"+(idCounter++),type:"rect",x:x,y:y,w:Math.abs(dx),h:Math.abs(dy),color:zoneColor};}zones.push(zd);}
 function setMode(m){mode=m;document.getElementById("btn-arrow").classList.toggle("on",m==="arrow");document.getElementById("btn-text").classList.toggle("on",m==="text");document.getElementById("btn-freehand").classList.toggle("on",m==="freehand");document.getElementById("btn-zone").classList.toggle("on",m==="zone");
   document.getElementById("btn-movement").classList.toggle("on",m==="movement");
+  syncFullscreenToolButtons();
   render();svg.style.cursor=m==="arrow"||m==="freehand"||m==="zone"?"crosshair":m==="text"?"text":"default";var badge=document.getElementById("mode-badge");var ao=document.getElementById("arrow-options");var zo=document.getElementById("zone-options");var fo=document.getElementById("freehand-options");if(ao)ao.style.display=m==="arrow"?"flex":"none";if(zo)zo.style.display=m==="zone"?"flex":"none";if(fo)fo.style.display=m==="freehand"?"flex":"none";if(m==="arrow"){badge.style.display="block";badge.style.background="#2a4a8a";badge.style.color="#9ac4ff";badge.textContent="Dra f\u00f6r att rita pil";}else if(m==="text"){badge.style.display="block";badge.style.background="#4ae87a";badge.style.color="#0a1a0d";badge.textContent="Tryck p\u00e5 planen";}else if(m==="freehand"){badge.style.display="block";badge.style.background="#8b4ae8";badge.style.color="#fff";badge.textContent="Rita fritt";}else if(m==="zone"){badge.style.display="block";badge.style.background="#e87a4a";badge.style.color="#fff";badge.textContent="Dra f\u00f6r att rita zon";}else if(m==="movement"){badge.style.display="block";badge.style.background="#cc2200";badge.style.color="#fff";badge.textContent="Tryck p\u00e5 spelare och rita r\u00f6relsebana";}else badge.style.display="none";}
 function buildFormationBtns(){
   var c=document.getElementById("formation-btns");c.innerHTML="";
@@ -1355,7 +1356,29 @@ function openMoveTaktikFolder(tk){
 }
 
 function checkShareLink(){var params=new URLSearchParams(window.location.search);var shareId=params.get("share");if(!shareId)return;fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+shareId,{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(data&&data[0]){var tk=data[0].data;tk.dbId=data[0].id;taktikFilmer=[tk];renderTaktikList();startPlayback(0);showToast("Delade filmen: "+tk.name);}}).catch(function(){});}
-function enterFullscreenPortrait(){document.body.classList.add("fullscreen-portrait");updateFsPortraitNav();}
+function syncFullscreenToolButtons(){
+  var map={"fs-tb-move":"move","fs-tb-arrow":"arrow","fs-tb-freehand":"freehand","fs-tb-zone":"zone","fs-tb-text":"text","fs-tb-movement":"movement"};
+  Object.keys(map).forEach(function(id){var b=document.getElementById(id);if(b)b.classList.toggle("active",mode===map[id]);});
+}
+function setupFullscreenPortraitToolbar(){
+  if(document.getElementById("fs-top-tools")){syncFullscreenToolButtons();return;}
+  var nav=document.getElementById("fs-portrait-nav");
+  if(!nav)return;
+  var css=document.createElement("style");
+  css.textContent="body.fullscreen-portrait #fs-top-tools{display:flex!important;position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 46px);transform:translateX(-50%);z-index:9999;gap:4px;background:rgba(17,26,20,.94);border:1px solid #2d4a35;border-radius:12px;padding:5px 7px;box-shadow:0 4px 16px rgba(0,0,0,.35);max-width:calc(100vw - 18px);overflow-x:auto}body:not(.fullscreen-portrait) #fs-top-tools{display:none!important}#fs-top-tools .ls-btn{flex:0 0 auto;min-width:34px;height:32px;padding:4px 7px!important;font-size:.85rem!important}body.fullscreen-portrait #fs-portrait-nav{justify-content:center}body.fullscreen-portrait #fs-step-label{min-width:48px}";
+  document.head.appendChild(css);
+  var topTools=document.createElement("div");
+  topTools.id="fs-top-tools";
+  var moveBtn=document.createElement("button");
+  moveBtn.className="ls-btn";moveBtn.id="fs-tb-move";moveBtn.title="Flytta spelare/boll";moveBtn.textContent="✋";
+  topTools.appendChild(moveBtn);
+  ["fs-tb-arrow","fs-tb-freehand","fs-tb-zone","fs-tb-text","fs-tb-movement"].forEach(function(id){var b=document.getElementById(id);if(b)topTools.appendChild(b);});
+  document.body.appendChild(topTools);
+  moveBtn.addEventListener("click",function(){setMode("move");});
+  ["fs-tb-arrow","fs-tb-freehand","fs-tb-zone","fs-tb-text","fs-tb-movement"].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display="";});
+  syncFullscreenToolButtons();
+}
+function enterFullscreenPortrait(){document.body.classList.add("fullscreen-portrait");setupFullscreenPortraitToolbar();syncFullscreenToolButtons();updateFsPortraitNav();}
 function exitFullscreenPortrait(){document.body.classList.remove("fullscreen-portrait");}
 function updateFsPortraitNav(){var label=document.getElementById("fs-step-label");var prev=document.getElementById("fs-prev-btn");var next=document.getElementById("fs-next-btn");var first=document.getElementById("fs-first-btn");if(!label)return;if(playback){var cur=playback.stepIndex,total=playback.tk.steps.length-1;label.textContent=(cur===0?"Start":cur+"/"+total);prev.disabled=cur<=0;next.disabled=cur>=total;first.disabled=cur===0;prev.classList.toggle("active",cur>0);next.classList.toggle("active",cur<total);}else{label.textContent="-";prev.disabled=true;next.disabled=true;first.disabled=true;}}
 document.getElementById("fs-enter-btn").addEventListener("click",enterFullscreenPortrait);
@@ -1371,7 +1394,7 @@ document.getElementById("fs-day-btn").addEventListener("click",function(){docume
     var el=document.getElementById(id);if(!el)return;
     el.addEventListener("click",function(){
       var m=fsMap[id];setMode(mode===m?"move":m);
-      Object.keys(fsMap).forEach(function(bid){var b=document.getElementById(bid);if(b)b.classList.toggle("active",mode===fsMap[bid]);});
+      syncFullscreenToolButtons();
     });
   });
 })();
