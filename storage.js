@@ -339,3 +339,70 @@ function openMoveTaktikFolder(tk){
 
 
 function checkShareLink(){var params=new URLSearchParams(window.location.search);var shareId=params.get("share");if(!shareId)return;fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+shareId,{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(data&&data[0]){var tk=data[0].data;tk.dbId=data[0].id;taktikFilmer=[tk];renderTaktikList();startPlayback(0);showToast("Delade filmen: "+tk.name);}}).catch(function(){});}
+
+
+/* === v10: metadatafilter för Mina/Lagets === */
+function fileMetaStorageV10(obj){
+  if(!obj)return {};
+  if(obj._meta)return obj._meta;
+  if(obj.data&&obj.data._meta)return obj.data._meta;
+  if(obj.state&&obj.state._meta)return obj.state._meta;
+  return {};
+}
+function isReadOnlyStorageV10(obj){
+  var p=(typeof getUserProfile==="function")?getUserProfile():null;
+  var m=fileMetaStorageV10(obj);
+  if(!p||!m.ownerId)return false;
+  return String(m.ownerId)!==String(p.ownerId)&&!m.teamCanEdit;
+}
+var _cloudSaveTaktikBaseV10=cloudSaveTaktik;
+cloudSaveTaktik=function(tk){
+  if(isReadOnlyStorageV10(tk)){
+    showToast("Filen är skrivskyddad. Kopiera den först.",false);
+    return;
+  }
+  return _cloudSaveTaktikBaseV10(tk);
+};
+cloudLoadSaves=function(){
+  cloudStatus("Laddar...","#7aaa88");
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=folder.asc,id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(Array.isArray(data)){
+        savedFormations=data.filter(function(row){return row.type==="uppstallning";}).map(function(row){
+          var state=row.data||{};
+          return {id:row.id,name:row.name,state:state,folder:row.folder||"Allmänt",_meta:fileMetaStorageV10(state)};
+        });
+        var seen={};folders=["Allmänt"];
+        for(var i=0;i<savedFormations.length;i++){var f=savedFormations[i].folder;if(f&&!seen[f]){seen[f]=true;if(f!=="Allmänt")folders.push(f);}}
+        cloudStatus(data.length+" uppställningar ✅","#4ae87a");
+        renderSavesList();
+        updateFolderSelect();
+      }else cloudStatus("❌ Fel","#e84a4a");
+    }).catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");});
+};
+cloudLoadTaktik=function(){
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(Array.isArray(data)){
+        var byKey={};
+        data.filter(function(row){return row.type==="taktikfilm";}).forEach(function(row){
+          var tk=row.data||{};
+          if(!tk.steps||tk.steps.length<2)return;
+          tk.dbId=row.id;
+          tk._meta=fileMetaStorageV10(tk);
+          if(!tk.folder)tk.folder=row.folder||"Taktik";
+          var owner=tk._meta&&tk._meta.ownerId?tk._meta.ownerId:"legacy";
+          var key=owner+"::"+((row.name||tk.name||"").trim().toLowerCase()||("id:"+row.id));
+          if(!byKey[key])byKey[key]=tk;
+        });
+        taktikFilmer=Object.keys(byKey).map(function(k){return byKey[k];});
+        var tfseen={};taktikFolders=["Taktik","Träning"];tfseen["Taktik"]=true;tfseen["Träning"]=true;
+        taktikFilmer.forEach(function(tk){if(tk.folder&&!tfseen[tk.folder]){tfseen[tk.folder]=true;taktikFolders.push(tk.folder);}});
+        renderTaktikList();
+        cloudStatus(taktikFilmer.length+" taktikfilmer laddade","#4ae87a");
+      }
+    }).catch(function(){});
+};
+/* === slut v10 === */
