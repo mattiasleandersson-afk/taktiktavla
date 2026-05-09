@@ -912,31 +912,3 @@ cloudLoadTaktik();
 loadTrupp();
 loadMatcher();
 checkShareLink();
-(function(){
-  var topbarTools = {
-    "btn-tb-arrow": "arrow",
-    "btn-tb-freehand": "freehand",
-    "btn-tb-zone": "zone",
-    "btn-tb-text": "text",
-    "btn-tb-movement": "movement"
-  };
-
-  Object.keys(topbarTools).forEach(function(id){
-    var btn = document.getElementById(id);
-    if (!btn || btn.dataset.boundTool === "1") return;
-
-    btn.dataset.boundTool = "1";
-    btn.addEventListener("click", function(){
-      var tool = topbarTools[id];
-      setMode(mode === tool ? "move" : tool);
-
-      Object.keys(topbarTools).forEach(function(otherId){
-        var otherBtn = document.getElementById(otherId);
-        if (otherBtn) {
-          otherBtn.classList.toggle("on", mode === topbarTools[otherId]);
-          otherBtn.classList.toggle("active", mode === topbarTools[otherId]);
-        }
-      });
-    });
-  });
-})();
