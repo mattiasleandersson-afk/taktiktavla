@@ -1768,3 +1768,274 @@ cloudLoadTaktik();
 loadTrupp();
 loadMatcher();
 checkShareLink();
+
+
+/* === v10: Mina/Lagets + skrivskydd/kopiera === */
+var saveScope = "mine";
+var taktikScope = "mine";
+
+function getProfileSafeV10(){
+  try{
+    if(typeof getUserProfile==="function"){
+      var p=getUserProfile();
+      if(p)return p;
+    }
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+function fileMetaV10(obj){
+  if(!obj)return {};
+  if(obj._meta)return obj._meta;
+  if(obj.meta)return obj.meta;
+  if(obj.state&&obj.state._meta)return obj.state._meta;
+  if(obj.data&&obj.data._meta)return obj.data._meta;
+  return {};
+}
+function ownerNameV10(obj){
+  var m=fileMetaV10(obj);
+  return m.ownerName||"Okänd ägare";
+}
+function isMineV10(obj){
+  var p=getProfileSafeV10();
+  var m=fileMetaV10(obj);
+  if(!p||!m.ownerId)return true; // äldre filer behandlas som mina tills de migreras
+  return String(m.ownerId)===String(p.ownerId);
+}
+function isSameTeamSharedV10(obj){
+  var p=getProfileSafeV10();
+  var m=fileMetaV10(obj);
+  if(!p||!m.teamId)return false;
+  return String(m.teamId)===String(p.teamId) && !!m.sharedWithTeam && !isMineV10(obj);
+}
+function isFileVisibleInScopeV10(obj,scope){
+  return scope==="team" ? isSameTeamSharedV10(obj) : isMineV10(obj);
+}
+function isReadOnlyFileV10(obj){
+  var m=fileMetaV10(obj);
+  return !isMineV10(obj) && !m.teamCanEdit;
+}
+function addScopeTabsV10(container,scope,setter){
+  var row=document.createElement("div");
+  row.style.cssText="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;width:100%";
+  [["mine","Mina"],["team","Lagets"]].forEach(function(pair){
+    var b=document.createElement("button");
+    b.className="tab"+(scope===pair[0]?" on":"");
+    b.textContent=pair[1];
+    b.style.cssText="font-size:0.68rem;padding:3px 8px";
+    b.addEventListener("click",function(){setter(pair[0]);});
+    row.appendChild(b);
+  });
+  container.appendChild(row);
+}
+function updateShareMetaV10(data,share,canEdit){
+  var d=JSON.parse(JSON.stringify(data||{}));
+  var meta=d._meta||{};
+  var p=getProfileSafeV10();
+  if(p){
+    meta.ownerId=meta.ownerId||p.ownerId;
+    meta.ownerName=meta.ownerName||p.ownerName;
+    meta.teamId=meta.teamId||p.teamId;
+    meta.teamCode=meta.teamCode||p.teamCode;
+  }
+  meta.sharedWithTeam=!!share;
+  meta.teamCanEdit=!!canEdit;
+  meta.updatedAt=new Date().toISOString();
+  d._meta=meta;
+  return d;
+}
+function patchFormationShareV10(s,share){
+  if(!s||!s.id)return;
+  if(!isMineV10(s)){showToast("Du kan inte ändra delning på någon annans fil",false);return;}
+  var newState=updateShareMetaV10(s.state,share,false);
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({data:newState})
+  }).then(function(){s.state=newState;showToast(share?"Delad med laget":"Inte längre delad");cloudLoadSaves();})
+    .catch(function(err){showToast("Kunde inte ändra delning",false);cloudStatus("❌ "+err.message,"#e84a4a");});
+}
+function copyFormationToMineV10(s){
+  if(!s)return;
+  var p=getProfileSafeV10();
+  var name="Kopia av "+(s.name||"utgångsläge");
+  var state=JSON.parse(JSON.stringify(s.state||{}));
+  if(typeof addMetaToData==="function")state=addMetaToData(state);
+  else state=updateShareMetaV10(state,false,false);
+  if(state._meta){state._meta.sharedWithTeam=false;state._meta.teamCanEdit=false;}
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{
+    method:"POST",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({name:name,data:state,type:"uppstallning",folder:s.folder||"Allmänt"})
+  }).then(function(r){return r.json();}).then(function(data){
+    showToast("Kopia skapad i Mina filer");
+    cloudLoadSaves();
+  }).catch(function(err){showToast("Kunde inte kopiera",false);cloudStatus("❌ "+err.message,"#e84a4a");});
+}
+function patchTaktikShareV10(tk,share){
+  if(!tk||!tk.dbId)return;
+  if(!isMineV10(tk)){showToast("Du kan inte ändra delning på någon annans fil",false);return;}
+  var newTk=updateShareMetaV10(tk,share,false);
+  Object.keys(newTk).forEach(function(k){tk[k]=newTk[k];});
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({data:newTk})
+  }).then(function(){showToast(share?"Film delad med laget":"Film inte längre delad");cloudLoadTaktik();})
+    .catch(function(err){showToast("Kunde inte ändra delning",false);cloudStatus("❌ "+err.message,"#e84a4a");});
+}
+function copyTaktikToMineV10(tk){
+  if(!tk)return;
+  var copy=JSON.parse(JSON.stringify(tk));
+  delete copy.dbId;
+  delete copy._readOnly;
+  copy.name="Kopia av "+(copy.name||"taktikfilm");
+  if(copy._meta){delete copy._meta;}
+  if(typeof addMetaToData==="function")copy=addMetaToData(copy);
+  else copy=updateShareMetaV10(copy,false,false);
+  if(copy._meta){copy._meta.sharedWithTeam=false;copy._meta.teamCanEdit=false;}
+  if(typeof cloudSaveTaktik==="function")cloudSaveTaktik(copy);
+  else showToast("Kunde inte kopiera film",false);
+}
+
+function renderSavesList(){
+  var list=document.getElementById("saves-list");if(!list)return;list.innerHTML="";
+  addScopeTabsV10(list,saveScope,function(v){saveScope=v;renderSavesList();});
+
+  var visibleAll=savedFormations.filter(function(s){return isFileVisibleInScopeV10(s,saveScope);});
+  var folderCounts={"Alla":visibleAll.length};
+  for(var i=0;i<visibleAll.length;i++){var f=visibleAll[i].folder||"Allmänt";folderCounts[f]=(folderCounts[f]||0)+1;}
+
+  var filterRow=document.createElement("div");filterRow.style.cssText="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;width:100%";
+  var allFolders=["Alla"];var seen2={};
+  for(var i=0;i<visibleAll.length;i++){var f=visibleAll[i].folder||"Allmänt";if(!seen2[f]){seen2[f]=true;allFolders.push(f);}}
+  if(saveScope==="mine"){
+    for(var i=0;i<folders.length;i++){if(!seen2[folders[i]]&&folders[i]!=="Alla"){seen2[folders[i]]=true;allFolders.push(folders[i]);}}
+  }
+  for(var i=0;i<allFolders.length;i++){
+    (function(f){
+      var wrap=document.createElement("div");wrap.style.cssText="display:flex;align-items:center;gap:1px;margin-bottom:2px";
+      var fb=document.createElement("button");fb.className="tab"+(currentFolder===f?" on":"");fb.textContent=f+" ("+(folderCounts[f]||0)+")";fb.style.fontSize="0.62rem";fb.style.padding="2px 6px";
+      fb.addEventListener("click",function(){currentFolder=f;renderSavesList();});
+      wrap.appendChild(fb);
+      if(f!=="Alla"&&saveScope==="mine"){
+        var rnBtn=document.createElement("button");rnBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#7aaa88;border:1px solid #2d4a35;border-left:none;cursor:pointer";rnBtn.textContent="✏";rnBtn.title="Byt namn";rnBtn.addEventListener("click",function(e){e.stopPropagation();openRenameFolder(f);});wrap.appendChild(rnBtn);
+        var delBtn=document.createElement("button");delBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#e84a4a;border:1px solid #2d4a35;border-left:none;border-radius:0 4px 4px 0;cursor:pointer";delBtn.textContent="×";delBtn.title="Radera mapp";
+        delBtn.addEventListener("click",function(e){e.stopPropagation();var count=folderCounts[f]||0;if(count===0){if(!confirm("Radera mappen \""+f+"\"?"))return;folders=folders.filter(function(x){return x!==f;});if(currentFolder===f)currentFolder="Alla";renderSavesList();}else{openDeleteFolderConfirm(f,"saves");}});
+        wrap.appendChild(delBtn);
+      }
+      filterRow.appendChild(wrap);
+    })(allFolders[i]);
+  }
+  if(saveScope==="mine"){
+    var addBtn=document.createElement("button");addBtn.style.cssText="font-size:0.62rem;padding:2px 8px;background:#111a14;color:#4ae87a;border:1px solid #4ae87a;border-radius:4px;cursor:pointer";addBtn.textContent="+ Mapp";
+    addBtn.addEventListener("click",function(){pendingFolderTarget="saves";document.getElementById("new-folder-inp").value="";document.getElementById("modal-new-folder").classList.remove("hidden");setTimeout(function(){document.getElementById("new-folder-inp").focus();},100);});
+    filterRow.appendChild(addBtn);
+  }
+  list.appendChild(filterRow);
+
+  var filtered=visibleAll.filter(function(s){var inFolder=currentFolder==="Alla"||(s.folder||"Allmänt")===currentFolder;var inSearch=!searchQuery||s.name.toLowerCase().indexOf(searchQuery)>=0;return inFolder&&inSearch;});
+  if(!filtered.length){var empty=document.createElement("span");empty.style.cssText="color:#7aaa88;font-size:0.8rem";empty.textContent=saveScope==="team"?"Inga delade lagfiler":"Inga uppställningar";list.appendChild(empty);return;}
+  var sorted=filtered.slice().sort(function(a,b){return a.name.localeCompare(b.name,"sv");});
+  for(var i=0;i<sorted.length;i++){
+    (function(s){
+      var mine=isMineV10(s), readOnly=isReadOnlyFileV10(s);
+      var row=document.createElement("div");row.className="row";
+      var nm=document.createElement("span");nm.className="row-name";nm.textContent=s.name;
+      var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(s.folder||"Allmänt")+(mine?"":" · "+ownerNameV10(s)+" · skrivskyddad");
+      var ld=document.createElement("button");ld.className="sa load";ld.textContent=readOnly?"Öppna":"Ladda";
+      ld.addEventListener("click",function(){
+        applyState(JSON.parse(JSON.stringify(s.state)));
+        activeFormationId=readOnly?null:s.id;
+        activeFormationName=readOnly?null:s.name;
+        updateSaveButtons();
+        if(readOnly)showToast("Öppnad skrivskyddat – kopiera för att redigera");
+      });
+
+      row.appendChild(nm);row.appendChild(fl);
+
+      if(mine){
+        var share=document.createElement("button");share.className="sa";share.style.cssText="color:#4ae8e8;border-color:#4ae8e8";share.textContent=fileMetaV10(s).sharedWithTeam?"Dölj":"Dela";
+        share.title=fileMetaV10(s).sharedWithTeam?"Sluta dela med laget":"Dela med laget";
+        share.addEventListener("click",function(){patchFormationShareV10(s,!fileMetaV10(s).sharedWithTeam);});
+        var toTk=document.createElement("button");toTk.className="sa";toTk.style.cssText="color:#4ae8e8;border-color:#4ae8e8";toTk.textContent="Till taktik";toTk.addEventListener("click",function(){sendSavedFormationToTaktik(s);});
+        var mv=document.createElement("button");mv.className="sa";mv.style.cssText="color:#e8c84a;border-color:#e8c84a";mv.textContent="⇆ Flytta";mv.addEventListener("click",function(){openMoveFolder(s);});
+        var dl=document.createElement("button");dl.className="sa del";dl.textContent="×";dl.addEventListener("click",function(){if(!confirm("Radera utgångsläget \""+(s.name||"utan namn")+"\"?"))return;if(s.id)cloudDelete(s.id);});
+        row.appendChild(share);row.appendChild(mv);row.appendChild(ld);row.appendChild(toTk);row.appendChild(dl);
+      }else{
+        var cp=document.createElement("button");cp.className="sa";cp.style.cssText="color:#4ae8e8;border-color:#4ae8e8";cp.textContent="Kopiera";cp.addEventListener("click",function(){copyFormationToMineV10(s);});
+        row.appendChild(ld);row.appendChild(cp);
+      }
+      list.appendChild(row);
+    })(sorted[i]);
+  }
+}
+
+function renderTaktikList(){
+  var filterDiv=document.getElementById("taktik-folder-filter");
+  if(filterDiv){
+    filterDiv.innerHTML="";
+    addScopeTabsV10(filterDiv,taktikScope,function(v){taktikScope=v;renderTaktikList();});
+    var visibleAll=taktikFilmer.filter(function(tk){return isFileVisibleInScopeV10(tk,taktikScope);});
+    var tfCounts={"Alla":visibleAll.length};
+    for(var i=0;i<visibleAll.length;i++){var f=visibleAll[i].folder||"Taktik";tfCounts[f]=(tfCounts[f]||0)+1;}
+    var tfAll=["Alla"];var tfseen={};var rootFolders=["Taktik","Träning"];
+    if(taktikScope==="mine"){rootFolders.forEach(function(r){if(!tfseen[r]){tfseen[r]=true;tfAll.push(r);}});}
+    for(var i=0;i<visibleAll.length;i++){var f=visibleAll[i].folder||"Taktik";if(!tfseen[f]){tfseen[f]=true;tfAll.push(f);}}
+    if(taktikScope==="mine"){for(var i=0;i<taktikFolders.length;i++){if(!tfseen[taktikFolders[i]]){tfseen[taktikFolders[i]]=true;tfAll.push(taktikFolders[i]);}}}
+    tfAll.sort(function(a,b){if(a==="Alla")return -1;if(b==="Alla")return 1;return a.localeCompare(b,"sv");});
+    for(var i=0;i<tfAll.length;i++){(function(f){
+      var isRoot=f==="Alla"||rootFolders.indexOf(f)>=0;
+      var depth=f==="Alla"?0:(f.split("/").length-1);
+      var wrap=document.createElement("div");wrap.style.cssText="display:flex;align-items:center;gap:1px;margin-bottom:2px;margin-left:"+(depth*12)+"px";
+      var fb=document.createElement("button");fb.className="tab"+(currentTaktikFolder===f?" on":"");fb.textContent=(depth>0?"└ ":"")+f.split("/").pop()+" ("+(tfCounts[f]||0)+")";fb.style.fontSize="0.62rem";fb.style.padding="2px 6px";
+      fb.addEventListener("click",function(){currentTaktikFolder=f;renderTaktikList();});
+      wrap.appendChild(fb);
+      if(f!=="Alla"&&taktikScope==="mine"){
+        var subBtn=document.createElement("button");subBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#4ae87a;border:1px solid #2d4a35;border-left:none;cursor:pointer";subBtn.textContent="+";subBtn.title="Ny undermapp";
+        subBtn.addEventListener("click",function(e){e.stopPropagation();pendingFolderParent=f;pendingFolderTarget="taktik";document.getElementById("new-folder-inp").value="";document.getElementById("modal-new-folder").classList.remove("hidden");setTimeout(function(){document.getElementById("new-folder-inp").focus();},100);});
+        wrap.appendChild(subBtn);
+        if(!isRoot){
+          var rnBtn=document.createElement("button");rnBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#7aaa88;border:1px solid #2d4a35;border-left:none;cursor:pointer";rnBtn.textContent="✏";rnBtn.title="Byt namn";rnBtn.addEventListener("click",function(e){e.stopPropagation();openRenameTaktikFolder(f);});wrap.appendChild(rnBtn);
+          var delBtn=document.createElement("button");delBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#e84a4a;border:1px solid #2d4a35;border-left:none;border-radius:0 4px 4px 0;cursor:pointer";delBtn.textContent="×";delBtn.title="Radera mapp";
+          delBtn.addEventListener("click",function(e){e.stopPropagation();var count=tfCounts[f]||0;if(count===0){if(!confirm("Radera mappen \""+f+"\"?"))return;taktikFolders=taktikFolders.filter(function(x){return x!==f;});if(currentTaktikFolder===f)currentTaktikFolder="Alla";renderTaktikList();}else{openDeleteFolderConfirm(f,"taktik");}});
+          wrap.appendChild(delBtn);
+        }
+      }
+      filterDiv.appendChild(wrap);
+    })(tfAll[i]);}
+  }
+  var list=document.getElementById("taktik-list");if(!list)return;list.innerHTML="";
+  var q=taktikSearch.toLowerCase();
+  var favorites_=typeof favorites!=="undefined"?favorites:{};
+  var visible=taktikFilmer.filter(function(tk){return isFileVisibleInScopeV10(tk,taktikScope);});
+  visible.sort(function(a,b){var af=a.dbId&&favorites_[a.dbId]?1:0;var bf=b.dbId&&favorites_[b.dbId]?1:0;return bf-af;});
+  var filtered=visible.filter(function(tk){var inFolder=currentTaktikFolder==="Alla"||(tk.folder||"Taktik")===currentTaktikFolder;var inSearch=!q||tk.name.toLowerCase().indexOf(q)>=0;return inFolder&&inSearch;});
+  if(!filtered.length){list.innerHTML="<span style=\"color:#7aaa88;font-size:0.8rem\">"+(taktikScope==="team"?"Inga delade lagfilmer":(taktikSearch?"Inga träffar":"Inga taktikfilmer sparade"))+"<\/span>";return;}
+  for(var i=0;i<filtered.length;i++){
+    (function(tk){
+      var idx=taktikFilmer.indexOf(tk), mine=isMineV10(tk), readOnly=isReadOnlyFileV10(tk);
+      tk._readOnly=readOnly;
+      var row=document.createElement("div");row.className="row";row.style.gap="3px";
+      var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;
+      var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.folder||"Allmänt")+" · "+(tk.steps.length-1)+" steg"+(mine?"":" · "+ownerNameV10(tk)+" · skrivskyddad");
+      function iconBtn(txt,title,color){var b=document.createElement("button");b.className="sa";b.textContent=txt;b.title=title;b.setAttribute("aria-label",title);b.style.cssText="min-width:24px;padding:2px 5px;font-size:0.72rem;line-height:1.1"+(color?";color:"+color+";border-color:"+color:"");return b;}
+      var fav=document.createElement("button");fav.className="star-btn "+(tk.dbId&&favorites_[tk.dbId]?"on":"off");fav.innerHTML="&#9733;";fav.title="Favorit";fav.addEventListener("click",function(e){e.stopPropagation();if(tk.dbId&&mine)toggleFavorite(tk.dbId);});
+      var pb=iconBtn(readOnly?"👁":"✎",readOnly?"Öppna skrivskyddat":"Redigera","#4ae87a");pb.className+=" play";pb.addEventListener("click",function(){startPlayback(idx);if(readOnly)showToast("Skrivskyddad – kopiera för att redigera");});
+      var dup=iconBtn("⧉","Kopiera","#4ae8e8");dup.addEventListener("click",function(){mine?duplicateTaktik(idx):copyTaktikToMineV10(tk);});
+      row.appendChild(nm);row.appendChild(fl);
+      if(mine){
+        var share=iconBtn(fileMetaV10(tk).sharedWithTeam?"🙈":"👥",fileMetaV10(tk).sharedWithTeam?"Sluta dela med laget":"Dela med laget","#4ae8e8");share.addEventListener("click",function(){patchTaktikShareV10(tk,!fileMetaV10(tk).sharedWithTeam);});
+        var mg=iconBtn("⋓","Sammanfoga","#a78bfa");mg.addEventListener("click",function(){openMergeTaktik(idx);});
+        var sh=iconBtn("⤴","Dela länk","#7aaa88");sh.addEventListener("click",function(){openShareTaktik(tk);});
+        var mvTk=iconBtn("⇆","Flytta till mapp","#e8c84a");mvTk.addEventListener("click",function(){openMoveTaktikFolder(tk);});
+        var dl=iconBtn("×","Radera","#e84a4a");dl.className+=" del";dl.addEventListener("click",function(){if(!confirm("Radera taktikfilmen \""+(tk.name||"utan namn")+"\"?"))return;deleteTaktik(idx);});
+        row.appendChild(fav);row.appendChild(pb);row.appendChild(dup);row.appendChild(share);row.appendChild(mg);row.appendChild(sh);row.appendChild(mvTk);row.appendChild(dl);
+      }else{
+        row.appendChild(pb);row.appendChild(dup);
+      }
+      list.appendChild(row);
+    })(filtered[i]);
+  }
+}
+/* === slut v10 === */
