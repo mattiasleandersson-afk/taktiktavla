@@ -4763,3 +4763,89 @@ function newFormationSimpleV33(){
 })();
 
 /* === slut v34 === */
+
+
+
+/* === v35: ta bort dubletter uppe, använd snurrpil som Ny nere === */
+(function(){
+
+  // Ta bort ALLA extra Ny/Spara som-knappar uppe.
+  [
+    "btn-new-formation-v28",
+    "btn-new-formation-v30",
+    "btn-new-formation-v31",
+    "btn-new-formation-v32",
+    "btn-new-formation-v33",
+    "btn-new-formation-bottom-v34",
+    "btn-save-as-topbar"
+  ].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.remove();
+  });
+
+  // Hitta originalknapparna som faktiskt fungerar.
+  var cloudSave=document.getElementById("btn-cloud-save");
+  var refresh=document.getElementById("btn-cloud-refresh");
+
+  // Flytta ner riktiga "Spara som".
+  var exportBtn=document.getElementById("btn-export");
+  if(exportBtn && cloudSave){
+    cloudSave.textContent="Spara som";
+    cloudSave.style.padding="4px 8px";
+    cloudSave.style.fontSize="0.72rem";
+
+    if(cloudSave.parentNode!==exportBtn.parentNode){
+      exportBtn.parentNode.insertBefore(cloudSave, exportBtn.nextSibling);
+    }
+  }
+
+  // Gör om snurrpilen till Ny-knapp.
+  if(refresh){
+    refresh.textContent="Ny";
+    refresh.title="Ny uppställning";
+    refresh.setAttribute("aria-label","Ny uppställning");
+    refresh.style.padding="4px 8px";
+    refresh.style.fontSize="0.72rem";
+    refresh.style.color="#4ae8e8";
+    refresh.style.borderColor="#4ae8e8";
+
+    // Nolla gamla handlers genom clone.
+    var clone=refresh.cloneNode(true);
+    refresh.parentNode.replaceChild(clone,refresh);
+
+    clone.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+
+      // EXAKT samma fungerande logik som tidigare.
+      if(typeof resetCurrentWorkspaceToDefault==="function"){
+        resetCurrentWorkspaceToDefault();
+      }
+
+      activeFormationId=null;
+      activeFormationName=null;
+
+      try{
+        var key=(typeof workspaceKeyFromPanel==="function")
+          ? workspaceKeyFromPanel(activeWorkspacePanel||"formations")
+          : "formation";
+
+        if(typeof workspaceStates!=="undefined" && typeof captureWorkspaceState==="function"){
+          var st=captureWorkspaceState();
+          st.activeFormationId=null;
+          st.activeFormationName=null;
+
+          workspaceStates[key]=JSON.parse(JSON.stringify(st));
+          workspaceStates.formation=JSON.parse(JSON.stringify(st));
+          workspaceStates.saves=JSON.parse(JSON.stringify(st));
+        }
+      }catch(err){}
+
+      if(typeof updateSaveButtons==="function")updateSaveButtons();
+
+      showToast("Ny uppställning – nästa sparning skapar ny fil");
+    },true);
+  }
+
+})();
+/* === slut v35 === */
