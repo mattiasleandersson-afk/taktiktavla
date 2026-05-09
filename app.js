@@ -543,8 +543,24 @@ document.getElementById("zone-shape-sel").addEventListener("change",function(){z
 document.getElementById("zone-color-sel").addEventListener("change",function(){zoneColor=this.value;});
 document.getElementById("btn-text").addEventListener("click",function(){setMode(mode==="text"?"move":"text");});
 document.getElementById("btn-undo").addEventListener("click",doUndo);
-document.getElementById("btn-reset").addEventListener("click",function(){initPlayers(document.querySelector("#formation-btns .on")?document.querySelector("#formation-btns .on").textContent:"4-4-2");arrows=[];labels=[];freehandPaths=[];zones=[];render();});
-var clearBtn=document.createElement("button");clearBtn.className="btn";clearBtn.title="Rensa pilar, frihand och zoner";clearBtn.textContent="Rensa";clearBtn.addEventListener("click",function(){saveUndo();arrows=[];labels=[];freehandPaths=[];zones=[];render();showToast("Ritningar rensade!");});
+function getCurrentFormationForReset(){
+  var active=document.querySelector("#formation-btns .btn.on");
+  if(active&&active.textContent)return active.textContent;
+  if(typeof _defaultFormation!=="undefined"&&_defaultFormation)return _defaultFormation;
+  return "4-4-2";
+}
+function clearCoachboardToFormation(){
+  saveUndo();
+  initPlayers(getCurrentFormationForReset());
+  ball={x:W/2,y:H/2};
+  arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];
+  selectedId=null;arrowStart=null;arrowCurrent=null;freehandCurrent=null;zoneStart=null;zonePreview=null;movementCurrent=null;
+  setMode("move");
+  render();
+  showToast("Tavlan rensad och spelarna återställda!");
+}
+document.getElementById("btn-reset").addEventListener("click",function(){initPlayers(document.querySelector("#formation-btns .on")?document.querySelector("#formation-btns .on").textContent:"4-4-2");arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];render();});
+var clearBtn=document.createElement("button");clearBtn.className="btn";clearBtn.title="Rensa ritningar och återställ flyttade spelare";clearBtn.textContent="Rensa";clearBtn.addEventListener("click",function(){clearCoachboardToFormation();});
 document.getElementById("btn-freehand").parentNode.insertBefore(clearBtn,document.getElementById("btn-freehand"));
 document.getElementById("fmt-sel").addEventListener("change",function(e){format=parseInt(e.target.value);buildFormationBtns();initPlayers((FORMATIONS[format]||FORMATIONS[11])[0]);render();});
 document.getElementById("btn-half").addEventListener("click",function(){halfMode=(halfMode+1)%3;var lbl=["\u00bd Plan","\u00bd Borta","Hel"];document.getElementById("btn-half").innerHTML=lbl[halfMode];updateViewBox();});
@@ -1356,9 +1372,17 @@ function openMoveTaktikFolder(tk){
 }
 
 function checkShareLink(){var params=new URLSearchParams(window.location.search);var shareId=params.get("share");if(!shareId)return;fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+shareId,{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(data&&data[0]){var tk=data[0].data;tk.dbId=data[0].id;taktikFilmer=[tk];renderTaktikList();startPlayback(0);showToast("Delade filmen: "+tk.name);}}).catch(function(){});}
+function isFullscreenTaktikMode(){
+  return !!(playback||isEditingTaktik||editingTaktikIdx!==null||document.querySelector('.tab.on[data-panel="taktik"]'));
+}
 function syncFullscreenToolButtons(){
   var map={"fs-tb-move":"move","fs-tb-arrow":"arrow","fs-tb-freehand":"freehand","fs-tb-zone":"zone","fs-tb-text":"text","fs-tb-movement":"movement"};
-  Object.keys(map).forEach(function(id){var b=document.getElementById(id);if(b)b.classList.toggle("active",mode===map[id]);});
+  Object.keys(map).forEach(function(id){
+    var b=document.getElementById(id);
+    if(!b)return;
+    if(id==="fs-tb-movement")b.style.display=isFullscreenTaktikMode()?"":"none";
+    b.classList.toggle("active",mode===map[id]);
+  });
 }
 function setupFullscreenPortraitToolbar(){
   if(document.getElementById("fs-top-tools")){syncFullscreenToolButtons();return;}
@@ -1373,9 +1397,13 @@ function setupFullscreenPortraitToolbar(){
   moveBtn.className="ls-btn";moveBtn.id="fs-tb-move";moveBtn.title="Flytta spelare/boll";moveBtn.textContent="✋";
   topTools.appendChild(moveBtn);
   ["fs-tb-arrow","fs-tb-freehand","fs-tb-zone","fs-tb-text","fs-tb-movement"].forEach(function(id){var b=document.getElementById(id);if(b)topTools.appendChild(b);});
+  var fsClearBtn=document.createElement("button");
+  fsClearBtn.className="ls-btn";fsClearBtn.id="fs-tb-clear";fsClearBtn.title="Rensa ritningar och återställ spelare";fsClearBtn.textContent="🧽";
+  topTools.appendChild(fsClearBtn);
   document.body.appendChild(topTools);
-  moveBtn.addEventListener("click",function(){setMode("move");});
-  ["fs-tb-arrow","fs-tb-freehand","fs-tb-zone","fs-tb-text","fs-tb-movement"].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display="";});
+  moveBtn.addEventListener("click",function(){setMode("move");syncFullscreenToolButtons();});
+  fsClearBtn.addEventListener("click",function(){clearCoachboardToFormation();syncFullscreenToolButtons();});
+  ["fs-tb-arrow","fs-tb-freehand","fs-tb-zone","fs-tb-text"].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display="";});
   syncFullscreenToolButtons();
 }
 function enterFullscreenPortrait(){document.body.classList.add("fullscreen-portrait");setupFullscreenPortraitToolbar();syncFullscreenToolButtons();updateFsPortraitNav();}
