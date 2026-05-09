@@ -795,9 +795,69 @@ function renderTaktikList(){
   taktikFilmer.sort(function(a,b){var af=a.dbId&&favorites_[a.dbId]?1:0;var bf=b.dbId&&favorites_[b.dbId]?1:0;return bf-af;});
   var filtered=taktikFilmer.filter(function(tk){var inFolder=currentTaktikFolder==="Alla"||(tk.folder||"Taktik")===currentTaktikFolder;var inSearch=!q||tk.name.toLowerCase().indexOf(q)>=0;return inFolder&&inSearch;});
   if(!filtered.length){list.innerHTML="<span style=\"color:#7aaa88;font-size:0.8rem\">"+(taktikSearch?"Inga tr\u00e4ffar":"Inga taktikfilmer sparade")+"<\/span>";return;}
-  for(var i=0;i<filtered.length;i++){(function(tk){var idx=taktikFilmer.indexOf(tk);var row=document.createElement("div");row.className="row";var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.folder||"Allm\u00e4nt")+" \u00b7 "+(tk.steps.length-1)+" steg";var fav=document.createElement("button");fav.className="star-btn "+(tk.dbId&&favorites_[tk.dbId]?"on":"off");fav.innerHTML="&#9733;";fav.addEventListener("click",function(e){e.stopPropagation();if(tk.dbId)toggleFavorite(tk.dbId);});var pb=document.createElement("button");pb.className="sa play";pb.textContent="\u270f Redigera";pb.addEventListener("click",function(){startPlayback(idx);});var dup=document.createElement("button");dup.className="sa";dup.style.cssText="color:#4ae8e8;border-color:#4ae8e8";dup.textContent="Kopiera";dup.addEventListener("click",function(){duplicateTaktik(idx);});var newFromStart=document.createElement("button");newFromStart.className="sa";newFromStart.style.cssText="color:#e8c84a;border-color:#e8c84a";newFromStart.textContent="Fr\u00e5n start";newFromStart.title="Ny film med bara startl\u00e4get";newFromStart.addEventListener("click",function(){var copy={name:"Ny fr\u00e5n: "+tk.name,folder:tk.folder||"Allm\u00e4nt",steps:[JSON.parse(JSON.stringify(tk.steps[0]))]};taktikFilmer.push(copy);cloudSaveTaktik(copy);renderTaktikList();showToast("Ny film skapad!");});var mg=document.createElement("button");mg.className="sa";mg.style.cssText="color:#a78bfa;border-color:#a78bfa";mg.textContent="\u22d3";mg.title="Sammanfoga";mg.addEventListener("click",function(){openMergeTaktik(idx);});var sh=document.createElement("button");sh.className="sa";sh.style.cssText="color:#7aaa88;border-color:#7aaa88";sh.textContent="\u29c9";sh.title="Dela";sh.addEventListener("click",function(){openShareTaktik(tk);});var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";dl.addEventListener("click",function(){if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"DELETE",headers:supaHeaders()}).then(function(){cloudLoadTaktik();});}else{taktikFilmer.splice(idx,1);renderTaktikList();}});var mvTk=document.createElement("button");mvTk.className="sa";mvTk.style.cssText="color:#e8c84a;border-color:#e8c84a";mvTk.textContent="\u21c6";mvTk.title="Flytta till mapp";
+  for(var i=0;i<filtered.length;i++){
+    (function(tk){
+      var idx=taktikFilmer.indexOf(tk);
+      var row=document.createElement("div");
+      row.className="row";
+      row.style.gap="3px";
+
+      var nm=document.createElement("span");
+      nm.className="row-name";
+      nm.textContent=tk.name;
+
+      var fl=document.createElement("span");
+      fl.className="row-sub";
+      fl.textContent=(tk.folder||"Allmänt")+" · "+(tk.steps.length-1)+" steg";
+
+      function iconBtn(txt,title,color){
+        var b=document.createElement("button");
+        b.className="sa";
+        b.textContent=txt;
+        b.title=title;
+        b.setAttribute("aria-label",title);
+        b.style.cssText="min-width:24px;padding:2px 5px;font-size:0.72rem;line-height:1.1"+(color?";color:"+color+";border-color:"+color:"");
+        return b;
+      }
+
+      var fav=document.createElement("button");
+      fav.className="star-btn "+(tk.dbId&&favorites_[tk.dbId]?"on":"off");
+      fav.innerHTML="&#9733;";
+      fav.title="Favorit";
+      fav.addEventListener("click",function(e){e.stopPropagation();if(tk.dbId)toggleFavorite(tk.dbId);});
+
+      var pb=iconBtn("✎","Redigera","#4ae87a");
+      pb.className+=" play";
+      pb.addEventListener("click",function(){startPlayback(idx);});
+
+      var dup=iconBtn("⧉","Kopiera","#4ae8e8");
+      dup.addEventListener("click",function(){duplicateTaktik(idx);});
+
+      var mg=iconBtn("⋓","Sammanfoga","#a78bfa");
+      mg.addEventListener("click",function(){openMergeTaktik(idx);});
+
+      var sh=iconBtn("⤴","Dela","#7aaa88");
+      sh.addEventListener("click",function(){openShareTaktik(tk);});
+
+      var mvTk=iconBtn("⇆","Flytta till mapp","#e8c84a");
       mvTk.addEventListener("click",function(){openMoveTaktikFolder(tk);});
-      row.appendChild(nm);row.appendChild(fl);row.appendChild(fav);row.appendChild(pb);row.appendChild(dup);row.appendChild(newFromStart);row.appendChild(mg);row.appendChild(sh);row.appendChild(mvTk);row.appendChild(dl);list.appendChild(row);})(filtered[i]);}
+
+      var dl=iconBtn("×","Radera","#e84a4a");
+      dl.className+=" del";
+      dl.addEventListener("click",function(){if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"DELETE",headers:supaHeaders()}).then(function(){cloudLoadTaktik();});}else{taktikFilmer.splice(idx,1);renderTaktikList();}});
+
+      row.appendChild(nm);
+      row.appendChild(fl);
+      row.appendChild(fav);
+      row.appendChild(pb);
+      row.appendChild(dup);
+      row.appendChild(mg);
+      row.appendChild(sh);
+      row.appendChild(mvTk);
+      row.appendChild(dl);
+      list.appendChild(row);
+    })(filtered[i]);
+  }
 
 }
 var editingStepIdx=0;
@@ -814,6 +874,54 @@ function renderEditSteps(tk){var list=document.getElementById("edit-taktik-steps
         if(playback){animateToStep(idx);}
         else{updateEditStepUI();}
       });var num=document.createElement("span");num.style.cssText="font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px";num.textContent=idx===0?"\u25ba":String(idx);var nameInp=document.createElement("input");nameInp.type="text";nameInp.value=s.label||(idx===0?"Startl\u00e4ge":"Steg "+idx);nameInp.style.cssText="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 6px;font-size:0.78rem";nameInp.addEventListener("change",function(){s.label=nameInp.value;});var del=document.createElement("button");del.className="sa del";del.textContent="\u00d7";del.style.display=idx===0?"none":"";del.addEventListener("click",function(){tk.steps.splice(idx,1);renderEditSteps(tk);});var up=document.createElement("button");up.className="sa";up.textContent="\u2191";up.style.display=idx<=1?"none":"";up.addEventListener("click",function(){if(idx>1){var tmp=tk.steps[idx];tk.steps[idx]=tk.steps[idx-1];tk.steps[idx-1]=tmp;renderEditSteps(tk);}});var dn=document.createElement("button");dn.className="sa";dn.textContent="\u2193";dn.style.display=idx===0||idx===tk.steps.length-1?"none":"";dn.addEventListener("click",function(){if(idx<tk.steps.length-1){var tmp=tk.steps[idx];tk.steps[idx]=tk.steps[idx+1];tk.steps[idx+1]=tmp;renderEditSteps(tk);}});row.appendChild(num);row.appendChild(nameInp);row.appendChild(up);row.appendChild(dn);row.appendChild(del);list.appendChild(row);})(i);}}
+
+function saveCurrentTaktikStepAsFormation(){
+  if(editingTaktikIdx===null){showToast("Öppna en taktikfilm först",false);return;}
+  var tk=taktikFilmer[editingTaktikIdx];
+  if(!tk){showToast("Ingen aktiv taktikfilm",false);return;}
+  var stepLabel=editingStepIdx===0?"Start":"Steg "+editingStepIdx;
+  var defaultName="Utgångsläge från "+tk.name+" – "+stepLabel;
+  var name=window.prompt("Namn på nytt utgångsläge:",defaultName);
+  if(name===null)return;
+  name=(name||defaultName).trim()||defaultName;
+  var snap=currentSnap();
+  var data={
+    format:format,
+    homeColor:homeColor,
+    awayColor:awayColor,
+    displayMode:displayMode,
+    players:cloneObj(snap.players||[]),
+    ball:cloneObj(snap.ball||{x:W/2,y:H/2}),
+    arrows:cloneObj(snap.arrows||[]),
+    labels:cloneObj(snap.labels||[]),
+    freehandPaths:cloneObj(snap.freehandPaths||[]),
+    zones:cloneObj(snap.zones||[]),
+    movementPaths:[]
+  };
+  cloudStatus("Sparar utgångsläge...","#7aaa88");
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:name,data:data,type:"uppstallning",folder:"Allmänt"})})
+    .then(function(r){return r.json();})
+    .then(function(res){
+      cloudStatus("✅ Utgångsläge sparat: "+name,"#4ae87a");
+      showToast("Steget sparades som utgångsläge!");
+      cloudLoadSaves();
+    })
+    .catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");showToast("Kunde inte spara utgångsläge",false);});
+}
+function ensureExportStepAsFormationButton(){
+  var ref=document.getElementById("btn-edit-update-step2")||document.getElementById("btn-edit-update-step");
+  if(!ref||document.getElementById("btn-export-step-formation"))return;
+  var b=document.createElement("button");
+  b.className="btn";
+  b.id="btn-export-step-formation";
+  b.textContent="⇩ Utgångsläge";
+  b.title="Spara aktuellt taktiksteg som utgångsläge";
+  b.style.cssText="padding:3px 7px;font-size:0.65rem;color:#e8c84a;border-color:#e8c84a";
+  b.addEventListener("click",saveCurrentTaktikStepAsFormation);
+  ref.parentNode.insertBefore(b,ref.nextSibling);
+}
+ensureExportStepAsFormationButton();
+
 document.getElementById("btn-edit-taktik-exit").addEventListener("click",exitEditTaktik);
 document.getElementById("btn-edit-taktik-save").addEventListener("click",function(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];if(tk.dbId){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{method:"PATCH",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:tk.name,data:tk,folder:tk.folder||"Allm\u00e4nt"})}).then(function(){cloudStatus("\u2705 Film sparad","#4ae87a");});}else cloudStatus("\u2705 Sparad lokalt","#4ae87a");});
 document.getElementById("btn-edit-step-prev").addEventListener("click",function(){if(editingTaktikIdx===null||editingStepIdx<=0)return;editingStepIdx--;updateEditStepUI();});
