@@ -4849,3 +4849,110 @@ function newFormationSimpleV33(){
 
 })();
 /* === slut v35 === */
+
+
+
+/* === v36: sen DOM-städning av dubbla Ny/Spara som-knappar === */
+function runTopbarCleanupV36(){
+  // 1. Ta bort alla patchskapade Ny-knappar utom den som görs av refresh-knappen.
+  [
+    "btn-new-formation-v28",
+    "btn-new-formation-v30",
+    "btn-new-formation-v31",
+    "btn-new-formation-v32",
+    "btn-new-formation-v33",
+    "btn-new-formation-bottom-v34"
+  ].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.remove();
+  });
+
+  // 2. Ta bort alla extra "Spara som"-knappar som inte är originalet btn-cloud-save.
+  Array.prototype.slice.call(document.querySelectorAll("button")).forEach(function(b){
+    var txt=(b.textContent||"").trim().toLowerCase();
+    if(txt==="spara som" && b.id!=="btn-cloud-save"){
+      b.remove();
+    }
+    if(txt==="ny" && b.id!=="btn-cloud-refresh"){
+      b.remove();
+    }
+  });
+
+  var cloudSave=document.getElementById("btn-cloud-save");
+  var refresh=document.getElementById("btn-cloud-refresh");
+  var exportBtn=document.getElementById("btn-export");
+
+  // 3. Flytta original-Spara som ner till samma rad som import/export.
+  if(exportBtn && cloudSave && exportBtn.parentNode){
+    cloudSave.textContent="Spara som";
+    cloudSave.title="Spara som ny uppställning";
+    cloudSave.style.padding="4px 8px";
+    cloudSave.style.fontSize="0.72rem";
+    cloudSave.style.marginLeft="4px";
+
+    if(cloudSave.parentNode!==exportBtn.parentNode){
+      exportBtn.parentNode.insertBefore(cloudSave, exportBtn.nextSibling);
+    }
+  }
+
+  // 4. Gör original-refresh/snurrpil till Ny.
+  if(refresh && !refresh.dataset.v36NewBound){
+    var clone=refresh.cloneNode(true);
+    clone.dataset.v36NewBound="1";
+    clone.id="btn-cloud-refresh";
+    clone.textContent="Ny";
+    clone.title="Ny uppställning";
+    clone.setAttribute("aria-label","Ny uppställning");
+    clone.style.padding="4px 8px";
+    clone.style.fontSize="0.72rem";
+    clone.style.color="#4ae8e8";
+    clone.style.borderColor="#4ae8e8";
+
+    clone.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      if(typeof resetCurrentWorkspaceToDefault==="function"){
+        resetCurrentWorkspaceToDefault();
+      }
+
+      activeFormationId=null;
+      activeFormationName=null;
+
+      try{
+        var key=(typeof workspaceKeyFromPanel==="function")
+          ? workspaceKeyFromPanel(activeWorkspacePanel||"formations")
+          : "formation";
+
+        if(typeof workspaceStates!=="undefined" && typeof captureWorkspaceState==="function"){
+          var st=captureWorkspaceState();
+          st.activeFormationId=null;
+          st.activeFormationName=null;
+          workspaceStates[key]=JSON.parse(JSON.stringify(st));
+          workspaceStates.formation=JSON.parse(JSON.stringify(st));
+          workspaceStates.saves=JSON.parse(JSON.stringify(st));
+        }
+      }catch(err){}
+
+      if(typeof updateSaveButtons==="function")updateSaveButtons();
+
+      showToast("Ny uppställning – nästa sparning skapar ny fil");
+      return false;
+    },true);
+
+    refresh.parentNode.replaceChild(clone,refresh);
+  }
+}
+
+// Kör flera gånger eftersom gamla script skapar knappar sent.
+runTopbarCleanupV36();
+setTimeout(runTopbarCleanupV36,100);
+setTimeout(runTopbarCleanupV36,500);
+setTimeout(runTopbarCleanupV36,1200);
+window.addEventListener("load",function(){
+  runTopbarCleanupV36();
+  setTimeout(runTopbarCleanupV36,500);
+});
+
+/* === slut v36 === */
