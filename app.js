@@ -3246,3 +3246,212 @@ window.addEventListener("beforeunload",function(e){
 });
 
 /* === slut v21 === */
+
+
+
+/* === v22: ny taktikfilm får aldrig öppna fel/sorterad film === */
+function startPlaybackByObjectV22(tk){
+  if(!tk)return;
+  var idx=taktikFilmer.indexOf(tk);
+  if(idx<0){
+    taktikFilmer.push(tk);
+    idx=taktikFilmer.indexOf(tk);
+  }
+  startPlayback(idx);
+  // Säkerställ att editorn verkligen pekar på exakt objektet vi skapade.
+  editingTaktikIdx=taktikFilmer.indexOf(tk);
+  playback={tk:tk,stepIndex:0,animating:false};
+  editingStepIdx=0;
+  isEditingTaktik=true;
+  restoreSnap(tk.steps[0]);
+  render();
+  updateEditStepUI();
+  if(typeof refreshSavedSnapshotV21==="function")setTimeout(refreshSavedSnapshotV21,80);
+}
+
+function createNewTaktikDraftV22(){
+  var name=document.getElementById("taktik-name-inp").value.trim();
+  if(!name)return;
+  document.getElementById("modal-new-taktik").classList.add("hidden");
+
+  if(animFrame)cancelAnimationFrame(animFrame);
+  playback=null;
+  editingTaktikIdx=null;
+  editingStepIdx=0;
+  isEditingTaktik=false;
+  activeTaktik=null;
+
+  var cleanSnap;
+  if(typeof getCleanTaktikStartSnapV15==="function") cleanSnap=getCleanTaktikStartSnapV15();
+  else cleanSnap=currentSnap();
+
+  var newFilm={
+    _draftUid:"draft_"+Date.now()+"_"+Math.random().toString(36).slice(2),
+    name:name,
+    folder:"Taktik",
+    steps:[cleanSnap],
+    _isDraft:true
+  };
+
+  taktikFilmer.push(newFilm);
+  startPlaybackByObjectV22(newFilm);
+  renderTaktikList();
+  startPlaybackByObjectV22(newFilm);
+
+  showToast("Utkast skapat – lägg till minst ett steg innan sparning");
+}
+
+// Byt ut ny-film-knappen sist, så gamla handlers inte kan öppna via fel index.
+if(typeof replaceClickV19==="function"){
+  replaceClickV19("new-taktik-ok",createNewTaktikDraftV22);
+}else if(typeof replaceBtnHandlerV15==="function"){
+  replaceBtnHandlerV15("new-taktik-ok",createNewTaktikDraftV22);
+}else{
+  var newOkV22=document.getElementById("new-taktik-ok");
+  if(newOkV22){
+    var cloneV22=newOkV22.cloneNode(true);
+    newOkV22.parentNode.replaceChild(cloneV22,newOkV22);
+    cloneV22.addEventListener("click",createNewTaktikDraftV22);
+  }
+}
+
+// Säkrare render: utkast får ligga kvar men ska inte sorteras bort/ersättas.
+var _renderTaktikList_v22 = renderTaktikList;
+renderTaktikList = function(){
+  var activeObj=(editingTaktikIdx!==null&&taktikFilmer[editingTaktikIdx])?taktikFilmer[editingTaktikIdx]:null;
+  var res=_renderTaktikList_v22.apply(this,arguments);
+  if(activeObj && activeObj._draftUid){
+    var idx=taktikFilmer.indexOf(activeObj);
+    if(idx>=0)editingTaktikIdx=idx;
+  }
+  return res;
+};
+/* === slut v22 === */
+
+
+
+/* === v23: en enda källa för osparat-varning efter sparning === */
+var lastTaktikSaveAtV23 = 0;
+
+function forceCleanTaktikV23(){
+  if(typeof autoSaveCurrentStepLocalV16==="function"){
+    try{autoSaveCurrentStepLocalV16();}catch(e){}
+  }
+  if(typeof refreshSavedSnapshotV21==="function"){
+    try{refreshSavedSnapshotV21();}catch(e){}
+  }else if(typeof normalizeTaktikForCompareV21==="function" && typeof currentEditingTaktikV21==="function"){
+    savedTaktikSnapshotV21=normalizeTaktikForCompareV21(currentEditingTaktikV21());
+  }
+  taktikDirtyV17=false;
+  lastTaktikSaveAtV23=Date.now();
+}
+
+function hasUnsavedTaktikChangesV23(){
+  // Skydd mot gamla listeners som sätter dirty precis efter spara-klick.
+  if(Date.now()-lastTaktikSaveAtV23 < 2500)return false;
+
+  if(typeof hasUnsavedTaktikChangesV21==="function"){
+    return hasUnsavedTaktikChangesV21();
+  }
+
+  return !!taktikDirtyV17;
+}
+
+function confirmUnsavedUnifiedV23(){
+  if(!hasUnsavedTaktikChangesV23())return true;
+  return confirm("Du har osparade ändringar i taktiken. Vill du lämna utan att spara?");
+}
+
+// Tvinga ALLA tidigare confirm-funktioner att använda samma logik.
+confirmUnsavedV21 = confirmUnsavedUnifiedV23;
+confirmUnsavedV19 = confirmUnsavedUnifiedV23;
+confirmUnsavedTaktikV18 = confirmUnsavedUnifiedV23;
+confirmDiscardUnsavedV17 = confirmUnsavedUnifiedV23;
+
+// Spara-knappen: sätt ren baslinje direkt, inte först efter timeout.
+function saveCurrentTaktikFileV23(){
+  if(editingTaktikIdx===null)return;
+  if(typeof autoSaveCurrentStepLocalV16==="function"){
+    autoSaveCurrentStepLocalV16();
+  }
+  var tk=(typeof currentEditingTaktikV21==="function")?currentEditingTaktikV21():taktikFilmer[editingTaktikIdx];
+  if(!tk)return;
+
+  // Baslinje sätts innan/vid save så gamla dirty-events inte kan ge falsk varning.
+  if(typeof normalizeTaktikForCompareV21==="function"){
+    savedTaktikSnapshotV21=normalizeTaktikForCompareV21(tk);
+  }
+  taktikDirtyV17=false;
+  lastTaktikSaveAtV23=Date.now();
+
+  cloudSaveTaktik(tk);
+
+  setTimeout(function(){
+    forceCleanTaktikV23();
+    showToast("Film sparad!");
+    cloudStatus("✅ Film sparad","#4ae87a");
+  },400);
+}
+
+// Byt ut sparknappen igen, sist i filen.
+if(typeof replaceClickV19==="function"){
+  replaceClickV19("btn-edit-taktik-save",saveCurrentTaktikFileV23);
+}else if(typeof replaceBtnHandlerV15==="function"){
+  replaceBtnHandlerV15("btn-edit-taktik-save",saveCurrentTaktikFileV23);
+}else{
+  var saveBtnV23=document.getElementById("btn-edit-taktik-save");
+  if(saveBtnV23){
+    var saveCloneV23=saveBtnV23.cloneNode(true);
+    saveBtnV23.parentNode.replaceChild(saveCloneV23,saveBtnV23);
+    saveCloneV23.addEventListener("click",saveCurrentTaktikFileV23);
+  }
+}
+
+// Byt ut lämna/stopp igen så de säkert använder unified confirm.
+function closeTaktikEditorV23(){
+  savedTaktikSnapshotV21=null;
+  taktikDirtyV17=false;
+  movementPaths=[];selectedId=null;editingTaktikIdx=null;editingStepIdx=0;isEditingTaktik=false;
+  playback=null;
+  var ui=document.getElementById("edit-taktik-ui");if(ui)ui.style.display="none";
+  var no=document.getElementById("no-rec-ui");if(no)no.style.display="block";
+  var tb=document.getElementById("taktikbar");if(tb)tb.style.display="none";
+  var bp=document.getElementById("bottompanel");if(bp)bp.classList.remove("hidden");
+  if(typeof renderTaktikList==="function")renderTaktikList();
+  if(typeof render==="function")render();
+}
+
+if(typeof replaceClickV19==="function"){
+  replaceClickV19("btn-edit-taktik-exit",function(){
+    if(!confirmUnsavedUnifiedV23())return;
+    closeTaktikEditorV23();
+  });
+  replaceClickV19("btn-stop-play",function(){
+    if(!confirmUnsavedUnifiedV23())return;
+    if(animFrame)cancelAnimationFrame(animFrame);
+    closeTaktikEditorV23();
+  });
+}
+
+// Panelbyte: fånga efter den senaste logiken.
+document.addEventListener("click",function(e){
+  var tab=e.target.closest&&e.target.closest(".tab");
+  if(!tab)return;
+  var target=tab.getAttribute("data-panel");
+  if(target && target!=="taktik" && (editingTaktikIdx!==null || isEditingTaktik || playback)){
+    if(!confirmUnsavedUnifiedV23()){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return false;
+    }
+    closeTaktikEditorV23();
+  }
+},true);
+
+window.addEventListener("beforeunload",function(e){
+  if(!hasUnsavedTaktikChangesV23())return;
+  e.preventDefault();
+  e.returnValue="";
+});
+
+/* === slut v23 === */
