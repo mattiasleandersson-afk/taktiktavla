@@ -36,27 +36,49 @@
 </style>
 
 
-<style id="v46-iphone-toggle-fix">
+<style id="v47-floating-topbar-toggle-css">
+  /* Dölj den gamla pilen helt. Den låg inne i topbaren och kunde hamna fel på iPhone. */
+  #btn-topbar-toggle,
   .v45-toggle-holder {
-    position: fixed !important;
-    right: 10px !important;
-    top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
-    z-index: 10000 !important;
-    display: flex !important;
-    pointer-events: auto !important;
+    display: none !important;
   }
-  #btn-topbar-toggle {
-    min-width: 38px !important;
-    min-height: 34px !important;
-    padding: 6px 10px !important;
-    display: inline-flex !important;
+
+  /* Ny fristående knapp, utanför topbaren */
+  #v47-topbar-float {
+    position: fixed !important;
+    right: 12px !important;
+    top: 58px !important;
+    z-index: 2147483647 !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 999px !important;
+    border: 2px solid #4ae8e8 !important;
+    background: rgba(10, 20, 14, 0.96) !important;
+    color: #4ae8e8 !important;
+    font-size: 24px !important;
+    font-weight: 900 !important;
+    display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.45) !important;
     touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
-  #topbar.v45-collapsed {
-    min-height: calc(env(safe-area-inset-top, 0px) + 46px) !important;
-    overflow: visible !important;
+
+  body.v47-topbar-collapsed #topbar {
+    min-height: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+  }
+
+  body.v47-topbar-collapsed #topbar > * {
+    display: none !important;
+  }
+
+  body.v47-topbar-collapsed #v47-topbar-float {
+    top: 16px !important;
   }
 </style>
 
@@ -93,7 +115,7 @@
   <button class="btn" id="btn-fs-topbar" style="color:#4ae87a;border-color:#4ae87a" title="Helsk\u00e4rm">&#x26F6;</button>
   <button class="btn" id="btn-orientation-toggle" style="display:none;color:#4ae8e8;border-color:#4ae8e8" title="V&#228;xla liggande/st&#229;ende">&#8645;</button>
   </div>
-  <div class="v45-toggle-holder" style="position:fixed;right:10px;top:calc(env(safe-area-inset-top, 0px) + 10px);z-index:10000;display:flex"><button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button></div>
+  <div class="v45-toggle-holder" style="position:absolute;right:6px;top:4px;z-index:10000;display:flex"><button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button></div>
   <div style="display:flex;gap:0;padding-top:3px;border-top:1px solid #1a3020;overflow-x:auto;flex-shrink:0">
     <button class="tab on" data-panel="formations" style="font-size:0.72rem;padding:3px 10px">Formation</button>
     <button class="tab" data-panel="saves" style="font-size:0.72rem;padding:3px 10px">Utg&#229;ngsläge</button>
@@ -812,6 +834,81 @@
   // Om någon gammal JS skapar tillbaka dubletten senare: ta bort direkt.
   var obs=new MutationObserver(runV45);
   if(document.body)obs.observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
+
+<script id="v47-floating-topbar-toggle">
+(function(){
+  function removeOldTopbarDuplicates(){
+    var topbar=document.getElementById("topbar");
+    Array.prototype.slice.call(document.querySelectorAll("#btn-save-as-topbar")).forEach(function(el){el.remove();});
+    if(topbar){
+      Array.prototype.slice.call(topbar.querySelectorAll("button")).forEach(function(b){
+        var txt=(b.textContent||"").trim().toLowerCase();
+        if(txt==="spara som") b.remove();
+      });
+    }
+  }
+
+  function setupFloatingToggle(){
+    removeOldTopbarDuplicates();
+
+    var old=document.getElementById("v47-topbar-float");
+    if(old) old.remove();
+
+    var btn=document.createElement("button");
+    btn.id="v47-topbar-float";
+    btn.type="button";
+    btn.textContent="▲";
+    btn.title="Minimera/visa meny";
+    document.body.appendChild(btn);
+
+    var collapsed=false;
+
+    function setCollapsed(next){
+      collapsed=next;
+      document.body.classList.toggle("v47-topbar-collapsed", collapsed);
+      btn.textContent=collapsed ? "▼" : "▲";
+      btn.title=collapsed ? "Visa meny" : "Minimera meny";
+    }
+
+    btn.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      setCollapsed(!collapsed);
+      return false;
+    },true);
+
+    btn.addEventListener("touchend",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      setCollapsed(!collapsed);
+      return false;
+    },{passive:false,capture:true});
+
+    // Stäng av gamla knappen om någon gammal listener fortfarande finns
+    var oldToggle=document.getElementById("btn-topbar-toggle");
+    if(oldToggle){
+      oldToggle.onclick=function(e){
+        if(e){e.preventDefault();e.stopPropagation();}
+        setCollapsed(!collapsed);
+        return false;
+      };
+    }
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",setupFloatingToggle);
+  }else{
+    setupFloatingToggle();
+  }
+
+  window.addEventListener("load",setupFloatingToggle);
+
+  // Om gamla script försöker skapa tillbaka saker efteråt.
+  setTimeout(setupFloatingToggle,300);
+  setTimeout(removeOldTopbarDuplicates,800);
 })();
 </script>
 
