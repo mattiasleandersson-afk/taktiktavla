@@ -4604,3 +4604,162 @@ function ensureIndependentNewFormationButtonV32(){
 
 ensureIndependentNewFormationButtonV32();
 /* === slut v32 === */
+
+
+
+/* === v33: Ny använder exakt samma reset som Standard === */
+function newFormationSimpleV33(){
+  // Kör exakt samma funktion som ↺ Standard
+  if(typeof resetCurrentWorkspaceToDefault==="function"){
+    resetCurrentWorkspaceToDefault();
+  }
+
+  // Men lämna sedan den aktiva filen så nästa save blir ny fil.
+  activeFormationId=null;
+  activeFormationName=null;
+
+  // Uppdatera workspace-state så gammal fil inte binds tillbaka.
+  try{
+    var key=(typeof workspaceKeyFromPanel==="function")
+      ? workspaceKeyFromPanel(activeWorkspacePanel||"formations")
+      : "formation";
+
+    if(typeof workspaceStates!=="undefined" && typeof captureWorkspaceState==="function"){
+      var st=captureWorkspaceState();
+      st.activeFormationId=null;
+      st.activeFormationName=null;
+
+      workspaceStates[key]=JSON.parse(JSON.stringify(st));
+      workspaceStates.formation=JSON.parse(JSON.stringify(st));
+      workspaceStates.saves=JSON.parse(JSON.stringify(st));
+    }
+  }catch(e){}
+
+  if(typeof updateSaveButtons==="function")updateSaveButtons();
+
+  showToast("Ny uppställning – nästa sparning skapar ny fil");
+}
+
+// Bygg om Ny-knappen helt enkelt.
+(function(){
+  ["btn-new-formation-v28","btn-new-formation-v30","btn-new-formation-v31","btn-new-formation-v32","btn-new-formation-v33"]
+    .forEach(function(id){
+      var old=document.getElementById(id);
+      if(old)old.remove();
+    });
+
+  var btn=document.createElement("button");
+  btn.id="btn-new-formation-v33";
+  btn.className="btn";
+  btn.type="button";
+  btn.textContent="Ny";
+  btn.title="Ny uppställning";
+  btn.style.padding="4px 8px";
+  btn.style.fontSize="0.72rem";
+  btn.style.color="#4ae8e8";
+  btn.style.borderColor="#4ae8e8";
+
+  btn.onclick=function(e){
+    if(e){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    newFormationSimpleV33();
+    return false;
+  };
+
+  var saveAs=document.getElementById("btn-save-as-topbar");
+  var ref=saveAs||document.getElementById("btn-cloud-save")||document.getElementById("btn-half");
+
+  if(ref&&ref.parentNode){
+    ref.parentNode.insertBefore(btn,ref);
+  }
+})();
+
+/* === slut v33 === */
+
+
+
+/* === v34: flytta fungerande Ny/Spara som till nedre meny === */
+(function(){
+  // Ta bort dubbla topbar-knappar som vi råkat skapa.
+  [
+    "btn-new-formation-v28",
+    "btn-new-formation-v30",
+    "btn-new-formation-v31",
+    "btn-new-formation-v32",
+    "btn-new-formation-v33",
+    "btn-save-as-topbar"
+  ].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.remove();
+  });
+
+  // Hämta de fungerande originalknapparna.
+  var cloudSave=document.getElementById("btn-cloud-save");
+  var exportBtn=document.getElementById("btn-export");
+  if(!cloudSave || !exportBtn)return;
+
+  // Gör Spara som kompakt och flytta ner i nedre menyn.
+  cloudSave.textContent="Spara som";
+  cloudSave.title="Spara som ny uppställning";
+  cloudSave.style.padding="4px 8px";
+  cloudSave.style.fontSize="0.72rem";
+  cloudSave.style.marginLeft="4px";
+
+  // Skapa EN ny-knapp som använder samma fungerande logik som topbar-versionen.
+  if(!document.getElementById("btn-new-formation-bottom-v34")){
+    var newBtn=document.createElement("button");
+    newBtn.id="btn-new-formation-bottom-v34";
+    newBtn.className="btn";
+    newBtn.type="button";
+    newBtn.textContent="Ny";
+    newBtn.title="Ny uppställning";
+    newBtn.style.padding="4px 8px";
+    newBtn.style.fontSize="0.72rem";
+    newBtn.style.color="#4ae8e8";
+    newBtn.style.borderColor="#4ae8e8";
+
+    // Kör exakt samma resetlogik som fungerade tidigare.
+    newBtn.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+
+      if(typeof resetCurrentWorkspaceToDefault==="function"){
+        resetCurrentWorkspaceToDefault();
+      }
+
+      activeFormationId=null;
+      activeFormationName=null;
+
+      try{
+        var key=(typeof workspaceKeyFromPanel==="function")
+          ? workspaceKeyFromPanel(activeWorkspacePanel||"formations")
+          : "formation";
+
+        if(typeof workspaceStates!=="undefined" && typeof captureWorkspaceState==="function"){
+          var st=captureWorkspaceState();
+          st.activeFormationId=null;
+          st.activeFormationName=null;
+
+          workspaceStates[key]=JSON.parse(JSON.stringify(st));
+          workspaceStates.formation=JSON.parse(JSON.stringify(st));
+          workspaceStates.saves=JSON.parse(JSON.stringify(st));
+        }
+      }catch(err){}
+
+      if(typeof updateSaveButtons==="function")updateSaveButtons();
+
+      showToast("Ny uppställning – nästa sparning skapar ny fil");
+    });
+
+    exportBtn.parentNode.insertBefore(newBtn, exportBtn);
+  }
+
+  // Flytta den riktiga Spara som-knappen ner bredvid Ny/import/export.
+  if(exportBtn.parentNode && cloudSave.parentNode!==exportBtn.parentNode){
+    exportBtn.parentNode.insertBefore(cloudSave, exportBtn.nextSibling);
+  }
+})();
+
+/* === slut v34 === */
