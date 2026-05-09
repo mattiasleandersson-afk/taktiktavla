@@ -1055,9 +1055,11 @@ document.getElementById("new-taktik-cancel").addEventListener("click",function()
 document.getElementById("new-taktik-ok").addEventListener("click",function(){
   var name=document.getElementById("taktik-name-inp").value.trim();if(!name)return;
   document.getElementById("modal-new-taktik").classList.add("hidden");
-  var newFilm={name:name,folder:"Taktik",steps:[currentSnap()]};
-  taktikFilmer.push(newFilm);cloudSaveTaktik(newFilm);
+  var newFilm={name:name,folder:"Taktik",steps:[currentSnap()],_isDraft:true};
+  taktikFilmer.push(newFilm);
+  renderTaktikList();
   startPlayback(taktikFilmer.length-1);
+  showToast("Utkast skapat – lägg till minst ett steg innan sparning");
 });
 function startPlayback(idx){movementPaths=[];selectedId=null;var tk=taktikFilmer[idx];if(!tk||!tk.steps||!tk.steps.length){cloudStatus("\u274c Ogiltig taktikfilm","#e84a4a");return;}if(animFrame)cancelAnimationFrame(animFrame);playback={tk:tk,stepIndex:0,animating:false};var s0=tk.steps[0];restoreSnap(s0);render();document.getElementById("taktikbar").style.display="flex";document.getElementById("taktikbar-title").textContent=tk.name;updatePlaybar();editingTaktikIdx=idx;editingStepIdx=0;isEditingTaktik=true;document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("edit-taktik-ui").style.display="block";document.getElementById("edit-taktik-title-lbl").textContent="\u270f "+tk.name;updateEditStepUI_silent();document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-taktik");});}
 function updateEditStepUI_silent(){if(editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];if(!tk||!tk.steps)return;var s=tk.steps[editingStepIdx];movementPaths=(s.movementPaths||[]).map(function(m){return{id:m.id,playerId:m.playerId,pts:m.pts.slice()};});var total=tk.steps.length-1;document.getElementById("edit-step-counter").textContent=(editingStepIdx===0?"Start":"Steg "+editingStepIdx)+"/"+total;document.getElementById("edit-step-name-inp").value=s.label||(editingStepIdx===0?"Startl\u00e4ge":"Steg "+editingStepIdx);document.getElementById("btn-edit-step-prev").style.opacity=editingStepIdx>0?"1":"0.3";document.getElementById("btn-edit-step-next").style.opacity=editingStepIdx<total?"1":"0.3";document.getElementById("btn-edit-del-step").style.opacity=editingStepIdx>0?"1":"0.3";renderEditSteps(tk);}
@@ -2348,3 +2350,25 @@ if(_renderSparadeMatcherListV12){
     return _renderSparadeMatcherListV12.apply(this,arguments);
   };
 }
+
+/* === v13: ny taktikfilm ska inte molnsparas som 0-stegsfilm === */
+var _cloudSaveTaktik_v13 = cloudSaveTaktik;
+cloudSaveTaktik = function(tk){
+  if(!tk || !tk.steps || tk.steps.length < 2){
+    showToast("Lägg till minst ett steg innan du sparar filmen", false);
+    cloudStatus("⚠️ Minst ett steg krävs för att spara taktikfilm", "#e8c84a");
+    return;
+  }
+  return _cloudSaveTaktik_v13(tk);
+};
+function purgeEmptyLocalTaktikV13(){
+  taktikFilmer=(taktikFilmer||[]).filter(function(tk){
+    return tk && tk.steps && (tk._isDraft || tk.steps.length>=2);
+  });
+}
+var _renderTaktikList_v13 = renderTaktikList;
+renderTaktikList = function(){
+  purgeEmptyLocalTaktikV13();
+  return _renderTaktikList_v13.apply(this, arguments);
+};
+/* === slut v13 === */
