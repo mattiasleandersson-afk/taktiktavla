@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Taktiktavla">
+<meta name="theme-color" content="#111a14">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
+<title>Taktiktavla</title>
+<link rel="stylesheet" href="styles.css">
+
+
+<style id="v45-hard-ui-fix">
+  /* Hård fix: den app-skapade topbar-dubletten ska aldrig synas */
+  #btn-save-as-topbar { display: none !important; }
+
+  /* När topbar minimeras ska pilen alltid ligga synligt */
+  #btn-topbar-toggle {
+    position: relative;
+    z-index: 10000;
+    flex-shrink: 0;
+  }
+  #topbar.v45-collapsed {
+    min-height: 30px !important;
+    padding: 2px 6px !important;
+    overflow: visible !important;
+  }
+  #topbar.v45-collapsed > .v45-toggle-holder {
+    display: flex !important;
+  }
+  #topbar.v45-collapsed #btn-topbar-toggle {
+    display: inline-flex !important;
+  }
+</style>
+
+
+<style id="v48-inbar-toggle-fix">
+  /* Korrekt beteende: pilen ska ligga i själva topbaren, inte flyta ovanför. */
+  #topbar {
+    overflow: visible !important;
+  }
+
+  #v48-topbar-open-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    padding-right: 44px;
+  }
+
+  #v48-collapse-btn,
+  #v48-expand-btn {
+    border: 1px solid #2d4a35;
+    background: rgba(12, 24, 16, 0.96);
+    color: #e6ffe9;
+    border-radius: 7px;
+    min-width: 38px;
+    min-height: 30px;
+    padding: 4px 10px;
+    font-weight: 900;
+    font-size: 16px;
+    line-height: 1;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #v48-collapse-btn {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  #v48-collapsed-row {
+    display: none;
+    height: 34px;
+    min-height: 34px;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 2px 8px;
+    box-sizing: border-box;
+  }
+
+  body.v48-topbar-collapsed #topbar {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 2px 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  body.v48-topbar-collapsed #v48-topbar-open-row,
+  body.v48-topbar-collapsed #topbar > div:not(#v48-collapsed-row) {
+    display: none !important;
+  }
+
+  body.v48-topbar-collapsed #v48-collapsed-row {
+    display: flex !important;
+  }
+
+  /* Dölj gamla experimenthållaren om den finns kvar från v45. */
+  .v45-toggle-holder {
+    display: none !important;
+  }
+</style>
+
+</head>
+<body>
+
+<div id="topbar">
+  <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
+  <h1>&#9917;</h1>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7.1</span>
+  <select class="btn" id="fmt-sel">
+    <option value="11">11v11</option>
+    <option value="9">9v9</option>
+    <option value="7">7v7</option>
+    <option value="5">5v5</option>
+  </select>
+  <button class="btn" id="btn-setup">Lag</button>
+  <button class="btn" id="btn-arrow">&#8599; Pil</button>
+  <button class="btn" id="btn-text">T Text</button>
+  <button class="btn" id="btn-undo">&#8634;</button>
+  <button class="btn" id="btn-reset">&#8635;</button>
+  <button class="btn" id="btn-freehand">&#9998; Fri</button>
+  <button class="btn" id="btn-zone">&#9633; Zon</button>
+  <button class="btn" id="btn-movement">&#8594; R&#246;relse</button>
+  <button class="btn" id="btn-half">&#189;</button>
+  <button class="btn" id="btn-backup" title="Exportera backup">&#128190;</button>
+  <label style="display:flex;align-items:center;gap:3px;font-size:0.68rem;color:var(--text-sub);cursor:pointer;white-space:nowrap;font-family:Arial Narrow,Arial,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.4px">
+    <input type="checkbox" id="chk-korridorer" style="width:13px;height:13px;accent-color:var(--accent)"> Korr.
+  </label>
+  <label style="display:flex;align-items:center;gap:3px;font-size:0.68rem;color:var(--text-sub);cursor:pointer;white-space:nowrap;font-family:Arial Narrow,Arial,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.4px">
+    <input type="checkbox" id="chk-arrow-numbers" style="width:13px;height:13px;accent-color:var(--accent)"> Pilnr
+  </label>
+  <button class="btn" id="btn-daylight" title="Dagsljusl&#228;ge">&#9728; Dag</button>
+  <button class="btn" id="btn-fs-topbar" style="color:#4ae87a;border-color:#4ae87a" title="Helsk\u00e4rm">&#x26F6;</button>
+  <button class="btn" id="btn-orientation-toggle" style="display:none;color:#4ae8e8;border-color:#4ae8e8" title="V&#228;xla liggande/st&#229;ende">&#8645;</button>
+  </div>
+  <div class="v45-toggle-holder" style="position:absolute;right:6px;top:4px;z-index:10000;display:flex"><button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button></div>
+  <div style="display:flex;gap:0;padding-top:3px;border-top:1px solid #1a3020;overflow-x:auto;flex-shrink:0">
+    <button class="tab on" data-panel="formations" style="font-size:0.72rem;padding:3px 10px">Formation</button>
+    <button class="tab" data-panel="saves" style="font-size:0.72rem;padding:3px 10px">Utg&#229;ngsläge</button>
+    <button class="tab" data-panel="taktik" style="font-size:0.72rem;padding:3px 10px">&#127916; Taktik</button>
+    <button class="tab" data-panel="lag" style="font-size:0.72rem;padding:3px 10px">Lag</button>
+  </div>
+</div>
+
+<div id="bench-bar">
+  <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+    <div style="display:flex;gap:3px">
+      <button id="bench-exit-btn" style="background:transparent;border:1px solid #e84a4a;border-radius:5px;color:#e84a4a;padding:2px 6px;font-size:0.6rem;font-weight:700;cursor:pointer;white-space:nowrap">&#10005; Avsluta</button>
+      <button id="bench-save-btn" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:2px 6px;font-size:0.6rem;font-weight:700;cursor:pointer;white-space:nowrap">&#128190; Spara</button>
+    </div>
+    <div style="display:flex;gap:3px;align-items:center">
+      <button id="bench-prev-var" style="background:transparent;border:1px solid #2d4a35;border-radius:5px;color:#7aaa88;padding:1px 6px;font-size:0.7rem;font-weight:900;cursor:pointer">&#9664;</button>
+      <span id="bench-var-label" style="font-size:0.6rem;color:#4ae87a;font-weight:700;white-space:nowrap">Uppst. 1</span>
+      <button id="bench-next-var" style="background:transparent;border:1px solid #2d4a35;border-radius:5px;color:#7aaa88;padding:1px 6px;font-size:0.7rem;font-weight:900;cursor:pointer">&#9654;</button>
+      <button id="bench-add-var" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:1px 6px;font-size:0.6rem;font-weight:700;cursor:pointer;white-space:nowrap">+</button>
+      <button id="bench-copy-var" style="background:transparent;border:1px solid #4ae8e8;border-radius:5px;color:#4ae8e8;padding:1px 6px;font-size:0.7rem;cursor:pointer" title="Kopiera uppställning">&#9112;</button>
+      <button id="bench-paste-var" style="background:transparent;border:1px solid #4ae8e8;border-radius:5px;color:#4ae8e8;padding:1px 6px;font-size:0.7rem;cursor:pointer;opacity:0.3" title="Klistra in uppställning">&#9113;</button>
+    </div>
+    <div style="display:flex;gap:3px">
+      <button id="bench-clear-btn" style="background:transparent;border:1px solid #e8c84a;border-radius:5px;color:#e8c84a;padding:2px 6px;font-size:0.6rem;font-weight:700;cursor:pointer;white-space:nowrap">&#8635; Rensa</button>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;flex:1;min-width:0;gap:2px">
+    <span class="bench-label">Avbytare:</span>
+    <span id="bench-motstand-lbl" style="font-size:0.62rem;color:#e8c84a;font-weight:700;white-space:nowrap"></span>
+    <div id="bench-players" style="display:flex;gap:4px;flex-wrap:wrap;flex:1"></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0">
+    <span class="bench-label">Text:</span>
+    <button class="bench-size-btn" id="bench-size-down" style="background:#1e2e22;border:1px solid #2d4a35;border-radius:4px;color:#7aaa88;padding:2px 7px;cursor:pointer;font-size:0.8rem;font-weight:900">&#8722;</button>
+    <span id="bench-size-lbl" style="font-size:0.7rem;color:#7aaa88;min-width:24px;text-align:center">11</span>
+    <button class="bench-size-btn" id="bench-size-up" style="background:#1e2e22;border:1px solid #2d4a35;border-radius:4px;color:#7aaa88;padding:2px 7px;cursor:pointer;font-size:0.8rem;font-weight:900">+</button>
+  </div>
+</div>
+<div id="pitch-wrapper">
+  <svg id="pitch-svg" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div id="mode-badge"></div>
+  <div id="arrow-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:5;pointer-events:auto">
+    <select id="arrow-color-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="#ffdd44">&#9632; Gul</option>
+      <option value="#e84a4a">&#9632; R&#246;d</option>
+      <option value="#4ae8e8">&#9632; Bl&#229;</option>
+      <option value="#4ae87a">&#9632; Gr&#246;n</option>
+      <option value="#fff">&#9632; Vit</option>
+    </select>
+    <select id="arrow-type-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="solid">&#8212; Hel</option>
+      <option value="dashed">&#8229; Streckad</option>
+    </select>
+    <select id="arrow-width-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="2">&#9135; Tunn</option>
+      <option value="3" selected>&#9473; Normal</option>
+      <option value="5">&#9644; Tjock</option>
+    </select>
+  </div>
+  <div id="zone-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:6;pointer-events:auto">
+    <select id="zone-shape-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="rect">&#9635; Rektangel</option>
+      <option value="circle">&#9711; Cirkel</option>
+    </select>
+    <select id="zone-color-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="rgba(232,76,76,0.25)">&#9632; R&#246;d</option>
+      <option value="rgba(74,232,122,0.25)">&#9632; Gr&#246;n</option>
+      <option value="rgba(74,232,232,0.25)">&#9632; Bl&#229;</option>
+      <option value="rgba(232,200,74,0.25)">&#9632; Gul</option>
+      <option value="rgba(160,120,255,0.25)">&#9632; Lila</option>
+    </select>
+  </div>
+  <div id="freehand-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:6;pointer-events:auto">
+    <select id="freehand-color-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="#ffdd44">&#9632; Gul</option>
+      <option value="#e84a4a">&#9632; R&#246;d</option>
+      <option value="#4ae8e8">&#9632; Bl&#229;</option>
+      <option value="#4ae87a">&#9632; Gr&#246;n</option>
+      <option value="#fff">&#9632; Vit</option>
+    </select>
+    <select id="freehand-width-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="2">Tunn</option>
+      <option value="4" selected>Normal</option>
+      <option value="7">Tjock</option>
+    </select>
+  </div>
+  <div class="toast-msg" id="toast-msg"></div>
+  <div id="goal-overlay" style="display:none;position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:20;background:rgba(14,23,16,0.92);border:1px solid #3a6b46;border-radius:12px;padding:5px 10px;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
+    <button id="bench-goal-home-minus" style="background:transparent;border:1px solid #2d4a35;border-radius:4px;color:#e84a4a;padding:2px 8px;font-size:1rem;font-weight:900;cursor:pointer">&#8722;</button>
+    <span id="bench-goal-home" style="font-size:1.1rem;color:#4ae87a;font-weight:900;min-width:20px;text-align:center">0</span>
+    <button id="bench-goal-home-plus" style="background:transparent;border:1px solid #2d4a35;border-radius:4px;color:#4ae87a;padding:2px 8px;font-size:1rem;font-weight:900;cursor:pointer">+</button>
+    <span style="font-size:0.8rem;color:#7aaa88;margin:0 2px">&#8211;</span>
+    <button id="bench-goal-away-minus" style="background:transparent;border:1px solid #2d4a35;border-radius:4px;color:#e84a4a;padding:2px 8px;font-size:1rem;font-weight:900;cursor:pointer">&#8722;</button>
+    <span id="bench-goal-away" style="font-size:1.1rem;color:#4ae87a;font-weight:900;min-width:20px;text-align:center">0</span>
+    <button id="bench-goal-away-plus" style="background:transparent;border:1px solid #2d4a35;border-radius:4px;color:#4ae87a;padding:2px 8px;font-size:1rem;font-weight:900;cursor:pointer">+</button>
+  </div>
+  <div class="rec-badge" id="rec-badge">&#9679; Spelar in</div>
+</div>
+
+<!-- COMBINED TAKTIK BAR (edit + play merged) -->
+<div id="taktikbar" style="display:none;background:var(--bg);border-top:2px solid var(--accent);padding:4px 8px;flex-shrink:0;flex-direction:column;gap:3px">
+  <div style="display:flex;gap:4px;align-items:center">
+    <span id="taktikbar-title" style="color:#4ae87a;font-weight:700;font-size:0.75rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+    <button class="btn" id="btn-first" style="font-size:0.85rem;padding:3px 8px" title="Start">&#9646;&#9664;</button>
+    <button class="btn" id="btn-prev" style="font-size:0.85rem;padding:3px 8px">&#9664;</button>
+    <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.78rem;min-width:40px;text-align:center">Start</span>
+    <button class="btn" id="btn-next" style="font-size:0.85rem;padding:3px 8px">&#9654;</button>
+    <select class="btn" id="play-speed" style="padding:3px 12px 3px 5px;font-size:0.65rem">
+      <option value="1200">Sakta</option>
+      <option value="600" selected>Normal</option>
+      <option value="300">Snabb</option>
+    </select>
+    <label style="display:flex;align-items:center;gap:2px;font-size:0.65rem;color:#7aaa88;cursor:pointer"><input type="checkbox" id="play-loop"> Loop</label>
+    <button class="btn" id="btn-copy-drawings" style="padding:3px 6px;font-size:0.65rem;color:#e8c84a;border-color:#e8c84a" title="Kopiera ritningar">&#9000;</button>
+    <button class="btn" id="btn-copy-step" style="padding:3px 6px;font-size:0.65rem;color:#4ae8e8;border-color:#4ae8e8">&#9112;</button>
+    <button class="btn" id="btn-paste-step" style="padding:3px 6px;font-size:0.65rem;color:#4ae8e8;border-color:#4ae8e8;opacity:0.3">&#9113;</button>
+    <button class="btn on" id="btn-edit-update-step2" style="padding:3px 7px;font-size:0.65rem">&#10003; Spara</button>
+    <button class="btn" id="btn-taktikbar-save" style="padding:3px 7px;font-size:0.65rem;color:#4ae87a;border-color:#4ae87a">&#128190;</button>
+    <button class="btn danger" id="btn-stop-play" style="padding:3px 7px;font-size:0.65rem">&#10005;</button>
+  </div>
+  <div style="display:flex;gap:3px;align-items:center">
+    <span style="font-size:0.62rem;color:#7aaa88">Rita:</span>
+    <button class="btn" id="btn-tb-arrow" title="Pil" style="padding:2px 6px;font-size:0.65rem">&#8599; Pil</button>
+    <button class="btn" id="btn-tb-freehand" title="Fri" style="padding:2px 6px;font-size:0.65rem">&#9998; Fri</button>
+    <button class="btn" id="btn-tb-zone" title="Zon" style="padding:2px 6px;font-size:0.65rem">&#9633; Zon</button>
+    <button class="btn" id="btn-tb-text" title="Text" style="padding:2px 6px;font-size:0.65rem">T Text</button>
+    <button class="btn" id="btn-tb-movement" title="R&#246;relse" style="padding:2px 6px;font-size:0.65rem">&#8594; R&#246;relse</button>
+  </div>
+</div>
+
+<button id="panel-show-btn" style="display:none;position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:60;background:rgba(14,23,16,0.9);border:1px solid #4ae87a;border-radius:20px;color:#4ae87a;padding:5px 20px;font-size:0.8rem;font-weight:700;cursor:pointer;touch-action:manipulation">&#9650; Meny</button>
+<div id="panel-toggle-strip" style="background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;flex-shrink:0;position:relative;z-index:10;padding:0 8px;">
+  <button id="btn-panel" style="background:transparent;border:none;color:#7aaa88;padding:3px 0;font-size:0.72rem;cursor:pointer;flex:1">&#9660;</button>
+  <button id="fs-enter-btn" style="background:transparent;border:1px solid #4ae87a;border-radius:5px;color:#4ae87a;padding:3px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:Arial Narrow,Arial,sans-serif;display:block">&#x26F6; FS</button></div>
+<div id="bottompanel">
+  
+  <div class="panel on" id="panel-formations">
+    <div class="frow" id="formation-btns"></div>
+  </div>
+  <div class="panel" id="panel-taktik">
+    <div style="width:100%">
+      <div id="rec-ui" style="display:none">
+        <div style="font-size:0.73rem;color:#e84a4a;font-weight:700;text-transform:uppercase;margin-bottom:6px" id="rec-name-lbl"></div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+          <button class="btn on" id="btn-add-step">+ Steg</button>
+          <button class="btn danger" id="btn-stop-rec">Stoppa</button>
+        </div>
+        <div class="list" id="rec-steps-list"></div>
+      </div>
+
+      <!-- LAG PANEL -->
+
+      <div id="edit-taktik-ui" style="display:none">
+        <!-- Row 1: step navigation + name + actions -->
+        <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px">
+          <button class="btn" id="btn-edit-step-prev" style="padding:4px 10px;font-size:1rem">&#9664;</button>
+          <span id="edit-step-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;min-width:38px;text-align:center;flex-shrink:0">Start</span>
+          <button class="btn" id="btn-edit-step-next" style="padding:4px 10px;font-size:1rem">&#9654;</button>
+          <input type="text" id="edit-step-name-inp" placeholder="Stegnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 7px;font-size:0.78rem;min-width:0">
+          <button class="btn on" id="btn-edit-update-step" style="padding:4px 8px" title="Spara steg">&#10003;</button>
+          <button class="btn" id="btn-edit-add-step" style="color:#4ae87a;border-color:#4ae87a;padding:4px 8px" title="L&#228;gg till steg">+</button>
+          <button class="btn danger" id="btn-edit-del-step" style="padding:4px 8px" title="Ta bort steg">&#10005;</button>
+        </div>
+        <!-- Row 2: film title + save/exit -->
+        <div style="display:flex;gap:4px;align-items:center">
+          <span style="font-size:0.72rem;color:#e8c84a;font-weight:700;text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="edit-taktik-title-lbl"></span>
+          <button class="btn" id="btn-edit-taktik-meta" style="color:#e8c84a;border-color:#e8c84a;padding:3px 7px;font-size:0.68rem">&#9998; Info</button>
+          <button class="btn on" id="btn-edit-taktik-save" style="padding:3px 7px;font-size:0.68rem">Spara</button>
+          <button class="btn danger" id="btn-edit-taktik-exit" style="padding:3px 7px;font-size:0.68rem">Avsluta</button>
+        </div>
+        <!-- Hidden step list (still used by renderEditSteps internally) -->
+        <div class="list" id="edit-taktik-steps" style="max-height:130px;margin-top:3px"></div>
+      </div>
+      <div id="no-rec-ui">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+          <button class="btn on" id="btn-new-taktik">+ Ny film</button>
+          <button class="btn" id="btn-export-taktik">Exportera</button>
+          <button class="btn" id="btn-import-taktik-btn">Importera</button>
+          <input type="file" id="btn-import-taktik" accept=".json" style="display:none">
+        </div>
+        <input type="text" id="taktik-search" placeholder="S&#246;k taktikfilm..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
+        <div id="taktik-folder-filter" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px"></div>
+        <div class="list" id="taktik-list"></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="panel-saves">
+    <div style="width:100%">
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+        <button class="btn" id="btn-save-over" style="display:none">&#128190; Spara</button>
+        <button class="btn on" id="btn-cloud-save">&#128190; Spara som</button>
+        <button class="btn" id="btn-cloud-refresh" title="Ny uppställning">Ny</button>
+        <button class="btn" id="btn-export">&#8595; Exportera</button>
+        <button class="btn" id="btn-import-btn">&#8593; Importera</button>
+        <input type="file" id="btn-import" accept=".json" style="display:none">
+      </div>
+      <div id="cloud-status" style="font-size:0.72rem;color:#7aaa88;margin-bottom:5px"></div>
+      <input type="text" id="saves-search" placeholder="S&#246;k uppst&#228;llning..." style="width:100%;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:6px;padding:5px 8px;font-size:0.78rem;margin-bottom:5px;box-sizing:border-box">
+      <div class="list" id="saves-list"></div>
+    </div>
+  </div>
+  <div id="panel-lag" class="panel">
+      <div style="width:100%">
+        <div style="display:flex;gap:5px;margin-bottom:6px">
+            <button class="lag-tab on" data-lag="trupp" id="lag-tab-trupp">Trupp</button>
+            <button class="lag-tab" data-lag="statistik" id="lag-tab-statistik">Statistik</button>
+            <button class="lag-tab" data-lag="match" id="lag-tab-match">Match</button>
+            <button class="lag-tab" data-lag="sparade" id="lag-tab-sparade">Sparade matcher</button>
+          </div>
+  
+          <!-- TRUPP -->
+          <div id="lag-trupp">
+            <div style="display:flex;gap:5px;margin-bottom:6px">
+              <input type="number" id="ny-spelare-nr" placeholder="Nr" min="1" max="99" style="width:52px;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+              <input type="text" id="ny-spelare-namn" placeholder="Spelarnamn..." style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:4px 6px;font-size:0.78rem">
+              <button class="btn on" id="btn-add-trupp">+ L&#228;gg till</button>
+            </div>
+            <div class="list" id="trupp-list" style="max-height:130px"></div>
+          </div>
+  
+          <!-- MATCH -->
+          <div id="lag-match" style="display:none">
+            <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;flex-wrap:wrap">
+              <button class="btn" id="btn-ny-match" style="color:#4ae87a;border-color:#4ae87a;padding:3px 7px;font-size:0.68rem">+ Ny</button>
+              <input type="date" id="match-datum" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1;min-width:0">
+              <input type="text" id="match-motstand" placeholder="Motst&#229;ndare" style="flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;min-width:60px">
+              <span id="match-counter" style="font-size:0.75rem;color:#4ae87a;font-weight:700;white-space:nowrap">0 valda</span>
+            </div>
+            <div class="list" id="match-trupp-list" style="max-height:160px"></div>
+            <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
+              <button class="btn" id="btn-match-to-taktik" style="color:#4ae87a;border-color:#4ae87a">&#9917; Laguppst&#228;llning</button>
+              <button class="btn on" id="btn-spara-match">&#10003; Spara match</button>
+            </div>
+          </div>
+  
+          <!-- STATISTIK -->
+          <div id="lag-statistik" style="display:none">
+            <div style="display:flex;gap:5px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+              <input type="date" id="stat-from" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+              <span style="color:#7aaa88;font-size:0.72rem">&#8211;</span>
+              <input type="date" id="stat-to" style="background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 5px;font-size:0.72rem;flex:1">
+              <button class="btn" id="btn-stat-filter">Filtrera</button>
+            </div>
+            <div id="stat-spelare-view">
+              <div class="list" id="stat-list" style="max-height:200px"></div>
+              <div id="stat-action-bar" style="display:none;gap:5px;margin-top:6px;align-items:center;flex-wrap:wrap">
+                <span id="stat-sel-count" style="font-size:0.75rem;color:#4ae87a;font-weight:700;flex:1">0 valda</span>
+                <button class="btn" id="btn-stat-clear-sel">Rensa</button>
+                <select id="stat-match-sel" class="btn" style="flex:1;max-width:140px;font-size:0.65rem"></select>
+                <button class="btn" id="btn-stat-add-to-match">L&#228;gg till</button>
+                <button class="btn on" id="btn-stat-to-match">+ Ny match</button>
+              </div>
+              <div style="display:flex;gap:5px;margin-top:6px">
+                <button class="btn" id="btn-export-stat-csv">&#11015; CSV</button>
+                <button class="btn" id="btn-export-stat-pdf">&#11015; PDF</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPARADE MATCHER -->
+      <div id="lag-sparade" style="display:none">
+        <div class="list" id="sparade-match-list" style="max-height:200px"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SETUP MODAL -->
+<div class="modal-bg hidden" id="modal-setup">
+  <div class="modal">
+    <h2>Spelarinst&#228;llningar</h2>
+    <div class="mrow"><label>Hemma f&#228;rg</label><input type="color" class="minput" id="home-color" value="#e8c84a"></div>
+    <div class="mrow"><label>Borta f&#228;rg</label><input type="color" class="minput" id="away-color" value="#e84a4a"></div>
+    <div class="mrow">
+      <label>Visa</label>
+      <div style="display:flex;gap:5px">
+        <button class="btn on" data-dm="number">Nummer</button>
+        <button class="btn" data-dm="name">Namn</button>
+        <button class="btn" data-dm="both">B&#229;da</button>
+      </div>
+    </div>
+    <hr class="mdiv">
+    <div id="setup-home"></div>
+    <div id="setup-away" style="margin-top:10px"></div>
+    <div class="mactions">
+      <button class="btn" id="setup-cancel">Avbryt</button>
+      <button class="btn on" id="setup-apply">Till&#228;mpa</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW TAKTIK MODAL -->
+<div class="modal-bg hidden" id="modal-new-taktik">
+  <div class="modal">
+    <h2>Ny taktikfilm</h2>
+    <input type="text" class="minput wide" id="taktik-name-inp" placeholder="Speluppbyggnad fr&#229;n m&#229;lvakt" style="margin-bottom:13px;width:100%">
+    <div class="mactions">
+      <button class="btn" id="new-taktik-cancel">Avbryt</button>
+      <button class="btn on" id="new-taktik-ok">Starta</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVE NAME MODAL -->
+<div class="modal-bg hidden" id="modal-savename">
+  <div class="modal">
+    <h2>Spara uppst&#228;llning</h2>
+    <input type="text" class="minput wide" id="save-name-inp" placeholder="Uppst&#228;llning 1" style="margin-bottom:10px;width:100%">
+    <div class="mrow">
+      <label>Mapp</label>
+      <div style="display:flex;gap:5px;align-items:center;flex:1">
+        <select class="btn" id="folder-select" style="flex:1"></select>
+        <button class="btn" id="btn-new-folder" style="padding:5px 8px">+ Ny</button>
+      </div>
+    </div>
+    <div class="mactions">
+      <button class="btn" id="savename-cancel">Avbryt</button>
+      <button class="btn on" id="savename-ok">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW FOLDER MODAL -->
+<div class="modal-bg hidden" id="modal-new-folder">
+  <div class="modal">
+    <h2>Ny mapp</h2>
+    <input type="text" class="minput wide" id="new-folder-inp" placeholder="T.ex. F&#246;rsvarsspel" style="margin-bottom:13px;width:100%">
+    <div class="mactions">
+      <button class="btn" id="new-folder-cancel">Avbryt</button>
+      <button class="btn on" id="new-folder-ok">Skapa</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEXT LABEL MODAL -->
+<div class="modal-bg hidden" id="modal-text">
+  <div class="modal">
+    <h2>L&#228;gg till text</h2>
+    <input type="text" class="minput wide" id="text-inp" placeholder="Press h&#228;r!" style="margin-bottom:10px;width:100%">
+    <div style="display:flex;gap:5px;margin-bottom:13px" id="size-btns">
+      <button class="btn" data-sz="10">S</button>
+      <button class="btn on" data-sz="13">M</button>
+      <button class="btn" data-sz="18">L</button>
+      <button class="btn" data-sz="24">XL</button>
+    </div>
+    <div class="mactions">
+      <button class="btn" id="text-cancel">Avbryt</button>
+      <button class="btn on" id="text-ok">L&#228;gg till</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT LABEL MODAL -->
+<div class="modal-bg hidden" id="modal-edit-text">
+  <div class="modal">
+    <h2>Redigera text</h2>
+    <input type="text" class="minput wide" id="edit-text-inp" style="margin-bottom:10px;width:100%">
+    <div style="display:flex;gap:5px;margin-bottom:13px" id="edit-size-btns">
+      <button class="btn" data-sz="10">S</button>
+      <button class="btn on" data-sz="13">M</button>
+      <button class="btn" data-sz="18">L</button>
+      <button class="btn" data-sz="24">XL</button>
+    </div>
+    <div class="mactions">
+      <button class="btn danger" id="edit-text-del">Radera</button>
+      <button class="btn" id="edit-text-cancel">Avbryt</button>
+      <button class="btn on" id="edit-text-ok">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOVE TO FOLDER MODAL -->
+<div class="modal-bg hidden" id="modal-move-folder">
+  <div class="modal">
+    <h2>Flytta till mapp</h2>
+    <div id="move-folder-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:13px"></div>
+    <div class="mactions">
+      <button class="btn" id="move-folder-cancel">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME FOLDER MODAL -->
+<div class="modal-bg hidden" id="modal-rename-folder">
+  <div class="modal">
+    <h2>Byt namn p&#229; mapp</h2>
+    <input type="text" class="minput wide" id="rename-folder-inp" style="margin-bottom:13px;width:100%">
+    <div class="mactions">
+      <button class="btn" id="rename-folder-cancel">Avbryt</button>
+      <button class="btn on" id="rename-folder-ok">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT TAKTIK: inline panel, no modal needed -->
+<div class="modal-bg hidden" id="modal-edit-taktik-meta">
+  <div class="modal" style="max-width:360px">
+    <h2>Filminfo</h2>
+    <div class="mrow"><label>Namn</label><input type="text" class="minput wide" id="edit-taktik-name-inp"></div>
+    <div class="mrow"><label>Mapp</label><select class="btn" id="edit-taktik-folder" style="flex:1"></select></div>
+    <div class="mactions">
+      <button class="btn" id="edit-taktik-cancel">Avbryt</button>
+      <button class="btn on" id="edit-taktik-ok">Spara info</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE FOLDER CONFIRM -->
+<div class="modal-bg hidden" id="modal-delete-folder">
+  <div class="modal">
+    <h2>Radera mapp</h2>
+    <p style="font-size:0.85rem;color:#7aaa88;margin-bottom:12px">Mappen <b id="delete-folder-name" style="color:#edf5ee"></b> inneh&#229;ller inneh&#229;ll. Vad vill du g&#246;ra?</p>
+    <div class="mactions" style="flex-direction:column;gap:8px">
+      <button class="btn" id="delete-folder-move" style="width:100%;text-align:center">Flytta allt till Allm&#228;nt</button>
+      <button class="btn danger" id="delete-folder-all" style="width:100%;text-align:center">Radera allt inneh&#229;ll</button>
+      <button class="btn" id="delete-folder-cancel">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal-bg hidden" id="modal-share">
+  <div class="modal">
+    <h2>Dela taktikfilm</h2>
+    <p style="font-size:0.82rem;color:#7aaa88;margin-bottom:10px">Genererar en permanent l&#228;nk. Mottagaren kan se och spela upp filmen.</p>
+    <div id="share-status" style="font-size:0.8rem;color:#7aaa88;margin-bottom:8px"></div>
+    <input type="text" id="share-link-inp" class="minput wide" style="width:100%;margin-bottom:12px;font-size:0.75rem" readonly placeholder="Genererar l&#228;nk...">
+    <div class="mactions">
+      <button class="btn" id="share-copy-btn">Kopiera l&#228;nk</button>
+      <button class="btn on" id="share-close-btn">St&#228;ng</button>
+    </div>
+  </div>
+</div>
+
+<!-- MERGE TAKTIK MODAL -->
+<div class="modal-bg hidden" id="modal-merge-taktik">
+  <div class="modal">
+    <h2>Sammanfoga filmer</h2>
+    <p style="font-size:0.82rem;color:#7aaa88;margin-bottom:12px">V&#228;lj en film att l&#228;gga till <b id="merge-base-name" style="color:#edf5ee"></b> i slutet av</p>
+    <div class="list" id="merge-taktik-list" style="max-height:160px"></div>
+    <div class="mactions">
+      <button class="btn" id="merge-taktik-cancel">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Landscape nav -->
+<!-- Fullscreen portrait controls -->
+<button id="fs-restore-btn">&#x2715; &#197;terst&#228;ll</button>
+<div id="fs-portrait-nav">
+  <button class="ls-btn" id="fs-first-btn" style="padding:6px 9px;font-size:0.9rem">&#9646;&#9664;</button>
+  <button class="ls-btn" id="fs-prev-btn" style="padding:6px 9px;font-size:0.9rem">&#9664;</button>
+  <span id="fs-step-label" style="color:#4ae87a;font-weight:700;font-size:0.75rem;min-width:55px;text-align:center">-</span>
+  <button class="ls-btn" id="fs-next-btn" style="padding:6px 9px;font-size:0.9rem">&#9654;</button>
+  <button class="ls-btn" id="fs-day-btn" style="font-size:0.75rem;padding:5px 8px">&#9728;</button>
+  <span style="width:1px;background:rgba(255,255,255,0.15);align-self:stretch;margin:3px 1px"></span>
+  <button class="ls-btn" id="fs-tb-arrow" style="font-size:0.75rem;padding:5px 7px">&#8599;</button>
+  <button class="ls-btn" id="fs-tb-freehand" style="font-size:0.75rem;padding:5px 7px">&#9998;</button>
+  <button class="ls-btn" id="fs-tb-zone" style="font-size:0.75rem;padding:5px 7px">&#9633;</button>
+  <button class="ls-btn" id="fs-tb-text" style="font-size:0.75rem;padding:5px 7px">T</button>
+  <button class="ls-btn" id="fs-tb-movement" style="font-size:0.75rem;padding:5px 7px">&#8594;</button>
+</div>
+
+<div id="ls-prev-side" style="display:none">
+  <span id="ls-side-label" style="font-size:0.6rem;color:#4ae87a;font-weight:700;text-align:center;max-width:60px;word-break:break-word;line-height:1.2"></span>
+  <button class="ls-btn" id="ls-first-btn" title="Till start">&#9646;&#9664;</button>
+  <button class="ls-btn" id="ls-prev-btn">&#9664;</button>
+</div>
+<div id="ls-next-side" style="display:none">
+  <button class="ls-btn" id="ls-next-btn">&#9654;</button>
+  <select class="ls-select" id="ls-speed-sel">
+    <option value="1200">S</option>
+    <option value="600" selected>N</option>
+    <option value="300">F</option>
+  </select>
+  <label class="ls-label" style="writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);display:flex;align-items:center;gap:3px"><input type="checkbox" id="ls-loop" style="width:12px;height:12px"> Loop</label>
+  <button class="ls-btn" id="ls-day-btn3" style="font-size:0.9rem;padding:8px 8px" title="Dagsljus">&#9728;</button>
+</div>
+
+<!-- PLAYER PICKER MODAL -->
+<div class="modal-bg hidden" id="modal-player-picker">
+  <div class="modal" style="max-width:320px">
+    <h2>V&#228;lj spelare</h2>
+    <div id="player-picker-list" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;margin-bottom:12px"></div>
+    <div class="mactions">
+      <button class="btn danger" id="player-picker-clear">Rensa position</button>
+      <button class="btn" id="player-picker-cancel">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER COLOR MODAL -->
+<div class="modal-bg hidden" id="modal-player-color">
+  <div class="modal">
+    <h2>Spelarf&#228;rg</h2>
+    <div id="player-color-swatches" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <div class="mactions">
+      <button class="btn" id="player-color-reset">&#8635; Standard</button>
+      <button class="btn on" id="player-color-close">St&#228;ng</button>
+    </div>
+  </div>
+</div>
+
+<!-- BACKUP MODAL -->
+<div class="modal-bg hidden" id="modal-backup">
+  <div class="modal">
+    <h2>Exportera backup</h2>
+    <p style="font-size:0.82rem;color:#7aaa88;margin-bottom:12px">Exporterar alla uppst&#228;llningar och taktikfilmer som en JSON-fil.</p>
+    <div class="mactions">
+      <button class="btn" id="backup-cancel">Avbryt</button>
+      <button class="btn on" id="backup-download">&#11015; Ladda ned</button>
+    </div>
+  </div>
+
+  </div>
+<script src="constants.js"></script>
+<script src="state.js"></script>
+<script src="storage.js"></script>
+<script src="render.js"></script>
+<script src="tools.js"></script>
+<script src="tactics.js"></script>
+<script src="app.js"></script>
+
+<script>
+(function(){
+  function afterAppToolbarFix(){
+    var svg = document.getElementById("pitch-svg");
+    if(!svg || typeof window.render !== "function") return;
+
+    function repaintToolbar(){
+      var map={"btn-arrow":"arrow","btn-text":"text","btn-freehand":"freehand","btn-zone":"zone","btn-movement":"movement"};
+      Object.keys(map).forEach(function(id){
+        var b=document.getElementById(id);
+        if(b)b.classList.toggle("on", window.mode===map[id]);
+      });
+    }
+
+    function bindTool(id,tool){
+      var old=document.getElementById(id);
+      if(!old)return;
+      var btn=old.cloneNode(true);
+      old.parentNode.replaceChild(btn,old);
+      btn.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        if(typeof window.setMode==="function"){
+          window.setMode(window.mode===tool ? "move" : tool);
+        }else{
+          window.mode = window.mode===tool ? "move" : tool;
+          window.render();
+        }
+
+        setTimeout(repaintToolbar,0);
+        return false;
+      },true);
+    }
+
+    bindTool("btn-arrow","arrow");
+    bindTool("btn-text","text");
+    bindTool("btn-freehand","freehand");
+    bindTool("btn-zone","zone");
+    bindTool("btn-movement","movement");
+
+    function drawCorridors(){
+      var old=svg.querySelectorAll(".korridor-lastfix");
+      old.forEach(function(x){x.remove();});
+
+      var chk=document.getElementById("chk-korridorer");
+      if(!chk || !chk.checked)return;
+
+      window.showKorridorer=true;
+
+      var ns="http://www.w3.org/2000/svg";
+      var cols=[
+        {x:0,w:72,label:"Yttre korridor",fill:"rgba(74,232,232,0.18)",stroke:"rgba(74,232,232,0.85)"},
+        {x:72,w:72,label:"Inre korridor",fill:"rgba(160,120,255,0.18)",stroke:"rgba(160,120,255,0.85)"},
+        {x:144,w:112,label:"Central korridor",fill:"rgba(74,232,122,0.16)",stroke:"rgba(74,232,122,0.85)"},
+        {x:256,w:72,label:"Inre korridor",fill:"rgba(160,120,255,0.18)",stroke:"rgba(160,120,255,0.85)"},
+        {x:328,w:72,label:"Yttre korridor",fill:"rgba(74,232,232,0.18)",stroke:"rgba(74,232,232,0.85)"}
+      ];
+
+      var all=document.createElementNS(ns,"g");
+      all.setAttribute("class","korridor-lastfix");
+      all.style.pointerEvents="none";
+
+      cols.forEach(function(c){
+        var g=document.createElementNS(ns,"g");
+        var r=document.createElementNS(ns,"rect");
+        r.setAttribute("x",c.x);
+        r.setAttribute("y",0);
+        r.setAttribute("width",c.w);
+        r.setAttribute("height",600);
+        r.setAttribute("fill",c.fill);
+        r.setAttribute("stroke",c.stroke);
+        r.setAttribute("stroke-width","1.5");
+        g.appendChild(r);
+
+        [18,586].forEach(function(y){
+          var t=document.createElementNS(ns,"text");
+          t.setAttribute("x",c.x+c.w/2);
+          t.setAttribute("y",y);
+          t.setAttribute("text-anchor","middle");
+          t.setAttribute("fill",c.stroke);
+          t.setAttribute("font-size","8");
+          t.setAttribute("font-family","Arial Narrow, Arial, sans-serif");
+          t.setAttribute("font-weight","900");
+          t.textContent=c.label;
+          g.appendChild(t);
+        });
+
+        all.appendChild(g);
+      });
+
+      var first=svg.querySelector(".zone-g,.freehand-g,.arrow-g,.player-token,.ball-token");
+      if(first&&first.parentNode===svg)svg.insertBefore(all,first);
+      else svg.appendChild(all);
+    }
+
+    var oldRender=window.render;
+    window.render=function(){
+      var res=oldRender.apply(this,arguments);
+      drawCorridors();
+      repaintToolbar();
+      return res;
+    };
+
+    var chk=document.getElementById("chk-korridorer");
+    if(chk){
+      var newChk=chk.cloneNode(true);
+      newChk.checked=chk.checked;
+      chk.parentNode.replaceChild(newChk,chk);
+      newChk.addEventListener("change",function(){
+        window.showKorridorer=!!newChk.checked;
+        window.render();
+        drawCorridors();
+      },true);
+    }
+
+    repaintToolbar();
+    drawCorridors();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){setTimeout(afterAppToolbarFix,0);});
+  }else{
+    setTimeout(afterAppToolbarFix,0);
+  }
+  window.addEventListener("load",function(){setTimeout(afterAppToolbarFix,0);});
+})();
+</script>
+
+
+<script id="v45-hard-ui-script">
+(function(){
+  function removeDuplicateSaveButtons(){
+    var topbar=document.getElementById("topbar");
+    Array.prototype.slice.call(document.querySelectorAll("#btn-save-as-topbar")).forEach(function(el){
+      el.remove();
+    });
+    if(topbar){
+      Array.prototype.slice.call(topbar.querySelectorAll("button")).forEach(function(b){
+        var txt=(b.textContent||"").trim().toLowerCase();
+        if(txt==="spara som"){
+          b.remove();
+        }
+      });
+    }
+  }
+
+  function bindSafeTopbarToggle(){
+    var tb=document.getElementById("topbar");
+    var btn=document.getElementById("btn-topbar-toggle");
+    if(!tb||!btn||btn.dataset.v45Bound)return;
+
+    btn.dataset.v45Bound="1";
+    var open=true;
+
+    btn.onclick=function(e){
+      if(e){e.preventDefault();e.stopPropagation();}
+      open=!open;
+
+      // Hide/show every direct child except the toggle holder
+      Array.prototype.forEach.call(tb.children,function(ch){
+        if(ch.classList && ch.classList.contains("v45-toggle-holder")){
+          ch.style.display="flex";
+        }else{
+          ch.style.display=open ? "" : "none";
+        }
+      });
+
+      tb.classList.toggle("v45-collapsed",!open);
+      btn.innerHTML=open ? "▲" : "▼";
+      btn.title=open ? "Minimera menyn" : "Visa menyn";
+      btn.style.display="inline-flex";
+
+      return false;
+    };
+  }
+
+  function runV45(){
+    removeDuplicateSaveButtons();
+    bindSafeTopbarToggle();
+  }
+
+  runV45();
+  setTimeout(runV45,100);
+  setTimeout(runV45,500);
+  setTimeout(runV45,1500);
+  window.addEventListener("load",runV45);
+
+  // Om någon gammal JS skapar tillbaka dubletten senare: ta bort direkt.
+  var obs=new MutationObserver(runV45);
+  if(document.body)obs.observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
+
+<script id="v48-inbar-toggle-fix">
+(function(){
+  function removeTopbarSaveDuplicate(){
+    var topbar=document.getElementById("topbar");
+    Array.prototype.slice.call(document.querySelectorAll("#btn-save-as-topbar")).forEach(function(el){ el.remove(); });
+
+    if(topbar){
+      Array.prototype.slice.call(topbar.querySelectorAll("button")).forEach(function(b){
+        var txt=(b.textContent||"").trim().toLowerCase();
+        if(txt==="spara som") b.remove();
+      });
+    }
+  }
+
+  function setupInbarToggle(){
+    removeTopbarSaveDuplicate();
+
+    var topbar=document.getElementById("topbar");
+    if(!topbar)return;
+
+    // Ta bort gamla flytande/experiment-knappar.
+    var floating=document.getElementById("v47-topbar-float");
+    if(floating)floating.remove();
+    var oldHolder=topbar.querySelector(".v45-toggle-holder");
+    if(oldHolder)oldHolder.remove();
+
+    var firstRow=topbar.children[0];
+    if(!firstRow)return;
+    firstRow.id="v48-topbar-open-row";
+
+    // Ta bort den gamla topbar-toggle-knappen om den ligger fel.
+    Array.prototype.slice.call(document.querySelectorAll("#btn-topbar-toggle")).forEach(function(el){
+      el.remove();
+    });
+
+    var collapse=document.getElementById("v48-collapse-btn");
+    if(!collapse){
+      collapse=document.createElement("button");
+      collapse.id="v48-collapse-btn";
+      collapse.className="btn";
+      collapse.type="button";
+      collapse.innerHTML="▲";
+      collapse.title="Minimera menyn";
+      firstRow.appendChild(collapse);
+    }
+
+    var collapsedRow=document.getElementById("v48-collapsed-row");
+    if(!collapsedRow){
+      collapsedRow=document.createElement("div");
+      collapsedRow.id="v48-collapsed-row";
+
+      var expand=document.createElement("button");
+      expand.id="v48-expand-btn";
+      expand.className="btn";
+      expand.type="button";
+      expand.innerHTML="▼";
+      expand.title="Visa menyn";
+
+      collapsedRow.appendChild(expand);
+      topbar.appendChild(collapsedRow);
+    }
+
+    function setCollapsed(on){
+      document.body.classList.toggle("v48-topbar-collapsed", !!on);
+    }
+
+    collapse.onclick=function(e){
+      if(e){e.preventDefault();e.stopPropagation();}
+      setCollapsed(true);
+      return false;
+    };
+
+    var expandBtn=document.getElementById("v48-expand-btn");
+    if(expandBtn){
+      expandBtn.onclick=function(e){
+        if(e){e.preventDefault();e.stopPropagation();}
+        setCollapsed(false);
+        return false;
+      };
+    }
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded", setupInbarToggle);
+  }else{
+    setupInbarToggle();
+  }
+
+  window.addEventListener("load", setupInbarToggle);
+  setTimeout(setupInbarToggle, 250);
+  setTimeout(removeTopbarSaveDuplicate, 800);
+})();
+</script>
+
+</body>
+</html>
