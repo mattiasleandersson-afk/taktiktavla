@@ -35,6 +35,31 @@
   }
 </style>
 
+
+<style id="v46-iphone-toggle-fix">
+  .v45-toggle-holder {
+    position: fixed !important;
+    right: 10px !important;
+    top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+    z-index: 10000 !important;
+    display: flex !important;
+    pointer-events: auto !important;
+  }
+  #btn-topbar-toggle {
+    min-width: 38px !important;
+    min-height: 34px !important;
+    padding: 6px 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    touch-action: manipulation !important;
+  }
+  #topbar.v45-collapsed {
+    min-height: calc(env(safe-area-inset-top, 0px) + 46px) !important;
+    overflow: visible !important;
+  }
+</style>
+
 </head>
 <body>
 
@@ -68,7 +93,7 @@
   <button class="btn" id="btn-fs-topbar" style="color:#4ae87a;border-color:#4ae87a" title="Helsk\u00e4rm">&#x26F6;</button>
   <button class="btn" id="btn-orientation-toggle" style="display:none;color:#4ae8e8;border-color:#4ae8e8" title="V&#228;xla liggande/st&#229;ende">&#8645;</button>
   </div>
-  <div class="v45-toggle-holder" style="position:absolute;right:6px;top:4px;z-index:10000;display:flex"><button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button></div>
+  <div class="v45-toggle-holder" style="position:fixed;right:10px;top:calc(env(safe-area-inset-top, 0px) + 10px);z-index:10000;display:flex"><button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button></div>
   <div style="display:flex;gap:0;padding-top:3px;border-top:1px solid #1a3020;overflow-x:auto;flex-shrink:0">
     <button class="tab on" data-panel="formations" style="font-size:0.72rem;padding:3px 10px">Formation</button>
     <button class="tab" data-panel="saves" style="font-size:0.72rem;padding:3px 10px">Utg&#229;ngsläge</button>
