@@ -125,7 +125,7 @@ function renderSavesList(){
   if(!filtered.length){var empty=document.createElement("span");empty.style.cssText="color:#7aaa88;font-size:0.8rem";empty.textContent=searchQuery?"Inga tr\u00e4ffar":"Inga uppst\u00e4llningar"+(currentFolder!=="Alla"?" i denna mapp":"");list.appendChild(empty);return;}
   var sorted=filtered.slice().sort(function(a,b){return a.name.localeCompare(b.name,"sv");});
   for(var i=0;i<sorted.length;i++){
-    (function(s){var row=document.createElement("div");row.className="row";var nm=document.createElement("span");nm.className="row-name";nm.textContent=s.name;var fl=document.createElement("span");fl.className="row-sub";fl.textContent=s.folder||"Allm\u00e4nt";var ld=document.createElement("button");ld.className="sa load";ld.textContent="Ladda";var mv=document.createElement("button");mv.className="sa";mv.style.cssText="color:#e8c84a;border-color:#e8c84a";mv.textContent="\u21c6 Flytta";var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";ld.addEventListener("click",function(){applyState(JSON.parse(JSON.stringify(s.state)));activeFormationId=s.id;activeFormationName=s.name;updateSaveButtons();});mv.addEventListener("click",function(){openMoveFolder(s);});dl.addEventListener("click",function(){if(s.id)cloudDelete(s.id);else{savedFormations=savedFormations.filter(function(x){return x.id!==s.id;});renderSavesList();}});row.appendChild(nm);row.appendChild(fl);row.appendChild(mv);row.appendChild(ld);row.appendChild(dl);list.appendChild(row);})(sorted[i]);
+    (function(s){var row=document.createElement("div");row.className="row";var nm=document.createElement("span");nm.className="row-name";nm.textContent=s.name;var fl=document.createElement("span");fl.className="row-sub";fl.textContent=s.folder||"Allm\u00e4nt";var ld=document.createElement("button");ld.className="sa load";ld.textContent="Ladda";var toTk=document.createElement("button");toTk.className="sa";toTk.style.cssText="color:#4ae8e8;border-color:#4ae8e8";toTk.textContent="Till taktik";var mv=document.createElement("button");mv.className="sa";mv.style.cssText="color:#e8c84a;border-color:#e8c84a";mv.textContent="\u21c6 Flytta";var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";ld.addEventListener("click",function(){applyState(JSON.parse(JSON.stringify(s.state)));activeFormationId=s.id;activeFormationName=s.name;updateSaveButtons();});toTk.addEventListener("click",function(){sendSavedFormationToTaktik(s);});mv.addEventListener("click",function(){openMoveFolder(s);});dl.addEventListener("click",function(){if(s.id)cloudDelete(s.id);else{savedFormations=savedFormations.filter(function(x){return x.id!==s.id;});renderSavesList();}});row.appendChild(nm);row.appendChild(fl);row.appendChild(mv);row.appendChild(ld);row.appendChild(toTk);row.appendChild(dl);list.appendChild(row);})(sorted[i]);
   }
 }
 
@@ -590,6 +590,110 @@ function switchWorkspacePanel(nextPanel){
   restoreWorkspaceState(workspaceStates[nextKey],nextKey);
 }
 
+// ===== Koppla sparade utgångslägen till taktik =====
+function workspaceFromSavedFormation(saved){
+  var st=cloneObj(saved.state||{});
+  return {
+    format:st.format||format||11,
+    halfMode:0,
+    snap:{
+      players:cloneObj(st.players||[]),
+      ball:cloneObj(st.ball||{x:W/2,y:H/2}),
+      arrows:cloneObj(st.arrows||[]),
+      labels:cloneObj(st.labels||[]),
+      freehandPaths:cloneObj(st.freehandPaths||[]),
+      zones:cloneObj(st.zones||[]),
+      movementPaths:[]
+    },
+    matchRoster:[],
+    matchAssignments:{},
+    matchGoals:{home:0,away:0},
+    matchVariants:[],
+    activeVariantIdx:0,
+    activeFormationId:null,
+    activeFormationName:null,
+    sourceFormationName:saved.name||"Utgångsläge"
+  };
+}
+function openPanelByName(panelName){
+  var tab=document.querySelector('.tab[data-panel="'+panelName+'"]');
+  if(tab)tab.click();
+}
+function sendSavedFormationToTaktik(saved){
+  var currentKey=workspaceKeyFromPanel(activeWorkspacePanel);
+  workspaceStates[currentKey]=captureWorkspaceState();
+  workspaceStates.taktik=workspaceFromSavedFormation(saved);
+  if(currentKey==="taktik"){
+    restoreWorkspaceState(workspaceStates.taktik,"taktik");
+    if(playback)stopPlayback();
+    renderTaktikList();
+  }else{
+    openPanelByName("taktik");
+  }
+  showToast("Utgångsläge kopierat till taktik: "+(saved.name||"Namnlös"));
+}
+function openTaktikImportStartModal(){
+  var old=document.getElementById("modal-taktik-import-start");
+  if(old)old.remove();
+  var modal=document.createElement("div");
+  modal.id="modal-taktik-import-start";
+  modal.className="modal";
+  var box=document.createElement("div");
+  box.className="modal-box";
+  box.style.maxHeight="80vh";
+  box.style.overflow="auto";
+  var title=document.createElement("h2");
+  title.textContent="Hämta utgångsläge till taktik";
+  box.appendChild(title);
+  if(!savedFormations.length){
+    var empty=document.createElement("p");
+    empty.style.color="#7aaa88";
+    empty.textContent="Inga sparade utgångslägen hittades.";
+    box.appendChild(empty);
+  }else{
+    var list=document.createElement("div");
+    list.style.display="flex";
+    list.style.flexDirection="column";
+    list.style.gap="4px";
+    savedFormations.slice().sort(function(a,b){return a.name.localeCompare(b.name,"sv");}).forEach(function(s){
+      var row=document.createElement("div");
+      row.className="row";
+      var name=document.createElement("span");
+      name.className="row-name";
+      name.textContent=s.name;
+      var sub=document.createElement("span");
+      sub.className="row-sub";
+      sub.textContent=s.folder||"Allmänt";
+      var btn=document.createElement("button");
+      btn.className="sa play";
+      btn.textContent="Hämta";
+      btn.addEventListener("click",function(){modal.remove();sendSavedFormationToTaktik(s);});
+      row.appendChild(name);row.appendChild(sub);row.appendChild(btn);list.appendChild(row);
+    });
+    box.appendChild(list);
+  }
+  var close=document.createElement("button");
+  close.className="btn";
+  close.textContent="Stäng";
+  close.style.marginTop="10px";
+  close.addEventListener("click",function(){modal.remove();});
+  box.appendChild(close);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+}
+function ensureTaktikImportButton(){
+  var newBtn=document.getElementById("btn-new-taktik");
+  if(!newBtn||document.getElementById("btn-import-start-taktik"))return;
+  var btn=document.createElement("button");
+  btn.className="btn";
+  btn.id="btn-import-start-taktik";
+  btn.textContent="Hämta utgångsläge";
+  btn.style.color="#e8c84a";
+  btn.style.borderColor="#e8c84a";
+  btn.addEventListener("click",openTaktikImportStartModal);
+  newBtn.parentNode.insertBefore(btn,newBtn.nextSibling);
+}
+
 document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){
   if(mode==="movement")setMode("move");
   movementPaths=[];selectedId=null;
@@ -698,6 +802,7 @@ function openMergeTaktik(idx){mergingTaktikIdx=idx;document.getElementById("merg
 function mergeTaktik(idxA,idxB){var tkA=taktikFilmer[idxA],tkB=taktikFilmer[idxB];var merged={name:tkA.name+" + "+tkB.name,folder:tkA.folder||"Allm\u00e4nt",steps:JSON.parse(JSON.stringify(tkA.steps)).concat(JSON.parse(JSON.stringify(tkB.steps)).slice(1))};taktikFilmer.push(merged);cloudSaveTaktik(merged);cloudStatus("\u2705 Filmer sammanfogade","#4ae87a");showToast("Filmer sammanfogade!");}
 document.getElementById("merge-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-merge-taktik").classList.add("hidden");mergingTaktikIdx=null;});
 document.getElementById("btn-new-taktik").addEventListener("click",function(){document.getElementById("taktik-name-inp").value="";document.getElementById("modal-new-taktik").classList.remove("hidden");setTimeout(function(){document.getElementById("taktik-name-inp").focus();},150);});
+ensureTaktikImportButton();
 document.getElementById("new-taktik-cancel").addEventListener("click",function(){document.getElementById("modal-new-taktik").classList.add("hidden");});
 document.getElementById("new-taktik-ok").addEventListener("click",function(){
   var name=document.getElementById("taktik-name-inp").value.trim();if(!name)return;
