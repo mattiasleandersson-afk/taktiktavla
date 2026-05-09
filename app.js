@@ -4284,3 +4284,154 @@ setTimeout(function(){
   renderKorridorerV39();
 },300);
 /* === slut v39 === */
+
+
+
+/* === v40: återställ topbar-verktyg + korridorer === */
+function bindTopbarToolsV40(){
+  var map={
+    "btn-arrow":"arrow",
+    "btn-freehand":"freehand",
+    "btn-zone":"zone",
+    "btn-text":"text",
+    "btn-movement":"movement"
+  };
+
+  Object.keys(map).forEach(function(id){
+    var old=document.getElementById(id);
+    if(!old)return;
+
+    // Klona för att ta bort gamla/felaktiga listeners.
+    var btn=old.cloneNode(true);
+    old.parentNode.replaceChild(btn,old);
+
+    btn.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      var targetMode=map[id];
+      if(typeof setMode==="function"){
+        setMode(mode===targetMode?"move":targetMode);
+      }else{
+        mode=mode===targetMode?"move":targetMode;
+      }
+
+      // Säkerställ visuell markering efter render.
+      Object.keys(map).forEach(function(bid){
+        var b=document.getElementById(bid);
+        if(b)b.classList.toggle("on",mode===map[bid]);
+      });
+
+      return false;
+    },true);
+  });
+}
+
+function renderKorridorerV40(){
+  var old=svg.querySelectorAll(".korridor-v40,.korridor-v39,.korridor-g");
+  for(var i=0;i<old.length;i++)old[i].remove();
+
+  var chk=document.getElementById("chk-korridorer");
+  showKorridorer=!!(chk&&chk.checked);
+  if(!showKorridorer)return;
+
+  var ns="http://www.w3.org/2000/svg";
+  var cols=[
+    {x:0,w:72,label:"Yttre korridor",fill:"rgba(74,232,232,0.18)",stroke:"rgba(74,232,232,0.85)"},
+    {x:72,w:72,label:"Inre korridor",fill:"rgba(160,120,255,0.18)",stroke:"rgba(160,120,255,0.85)"},
+    {x:144,w:112,label:"Central korridor",fill:"rgba(74,232,122,0.16)",stroke:"rgba(74,232,122,0.85)"},
+    {x:256,w:72,label:"Inre korridor",fill:"rgba(160,120,255,0.18)",stroke:"rgba(160,120,255,0.85)"},
+    {x:328,w:72,label:"Yttre korridor",fill:"rgba(74,232,232,0.18)",stroke:"rgba(74,232,232,0.85)"}
+  ];
+
+  var gAll=document.createElementNS(ns,"g");
+  gAll.setAttribute("class","korridor-v40");
+  gAll.style.pointerEvents="none";
+
+  cols.forEach(function(c){
+    var g=document.createElementNS(ns,"g");
+
+    var r=document.createElementNS(ns,"rect");
+    r.setAttribute("x",c.x);
+    r.setAttribute("y",0);
+    r.setAttribute("width",c.w);
+    r.setAttribute("height",600);
+    r.setAttribute("fill",c.fill);
+    r.setAttribute("stroke",c.stroke);
+    r.setAttribute("stroke-width","1.5");
+    g.appendChild(r);
+
+    [18,586].forEach(function(y){
+      var t=document.createElementNS(ns,"text");
+      t.setAttribute("x",c.x+c.w/2);
+      t.setAttribute("y",y);
+      t.setAttribute("text-anchor","middle");
+      t.setAttribute("fill",c.stroke);
+      t.setAttribute("font-size","8");
+      t.setAttribute("font-family","Arial Narrow, Arial, sans-serif");
+      t.setAttribute("font-weight","900");
+      t.textContent=c.label;
+      g.appendChild(t);
+    });
+
+    gAll.appendChild(g);
+  });
+
+  // Lägg korridorerna ovanpå planens bas men under spelare/ritningar om möjligt.
+  var firstOverlay=svg.querySelector(".zone-g,.freehand-g,.arrow-g,.player-token,.ball-token");
+  if(firstOverlay&&firstOverlay.parentNode===svg){
+    svg.insertBefore(gAll,firstOverlay);
+  }else{
+    svg.appendChild(gAll);
+  }
+}
+
+function bindKorridorerV40(){
+  var old=document.getElementById("chk-korridorer");
+  if(!old)return;
+
+  var chk=old.cloneNode(true);
+  chk.checked=old.checked;
+  old.parentNode.replaceChild(chk,old);
+
+  chk.addEventListener("change",function(e){
+    showKorridorer=!!chk.checked;
+    if(typeof render==="function")render();
+    renderKorridorerV40();
+  },true);
+
+  chk.addEventListener("click",function(){
+    setTimeout(function(){
+      showKorridorer=!!chk.checked;
+      if(typeof render==="function")render();
+      renderKorridorerV40();
+    },0);
+  },true);
+}
+
+// Wrap render sist, så korridorer ritas efter alla andra render-flöden.
+var _render_v40=render;
+render=function(){
+  var res=_render_v40.apply(this,arguments);
+  renderKorridorerV40();
+
+  // Återställ topbar-visningen efter render.
+  var map={"btn-arrow":"arrow","btn-freehand":"freehand","btn-zone":"zone","btn-text":"text","btn-movement":"movement"};
+  Object.keys(map).forEach(function(id){
+    var b=document.getElementById(id);
+    if(b)b.classList.toggle("on",mode===map[id]);
+  });
+
+  return res;
+};
+
+bindTopbarToolsV40();
+bindKorridorerV40();
+setTimeout(function(){
+  bindTopbarToolsV40();
+  bindKorridorerV40();
+  renderKorridorerV40();
+},300);
+
+/* === slut v40 === */
