@@ -620,3 +620,25 @@ if(_renderSparadeMatcherListV12){
     return _renderSparadeMatcherListV12.apply(this,arguments);
   };
 }
+
+/* === v13: ny taktikfilm ska inte molnsparas som 0-stegsfilm === */
+var _cloudSaveTaktik_v13 = cloudSaveTaktik;
+cloudSaveTaktik = function(tk){
+  if(!tk || !tk.steps || tk.steps.length < 2){
+    showToast("Lägg till minst ett steg innan du sparar filmen", false);
+    cloudStatus("⚠️ Minst ett steg krävs för att spara taktikfilm", "#e8c84a");
+    return;
+  }
+  return _cloudSaveTaktik_v13(tk);
+};
+function purgeEmptyLocalTaktikV13(){
+  taktikFilmer=(taktikFilmer||[]).filter(function(tk){
+    return tk && tk.steps && (tk._isDraft || tk.steps.length>=2);
+  });
+}
+var _renderTaktikList_v13 = renderTaktikList;
+renderTaktikList = function(){
+  purgeEmptyLocalTaktikV13();
+  return _renderTaktikList_v13.apply(this, arguments);
+};
+/* === slut v13 === */
