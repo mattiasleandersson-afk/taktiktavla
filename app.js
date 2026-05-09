@@ -512,18 +512,101 @@ document.getElementById("panel-show-btn").addEventListener("click",function(){pa
 var topbarOpen=true;
 document.getElementById("btn-topbar-toggle").addEventListener("click",function(){topbarOpen=!topbarOpen;var tb=document.getElementById("topbar");var btn=document.getElementById("btn-topbar-toggle");var children=tb.children;for(var i=0;i<children.length;i++){if(children[i]!==btn)children[i].style.display=topbarOpen?"":"none";}btn.innerHTML=topbarOpen?"\u25b2":"\u25bc";btn.title=topbarOpen?"Minimera menyn":"Visa menyn";});
 document.getElementById("taktik-search").addEventListener("input",function(e){taktikSearch=e.target.value;renderTaktikList();});
-document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){if(mode==="movement")setMode("move");movementPaths=[];selectedId=null;var name=tab.getAttribute("data-panel");document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});if(name==="saves")renderSavesList();if(name==="lag"){
-      // Reset to formation positions unless bench-bar is actively showing
-      var benchActive=document.getElementById("bench-bar").classList.contains("active");
-      if(!benchActive){
-        matchRoster=[];matchAssignments={};matchVariants=[];activeVariantIdx=0;
-        if(_defaultFormat!==format){format=_defaultFormat;document.getElementById("fmt-sel").value=String(format);buildFormationBtns();}
-        var activeFormText=document.querySelector("#formation-btns .btn.on:not(.star-default)");
-        initPlayers(activeFormText?activeFormText.textContent:_defaultFormation);
-        render();
-      }
-      halfMode=1;updateViewBox();
-    }else{document.getElementById("bottompanel").classList.remove("expanded");}if(name!=="lag"&&halfMode===1&&matchRoster.length===0){halfMode=0;updateViewBox();}if(name==="taktik"){if(playback)renderPlayStepList();else renderTaktikList();}});});
+// ===== Arbetsytor per huvudflik =====
+// Första versionen: separerar framför allt Lag från Taktik/Formation,
+// så att laguppställningar inte "följer med" in i andra funktioner.
+var activeWorkspacePanel="formations";
+var workspaceStates={};
+
+function workspaceKeyFromPanel(panel){
+  if(panel==="lag")return "lag";
+  if(panel==="taktik")return "taktik";
+  return "formation";
+}
+function cloneObj(obj){return JSON.parse(JSON.stringify(obj));}
+function captureWorkspaceState(){
+  return {
+    format:format,
+    halfMode:halfMode,
+    snap:currentSnap(),
+    matchRoster:cloneObj(matchRoster||[]),
+    matchAssignments:cloneObj(matchAssignments||{}),
+    matchGoals:cloneObj(matchGoals||{home:0,away:0}),
+    matchVariants:cloneObj(typeof matchVariants!=="undefined"?matchVariants:[]),
+    activeVariantIdx:typeof activeVariantIdx!=="undefined"?activeVariantIdx:0,
+    activeFormationId:activeFormationId,
+    activeFormationName:activeFormationName
+  };
+}
+function resetWorkspaceForKey(key){
+  if(playback)stopPlayback();
+  if(animFrame)cancelAnimationFrame(animFrame);
+  playback=null;activeTaktik=null;editingTaktikIdx=null;editingStepIdx=0;isEditingTaktik=false;
+  arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];selectedId=null;undoStack=[];
+  matchRoster=[];matchAssignments={};matchVariants=[];activeVariantIdx=0;matchGoals={home:0,away:0};window._editingMatchId=null;
+  activeFormationId=null;activeFormationName=null;
+  format=_defaultFormat||11;
+  var fmt=document.getElementById("fmt-sel");if(fmt)fmt.value=String(format);
+  buildFormationBtns();
+  initPlayers(_defaultFormation||"4-4-2");
+  halfMode=key==="lag"?1:0;
+  updateViewBox();
+  var bench=document.getElementById("bench-bar");if(bench)bench.classList.toggle("active",key==="lag"&&matchRoster.length>0);
+  var goal=document.getElementById("goal-overlay");if(goal)goal.style.display="none";
+  if(typeof updateGoalDisplay==="function")updateGoalDisplay();
+  if(typeof renderBench==="function")renderBench();
+  if(typeof updateSaveButtons==="function")updateSaveButtons();
+  render();
+}
+function restoreWorkspaceState(state,key){
+  if(!state){resetWorkspaceForKey(key);return;}
+  format=state.format||_defaultFormat||11;
+  var fmt=document.getElementById("fmt-sel");if(fmt)fmt.value=String(format);
+  buildFormationBtns();
+  restoreSnap(state.snap||currentSnap());
+  matchRoster=cloneObj(state.matchRoster||[]);
+  matchAssignments=cloneObj(state.matchAssignments||{});
+  matchGoals=cloneObj(state.matchGoals||{home:0,away:0});
+  matchVariants=cloneObj(state.matchVariants||[]);
+  activeVariantIdx=state.activeVariantIdx||0;
+  activeFormationId=state.activeFormationId||null;
+  activeFormationName=state.activeFormationName||null;
+  halfMode=typeof state.halfMode==="number"?state.halfMode:(key==="lag"?1:0);
+  updateViewBox();
+  var bench=document.getElementById("bench-bar");if(bench)bench.classList.toggle("active",key==="lag"&&matchRoster.length>0);
+  var goal=document.getElementById("goal-overlay");if(goal)goal.style.display=key==="lag"&&matchRoster.length?"flex":"none";
+  if(typeof updateGoalDisplay==="function")updateGoalDisplay();
+  if(typeof renderBench==="function")renderBench();
+  if(typeof updateVariantUI==="function")updateVariantUI();
+  if(typeof updateSaveButtons==="function")updateSaveButtons();
+  render();
+}
+function switchWorkspacePanel(nextPanel){
+  var prevKey=workspaceKeyFromPanel(activeWorkspacePanel);
+  workspaceStates[prevKey]=captureWorkspaceState();
+  var nextKey=workspaceKeyFromPanel(nextPanel);
+  activeWorkspacePanel=nextPanel;
+  restoreWorkspaceState(workspaceStates[nextKey],nextKey);
+}
+
+document.querySelectorAll(".tab").forEach(function(tab){tab.addEventListener("click",function(){
+  if(mode==="movement")setMode("move");
+  movementPaths=[];selectedId=null;
+  var name=tab.getAttribute("data-panel");
+  if(!name)return;
+  switchWorkspacePanel(name);
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("on",t===tab);});
+  document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="panel-"+name);});
+  if(name==="saves")renderSavesList();
+  if(name==="lag"){
+    halfMode=1;updateViewBox();
+  }else{
+    document.getElementById("bottompanel").classList.remove("expanded");
+  }
+  if(name==="taktik"){
+    if(playback)renderPlayStepList();else renderTaktikList();
+  }
+});});
 function startRecording(name){activeTaktik={name:name,steps:[currentSnap()]};document.getElementById("rec-badge").style.display="block";document.getElementById("rec-ui").style.display="block";document.getElementById("no-rec-ui").style.display="none";document.getElementById("rec-name-lbl").textContent="\u25cf "+name;renderRecSteps();}
 document.getElementById("btn-add-step").addEventListener("click",function(){if(!activeTaktik)return;activeTaktik.steps.push(currentSnap());renderRecSteps();});
 document.getElementById("btn-stop-rec").addEventListener("click",function(){if(!activeTaktik||activeTaktik.steps.length<2)return;var newFilm={name:activeTaktik.name,steps:activeTaktik.steps};taktikFilmer.push(newFilm);cloudSaveTaktik(newFilm);activeTaktik=null;document.getElementById("rec-badge").style.display="none";document.getElementById("rec-ui").style.display="none";document.getElementById("no-rec-ui").style.display="block";renderTaktikList();});
