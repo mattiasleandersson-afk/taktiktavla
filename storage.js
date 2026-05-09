@@ -747,3 +747,166 @@ cloudLoadSaves=function(){
     }).catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");});
 };
 /* === slut v19 storage === */
+
+
+
+/* === v27: single-source för utgångslägen, stoppa dubbla filer === */
+function formationMetaV27(state){
+  return (state&&state._meta) ? state._meta : {};
+}
+function formationOwnerKeyV27(state){
+  var m=formationMetaV27(state);
+  return m.ownerId || "legacy";
+}
+function formationDedupeKeyV27(row){
+  var st=row.data||{};
+  var owner=formationOwnerKeyV27(st);
+  var name=String(row.name||"").trim().toLowerCase();
+  var folder=String(row.folder||"Allmänt").trim().toLowerCase();
+  return owner+"::"+folder+"::"+name;
+}
+function normalizeFormationRowV27(row){
+  var st=row.data||{};
+  return {
+    id:row.id,
+    name:row.name,
+    state:st,
+    folder:row.folder||"Allmänt",
+    _meta:st._meta||{}
+  };
+}
+function cloudLoadSaves(){
+  cloudStatus("Laddar...","#7aaa88");
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)){cloudStatus("❌ Fel","#e84a4a");return;}
+
+      var byKey={};
+      data.filter(function(row){return row.type==="uppstallning";}).forEach(function(row){
+        if(!row.name)return;
+        var key=formationDedupeKeyV27(row);
+        // order id.desc -> behåll nyaste raden för samma ägare+mapp+namn
+        if(!byKey[key])byKey[key]=normalizeFormationRowV27(row);
+      });
+
+      savedFormations=Object.keys(byKey).map(function(k){return byKey[k];});
+
+      var seen={};folders=["Allmänt"];
+      savedFormations.forEach(function(s){
+        var f=s.folder||"Allmänt";
+        if(f&&!seen[f]){
+          seen[f]=true;
+          if(f!=="Allmänt")folders.push(f);
+        }
+      });
+
+      cloudStatus(savedFormations.length+" uppställningar ✅","#4ae87a");
+      renderSavesList();
+      updateFolderSelect();
+    })
+    .catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");});
+}
+
+function cloudSaveWithName(name){
+  name=String(name||"").trim();
+  if(!name){showToast("Skriv ett namn först",false);return;}
+
+  cloudStatus("Sparar...","#7aaa88");
+  var folderSel=document.getElementById("folder-select");
+  var folder=folderSel?folderSel.value:"Allmänt";
+  var state=(typeof addMetaToData==="function")?addMetaToData(buildState()):buildState();
+
+  function patchExisting(id){
+    return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{
+      method:"PATCH",
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+      body:JSON.stringify({name:name,data:state,type:"uppstallning",folder:folder})
+    }).then(function(r){return r.json();}).then(function(data){
+      cloudStatus("✅ Sparat: "+name,"#4ae87a");
+      showToast("Sparat!");
+      cloudLoadSaves();
+    });
+  }
+
+  // Om aktivt utgångsläge redan har id: uppdatera samma rad.
+  if(typeof activeFormationId!=="undefined" && activeFormationId){
+    patchExisting(activeFormationId).catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+      showToast("Kunde inte spara",false);
+    });
+    return;
+  }
+
+  // Annars leta efter samma namn + mapp + ägare och uppdatera nyaste i stället för POST.
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&name=eq."+encodeURIComponent(name)+"&folder=eq."+encodeURIComponent(folder)+"&order=id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(existing){
+      var owner=formationOwnerKeyV27(state);
+      if(Array.isArray(existing)){
+        var same=existing.find(function(row){
+          return formationOwnerKeyV27(row.data||{})===owner;
+        });
+        if(same&&same.id)return patchExisting(same.id);
+      }
+
+      return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{
+        method:"POST",
+        headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+        body:JSON.stringify({name:name,data:state,type:"uppstallning",folder:folder})
+      }).then(function(r){return r.json();}).then(function(data){
+        if(data&&data[0]&&data[0].id){
+          activeFormationId=data[0].id;
+          activeFormationName=name;
+          cloudStatus("✅ Sparat: "+name,"#4ae87a");
+          showToast("Sparat!");
+          cloudLoadSaves();
+        }else{
+          var errMsg=(data&&data.message)?data.message:"Kunde inte spara";
+          cloudStatus("❌ "+errMsg,"#e84a4a");
+          showToast(errMsg,false);
+        }
+      });
+    })
+    .catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+      showToast("Kunde inte spara",false);
+    });
+}
+
+// Kopiera från Lagets ska skapa en ny egen rad men aldrig lägga lokal dublett.
+function copyFormationToMineV26(s){
+  if(!s)return;
+  var name="Kopia av "+(s.name||"utgångsläge");
+  var state=JSON.parse(JSON.stringify(s.state||{}));
+  delete state._readOnly;
+  delete state._openedFromTeam;
+  delete state._draftUid;
+  if(state._meta)delete state._meta;
+
+  if(typeof addMetaToData==="function")state=addMetaToData(state);
+  else if(typeof updateShareMetaV10==="function")state=updateShareMetaV10(state,false,false);
+
+  if(state._meta){
+    state._meta.sharedWithTeam=false;
+    state._meta.teamCanEdit=false;
+  }
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{
+    method:"POST",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({name:name,data:state,type:"uppstallning",folder:s.folder||"Allmänt"})
+  }).then(function(r){return r.json();}).then(function(data){
+    showToast("Kopia skapad i Mina");
+    saveScope="mine";
+    currentFolder="Alla";
+    cloudLoadSaves();
+  }).catch(function(err){
+    showToast("Kunde inte kopiera",false);
+    cloudStatus("❌ "+err.message,"#e84a4a");
+  });
+}
+copyFormationToMineV10=copyFormationToMineV26;
+
+if(typeof cloudLoadSaves==="function")cloudLoadSaves();
+/* === slut v27 === */
