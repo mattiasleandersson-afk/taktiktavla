@@ -521,6 +521,7 @@ var workspaceStates={};
 function workspaceKeyFromPanel(panel){
   if(panel==="lag")return "lag";
   if(panel==="taktik")return "taktik";
+  if(panel==="saves")return "saves";
   return "formation";
 }
 function cloneObj(obj){return JSON.parse(JSON.stringify(obj));}
