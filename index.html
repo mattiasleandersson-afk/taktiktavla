@@ -36,49 +36,71 @@
 </style>
 
 
-<style id="v47-floating-topbar-toggle-css">
-  /* Dölj den gamla pilen helt. Den låg inne i topbaren och kunde hamna fel på iPhone. */
-  #btn-topbar-toggle,
+<style id="v48-inbar-toggle-fix">
+  /* Korrekt beteende: pilen ska ligga i själva topbaren, inte flyta ovanför. */
+  #topbar {
+    overflow: visible !important;
+  }
+
+  #v48-topbar-open-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    padding-right: 44px;
+  }
+
+  #v48-collapse-btn,
+  #v48-expand-btn {
+    border: 1px solid #2d4a35;
+    background: rgba(12, 24, 16, 0.96);
+    color: #e6ffe9;
+    border-radius: 7px;
+    min-width: 38px;
+    min-height: 30px;
+    padding: 4px 10px;
+    font-weight: 900;
+    font-size: 16px;
+    line-height: 1;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #v48-collapse-btn {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  #v48-collapsed-row {
+    display: none;
+    height: 34px;
+    min-height: 34px;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 2px 8px;
+    box-sizing: border-box;
+  }
+
+  body.v48-topbar-collapsed #topbar {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 2px 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  body.v48-topbar-collapsed #v48-topbar-open-row,
+  body.v48-topbar-collapsed #topbar > div:not(#v48-collapsed-row) {
+    display: none !important;
+  }
+
+  body.v48-topbar-collapsed #v48-collapsed-row {
+    display: flex !important;
+  }
+
+  /* Dölj gamla experimenthållaren om den finns kvar från v45. */
   .v45-toggle-holder {
     display: none !important;
-  }
-
-  /* Ny fristående knapp, utanför topbaren */
-  #v47-topbar-float {
-    position: fixed !important;
-    right: 12px !important;
-    top: 58px !important;
-    z-index: 2147483647 !important;
-    width: 48px !important;
-    height: 48px !important;
-    border-radius: 999px !important;
-    border: 2px solid #4ae8e8 !important;
-    background: rgba(10, 20, 14, 0.96) !important;
-    color: #4ae8e8 !important;
-    font-size: 24px !important;
-    font-weight: 900 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.45) !important;
-    touch-action: manipulation !important;
-    -webkit-tap-highlight-color: transparent !important;
-  }
-
-  body.v47-topbar-collapsed #topbar {
-    min-height: 0 !important;
-    height: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    border: 0 !important;
-  }
-
-  body.v47-topbar-collapsed #topbar > * {
-    display: none !important;
-  }
-
-  body.v47-topbar-collapsed #v47-topbar-float {
-    top: 16px !important;
   }
 </style>
 
@@ -838,11 +860,12 @@
 </script>
 
 
-<script id="v47-floating-topbar-toggle">
+<script id="v48-inbar-toggle-fix">
 (function(){
-  function removeOldTopbarDuplicates(){
+  function removeTopbarSaveDuplicate(){
     var topbar=document.getElementById("topbar");
-    Array.prototype.slice.call(document.querySelectorAll("#btn-save-as-topbar")).forEach(function(el){el.remove();});
+    Array.prototype.slice.call(document.querySelectorAll("#btn-save-as-topbar")).forEach(function(el){ el.remove(); });
+
     if(topbar){
       Array.prototype.slice.call(topbar.querySelectorAll("button")).forEach(function(b){
         var txt=(b.textContent||"").trim().toLowerCase();
@@ -851,64 +874,83 @@
     }
   }
 
-  function setupFloatingToggle(){
-    removeOldTopbarDuplicates();
+  function setupInbarToggle(){
+    removeTopbarSaveDuplicate();
 
-    var old=document.getElementById("v47-topbar-float");
-    if(old) old.remove();
+    var topbar=document.getElementById("topbar");
+    if(!topbar)return;
 
-    var btn=document.createElement("button");
-    btn.id="v47-topbar-float";
-    btn.type="button";
-    btn.textContent="▲";
-    btn.title="Minimera/visa meny";
-    document.body.appendChild(btn);
+    // Ta bort gamla flytande/experiment-knappar.
+    var floating=document.getElementById("v47-topbar-float");
+    if(floating)floating.remove();
+    var oldHolder=topbar.querySelector(".v45-toggle-holder");
+    if(oldHolder)oldHolder.remove();
 
-    var collapsed=false;
+    var firstRow=topbar.children[0];
+    if(!firstRow)return;
+    firstRow.id="v48-topbar-open-row";
 
-    function setCollapsed(next){
-      collapsed=next;
-      document.body.classList.toggle("v47-topbar-collapsed", collapsed);
-      btn.textContent=collapsed ? "▼" : "▲";
-      btn.title=collapsed ? "Visa meny" : "Minimera meny";
+    // Ta bort den gamla topbar-toggle-knappen om den ligger fel.
+    Array.prototype.slice.call(document.querySelectorAll("#btn-topbar-toggle")).forEach(function(el){
+      el.remove();
+    });
+
+    var collapse=document.getElementById("v48-collapse-btn");
+    if(!collapse){
+      collapse=document.createElement("button");
+      collapse.id="v48-collapse-btn";
+      collapse.className="btn";
+      collapse.type="button";
+      collapse.innerHTML="▲";
+      collapse.title="Minimera menyn";
+      firstRow.appendChild(collapse);
     }
 
-    btn.addEventListener("click",function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      setCollapsed(!collapsed);
-      return false;
-    },true);
+    var collapsedRow=document.getElementById("v48-collapsed-row");
+    if(!collapsedRow){
+      collapsedRow=document.createElement("div");
+      collapsedRow.id="v48-collapsed-row";
 
-    btn.addEventListener("touchend",function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      setCollapsed(!collapsed);
-      return false;
-    },{passive:false,capture:true});
+      var expand=document.createElement("button");
+      expand.id="v48-expand-btn";
+      expand.className="btn";
+      expand.type="button";
+      expand.innerHTML="▼";
+      expand.title="Visa menyn";
 
-    // Stäng av gamla knappen om någon gammal listener fortfarande finns
-    var oldToggle=document.getElementById("btn-topbar-toggle");
-    if(oldToggle){
-      oldToggle.onclick=function(e){
+      collapsedRow.appendChild(expand);
+      topbar.appendChild(collapsedRow);
+    }
+
+    function setCollapsed(on){
+      document.body.classList.toggle("v48-topbar-collapsed", !!on);
+    }
+
+    collapse.onclick=function(e){
+      if(e){e.preventDefault();e.stopPropagation();}
+      setCollapsed(true);
+      return false;
+    };
+
+    var expandBtn=document.getElementById("v48-expand-btn");
+    if(expandBtn){
+      expandBtn.onclick=function(e){
         if(e){e.preventDefault();e.stopPropagation();}
-        setCollapsed(!collapsed);
+        setCollapsed(false);
         return false;
       };
     }
   }
 
   if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",setupFloatingToggle);
+    document.addEventListener("DOMContentLoaded", setupInbarToggle);
   }else{
-    setupFloatingToggle();
+    setupInbarToggle();
   }
 
-  window.addEventListener("load",setupFloatingToggle);
-
-  // Om gamla script försöker skapa tillbaka saker efteråt.
-  setTimeout(setupFloatingToggle,300);
-  setTimeout(removeOldTopbarDuplicates,800);
+  window.addEventListener("load", setupInbarToggle);
+  setTimeout(setupInbarToggle, 250);
+  setTimeout(removeTopbarSaveDuplicate, 800);
 })();
 </script>
 
