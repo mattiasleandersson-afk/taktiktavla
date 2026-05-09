@@ -2789,3 +2789,147 @@ document.querySelectorAll(".tab").forEach(function(tab){
 });
 
 /* === slut v17 === */
+
+
+
+/* === v18: robust osparat-varning, Lagets-lista och dölj rörelse i fullscreen === */
+
+// 1) Dirty-flagga ska sättas så fort planen ändras i taktikredigering.
+function markTaktikDirtyV18(){
+  if(editingTaktikIdx!==null || isEditingTaktik || playback){
+    taktikDirtyV17=true;
+  }
+}
+["touchend","mouseup"].forEach(function(evt){
+  document.addEventListener(evt,function(){
+    if(editingTaktikIdx!==null || isEditingTaktik)markTaktikDirtyV18();
+  },true);
+});
+
+// Markera osparat vid stegoperationer
+["btn-edit-add-step","btn-edit-del-step","btn-edit-update-step","btn-edit-update-step2"].forEach(function(id){
+  var b=document.getElementById(id);
+  if(b)b.addEventListener("click",function(){markTaktikDirtyV18();},true);
+});
+
+// 2) Bekräfta innan man lämnar taktikfilmen/editor.
+function confirmUnsavedTaktikV18(){
+  if(!taktikDirtyV17)return true;
+  return confirm("Du har osparade ändringar i taktiken. Vill du lämna utan att spara?");
+}
+
+var _exitEditTaktik_v18 = exitEditTaktik;
+exitEditTaktik = function(){
+  if(!confirmUnsavedTaktikV18())return;
+  taktikDirtyV17=false;
+  return _exitEditTaktik_v18.apply(this,arguments);
+};
+
+var _stopPlayback_v18 = stopPlayback;
+stopPlayback = function(){
+  if(!confirmUnsavedTaktikV18())return;
+  taktikDirtyV17=false;
+  return _stopPlayback_v18.apply(this,arguments);
+};
+
+// Panelbyte bort från taktik: kör i capture så vi hinner stoppa gamla listenern.
+document.querySelectorAll(".tab").forEach(function(tab){
+  tab.addEventListener("click",function(e){
+    var target=tab.getAttribute("data-panel");
+    if(target && target!=="taktik" && (editingTaktikIdx!==null || isEditingTaktik || playback) && taktikDirtyV17){
+      if(!confirmUnsavedTaktikV18()){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return false;
+      }
+      taktikDirtyV17=false;
+    }
+  },true);
+});
+
+// Vid riktig molnsparning: autospara aktuellt steg först, sedan rensa dirty när save-anropet gått iväg.
+var _cloudSaveTaktik_v18=cloudSaveTaktik;
+cloudSaveTaktik=function(tk){
+  if(editingTaktikIdx!==null && typeof autoSaveCurrentStepLocalV16==="function"){
+    autoSaveCurrentStepLocalV16();
+  }
+  var res=_cloudSaveTaktik_v18.apply(this,arguments);
+  setTimeout(function(){
+    taktikDirtyV17=false;
+    showToast("Film sparad!");
+    cloudStatus("✅ Film sparad","#4ae87a");
+  },450);
+  return res;
+};
+
+// 3) Delning: Lagets ska visa filer i samma lag även om shared-flaggan ligger i data._meta.
+// Äldre v10 krävde sharedWithTeam; här normaliserar vi metadata och gör delning säkrare.
+function sameTeamV18(obj){
+  var p=getProfileSafeV10&&getProfileSafeV10();
+  var m=fileMetaV10?fileMetaV10(obj):{};
+  if(!p||!m)return false;
+  return String(m.teamId||m.teamCode||"")===String(p.teamId||p.teamCode||"");
+}
+isSameTeamSharedV10=function(obj){
+  var m=fileMetaV10?fileMetaV10(obj):{};
+  return sameTeamV18(obj) && !isMineV10(obj) && !!m.sharedWithTeam;
+};
+function refreshAfterShareV18(){
+  if(typeof cloudLoadSaves==="function")cloudLoadSaves();
+  if(typeof cloudLoadTaktik==="function")cloudLoadTaktik();
+}
+var _patchFormationShareV10_v18=patchFormationShareV10;
+patchFormationShareV10=function(s,share){
+  if(!s||!s.id)return;
+  if(!isMineV10(s)){showToast("Du kan inte ändra delning på någon annans fil",false);return;}
+  var newState=updateShareMetaV10(s.state,share,false);
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({data:newState})
+  }).then(function(){
+    s.state=newState;
+    s._meta=newState._meta;
+    showToast(share?"Delad med laget":"Inte längre delad");
+    setTimeout(refreshAfterShareV18,300);
+  }).catch(function(err){showToast("Kunde inte ändra delning",false);cloudStatus("❌ "+err.message,"#e84a4a");});
+};
+var _patchTaktikShareV10_v18=patchTaktikShareV10;
+patchTaktikShareV10=function(tk,share){
+  if(!tk||!tk.dbId)return;
+  if(!isMineV10(tk)){showToast("Du kan inte ändra delning på någon annans fil",false);return;}
+  var newTk=updateShareMetaV10(tk,share,false);
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({data:newTk})
+  }).then(function(){
+    Object.keys(newTk).forEach(function(k){tk[k]=newTk[k];});
+    showToast(share?"Film delad med laget":"Film inte längre delad");
+    setTimeout(refreshAfterShareV18,300);
+  }).catch(function(err){showToast("Kunde inte ändra delning",false);cloudStatus("❌ "+err.message,"#e84a4a");});
+};
+
+// 4) Fullscreen: rörelseknappen ska inte visas i formations-/coachboard-fullscreen.
+function hideMovementInFullscreenV18(){
+  var b=document.getElementById("fs-tb-movement");
+  if(b)b.style.display="none";
+}
+var _syncFullscreenToolButtons_v18=typeof syncFullscreenToolButtons==="function"?syncFullscreenToolButtons:null;
+if(_syncFullscreenToolButtons_v18){
+  syncFullscreenToolButtons=function(){
+    _syncFullscreenToolButtons_v18.apply(this,arguments);
+    hideMovementInFullscreenV18();
+  };
+}
+var _enterFullscreenPortrait_v18=typeof enterFullscreenPortrait==="function"?enterFullscreenPortrait:null;
+if(_enterFullscreenPortrait_v18){
+  enterFullscreenPortrait=function(){
+    var r=_enterFullscreenPortrait_v18.apply(this,arguments);
+    hideMovementInFullscreenV18();
+    return r;
+  };
+}
+hideMovementInFullscreenV18();
+
+/* === slut v18 === */
