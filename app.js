@@ -4222,3 +4222,14 @@ function cleanupTopbarDuplicatesV44(){
 cleanupTopbarDuplicatesV44();
 setTimeout(cleanupTopbarDuplicatesV44,200);
 /* === slut v44 === */
+
+
+/* v45 app hard cleanup */
+(function(){
+  function v45Cleanup(){
+    var extra=document.getElementById("btn-save-as-topbar");
+    if(extra)extra.remove();
+  }
+  v45Cleanup();
+  setTimeout(v45Cleanup,300);
+})();
