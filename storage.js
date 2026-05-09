@@ -697,3 +697,53 @@ cloudLoadSaves=function(){
     }).catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");});
 };
 /* === slut v18 storage === */
+
+
+
+/* === v19 storage: tappa inte sharedWithTeam vid laddning === */
+function metaFromRowV19(row){
+  var d=row&&row.data?row.data:{};
+  return d._meta||{};
+}
+var _cloudLoadTaktik_storage_v19=cloudLoadTaktik;
+cloudLoadTaktik=function(){
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data))return;
+      var byKey={};
+      data.filter(function(row){return row.type==="taktikfilm";}).forEach(function(row){
+        var tk=row.data||{};
+        if(!tk.steps||tk.steps.length<2)return;
+        tk.dbId=row.id;
+        tk._meta=metaFromRowV19(row);
+        if(!tk.folder)tk.folder=row.folder||"Taktik";
+        var owner=tk._meta&&tk._meta.ownerId?tk._meta.ownerId:"legacy";
+        var key=owner+"::"+((row.name||tk.name||"").trim().toLowerCase()||("id:"+row.id));
+        if(!byKey[key])byKey[key]=tk;
+      });
+      taktikFilmer=Object.keys(byKey).map(function(k){return byKey[k];});
+      var tfseen={};taktikFolders=["Taktik","Träning"];tfseen["Taktik"]=true;tfseen["Träning"]=true;
+      taktikFilmer.forEach(function(tk){if(tk.folder&&!tfseen[tk.folder]){tfseen[tk.folder]=true;taktikFolders.push(tk.folder);}});
+      renderTaktikList();
+      cloudStatus(taktikFilmer.length+" taktikfilmer laddade","#4ae87a");
+    }).catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");});
+};
+cloudLoadSaves=function(){
+  cloudStatus("Laddar...","#7aaa88");
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=folder.asc,id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data))return;
+      savedFormations=data.filter(function(row){return row.type==="uppstallning";}).map(function(row){
+        var state=row.data||{};
+        state._meta=metaFromRowV19(row);
+        return {id:row.id,name:row.name,state:state,folder:row.folder||"Allmänt",_meta:state._meta};
+      });
+      var seen={};folders=["Allmänt"];
+      savedFormations.forEach(function(s){var f=s.folder;if(f&&!seen[f]){seen[f]=true;if(f!=="Allmänt")folders.push(f);}});
+      renderSavesList();updateFolderSelect();
+      cloudStatus(savedFormations.length+" uppställningar ✅","#4ae87a");
+    }).catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");});
+};
+/* === slut v19 storage === */
