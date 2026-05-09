@@ -4189,3 +4189,98 @@ function bindKorridorerV38(){
 
 bindKorridorerV38();
 /* === slut v38 === */
+
+
+
+/* === v39: robust korridor-overlay efter render === */
+function renderKorridorerV39(){
+  var old=svg.querySelectorAll(".korridor-v39");
+  for(var i=0;i<old.length;i++)old[i].remove();
+
+  var chk=document.getElementById("chk-korridorer");
+  var on=!!(chk&&chk.checked);
+  showKorridorer=on;
+  if(!on)return;
+
+  var ns="http://www.w3.org/2000/svg";
+  var cols=[
+    {x:0,w:72,label:"Yttre",fill:"rgba(74,232,232,0.16)",stroke:"rgba(74,232,232,0.75)"},
+    {x:72,w:72,label:"Inre",fill:"rgba(160,120,255,0.16)",stroke:"rgba(160,120,255,0.75)"},
+    {x:144,w:112,label:"Central",fill:"rgba(74,232,122,0.14)",stroke:"rgba(74,232,122,0.75)"},
+    {x:256,w:72,label:"Inre",fill:"rgba(160,120,255,0.16)",stroke:"rgba(160,120,255,0.75)"},
+    {x:328,w:72,label:"Yttre",fill:"rgba(74,232,232,0.16)",stroke:"rgba(74,232,232,0.75)"}
+  ];
+
+  var gAll=document.createElementNS(ns,"g");
+  gAll.setAttribute("class","korridor-v39");
+  gAll.style.pointerEvents="none";
+
+  cols.forEach(function(c){
+    var g=document.createElementNS(ns,"g");
+    var r=document.createElementNS(ns,"rect");
+    r.setAttribute("x",c.x);
+    r.setAttribute("y",0);
+    r.setAttribute("width",c.w);
+    r.setAttribute("height",600);
+    r.setAttribute("fill",c.fill);
+    r.setAttribute("stroke",c.stroke);
+    r.setAttribute("stroke-width","1.4");
+    g.appendChild(r);
+
+    [18,586].forEach(function(y){
+      var t=document.createElementNS(ns,"text");
+      t.setAttribute("x",c.x+c.w/2);
+      t.setAttribute("y",y);
+      t.setAttribute("text-anchor","middle");
+      t.setAttribute("fill",c.stroke);
+      t.setAttribute("font-size","9");
+      t.setAttribute("font-family","Arial Narrow, Arial, sans-serif");
+      t.setAttribute("font-weight","900");
+      t.textContent=c.label;
+      g.appendChild(t);
+    });
+
+    gAll.appendChild(g);
+  });
+
+  // Lägg efter planlinjer men före spelare om möjligt.
+  var firstPlayer=svg.querySelector(".player-token");
+  if(firstPlayer&&firstPlayer.parentNode===svg){
+    svg.insertBefore(gAll,firstPlayer);
+  }else{
+    svg.appendChild(gAll);
+  }
+}
+
+function bindKorridorerV39(){
+  var chk=document.getElementById("chk-korridorer");
+  if(!chk)return;
+
+  chk.addEventListener("change",function(){
+    showKorridorer=!!chk.checked;
+    if(typeof render==="function")render();
+    renderKorridorerV39();
+  },true);
+
+  chk.addEventListener("click",function(){
+    setTimeout(function(){
+      showKorridorer=!!chk.checked;
+      if(typeof render==="function")render();
+      renderKorridorerV39();
+    },0);
+  },true);
+}
+
+var _render_v39=render;
+render=function(){
+  var res=_render_v39.apply(this,arguments);
+  renderKorridorerV39();
+  return res;
+};
+
+bindKorridorerV39();
+setTimeout(function(){
+  bindKorridorerV39();
+  renderKorridorerV39();
+},300);
+/* === slut v39 === */
