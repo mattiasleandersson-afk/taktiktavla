@@ -4363,3 +4363,110 @@ function ensureNewFormationButtonV30(){
 ensureNewFormationButtonV30();
 setTimeout(ensureNewFormationButtonV30,300);
 /* === slut v30 === */
+
+
+
+/* === v31: Ny uppställning uppdaterar workspace-state direkt === */
+function cleanDefaultStateV31(key){
+  if(playback)playback=null;
+  if(animFrame)cancelAnimationFrame(animFrame);
+  activeTaktik=null;editingTaktikIdx=null;editingStepIdx=0;isEditingTaktik=false;
+
+  arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];
+  selectedId=null;undoStack=[];
+  matchRoster=[];matchAssignments={};matchVariants=[];activeVariantIdx=0;matchGoals={home:0,away:0};
+  window._editingMatchId=null;
+
+  activeFormationId=null;
+  activeFormationName=null;
+
+  format=(typeof _defaultFormat!=="undefined"?_defaultFormat:11);
+  var fmt=document.getElementById("fmt-sel");
+  if(fmt)fmt.value=String(format);
+  if(typeof buildFormationBtns==="function")buildFormationBtns();
+  if(typeof initPlayers==="function")initPlayers(typeof _defaultFormation!=="undefined"?_defaultFormation:"4-4-2");
+
+  ball={x:W/2,y:H/2};
+  halfMode=key==="lag"?1:0;
+  if(typeof updateViewBox==="function")updateViewBox();
+
+  var bench=document.getElementById("bench-bar");
+  if(bench)bench.classList.toggle("active",false);
+  var goal=document.getElementById("goal-overlay");
+  if(goal)goal.style.display="none";
+
+  if(typeof updateGoalDisplay==="function")updateGoalDisplay();
+  if(typeof renderBench==="function")renderBench();
+  if(typeof updateSaveButtons==="function")updateSaveButtons();
+  if(typeof setMode==="function")setMode("move");
+  if(typeof render==="function")render();
+
+  return {
+    format:format,
+    halfMode:halfMode,
+    snap:currentSnap(),
+    matchRoster:[],
+    matchAssignments:{},
+    matchGoals:{home:0,away:0},
+    matchVariants:[],
+    activeVariantIdx:0,
+    activeFormationId:null,
+    activeFormationName:null
+  };
+}
+
+function resetToCleanDefaultFormationV31(){
+  var key=(typeof workspaceKeyFromPanel==="function")?workspaceKeyFromPanel(activeWorkspacePanel||"formations"):"formation";
+
+  var newState=cleanDefaultStateV31(key);
+
+  // Viktigt: uppdatera workspaceStates så gammal fil inte återställs vid nästa panelbyte/render.
+  if(typeof workspaceStates!=="undefined"){
+    workspaceStates[key]=JSON.parse(JSON.stringify(newState));
+    workspaceStates.formation=JSON.parse(JSON.stringify(newState));
+    if(key==="saves")workspaceStates.saves=JSON.parse(JSON.stringify(newState));
+  }
+
+  activeFormationId=null;
+  activeFormationName=null;
+
+  if(typeof updateSaveButtons==="function")updateSaveButtons();
+  if(typeof renderSavesList==="function")renderSavesList();
+  if(typeof render==="function")render();
+
+  showToast("Ny uppställning – nästa sparning skapar ny fil");
+  cloudStatus("Ny uppställning. Spara som ny fil när du är klar.","#7aaa88");
+}
+
+function bindNewFormationButtonV31(){
+  var btn=document.getElementById("btn-new-formation-v30")||
+          document.getElementById("btn-new-formation-v28")||
+          document.getElementById("btn-new-formation-v31");
+
+  if(!btn){
+    btn=document.createElement("button");
+    btn.className="btn";
+    var saveAs=document.getElementById("btn-save-as-topbar");
+    var ref=saveAs||document.getElementById("btn-cloud-save")||document.getElementById("btn-half");
+    if(ref&&ref.parentNode)ref.parentNode.insertBefore(btn,ref);
+  }
+
+  btn.id="btn-new-formation-v31";
+  btn.textContent="Ny";
+  btn.title="Lämna aktuell uppställning och börja på en ny";
+  btn.setAttribute("aria-label","Lämna aktuell uppställning och börja på en ny");
+  btn.style.padding="4px 8px";
+  btn.style.fontSize="0.72rem";
+  btn.style.color="#4ae8e8";
+  btn.style.borderColor="#4ae8e8";
+
+  btn.onclick=function(e){
+    if(e){e.preventDefault();e.stopPropagation();}
+    resetToCleanDefaultFormationV31();
+    return false;
+  };
+}
+
+bindNewFormationButtonV31();
+setTimeout(bindNewFormationButtonV31,300);
+/* === slut v31 === */
