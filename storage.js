@@ -300,7 +300,7 @@ function saveTrupp(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.trupp",{hea
 function loadTrupp(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.trupp",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(data&&data[0]&&data[0].data&&data[0].data.trupp)trupp=data[0].data.trupp;renderTruppList();}).catch(function(){});}
 
 
-function loadMatcher(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.match&order=name.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(data&&Array.isArray(data)){var seen={};matcher=[];data.forEach(function(row){var m=row.data||{};m.dbId=row.id;if(!seen[String(row.id)]){seen[String(row.id)]=true;matcher.push(m);}});}renderStatistik();}).catch(function(){});}
+function loadMatcher(){fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.match&order=updatedAt.desc",{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(data){if(data&&Array.isArray(data)){var seen={};matcher=[];data.forEach(function(row){var m=row.data||{};m.dbId=row.id;var hasPlayers=(m.startade&&m.startade.length)||(m.avbytare&&m.avbytare.length);var hasLineups=(m.uppstallningar&&m.uppstallningar.length);if(!m.datum||!m.motstand||(!hasPlayers&&!hasLineups))return;var key=String(row.id);if(!seen[key]){seen[key]=true;matcher.push(m);}});}if(typeof renderStatistik==="function")renderStatistik();if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}).catch(function(){});}
 
 
 function openMoveTaktikFolder(tk){
