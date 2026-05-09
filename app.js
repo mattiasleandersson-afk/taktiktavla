@@ -4470,3 +4470,137 @@ function bindNewFormationButtonV31(){
 bindNewFormationButtonV31();
 setTimeout(bindNewFormationButtonV31,300);
 /* === slut v31 === */
+
+
+
+/* === v32: separat Ny-knapp, ingen återanvändning av gamla handlers === */
+function resetToCleanDefaultFormationV32(){
+  // Avbryt allt aktivt som kan skriva tillbaka gammal workspace-state.
+  try{if(animFrame)cancelAnimationFrame(animFrame);}catch(e){}
+  playback=null;
+  activeTaktik=null;
+  editingTaktikIdx=null;
+  editingStepIdx=0;
+  isEditingTaktik=false;
+
+  // Lämna aktiv sparad uppställning.
+  activeFormationId=null;
+  activeFormationName=null;
+
+  // Rensa match/taktik/live-state som inte hör hemma i en ny uppställning.
+  arrows=[];
+  labels=[];
+  freehandPaths=[];
+  zones=[];
+  movementPaths=[];
+  selectedId=null;
+  arrowStart=null;
+  arrowCurrent=null;
+  freehandCurrent=null;
+  zoneStart=null;
+  zonePreview=null;
+  movementCurrent=null;
+  undoStack=[];
+
+  matchRoster=[];
+  matchAssignments={};
+  matchVariants=[];
+  activeVariantIdx=0;
+  matchGoals={home:0,away:0};
+  window._editingMatchId=null;
+
+  // Bygg standard/favorit helt direkt.
+  format=(typeof _defaultFormat!=="undefined"?_defaultFormat:11);
+  var formation=(typeof _defaultFormation!=="undefined"?_defaultFormation:"4-4-2");
+
+  var fmt=document.getElementById("fmt-sel");
+  if(fmt)fmt.value=String(format);
+
+  if(typeof buildFormationBtns==="function")buildFormationBtns();
+  if(typeof initPlayers==="function")initPlayers(formation);
+
+  ball={x:W/2,y:H/2};
+  halfMode=0;
+  if(typeof updateViewBox==="function")updateViewBox();
+
+  var bench=document.getElementById("bench-bar");
+  if(bench)bench.classList.toggle("active",false);
+  var goal=document.getElementById("goal-overlay");
+  if(goal)goal.style.display="none";
+
+  if(typeof updateGoalDisplay==="function")updateGoalDisplay();
+  if(typeof renderBench==="function")renderBench();
+  if(typeof setMode==="function")setMode("move");
+  if(typeof render==="function")render();
+
+  activeFormationId=null;
+  activeFormationName=null;
+
+  // Skriv över alla relevanta workspace-states så den gamla filen inte kan komma tillbaka.
+  try{
+    var clean={
+      format:format,
+      halfMode:halfMode,
+      snap:currentSnap(),
+      matchRoster:[],
+      matchAssignments:{},
+      matchGoals:{home:0,away:0},
+      matchVariants:[],
+      activeVariantIdx:0,
+      activeFormationId:null,
+      activeFormationName:null
+    };
+    if(typeof workspaceStates!=="undefined"){
+      workspaceStates.formation=JSON.parse(JSON.stringify(clean));
+      workspaceStates.saves=JSON.parse(JSON.stringify(clean));
+      if(typeof activeWorkspacePanel!=="undefined"){
+        var key=(typeof workspaceKeyFromPanel==="function")?workspaceKeyFromPanel(activeWorkspacePanel||"formations"):"formation";
+        workspaceStates[key]=JSON.parse(JSON.stringify(clean));
+      }
+    }
+  }catch(e){}
+
+  if(typeof updateSaveButtons==="function")updateSaveButtons();
+
+  showToast("Ny uppställning – nästa sparning skapar ny fil");
+  cloudStatus("Ny uppställning. Spara som ny fil när du är klar.","#7aaa88");
+}
+
+function ensureIndependentNewFormationButtonV32(){
+  // Ta bort tidigare Ny-knappar som kan ha gamla handlers.
+  ["btn-new-formation-v28","btn-new-formation-v30","btn-new-formation-v31","btn-new-formation-v32"].forEach(function(id){
+    var old=document.getElementById(id);
+    if(old)old.remove();
+  });
+
+  var btn=document.createElement("button");
+  btn.id="btn-new-formation-v32";
+  btn.type="button";
+  btn.className="btn";
+  btn.textContent="Ny";
+  btn.title="Lämna aktuell uppställning och börja på en ny";
+  btn.setAttribute("aria-label","Lämna aktuell uppställning och börja på en ny");
+  btn.style.padding="4px 8px";
+  btn.style.fontSize="0.72rem";
+  btn.style.color="#4ae8e8";
+  btn.style.borderColor="#4ae8e8";
+  btn.style.position="relative";
+  btn.style.zIndex="50";
+
+  btn.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    resetToCleanDefaultFormationV32();
+    return false;
+  },true);
+
+  var saveAs=document.getElementById("btn-save-as-topbar");
+  var ref=saveAs||document.getElementById("btn-cloud-save")||document.getElementById("btn-half");
+  if(ref&&ref.parentNode){
+    ref.parentNode.insertBefore(btn,ref);
+  }
+}
+
+ensureIndependentNewFormationButtonV32();
+/* === slut v32 === */
