@@ -4280,3 +4280,86 @@ if(nb){
 }
 
 /* === slut v29 === */
+
+
+
+/* === v30: robust Ny-knapp för uppställning === */
+function resetToCleanDefaultFormationV30(){
+  // Lämna aktiv fil
+  activeFormationId=null;
+  activeFormationName=null;
+
+  // Använd samma praktiska reset som Standard-knappen om den finns
+  try{
+    if(typeof resetCurrentWorkspaceToDefault==="function"){
+      resetCurrentWorkspaceToDefault();
+    }else if(typeof clearCoachboardToFormation==="function"){
+      clearCoachboardToFormation();
+    }else{
+      var f="4-4-2";
+      if(typeof getDefaultFormation==="function")f=getDefaultFormation();
+      else if(typeof getCurrentFormationForReset==="function")f=getCurrentFormationForReset();
+      if(typeof getDefaultFormat==="function")format=getDefaultFormat();
+      var fmtSel=document.getElementById("fmt-sel");
+      if(fmtSel)fmtSel.value=String(format);
+      if(typeof buildFormationBtns==="function")buildFormationBtns();
+      if(typeof initPlayers==="function")initPlayers(f);
+      ball={x:W/2,y:H/2};
+      arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];
+      selectedId=null;
+      if(typeof setMode==="function")setMode("move");
+      if(typeof render==="function")render();
+    }
+  }catch(e){
+    console.error("Ny uppställning reset error",e);
+  }
+
+  // Reset-funktionen kan ibland återaktivera saker, så nolla igen efteråt
+  activeFormationId=null;
+  activeFormationName=null;
+  if(typeof updateSaveButtons==="function")updateSaveButtons();
+
+  showToast("Ny uppställning – nästa sparning skapar ny fil");
+  cloudStatus("Ny uppställning. Spara som ny fil när du är klar.","#7aaa88");
+}
+
+function ensureNewFormationButtonV30(){
+  var btn=document.getElementById("btn-new-formation-v28")||document.getElementById("btn-new-formation-v30");
+
+  if(!btn){
+    btn=document.createElement("button");
+    btn.id="btn-new-formation-v30";
+    btn.className="btn";
+
+    var saveAs=document.getElementById("btn-save-as-topbar");
+    var ref=saveAs||document.getElementById("btn-cloud-save")||document.getElementById("btn-half");
+    if(ref&&ref.parentNode)ref.parentNode.insertBefore(btn,ref);
+  }
+
+  btn.id="btn-new-formation-v30";
+  btn.textContent="Ny";
+  btn.title="Lämna aktuell uppställning och börja på en ny";
+  btn.setAttribute("aria-label","Lämna aktuell uppställning och börja på en ny");
+  btn.style.padding="4px 8px";
+  btn.style.fontSize="0.72rem";
+  btn.style.color="#4ae8e8";
+  btn.style.borderColor="#4ae8e8";
+
+  // Både onclick och addEventListener för att vinna över gamla bindningar
+  btn.onclick=function(e){
+    if(e){e.preventDefault();e.stopPropagation();}
+    resetToCleanDefaultFormationV30();
+    return false;
+  };
+
+  btn.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    resetToCleanDefaultFormationV30();
+    return false;
+  },true);
+}
+
+ensureNewFormationButtonV30();
+setTimeout(ensureNewFormationButtonV30,300);
+/* === slut v30 === */
