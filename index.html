@@ -104,13 +104,63 @@
   }
 </style>
 
+
+<style id="v50-topbar-drawer-css">
+  #btn-draw-tools-toggle {
+    color: #4ae8e8 !important;
+    border-color: #4ae8e8 !important;
+    flex: 0 0 auto !important;
+  }
+
+  #topbar-draw-tools {
+    display: none;
+    gap: 5px;
+    align-items: center;
+    overflow-x: auto;
+    padding: 4px 0 2px 0;
+    border-top: 1px solid #1a3020;
+    flex-wrap: nowrap;
+  }
+
+  #topbar-draw-tools.open {
+    display: flex !important;
+  }
+
+  #topbar-draw-tools .btn,
+  #topbar-draw-tools label {
+    flex: 0 0 auto;
+  }
+
+  @media (max-width: 700px) {
+    #v48-topbar-open-row {
+      gap: 4px !important;
+      padding-right: 44px !important;
+    }
+
+    #v48-topbar-open-row .btn,
+    #v48-topbar-open-row select.btn {
+      padding-left: 7px !important;
+      padding-right: 7px !important;
+    }
+
+    #topbar-draw-tools {
+      scrollbar-width: thin;
+      padding-right: 44px;
+    }
+  }
+
+  body.v48-topbar-collapsed #topbar-draw-tools {
+    display: none !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7.1</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7.2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -951,6 +1001,106 @@
   window.addEventListener("load", setupInbarToggle);
   setTimeout(setupInbarToggle, 250);
   setTimeout(removeTopbarSaveDuplicate, 800);
+})();
+</script>
+
+
+<script id="v50-topbar-drawer-js">
+(function(){
+  function setupTopbarDrawerV50(){
+    var topbar=document.getElementById("topbar");
+    if(!topbar)return;
+
+    var row=document.getElementById("v48-topbar-open-row") || topbar.children[0];
+    if(!row)return;
+    row.id="v48-topbar-open-row";
+
+    // Skapa Rita-knappen.
+    var drawBtn=document.getElementById("btn-draw-tools-toggle");
+    if(!drawBtn){
+      drawBtn=document.createElement("button");
+      drawBtn.id="btn-draw-tools-toggle";
+      drawBtn.type="button";
+      drawBtn.className="btn";
+      drawBtn.textContent="Rita ▾";
+      drawBtn.title="Visa/dölj ritverktyg";
+    }
+
+    // Skapa lådan för ritverktyg.
+    var drawer=document.getElementById("topbar-draw-tools");
+    if(!drawer){
+      drawer=document.createElement("div");
+      drawer.id="topbar-draw-tools";
+      // Lägg efter första raden men före flik-raden om möjligt.
+      var tabRow=row.nextElementSibling;
+      topbar.insertBefore(drawer, tabRow || null);
+    }
+
+    // Flytta ritverktyg och mindre ofta använda knappar till lådan.
+    var toolIds=[
+      "btn-arrow",
+      "btn-text",
+      "btn-freehand",
+      "btn-zone",
+      "btn-movement",
+      "btn-undo",
+      "btn-reset",
+      "btn-half",
+      "btn-backup"
+    ];
+
+    toolIds.forEach(function(id){
+      var el=document.getElementById(id);
+      if(el && el.parentNode!==drawer)drawer.appendChild(el);
+    });
+
+    // Flytta pilnummer-checkboxen till rita-lådan.
+    var arrowNumbers=document.getElementById("chk-arrow-numbers");
+    if(arrowNumbers){
+      var lbl=arrowNumbers.closest("label");
+      if(lbl && lbl.parentNode!==drawer)drawer.appendChild(lbl);
+    }
+
+    // Behåll de viktigaste synliga i ordning: ikon, version, format, Lag, Korr, Dag, Helskärm, Rita, minimera.
+    var h1=row.querySelector("h1");
+    var version=row.querySelector("span");
+    var fmt=document.getElementById("fmt-sel");
+    var setup=document.getElementById("btn-setup");
+    var corridors=document.getElementById("chk-korridorer");
+    var corridorsLabel=corridors?corridors.closest("label"):null;
+    var day=document.getElementById("btn-daylight");
+    var fs=document.getElementById("btn-fs-topbar");
+    var orient=document.getElementById("btn-orientation-toggle");
+    var collapse=document.getElementById("v48-collapse-btn");
+
+    [h1,version,fmt,setup,corridorsLabel,day,fs,drawBtn,orient,collapse].forEach(function(el){
+      if(el && el.parentNode!==row)row.appendChild(el);
+    });
+
+    // Om collapse-knappen inte har skapats än av v48, lägg Rita sist just nu.
+    if(drawBtn.parentNode!==row)row.appendChild(drawBtn);
+
+    if(!drawBtn.dataset.v50Bound){
+      drawBtn.dataset.v50Bound="1";
+      drawBtn.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        drawer.classList.toggle("open");
+        drawBtn.textContent=drawer.classList.contains("open") ? "Rita ▴" : "Rita ▾";
+        return false;
+      },true);
+    }
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",setupTopbarDrawerV50);
+  }else{
+    setupTopbarDrawerV50();
+  }
+
+  window.addEventListener("load",setupTopbarDrawerV50);
+  setTimeout(setupTopbarDrawerV50,250);
+  setTimeout(setupTopbarDrawerV50,1000);
 })();
 </script>
 
