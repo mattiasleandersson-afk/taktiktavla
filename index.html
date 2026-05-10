@@ -187,13 +187,35 @@
   .panel:not(.on){display:none !important;}
 </style>
 
+
+<style id="v54-fix-css">
+  /* När man lämnar Lag ska inget från match/sparade matcher kunna ligga kvar visuellt. */
+  #panel-lag:not(.on),
+  #panel-lag:not(.on) * {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Dagsläge-knappen ska ligga i övre fullscreen-verktygsraden bredvid ritverktygen. */
+  body.fullscreen-portrait #fs-day-btn.v54-top-day{
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+
+  body.fullscreen-portrait #ls-day-btn3{
+    display:none !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7.5</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
