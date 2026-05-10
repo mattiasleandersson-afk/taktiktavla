@@ -4383,3 +4383,130 @@ sendSavedFormationToTaktik=function(saved){
   setTimeout(relabelImportButtonsV50,300);
 })();
 /* === slut v50 === */
+
+
+/* === v51: säker molnsparning + listor ska inte tömmas === */
+function keyTaktikV51(tk){
+  return tk&&tk.dbId ? "id:"+tk.dbId : "name:"+String((tk&&tk.name)||"").trim().toLowerCase()+"|"+String((tk&&tk.folder)||"Taktik");
+}
+function keyFormationV51(s){
+  return s&&s.id ? "id:"+s.id : "name:"+String((s&&s.name)||"").trim().toLowerCase()+"|"+String((s&&s.folder)||"Allmänt");
+}
+function mergeTaktikListsV51(oldList,newList){
+  var by={};
+  (oldList||[]).forEach(function(tk){by[keyTaktikV51(tk)]=tk;});
+  (newList||[]).forEach(function(tk){by[keyTaktikV51(tk)]=tk;});
+  return Object.keys(by).map(function(k){return by[k];});
+}
+function mergeFormationListsV51(oldList,newList){
+  var by={};
+  (oldList||[]).forEach(function(s){by[keyFormationV51(s)]=s;});
+  (newList||[]).forEach(function(s){by[keyFormationV51(s)]=s;});
+  return Object.keys(by).map(function(k){return by[k];});
+}
+
+// Hindra att en misslyckad/tom reload rensar gamla filmer eller utgångslägen i UI.
+var _cloudLoadTaktik_v51=cloudLoadTaktik;
+cloudLoadTaktik=function(){
+  var before=(taktikFilmer||[]).slice();
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)){
+        cloudStatus("❌ Kunde inte läsa taktikfilmer","#e84a4a");
+        return;
+      }
+
+      var loaded=[];
+      var byKey={};
+      data.filter(function(row){return row.type==="taktikfilm";}).forEach(function(row){
+        var tk=row.data||{};
+        if(!tk.steps||tk.steps.length<2)return;
+        tk.dbId=row.id;
+        if(!tk.folder)tk.folder=row.folder||"Taktik";
+        var meta=tk._meta||{};
+        var owner=meta.ownerId||"legacy";
+        var key=owner+"::"+((row.name||tk.name||"").trim().toLowerCase()||("id:"+row.id));
+        if(!byKey[key])byKey[key]=tk;
+      });
+      loaded=Object.keys(byKey).map(function(k){return byKey[k];});
+
+      taktikFilmer=mergeTaktikListsV51(before,loaded);
+
+      var tfseen={};taktikFolders=["Taktik","Träning"];tfseen["Taktik"]=true;tfseen["Träning"]=true;
+      taktikFilmer.forEach(function(tk){if(tk.folder&&!tfseen[tk.folder]){tfseen[tk.folder]=true;taktikFolders.push(tk.folder);}});
+      renderTaktikList();
+      cloudStatus(taktikFilmer.length+" taktikfilmer laddade","#4ae87a");
+    })
+    .catch(function(err){
+      taktikFilmer=before;
+      renderTaktikList();
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+    });
+};
+
+var _cloudLoadSaves_v51=cloudLoadSaves;
+cloudLoadSaves=function(){
+  var before=(savedFormations||[]).slice();
+  cloudStatus("Laddar...","#7aaa88");
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=folder.asc,id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)){
+        savedFormations=before;
+        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        return;
+      }
+
+      var loaded=data.filter(function(row){return row.type==="uppstallning";}).map(function(row){
+        return {id:row.id,name:row.name,state:row.data,folder:row.folder||"Allmänt"};
+      });
+
+      savedFormations=mergeFormationListsV51(before,loaded);
+
+      var seen={};folders=["Allmänt"];
+      for(var i=0;i<savedFormations.length;i++){
+        var f=savedFormations[i].folder;
+        if(f&&!seen[f]){seen[f]=true;if(f!=="Allmänt")folders.push(f);}
+      }
+      cloudStatus(savedFormations.length+" uppställningar ✅","#4ae87a");
+      renderSavesList();
+      updateFolderSelect();
+    })
+    .catch(function(err){
+      savedFormations=before;
+      renderSavesList();
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+    });
+};
+
+// Spara-knappen i redigeringsläget ska alltid använda cloudSaveTaktik,
+// även för nya filmer från utgångsläge. Den gamla knappen sparade nya utkast bara lokalt.
+(function(){
+  var btn=document.getElementById("btn-edit-taktik-save");
+  if(!btn)return;
+  var clone=btn.cloneNode(true);
+  btn.parentNode.replaceChild(clone,btn);
+
+  clone.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    if(editingTaktikIdx===null)return;
+    if(typeof autoSaveCurrentStepLocalV16==="function")autoSaveCurrentStepLocalV16();
+
+    var tk=taktikFilmer[editingTaktikIdx];
+    if(!tk)return;
+
+    if(!tk.steps||tk.steps.length<2){
+      showToast("Lägg till minst ett steg innan du sparar filmen",false);
+      cloudStatus("⚠️ Minst ett steg krävs för att spara taktikfilm","#e8c84a");
+      return false;
+    }
+
+    cloudSaveTaktik(tk);
+    return false;
+  },true);
+})();
+/* === slut v51 === */
