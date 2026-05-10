@@ -8445,3 +8445,392 @@ setTimeout(bindControlsV72,300);
 setTimeout(bindControlsV72,1200);
 
 /* === slut v72-fix-gotostep-recursion === */
+
+
+/* === v73-step-nav-animation: korrekt stegvisare, mindre autosteg, animerade pilar === */
+
+function currentTaktikV73(){
+  try{
+    if(editingTaktikIdx===null || typeof editingTaktikIdx==="undefined")return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+
+function isPresentModeV73(){
+  return document.body.classList.contains("fullscreen-portrait") ||
+         document.body.classList.contains("landscape");
+}
+
+function cloneV73(o){
+  try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}
+}
+
+function labelV73(i){
+  return i===0 ? "Startläge" : "Steg "+i;
+}
+
+function isAutoLabelV73(x){
+  var s=String(x||"").trim();
+  return !s || s==="Start" || s==="Startläge" || /^Steg\s+\d+$/i.test(s);
+}
+
+function normalizeLabelsV73(tk){
+  if(!tk||!Array.isArray(tk.steps))return;
+  tk.steps.forEach(function(st,i){
+    if(!st)return;
+    if(isAutoLabelV73(st.label))st.label=labelV73(i);
+  });
+}
+
+function stepTotalV73(tk){
+  return Math.max(0, ((tk&&tk.steps)?tk.steps.length:1)-1);
+}
+
+function updateAllStepLabelsV73(){
+  var tk=currentTaktikV73();
+  if(!tk||!tk.steps)return;
+  normalizeLabelsV73(tk);
+  var total=stepTotalV73(tk);
+  var cur=editingStepIdx||0;
+
+  var editCounter=document.getElementById("edit-step-counter");
+  if(editCounter)editCounter.textContent=cur===0 ? "Start" : (cur+"/"+total);
+
+  var playCounter=document.getElementById("play-counter");
+  if(playCounter)playCounter.textContent=cur===0 ? "Start" : (cur+"/"+total);
+
+  var fsLabel=document.getElementById("fs-step-label");
+  if(fsLabel)fsLabel.textContent=cur===0 ? "Start" : (cur+"/"+total);
+
+  var lsLabel=document.getElementById("ls-step-label");
+  if(lsLabel)lsLabel.textContent=(tk.name||"")+"  "+(cur===0 ? "Start" : (cur+"/"+total));
+
+  var lsSide=document.getElementById("ls-side-label");
+  if(lsSide)lsSide.textContent=tk.name||"";
+
+  ["btn-prev","btn-edit-step-prev","fs-prev-btn","ls-prev-btn"].forEach(function(id){
+    var b=document.getElementById(id); if(b){b.disabled=cur<=0;b.style.opacity=cur>0?"1":"0.3";}
+  });
+  ["btn-next","btn-edit-step-next","fs-next-btn","ls-next-btn"].forEach(function(id){
+    var b=document.getElementById(id); if(b){b.disabled=cur>=total;b.style.opacity=cur<total?"1":"0.3";}
+  });
+  ["btn-first","fs-first-btn","ls-first-btn"].forEach(function(id){
+    var b=document.getElementById(id); if(b){b.disabled=cur<=0;b.style.opacity=cur>0?"1":"0.3";}
+  });
+}
+
+function posMapV73(step){
+  var map={};
+  if(!step)return map;
+  (step.players||[]).forEach(function(p){
+    map[p.id]={x:p.x,y:p.y};
+  });
+  if(step.ball)map.ball={x:step.ball.x,y:step.ball.y};
+  return map;
+}
+
+function positionsChangedV73(a,b){
+  var ma=posMapV73(a), mb=posMapV73(b);
+  var keys={};
+  Object.keys(ma).forEach(function(k){keys[k]=true;});
+  Object.keys(mb).forEach(function(k){keys[k]=true;});
+  return Object.keys(keys).some(function(k){
+    if(!ma[k]||!mb[k])return true;
+    var dx=(ma[k].x||0)-(mb[k].x||0);
+    var dy=(ma[k].y||0)-(mb[k].y||0);
+    return dx*dx+dy*dy>1;
+  });
+}
+
+function movementChangedV73(oldStep,snap){
+  var oldCount=(oldStep&&oldStep.movementPaths?oldStep.movementPaths.length:0);
+  var newCount=(snap&&snap.movementPaths?snap.movementPaths.length:0);
+  if(newCount!==oldCount)return true;
+  try{
+    return JSON.stringify(oldStep&&oldStep.movementPaths||[])!==JSON.stringify(snap&&snap.movementPaths||[]);
+  }catch(e){return newCount>0;}
+}
+
+function setPosInStepV73(step,id,pos){
+  if(!step||!pos)return;
+  if(id==="ball"){
+    if(!step.ball)step.ball={x:pos.x,y:pos.y};
+    step.ball.x=pos.x;step.ball.y=pos.y;
+    return;
+  }
+  var p=(step.players||[]).find(function(x){return x.id===id;});
+  if(p){p.x=pos.x;p.y=pos.y;}
+}
+
+function applyMovementEndpointsToNextV73(tk,idx,snap){
+  if(!tk||!snap||!Array.isArray(snap.movementPaths))return;
+  snap.movementPaths.forEach(function(mp){
+    if(!mp||!mp.playerId||!mp.pts||!mp.pts.length)return;
+    var ep=mp.pts[mp.pts.length-1];
+
+    if(idx>=tk.steps.length-1){
+      var next=cloneV73(snap);
+      next.movementPaths=[];
+      next.label=labelV73(tk.steps.length);
+      setPosInStepV73(next,mp.playerId,ep);
+      tk.steps.push(next);
+    }
+
+    for(var si=idx+1;si<tk.steps.length;si++){
+      var fs=tk.steps[si];
+      if(!fs)continue;
+      if(typeof _stepHasMovementForV14==="function" && _stepHasMovementForV14(fs,mp.playerId))break;
+      setPosInStepV73(fs,mp.playerId,ep);
+    }
+  });
+}
+
+function saveCurrentStepV73(opts){
+  opts=opts||{};
+  if(editingTaktikIdx===null)return {created:false};
+  if(isPresentModeV73())return {created:false};
+
+  var tk=currentTaktikV73();
+  if(!tk||!tk.steps||!tk.steps[editingStepIdx])return {created:false};
+
+  var oldStep=cloneV73(tk.steps[editingStepIdx]);
+  var snap=currentSnap();
+  var inp=document.getElementById("edit-step-name-inp");
+  var lbl=inp?inp.value.trim():"";
+  if(lbl)snap.label=lbl;
+  else if(isAutoLabelV73(snap.label))snap.label=labelV73(editingStepIdx);
+
+  snap.movementPaths=(movementPaths||[]).map(function(m){
+    return {id:m.id,playerId:m.playerId,pts:(m.pts||[]).map(function(p){return{x:p.x,y:p.y};})};
+  });
+
+  var isLast=editingStepIdx>=tk.steps.length-1;
+  var posChanged=positionsChangedV73(oldStep,snap);
+  var movChanged=movementChangedV73(oldStep,snap);
+  var created=false;
+
+  if(isLast && opts.allowAutoCreate && posChanged && !movChanged){
+    // Manuell flytt på sista steget:
+    // behåll gamla sista steget som startbild, skapa nytt steg med den nya positionen och gå dit.
+    var newStep=cloneV73(snap);
+    newStep.movementPaths=[];
+    newStep.label=labelV73(tk.steps.length);
+    tk.steps[editingStepIdx]=oldStep;
+    tk.steps.push(newStep);
+    editingStepIdx=tk.steps.length-1;
+    created=true;
+  }else{
+    try{
+      if(typeof propagateManualStepPositionsV14==="function"){
+        propagateManualStepPositionsV14(tk,editingStepIdx,oldStep,snap);
+      }
+    }catch(e){}
+    tk.steps[editingStepIdx]=snap;
+
+    if(movChanged){
+      applyMovementEndpointsToNextV73(tk,editingStepIdx,snap);
+      created=isLast && tk.steps.length>editingStepIdx+1;
+    }
+  }
+
+  normalizeLabelsV73(tk);
+  if(playback)playback.tk=tk;
+  try{taktikDirtyV17=true;}catch(e){}
+  updateAllStepLabelsV73();
+  return {created:created};
+}
+
+// Stoppa v70/v71:s för aggressiva autosteg vid varje mouseup/touchend.
+maybeAutoCreateAfterEditV70=function(){};
+
+function autosaveAfterEditV73(){
+  if(editingTaktikIdx===null)return;
+  if(isPresentModeV73())return;
+  setTimeout(function(){
+    var res=saveCurrentStepV73({allowAutoCreate:true});
+    if(res&&res.created){
+      // Vid manuell flytt på sista steget hamnar man i det nya steget.
+      restoreSnap(currentTaktikV73().steps[editingStepIdx]);
+      render();
+    }
+    if(typeof updateEditStepUI==="function")updateEditStepUI();
+    updateAllStepLabelsV73();
+  },90);
+}
+
+["mouseup","touchend"].forEach(function(evt){
+  document.addEventListener(evt,function(){
+    autosaveAfterEditV73();
+  },true);
+});
+
+function jumpToStepNoAnimV73(targetIdx){
+  var tk=currentTaktikV73();
+  if(!tk||!tk.steps)return;
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+  movementPaths=[];
+  selectedId=null;
+  editingStepIdx=targetIdx;
+  if(playback)playback.stepIndex=targetIdx;
+  restoreSnap(tk.steps[targetIdx]);
+  render();
+  if(typeof updateEditStepUI_silent==="function")updateEditStepUI_silent();
+  else if(typeof updateEditStepUI==="function")updateEditStepUI();
+  updateAllStepLabelsV73();
+}
+
+function animateOrJumpV73(targetIdx){
+  var tk=currentTaktikV73();
+  if(!tk||!tk.steps)return;
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+  if(targetIdx===editingStepIdx){
+    updateAllStepLabelsV73();
+    return;
+  }
+
+  movementPaths=[];
+  selectedId=null;
+
+  if(playback && typeof animateToStep==="function"){
+    editingStepIdx=targetIdx;
+    playback.tk=tk;
+    animateToStep(targetIdx);
+    setTimeout(updateAllStepLabelsV73,40);
+    setTimeout(updateAllStepLabelsV73,250);
+  }else{
+    jumpToStepNoAnimV73(targetIdx);
+  }
+}
+
+function goToStepV73(targetIdx, opts){
+  opts=opts||{};
+  var tk=currentTaktikV73();
+  if(!tk||!tk.steps)return;
+
+  if(!isPresentModeV73()){
+    saveCurrentStepV73({allowAutoCreate:false});
+  }
+
+  normalizeLabelsV73(tk);
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+
+  if(opts.animate===false){
+    jumpToStepNoAnimV73(targetIdx);
+  }else{
+    animateOrJumpV73(targetIdx);
+  }
+}
+
+goToStepV72=goToStepV73;
+goToStepV71=goToStepV73;
+goToStepV70=goToStepV73;
+goToStepV69=goToStepV73;
+goToEditStepV16=function(idx){goToStepV73(idx,{animate:false});};
+
+function bindBtnV73(id,handler){
+  var old=document.getElementById(id);
+  if(!old)return;
+  var neu=old.cloneNode(true);
+  neu.dataset.v73Bound="1";
+  old.parentNode.replaceChild(neu,old);
+  neu.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    handler();
+    return false;
+  },true);
+}
+
+function bindControlsV73(){
+  bindBtnV73("btn-edit-step-prev",function(){goToStepV73(editingStepIdx-1,{animate:false});});
+  bindBtnV73("btn-edit-step-next",function(){goToStepV73(editingStepIdx+1,{animate:false});});
+
+  // Övre pilarna ska animera, även i helskärm.
+  bindBtnV73("btn-first",function(){goToStepV73(0,{animate:true});});
+  bindBtnV73("btn-prev",function(){goToStepV73(editingStepIdx-1,{animate:true});});
+  bindBtnV73("btn-next",function(){goToStepV73(editingStepIdx+1,{animate:true});});
+
+  bindBtnV73("fs-first-btn",function(){goToStepV73(0,{animate:true});});
+  bindBtnV73("fs-prev-btn",function(){goToStepV73(editingStepIdx-1,{animate:true});});
+  bindBtnV73("fs-next-btn",function(){goToStepV73(editingStepIdx+1,{animate:true});});
+
+  bindBtnV73("ls-first-btn",function(){goToStepV73(0,{animate:true});});
+  bindBtnV73("ls-prev-btn",function(){goToStepV73(editingStepIdx-1,{animate:true});});
+  bindBtnV73("ls-next-btn",function(){goToStepV73(editingStepIdx+1,{animate:true});});
+
+  bindBtnV73("btn-edit-add-step",function(){
+    var tk=currentTaktikV73();
+    if(!tk||!tk.steps)return;
+    saveCurrentStepV73({allowAutoCreate:false});
+    var snap=currentSnap();
+    snap.movementPaths=[];
+    snap.label=labelV73(editingStepIdx+1);
+    tk.steps.splice(editingStepIdx+1,0,snap);
+    editingStepIdx++;
+    normalizeLabelsV73(tk);
+    restoreSnap(tk.steps[editingStepIdx]);
+    render();
+    if(typeof updateEditStepUI==="function")updateEditStepUI();
+    updateAllStepLabelsV73();
+  });
+}
+
+var _updateEditStepUI_v73=typeof updateEditStepUI==="function"?updateEditStepUI:null;
+if(_updateEditStepUI_v73){
+  updateEditStepUI=function(){
+    var tk=currentTaktikV73();
+    normalizeLabelsV73(tk);
+    var r=_updateEditStepUI_v73.apply(this,arguments);
+    updateAllStepLabelsV73();
+    setTimeout(bindControlsV73,0);
+    return r;
+  };
+}
+
+var _updateEditStepUI_silent_v73=typeof updateEditStepUI_silent==="function"?updateEditStepUI_silent:null;
+if(_updateEditStepUI_silent_v73){
+  updateEditStepUI_silent=function(){
+    var tk=currentTaktikV73();
+    normalizeLabelsV73(tk);
+    var r=_updateEditStepUI_silent_v73.apply(this,arguments);
+    updateAllStepLabelsV73();
+    setTimeout(bindControlsV73,0);
+    return r;
+  };
+}
+
+var _updatePlaybar_v73=typeof updatePlaybar==="function"?updatePlaybar:null;
+if(_updatePlaybar_v73){
+  updatePlaybar=function(){
+    var r=_updatePlaybar_v73.apply(this,arguments);
+    updateAllStepLabelsV73();
+    return r;
+  };
+}
+
+var _renderEditSteps_v73=typeof renderEditSteps==="function"?renderEditSteps:null;
+if(_renderEditSteps_v73){
+  renderEditSteps=function(tk){
+    normalizeLabelsV73(tk);
+    var r=_renderEditSteps_v73.apply(this,arguments);
+    var list=document.getElementById("edit-taktik-steps");
+    if(list){
+      Array.prototype.slice.call(list.querySelectorAll(".row")).forEach(function(row){
+        var idx=parseInt(row.dataset.idx,10);
+        if(isNaN(idx))return;
+        row.onclick=function(e){
+          if(e.target.tagName==="BUTTON"||e.target.tagName==="INPUT")return;
+          goToStepV73(idx,{animate:false});
+        };
+      });
+    }
+    return r;
+  };
+}
+
+bindControlsV73();
+setTimeout(function(){bindControlsV73();updateAllStepLabelsV73();},300);
+setTimeout(function(){bindControlsV73();updateAllStepLabelsV73();},1200);
+
+/* === slut v73-step-nav-animation === */
