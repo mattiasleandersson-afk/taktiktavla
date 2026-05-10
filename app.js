@@ -7633,3 +7633,678 @@ setTimeout(function(){
 },500);
 
 /* === slut v69-taktik-editor-clean === */
+
+
+/* === v70-movement-autostep: rörelse autosparas + sista steg skapar nytt + sparvarning fix === */
+
+function currentTaktikV70(){
+  try{
+    if(editingTaktikIdx===null || typeof editingTaktikIdx==="undefined")return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+
+function cloneV70(o){
+  try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}
+}
+
+function labelV70(i){
+  return i===0 ? "Startläge" : "Steg "+i;
+}
+
+function isAutoLabelV70(x){
+  var s=String(x||"").trim();
+  return !s || s==="Start" || s==="Startläge" || /^Steg\s+\d+$/i.test(s);
+}
+
+function normalizeStepLabelsV70(tk){
+  if(!tk||!Array.isArray(tk.steps))return;
+  tk.steps.forEach(function(st,i){
+    if(!st)return;
+    if(isAutoLabelV70(st.label))st.label=labelV70(i);
+  });
+}
+
+function ensureNextStepV70(reason){
+  var tk=currentTaktikV70();
+  if(!tk||!tk.steps)return false;
+  if(editingStepIdx < tk.steps.length-1)return false;
+
+  var snap=currentSnap();
+  snap.label=labelV70(tk.steps.length);
+
+  // Nästa steg ska vara samma läge som nuvarande slutläge.
+  // Rörelsebanor hör till föregående steg, inte nya målläge-steget.
+  snap.movementPaths=[];
+  tk.steps.push(snap);
+  normalizeStepLabelsV70(tk);
+
+  if(playback)playback.tk=tk;
+  try{showToast(reason || "Nytt steg skapades automatiskt");}catch(e){}
+  return true;
+}
+
+function applyMovementEndpointsV70(tk,stepIdx,snap){
+  if(!tk||!tk.steps||!snap||!Array.isArray(snap.movementPaths))return;
+
+  snap.movementPaths.forEach(function(mp){
+    if(!mp||!mp.pts||!mp.pts.length||!mp.playerId)return;
+    var ep=mp.pts[mp.pts.length-1];
+
+    // Om rörelsen ligger på sista steget behöver vi ett målsteg.
+    if(stepIdx>=tk.steps.length-1){
+      var newSnap=cloneV70(snap);
+      newSnap.movementPaths=[];
+      newSnap.label=labelV70(tk.steps.length);
+      if(typeof _setPosV14==="function"){
+        _setPosV14(newSnap,mp.playerId,ep);
+      }else if(newSnap.players){
+        var p=(newSnap.players||[]).find(function(x){return x.id===mp.playerId;});
+        if(p){p.x=ep.x;p.y=ep.y;}
+      }
+      tk.steps.push(newSnap);
+    }
+
+    // Skriv endpointen framåt tills nästa aktiva förändring.
+    for(var si=stepIdx+1;si<tk.steps.length;si++){
+      var fs=tk.steps[si];
+      if(!fs)continue;
+      if(typeof _stepHasMovementForV14==="function" && _stepHasMovementForV14(fs,mp.playerId))break;
+      if(typeof _setPosV14==="function"){
+        _setPosV14(fs,mp.playerId,ep);
+      }else if(fs.players){
+        var p2=(fs.players||[]).find(function(x){return x.id===mp.playerId;});
+        if(p2){p2.x=ep.x;p2.y=ep.y;}
+      }
+    }
+  });
+
+  normalizeStepLabelsV70(tk);
+}
+
+function saveCurrentStepV70(opts){
+  opts=opts||{};
+  var tk=currentTaktikV70();
+  if(!tk||!tk.steps||!tk.steps[editingStepIdx])return false;
+
+  var oldStep=cloneV70(tk.steps[editingStepIdx]);
+  var snap=currentSnap();
+  var inp=document.getElementById("edit-step-name-inp");
+  var lbl=inp?inp.value.trim():"";
+  if(lbl)snap.label=lbl;
+  else if(isAutoLabelV70(snap.label))snap.label=labelV70(editingStepIdx);
+
+  // Viktigt: rörelsebanor från skärmen ska sparas i steget.
+  snap.movementPaths=(movementPaths||[]).map(function(m){
+    return {id:m.id,playerId:m.playerId,pts:(m.pts||[]).map(function(p){return{x:p.x,y:p.y};})};
+  });
+
+  if(opts.autoCreateNext && editingStepIdx>=tk.steps.length-1){
+    // Om man bara flyttat en spelare/boll på sista steget behöver appen ett nytt målsteg.
+    // Om snap har rörelsebanor skapas målsteg i applyMovementEndpointsV70 nedan.
+    if(!snap.movementPaths || !snap.movementPaths.length){
+      var next=cloneV70(snap);
+      next.movementPaths=[];
+      next.label=labelV70(tk.steps.length);
+      tk.steps.push(next);
+    }
+  }
+
+  try{
+    if(typeof propagateManualStepPositionsV14==="function"){
+      propagateManualStepPositionsV14(tk,editingStepIdx,oldStep,snap);
+    }
+  }catch(e){}
+
+  tk.steps[editingStepIdx]=snap;
+  applyMovementEndpointsV70(tk,editingStepIdx,snap);
+
+  if(playback)playback.tk=tk;
+  normalizeStepLabelsV70(tk);
+  return true;
+}
+
+function goToStepV70(targetIdx){
+  var tk=currentTaktikV70();
+  if(!tk||!tk.steps)return;
+
+  saveCurrentStepV70({autoCreateNext:false});
+
+  // Om användaren trycker framåt från sista steget efter en ändring/rörelse,
+  // skapa ett steg och gå dit.
+  if(targetIdx>=tk.steps.length){
+    ensureNextStepV70("Nytt steg skapades automatiskt");
+  }
+
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+  movementPaths=[];
+  selectedId=null;
+  editingStepIdx=targetIdx;
+
+  if(playback){
+    playback.stepIndex=targetIdx;
+    restoreSnap(tk.steps[targetIdx]);
+    render();
+    if(typeof updatePlaybar==="function")updatePlaybar();
+    if(typeof updateLandscapeStrip==="function")updateLandscapeStrip();
+    if(typeof updateFsPortraitNav==="function")updateFsPortraitNav();
+    if(typeof updateEditStepUI_silent==="function")updateEditStepUI_silent();
+    else updateEditStepUI();
+  }else{
+    updateEditStepUI();
+  }
+}
+
+function saveFilmV70(){
+  var tk=currentTaktikV70();
+  if(!tk)return;
+
+  saveCurrentStepV70({autoCreateNext:false});
+  normalizeStepLabelsV70(tk);
+
+  try{cloudSaveTaktik(tk);}catch(e){console.error(e);}
+
+  // Extra hård clean-state eftersom äldre v17/v18/v21 wrappers kan ligga kvar.
+  try{taktikDirtyV17=false;}catch(e){}
+  try{window.taktikDirtyV17=false;}catch(e){}
+  try{
+    if(typeof savedTaktikSnapshotV21!=="undefined"){
+      savedTaktikSnapshotV21=(typeof normalizeTaktikForCompareV67==="function")
+        ? normalizeTaktikForCompareV67(tk)
+        : JSON.stringify(tk);
+    }
+  }catch(e){}
+  try{if(typeof markTaktikSavedCleanV67==="function")markTaktikSavedCleanV67(tk);}catch(e){}
+
+  setTimeout(function(){
+    try{taktikDirtyV17=false;}catch(e){}
+    try{
+      if(typeof savedTaktikSnapshotV21!=="undefined"){
+        savedTaktikSnapshotV21=(typeof normalizeTaktikForCompareV67==="function")
+          ? normalizeTaktikForCompareV67(tk)
+          : JSON.stringify(tk);
+      }
+    }catch(e){}
+  },500);
+
+  showToast("Film sparad!");
+  cloudStatus("✅ Film sparad","#4ae87a");
+}
+
+function bindV70(id,handler){
+  var old=document.getElementById(id);
+  if(!old)return;
+  var neu=old.cloneNode(true);
+  neu.dataset.v70Bound="1";
+  old.parentNode.replaceChild(neu,old);
+  neu.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    handler(e);
+    return false;
+  },true);
+}
+
+function bindTaktikControlsV70(){
+  bindV70("btn-edit-step-prev",function(){goToStepV70(editingStepIdx-1);});
+  bindV70("btn-edit-step-next",function(){goToStepV70(editingStepIdx+1);});
+  bindV70("btn-edit-add-step",function(){
+    var tk=currentTaktikV70();
+    if(!tk||!tk.steps)return;
+    saveCurrentStepV70({autoCreateNext:false});
+    if(typeof saveTaktikUndo==="function")saveTaktikUndo();
+
+    var snap=currentSnap();
+    snap.label=labelV70(editingStepIdx+1);
+    snap.movementPaths=[];
+    tk.steps.splice(editingStepIdx+1,0,snap);
+    editingStepIdx++;
+    normalizeStepLabelsV70(tk);
+    updateEditStepUI();
+  });
+  bindV70("btn-edit-del-step",function(){
+    var tk=currentTaktikV70();
+    if(!tk||!tk.steps||editingStepIdx===0)return;
+    if(typeof saveTaktikUndo==="function")saveTaktikUndo();
+    tk.steps.splice(editingStepIdx,1);
+    editingStepIdx=Math.min(editingStepIdx,tk.steps.length-1);
+    normalizeStepLabelsV70(tk);
+    updateEditStepUI();
+  });
+  bindV70("btn-edit-taktik-save",saveFilmV70);
+
+  // De övre knapparna i taktikbaren behöver också autospara innan de byter steg.
+  bindV70("btn-first",function(){goToStepV70(0);});
+  bindV70("btn-prev",function(){goToStepV70(editingStepIdx-1);});
+  bindV70("btn-next",function(){goToStepV70(editingStepIdx+1);});
+
+  // Spara-steg-knapparna är dolda men om något gammalt anropar dem ska de autospara tyst.
+  bindV70("btn-edit-update-step",function(){
+    saveCurrentStepV70({autoCreateNext:true});
+    updateEditStepUI();
+  });
+  bindV70("btn-edit-update-step2",function(){
+    saveCurrentStepV70({autoCreateNext:true});
+    updateEditStepUI();
+  });
+}
+
+var _updateEditStepUI_v70=typeof updateEditStepUI==="function"?updateEditStepUI:null;
+if(_updateEditStepUI_v70){
+  updateEditStepUI=function(){
+    var tk=currentTaktikV70();
+    normalizeStepLabelsV70(tk);
+    var r=_updateEditStepUI_v70.apply(this,arguments);
+    tk=currentTaktikV70();
+    if(tk&&tk.steps&&tk.steps[editingStepIdx]){
+      var inp=document.getElementById("edit-step-name-inp");
+      if(inp && isAutoLabelV70(inp.value))inp.value=tk.steps[editingStepIdx].label||labelV70(editingStepIdx);
+      var c=document.getElementById("edit-step-counter");
+      if(c)c.textContent=editingStepIdx===0 ? "Start" : (editingStepIdx+"/"+Math.max(0,tk.steps.length-1));
+    }
+    setTimeout(bindTaktikControlsV70,0);
+    return r;
+  };
+}
+
+var _updateEditStepUI_silent_v70=typeof updateEditStepUI_silent==="function"?updateEditStepUI_silent:null;
+if(_updateEditStepUI_silent_v70){
+  updateEditStepUI_silent=function(){
+    var tk=currentTaktikV70();
+    normalizeStepLabelsV70(tk);
+    var r=_updateEditStepUI_silent_v70.apply(this,arguments);
+    setTimeout(bindTaktikControlsV70,0);
+    return r;
+  };
+}
+
+var _renderEditSteps_v70=typeof renderEditSteps==="function"?renderEditSteps:null;
+if(_renderEditSteps_v70){
+  renderEditSteps=function(tk){
+    normalizeStepLabelsV70(tk);
+    var r=_renderEditSteps_v70.apply(this,arguments);
+    var list=document.getElementById("edit-taktik-steps");
+    if(list){
+      Array.prototype.slice.call(list.querySelectorAll(".row")).forEach(function(row){
+        var idx=parseInt(row.dataset.idx,10);
+        if(isNaN(idx))return;
+        row.onclick=function(e){
+          if(e.target.tagName==="BUTTON"||e.target.tagName==="INPUT")return;
+          goToStepV70(idx);
+        };
+      });
+    }
+    return r;
+  };
+}
+
+// Om man ritar/flyttar i sista steget: skapa målsteg strax efter interaktionen,
+// så nästa knapp och uppspelning har något att gå till.
+function maybeAutoCreateAfterEditV70(){
+  if(editingTaktikIdx===null)return;
+  var tk=currentTaktikV70();
+  if(!tk||!tk.steps||editingStepIdx<tk.steps.length-1)return;
+  // Vänta tills touch/mouseup hunnit lägga in rörelsebanan i movementPaths.
+  setTimeout(function(){
+    if(editingTaktikIdx===null)return;
+    var tk2=currentTaktikV70();
+    if(!tk2||editingStepIdx<tk2.steps.length-1)return;
+    saveCurrentStepV70({autoCreateNext:true});
+    updateEditStepUI();
+  },80);
+}
+
+["mouseup","touchend"].forEach(function(evt){
+  document.addEventListener(evt,function(){
+    if(editingTaktikIdx!==null)maybeAutoCreateAfterEditV70();
+  },true);
+});
+
+// Jämförelse för osparat ska använda samma normalisering efter v70.
+hasUnsavedTaktikChangesV21=function(){
+  var tk=currentTaktikV70();
+  if(!tk)return false;
+  saveCurrentStepV70({autoCreateNext:false});
+  var now;
+  try{
+    now=(typeof normalizeTaktikForCompareV67==="function") ? normalizeTaktikForCompareV67(tk) : JSON.stringify(tk);
+  }catch(e){now="";}
+  if(typeof savedTaktikSnapshotV21==="undefined" || savedTaktikSnapshotV21===null){
+    savedTaktikSnapshotV21=now;
+    return false;
+  }
+  return now!==savedTaktikSnapshotV21;
+};
+
+bindTaktikControlsV70();
+setTimeout(bindTaktikControlsV70,500);
+setTimeout(bindTaktikControlsV70,1500);
+
+/* === slut v70-movement-autostep === */
+
+
+/* === v71-edit-vs-present: vanlig vy autosparar, fullscreen är tillfällig presentation === */
+
+function isFullscreenPresentV71(){
+  return document.body.classList.contains("fullscreen-portrait") ||
+         document.body.classList.contains("landscape");
+}
+
+function currentTaktikV71(){
+  try{
+    if(editingTaktikIdx===null || typeof editingTaktikIdx==="undefined")return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+
+function hideMovementInFullscreenV71(){
+  try{
+    var ids=["fs-tb-movement"];
+    ids.forEach(function(id){
+      var b=document.getElementById(id);
+      if(!b)return;
+      if(isFullscreenPresentV71()){
+        b.style.display="none";
+        b.style.visibility="hidden";
+        b.style.pointerEvents="none";
+        if(mode==="movement")setMode("move");
+      }else{
+        b.style.visibility="";
+        b.style.pointerEvents="";
+      }
+    });
+  }catch(e){}
+}
+
+function autosaveCurrentEditStepV71(reason){
+  try{
+    if(editingTaktikIdx===null)return;
+    if(isFullscreenPresentV71())return; // presentationsritning ska inte lagras i filmen
+
+    var tk=currentTaktikV71();
+    if(!tk||!tk.steps||!tk.steps[editingStepIdx])return;
+
+    if(typeof saveCurrentStepV70==="function"){
+      saveCurrentStepV70({autoCreateNext:true});
+    }else if(typeof autoSaveCurrentStepLocalV16==="function"){
+      autoSaveCurrentStepLocalV16();
+    }else{
+      var snap=currentSnap();
+      var inp=document.getElementById("edit-step-name-inp");
+      var lbl=inp?inp.value.trim():"";
+      if(lbl)snap.label=lbl;
+      tk.steps[editingStepIdx]=snap;
+    }
+
+    if(typeof normalizeStepLabelsV70==="function")normalizeStepLabelsV70(tk);
+    else if(typeof normalizeStepLabelsV69==="function")normalizeStepLabelsV69(tk);
+
+    if(playback)playback.tk=tk;
+    try{taktikDirtyV17=true;}catch(e){}
+  }catch(err){
+    console.error("autosaveCurrentEditStepV71",err);
+  }
+}
+
+var _autosaveTimerV71=null;
+function scheduleAutosaveV71(reason){
+  if(editingTaktikIdx===null)return;
+  if(isFullscreenPresentV71())return;
+  if(_autosaveTimerV71)clearTimeout(_autosaveTimerV71);
+  _autosaveTimerV71=setTimeout(function(){
+    autosaveCurrentEditStepV71(reason);
+  },120);
+}
+
+// Allt man ritar/flyttar i vanlig vy ska fastna i aktuellt steg.
+// Fullscreen lämnas helt utanför.
+["mouseup","touchend"].forEach(function(evt){
+  document.addEventListener(evt,function(e){
+    if(editingTaktikIdx===null)return;
+    if(isFullscreenPresentV71())return;
+    scheduleAutosaveV71(evt);
+  },true);
+});
+
+// Textmodaler, radera-knappar, färg/linjeval och liknande fångas via klick/change.
+document.addEventListener("click",function(e){
+  if(editingTaktikIdx===null)return;
+  if(isFullscreenPresentV71())return;
+  var t=e.target;
+  if(!t)return;
+  var id=t.id||"";
+  var txt=(t.textContent||"").trim();
+  if(
+    id.indexOf("text")>=0 ||
+    id.indexOf("label")>=0 ||
+    id.indexOf("modal")>=0 ||
+    id.indexOf("ok")>=0 ||
+    txt==="×" ||
+    txt==="✕" ||
+    txt==="Radera"
+  ){
+    scheduleAutosaveV71("click");
+  }
+},true);
+
+document.addEventListener("change",function(e){
+  if(editingTaktikIdx===null)return;
+  if(isFullscreenPresentV71())return;
+  scheduleAutosaveV71("change");
+},true);
+
+// Ersätt stegbyte: vanlig vy sparar först, fullscreen/presentation sparar inte utan återställer steg och rensar tillfälliga ritningar.
+function goToStepV71(targetIdx){
+  var tk=currentTaktikV71();
+  if(!tk||!tk.steps)return;
+
+  if(isFullscreenPresentV71()){
+    targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+    movementPaths=[];
+    selectedId=null;
+    editingStepIdx=targetIdx;
+
+    if(playback){
+      playback.stepIndex=targetIdx;
+      restoreSnap(tk.steps[targetIdx]); // detta rensar tillfälliga fullscreen-ritningar
+      render();
+      if(typeof updatePlaybar==="function")updatePlaybar();
+      if(typeof updateLandscapeStrip==="function")updateLandscapeStrip();
+      if(typeof updateFsPortraitNav==="function")updateFsPortraitNav();
+      if(typeof updateEditStepUI_silent==="function")updateEditStepUI_silent();
+    }else{
+      restoreSnap(tk.steps[targetIdx]);
+      render();
+      if(typeof updateEditStepUI==="function")updateEditStepUI();
+    }
+    return;
+  }
+
+  // Vanlig redigeringsvy: spara allt internt innan stegbyte.
+  autosaveCurrentEditStepV71("stepchange");
+
+  if(typeof goToStepV70==="function"){
+    goToStepV70(targetIdx);
+    return;
+  }
+
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+  movementPaths=[];
+  selectedId=null;
+  editingStepIdx=targetIdx;
+  if(typeof updateEditStepUI==="function")updateEditStepUI();
+}
+
+goToStepV70=goToStepV71;
+goToStepV69=goToStepV71;
+goToEditStepV16=goToStepV71;
+
+// V70:s auto-skapande efter ritning ska bara gälla vanlig redigeringsvy.
+maybeAutoCreateAfterEditV70=function(){
+  if(editingTaktikIdx===null)return;
+  if(isFullscreenPresentV71())return;
+  var tk=currentTaktikV71();
+  if(!tk||!tk.steps||editingStepIdx<tk.steps.length-1)return;
+
+  setTimeout(function(){
+    if(editingTaktikIdx===null || isFullscreenPresentV71())return;
+    var tk2=currentTaktikV71();
+    if(!tk2||editingStepIdx<tk2.steps.length-1)return;
+    if(typeof saveCurrentStepV70==="function")saveCurrentStepV70({autoCreateNext:true});
+    if(typeof updateEditStepUI==="function")updateEditStepUI();
+  },90);
+};
+
+// Spara film: gör en sista intern autosave bara i vanlig vy, därefter nollställs varningen.
+function saveFilmV71(){
+  var tk=currentTaktikV71();
+  if(!tk)return;
+
+  if(!isFullscreenPresentV71()){
+    autosaveCurrentEditStepV71("savefilm");
+  }
+
+  tk=currentTaktikV71();
+  try{
+    if(typeof normalizeStepLabelsV70==="function")normalizeStepLabelsV70(tk);
+    if(typeof cloudSaveTaktik==="function")cloudSaveTaktik(tk);
+  }catch(e){console.error(e);}
+
+  try{taktikDirtyV17=false;}catch(e){}
+  try{window.taktikDirtyV17=false;}catch(e){}
+  try{
+    if(typeof savedTaktikSnapshotV21!=="undefined"){
+      savedTaktikSnapshotV21=(typeof normalizeTaktikForCompareV67==="function")
+        ? normalizeTaktikForCompareV67(tk)
+        : JSON.stringify(tk);
+    }
+  }catch(e){}
+  try{if(typeof markTaktikSavedCleanV67==="function")markTaktikSavedCleanV67(tk);}catch(e){}
+
+  setTimeout(function(){
+    try{taktikDirtyV17=false;}catch(e){}
+    try{
+      if(typeof savedTaktikSnapshotV21!=="undefined"){
+        savedTaktikSnapshotV21=(typeof normalizeTaktikForCompareV67==="function")
+          ? normalizeTaktikForCompareV67(tk)
+          : JSON.stringify(tk);
+      }
+    }catch(e){}
+  },600);
+
+  showToast("Film sparad!");
+  cloudStatus("✅ Film sparad","#4ae87a");
+}
+saveFilmV70=saveFilmV71;
+saveWholeFilmV69=saveFilmV71;
+
+function bindV71(id,handler){
+  var old=document.getElementById(id);
+  if(!old)return;
+  var neu=old.cloneNode(true);
+  neu.dataset.v71Bound="1";
+  old.parentNode.replaceChild(neu,old);
+  neu.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    handler(e);
+    return false;
+  },true);
+}
+
+function bindControlsV71(){
+  bindV71("btn-edit-step-prev",function(){goToStepV71(editingStepIdx-1);});
+  bindV71("btn-edit-step-next",function(){goToStepV71(editingStepIdx+1);});
+
+  bindV71("btn-first",function(){goToStepV71(0);});
+  bindV71("btn-prev",function(){goToStepV71(editingStepIdx-1);});
+  bindV71("btn-next",function(){goToStepV71(editingStepIdx+1);});
+
+  bindV71("fs-first-btn",function(){goToStepV71(0);});
+  bindV71("fs-prev-btn",function(){goToStepV71(editingStepIdx-1);});
+  bindV71("fs-next-btn",function(){goToStepV71(editingStepIdx+1);});
+
+  bindV71("ls-first-btn",function(){goToStepV71(0);});
+  bindV71("ls-prev-btn",function(){goToStepV71(editingStepIdx-1);});
+  bindV71("ls-next-btn",function(){goToStepV71(editingStepIdx+1);});
+
+  bindV71("btn-edit-taktik-save",saveFilmV71);
+
+  // Dold spara-steg får endast göra intern autosave i vanlig vy.
+  bindV71("btn-edit-update-step",function(){
+    autosaveCurrentEditStepV71("hidden-save-step");
+    if(typeof updateEditStepUI==="function")updateEditStepUI();
+  });
+  bindV71("btn-edit-update-step2",function(){
+    autosaveCurrentEditStepV71("hidden-save-step");
+    if(typeof updateEditStepUI==="function")updateEditStepUI();
+  });
+}
+
+var _syncFullscreenToolButtons_v71=typeof syncFullscreenToolButtons==="function"?syncFullscreenToolButtons:null;
+if(_syncFullscreenToolButtons_v71){
+  syncFullscreenToolButtons=function(){
+    _syncFullscreenToolButtons_v71.apply(this,arguments);
+    hideMovementInFullscreenV71();
+  };
+}
+
+var _enterFullscreenPortrait_v71=typeof enterFullscreenPortrait==="function"?enterFullscreenPortrait:null;
+if(_enterFullscreenPortrait_v71){
+  enterFullscreenPortrait=function(){
+    _enterFullscreenPortrait_v71.apply(this,arguments);
+    hideMovementInFullscreenV71();
+    setMode(mode==="movement"?"move":mode);
+    setTimeout(bindControlsV71,0);
+  };
+}
+
+var _exitFullscreenPortrait_v71=typeof exitFullscreenPortrait==="function"?exitFullscreenPortrait:null;
+if(_exitFullscreenPortrait_v71){
+  exitFullscreenPortrait=function(){
+    _exitFullscreenPortrait_v71.apply(this,arguments);
+    hideMovementInFullscreenV71();
+    setTimeout(bindControlsV71,0);
+  };
+}
+
+// Om användaren råkar välja rörelse och sedan går fullscreen: gå till flytta.
+var _setMode_v71=typeof setMode==="function"?setMode:null;
+if(_setMode_v71){
+  setMode=function(m){
+    if(isFullscreenPresentV71() && m==="movement")m="move";
+    var r=_setMode_v71.apply(this,arguments.length?[m]:arguments);
+    hideMovementInFullscreenV71();
+    return r;
+  };
+}
+
+// Osparat-kontrollen ska inte räkna presentationsritningar i fullscreen som filmändringar.
+hasUnsavedTaktikChangesV21=function(){
+  var tk=currentTaktikV71();
+  if(!tk)return false;
+
+  if(!isFullscreenPresentV71()){
+    autosaveCurrentEditStepV71("compare");
+  }
+
+  var now="";
+  try{
+    now=(typeof normalizeTaktikForCompareV67==="function") ? normalizeTaktikForCompareV67(tk) : JSON.stringify(tk);
+  }catch(e){}
+
+  if(typeof savedTaktikSnapshotV21==="undefined" || savedTaktikSnapshotV21===null){
+    savedTaktikSnapshotV21=now;
+    return false;
+  }
+  return now!==savedTaktikSnapshotV21;
+};
+
+bindControlsV71();
+hideMovementInFullscreenV71();
+setTimeout(function(){bindControlsV71();hideMovementInFullscreenV71();},500);
+setTimeout(function(){bindControlsV71();hideMovementInFullscreenV71();},1500);
+
+/* === slut v71-edit-vs-present === */
