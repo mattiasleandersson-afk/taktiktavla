@@ -5954,3 +5954,256 @@ setInterval(function(){
 },2500);
 
 /* === slut v59-cleanup === */
+
+
+/* === v60-fullscreen-fix: dagsljus upp + stoppa v55-fel + flytta valmenyer === */
+
+function setDaylightV60(on){
+  try{
+    daylightMode=!!on;
+    document.body.classList.toggle("daylight",daylightMode);
+
+    var top=document.getElementById("btn-daylight");
+    if(top){
+      top.innerHTML=daylightMode?"☾ Normal":"☀ Dag";
+      top.classList.toggle("on",daylightMode);
+    }
+
+    ["fs-day-btn","ls-day-btn3"].forEach(function(id){
+      var b=document.getElementById(id);
+      if(!b)return;
+      b.innerHTML=daylightMode?"☾":"☀";
+      b.classList.toggle("active",daylightMode);
+      b.classList.toggle("on",daylightMode);
+      b.title=daylightMode?"Normal vy":"Dagsljus";
+    });
+
+    if(typeof drawPitch==="function")drawPitch();
+    if(typeof render==="function")render();
+  }catch(err){
+    console.error("setDaylightV60",err);
+    try{showToast("Kunde inte växla dagsläge",false);}catch(e){}
+  }
+}
+
+/* Gamla eventlisteners från v55 anropar namnet setDaylightV55.
+   Gör den till en säker alias så felkoden vid fullscreen försvinner. */
+setDaylightV55=setDaylightV60;
+
+function setupFullscreenDayV60(){
+  try{
+    var day=document.getElementById("fs-day-btn");
+    if(!day)return;
+
+    // Viktigt: flytta in i övre verktygsraden, inte i nedre nav.
+    var topTools=document.getElementById("fs-top-tools");
+    if(topTools){
+      day.classList.add("v60-top-day");
+      day.classList.remove("v55-top-day");
+
+      var after=document.getElementById("fs-tb-text") ||
+                document.getElementById("fs-tb-zone") ||
+                document.getElementById("fs-tb-freehand") ||
+                document.getElementById("fs-tb-arrow") ||
+                document.getElementById("fs-tb-move");
+
+      if(after && after.parentNode===topTools){
+        if(after.nextSibling!==day)topTools.insertBefore(day,after.nextSibling);
+      }else if(day.parentNode!==topTools){
+        topTools.appendChild(day);
+      }
+    }
+
+    if(!day.dataset.v60Bound){
+      day.dataset.v60Bound="1";
+      day.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+        setDaylightV60(!daylightMode);
+        return false;
+      },true);
+    }
+
+    var low=document.getElementById("ls-day-btn3");
+    if(low)low.style.display="none";
+  }catch(err){
+    console.error("setupFullscreenDayV60",err);
+  }
+}
+
+/* Den gamla setupFullscreenDayV55 körs från äldre wrappers. Låt den peka på den säkra versionen. */
+setupFullscreenDayV55=setupFullscreenDayV60;
+
+function moveFullscreenOptionMenusV60(){
+  try{
+    ["arrow-options","zone-options","freehand-options"].forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el)return;
+      if(document.body.classList.contains("fullscreen-portrait")){
+        el.style.right="86px";
+        el.style.left="auto";
+        el.style.top="calc(env(safe-area-inset-top,0px) + 8px)";
+        el.style.zIndex="10002";
+        el.style.maxWidth="calc(100vw - 112px)";
+      }else{
+        // Låt normalläget fortsätta som tidigare.
+        el.style.right="";
+        el.style.left="";
+        el.style.top="";
+        el.style.zIndex="";
+        el.style.maxWidth="";
+      }
+    });
+  }catch(err){console.error("moveFullscreenOptionMenusV60",err);}
+}
+
+setupFullscreenDayV60();
+moveFullscreenOptionMenusV60();
+setTimeout(function(){setupFullscreenDayV60();moveFullscreenOptionMenusV60();},250);
+setTimeout(function(){setupFullscreenDayV60();moveFullscreenOptionMenusV60();},1000);
+
+var _syncFullscreenToolButtons_v60=typeof syncFullscreenToolButtons==="function"?syncFullscreenToolButtons:null;
+if(_syncFullscreenToolButtons_v60){
+  syncFullscreenToolButtons=function(){
+    _syncFullscreenToolButtons_v60.apply(this,arguments);
+    setupFullscreenDayV60();
+    moveFullscreenOptionMenusV60();
+  };
+}
+
+var _enterFullscreenPortrait_v60=typeof enterFullscreenPortrait==="function"?enterFullscreenPortrait:null;
+if(_enterFullscreenPortrait_v60){
+  enterFullscreenPortrait=function(){
+    _enterFullscreenPortrait_v60.apply(this,arguments);
+    setTimeout(function(){setupFullscreenDayV60();moveFullscreenOptionMenusV60();},0);
+    setTimeout(function(){setupFullscreenDayV60();moveFullscreenOptionMenusV60();},250);
+  };
+}
+
+["btn-arrow","btn-freehand","btn-zone","fs-tb-arrow","fs-tb-freehand","fs-tb-zone"].forEach(function(id){
+  var b=document.getElementById(id);
+  if(b && !b.dataset.v60OptionMove){
+    b.dataset.v60OptionMove="1";
+    b.addEventListener("click",function(){
+      setTimeout(moveFullscreenOptionMenusV60,0);
+      setTimeout(moveFullscreenOptionMenusV60,150);
+    },true);
+  }
+});
+
+window.addEventListener("resize",function(){setTimeout(moveFullscreenOptionMenusV60,50);});
+
+/* === slut v60-fullscreen-fix === */
+
+
+/* === v61-profile-row: flytta profilknappen till tabbraden bredvid Lag === */
+
+function profileV61(){
+  try{
+    if(typeof getUserProfile==="function"){
+      var p=getUserProfile();
+      if(p)return p;
+    }
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+
+function ensureProfileV61(showDialog){
+  try{
+    if(typeof ensureUserProfile==="function")return ensureUserProfile(!!showDialog);
+  }catch(e){}
+  var p=profileV61();
+  if(p&&!showDialog)return p;
+
+  var name=prompt("Ditt namn",p&&p.ownerName?p.ownerName:"");
+  if(name===null&&p)return p;
+  var team=prompt("Lagkod / lagnamn",p&&p.teamCode?p.teamCode:"");
+  if(team===null&&p)return p;
+
+  name=String(name||"").trim()||"Tränare";
+  team=String(team||"").trim().toUpperCase().replace(/\s+/g,"-")||"MITT-LAG";
+  var old=p||{};
+  var np={
+    ownerId:old.ownerId||("user_"+Math.random().toString(36).slice(2)+Date.now().toString(36)),
+    ownerName:name,
+    teamId:team,
+    teamCode:team,
+    teamName:team
+  };
+  localStorage.setItem("tt_profile_v1",JSON.stringify(np));
+  return np;
+}
+
+function updateProfileButtonV61(p){
+  var btn=document.getElementById("btn-profile-team") || document.getElementById("btn-profile-v59") || document.getElementById("btn-profile-v61");
+  if(!btn)return;
+  if(p && p.ownerName && p.teamCode){
+    btn.textContent="👤 "+p.ownerName+" · "+p.teamCode;
+  }else{
+    btn.textContent="👤 Profil";
+  }
+}
+
+function moveProfileButtonToTabRowV61(){
+  var topbar=document.getElementById("topbar");
+  if(!topbar)return;
+
+  // Hitta raden där Formation/Utgångsläge/Taktik/Lag ligger.
+  var lagTab=document.querySelector('.tab[data-panel="lag"]');
+  var tabRow=lagTab ? lagTab.parentNode : null;
+  if(!tabRow)return;
+
+  var btn=document.getElementById("btn-profile-team") || document.getElementById("btn-profile-v59") || document.getElementById("btn-profile-v61");
+
+  if(!btn){
+    btn=document.createElement("button");
+    btn.id="btn-profile-v61";
+    btn.className="tab v61-profile-tab";
+    btn.title="Profil och lagkod";
+  }
+
+  // Gör knappen tabblik men utan att påverka panelval.
+  btn.classList.remove("btn");
+  btn.classList.add("tab");
+  btn.classList.add("v61-profile-tab");
+  btn.removeAttribute("data-panel");
+  btn.style.fontSize="0.68rem";
+  btn.style.padding="3px 9px";
+  btn.style.color="#4ae8e8";
+  btn.style.borderColor="#4ae8e8";
+  btn.style.marginLeft="4px";
+  btn.style.whiteSpace="nowrap";
+  btn.style.display="";
+  btn.style.visibility="";
+  btn.style.pointerEvents="";
+
+  if(!btn.dataset.v61Bound){
+    btn.dataset.v61Bound="1";
+    btn.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      var p=ensureProfileV61(true);
+      updateProfileButtonV61(p);
+      if(typeof showToast==="function")showToast("Profil sparad");
+      return false;
+    },true);
+  }
+
+  // Lägg precis efter Lag-knappen.
+  if(lagTab.nextSibling!==btn){
+    tabRow.insertBefore(btn,lagTab.nextSibling);
+  }
+
+  updateProfileButtonV61(profileV61());
+}
+
+// Kör efter äldre profilkod så vi flyttar knappen även om den skapas sent.
+moveProfileButtonToTabRowV61();
+setTimeout(moveProfileButtonToTabRowV61,250);
+setTimeout(moveProfileButtonToTabRowV61,1000);
+setTimeout(moveProfileButtonToTabRowV61,1800);
+
+/* === slut v61-profile-row === */
