@@ -5825,3 +5825,132 @@ setTimeout(addClaimButtonV58,300);
 setTimeout(addClaimButtonV58,1200);
 
 /* === slut v58-claim === */
+
+
+/* === v59-cleanup: ta bort engångsverktyg och säkra profilknapp ===
+   Nu när gamla filer är adopterade ska Äldre+/Ta över inte ligga kvar.
+   Nya filer får metadata via addMetaToData/getFileMeta.
+*/
+
+function removeLegacyAdminButtonsV59(){
+  ["btn-adopt-legacy-v56","btn-claim-invisible-v58"].forEach(function(id){
+    var b=document.getElementById(id);
+    if(b && b.parentNode)b.parentNode.removeChild(b);
+  });
+
+  // Fånga även om tidigare patchar hinner skapa om knapparna via setTimeout.
+  Array.prototype.slice.call(document.querySelectorAll("button")).forEach(function(b){
+    var txt=(b.textContent||"").trim();
+    if(txt==="🔧 Äldre" || txt==="🔧 Äldre+" || txt==="🔧 Ta över"){
+      if(b.parentNode)b.parentNode.removeChild(b);
+    }
+  });
+}
+
+function profileV59(){
+  try{
+    if(typeof getUserProfile==="function"){
+      var p=getUserProfile();
+      if(p)return p;
+    }
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+
+function ensureProfileV59(showDialog){
+  try{
+    if(typeof ensureUserProfile==="function")return ensureUserProfile(!!showDialog);
+  }catch(e){}
+  var p=profileV59();
+  if(p&&!showDialog)return p;
+
+  var name=prompt("Ditt namn",p&&p.ownerName?p.ownerName:"");
+  if(name===null&&p)return p;
+  var team=prompt("Lagkod / lagnamn",p&&p.teamCode?p.teamCode:"");
+  if(team===null&&p)return p;
+
+  name=String(name||"").trim()||"Tränare";
+  team=String(team||"").trim().toUpperCase().replace(/\s+/g,"-")||"MITT-LAG";
+  var old=p||{};
+  var np={
+    ownerId:old.ownerId||("user_"+Math.random().toString(36).slice(2)+Date.now().toString(36)),
+    ownerName:name,
+    teamId:team,
+    teamCode:team,
+    teamName:team
+  };
+  localStorage.setItem("tt_profile_v1",JSON.stringify(np));
+  return np;
+}
+
+function addStableProfileButtonV59(){
+  var topbar=document.getElementById("topbar");
+  if(!topbar)return;
+
+  // Om gamla profilknappen finns, använd den. Annars skapa ny.
+  var btn=document.getElementById("btn-profile-team") || document.getElementById("btn-profile-v59");
+  if(!btn){
+    btn=document.createElement("button");
+    btn.id="btn-profile-v59";
+    btn.className="btn";
+    btn.title="Profil och lagkod";
+    btn.style.cssText="font-size:0.68rem;color:#4ae8e8;border-color:#4ae8e8";
+    btn.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      var p=ensureProfileV59(true);
+      updateProfileButtonV59(p);
+      if(typeof showToast==="function")showToast("Profil sparad");
+      return false;
+    },true);
+
+    var row=document.getElementById("v48-topbar-open-row") || topbar.querySelector("div") || topbar;
+    row.appendChild(btn);
+  }else if(!btn.dataset.v59Bound){
+    btn.dataset.v59Bound="1";
+    btn.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      var p=ensureProfileV59(true);
+      updateProfileButtonV59(p);
+      if(typeof showToast==="function")showToast("Profil sparad");
+      return false;
+    },true);
+  }
+
+  updateProfileButtonV59(profileV59());
+}
+
+function updateProfileButtonV59(p){
+  var btn=document.getElementById("btn-profile-team") || document.getElementById("btn-profile-v59");
+  if(!btn)return;
+  if(p && p.ownerName && p.teamCode){
+    btn.textContent="👤 "+p.ownerName+" · "+p.teamCode;
+  }else{
+    btn.textContent="👤 Profil";
+  }
+  btn.style.display="";
+  btn.style.visibility="";
+  btn.style.pointerEvents="";
+}
+
+// Kör flera gånger eftersom äldre patchar också lägger knappar med setTimeout.
+removeLegacyAdminButtonsV59();
+addStableProfileButtonV59();
+
+setTimeout(function(){
+  removeLegacyAdminButtonsV59();
+  addStableProfileButtonV59();
+},300);
+
+setTimeout(function(){
+  removeLegacyAdminButtonsV59();
+  addStableProfileButtonV59();
+},1300);
+
+setInterval(function(){
+  removeLegacyAdminButtonsV59();
+},2500);
+
+/* === slut v59-cleanup === */
