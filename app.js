@@ -7364,3 +7364,272 @@ setTimeout(function(){
 },300);
 
 /* === slut v68-owner-permissions === */
+
+
+/* === v69-taktik-editor-clean: rensa taktikknappar + autospara + rätt stegnamn === */
+
+function stepDefaultLabelV69(idx){
+  return idx===0 ? "Startläge" : "Steg "+idx;
+}
+
+function isAutoStepLabelV69(label){
+  var s=String(label||"").trim();
+  return !s || s==="Start" || s==="Startläge" || /^Steg\s+\d+$/i.test(s);
+}
+
+function normalizeTaktikStepLabelsV69(tk){
+  if(!tk||!Array.isArray(tk.steps))return;
+  for(var i=0;i<tk.steps.length;i++){
+    if(!tk.steps[i])continue;
+    if(i===0){
+      if(isAutoStepLabelV69(tk.steps[i].label))tk.steps[i].label="Startläge";
+    }else{
+      if(isAutoStepLabelV69(tk.steps[i].label))tk.steps[i].label="Steg "+i;
+    }
+  }
+}
+
+function currentEditingTaktikV69(){
+  try{
+    if(editingTaktikIdx===null || typeof editingTaktikIdx==="undefined")return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+
+function autoSaveStepQuietV69(){
+  try{
+    if(editingTaktikIdx===null)return;
+    var tk=currentEditingTaktikV69();
+    if(!tk||!tk.steps||!tk.steps[editingStepIdx])return;
+    if(typeof autoSaveCurrentStepLocalV16==="function"){
+      autoSaveCurrentStepLocalV16();
+    }else{
+      var snap=currentSnap();
+      var inp=document.getElementById("edit-step-name-inp");
+      var lbl=inp?inp.value.trim():"";
+      if(lbl)snap.label=lbl;
+      tk.steps[editingStepIdx]=snap;
+    }
+    normalizeTaktikStepLabelsV69(tk);
+  }catch(e){console.error("autoSaveStepQuietV69",e);}
+}
+
+function goToStepV69(targetIdx){
+  var tk=currentEditingTaktikV69();
+  if(!tk||!tk.steps)return;
+  if(targetIdx<0||targetIdx>=tk.steps.length)return;
+  autoSaveStepQuietV69();
+  movementPaths=[];
+  selectedId=null;
+  editingStepIdx=targetIdx;
+  updateEditStepUI();
+}
+
+function saveWholeFilmV69(){
+  var tk=currentEditingTaktikV69();
+  if(!tk)return;
+  autoSaveStepQuietV69();
+  normalizeTaktikStepLabelsV69(tk);
+  cloudSaveTaktik(tk);
+  try{
+    if(typeof markTaktikSavedCleanV67==="function")markTaktikSavedCleanV67(tk);
+  }catch(e){}
+  try{
+    taktikDirtyV17=false;
+  }catch(e){}
+  showToast("Film sparad!");
+  cloudStatus("✅ Film sparad","#4ae87a");
+}
+
+function cleanTaktikEditorUiV69(){
+  var ui=document.getElementById("edit-taktik-ui");
+  if(!ui)return;
+  ui.classList.add("v69-clean");
+
+  var add=document.getElementById("btn-edit-add-step");
+  if(add){
+    add.textContent="+ Nytt steg";
+    add.title="Lägg till nytt steg";
+  }
+
+  var saveStep=document.getElementById("btn-edit-update-step");
+  if(saveStep){
+    saveStep.style.display="none";
+    saveStep.title="Steget autosparas internt";
+  }
+  var saveStep2=document.getElementById("btn-edit-update-step2");
+  if(saveStep2){
+    saveStep2.style.display="none";
+    saveStep2.title="Steget autosparas internt";
+  }
+
+  var row=add?add.parentNode:null;
+  if(row)row.classList.add("v69-step-main-row");
+}
+
+function bindTaktikEditorButtonsV69(){
+  function replace(id,handler){
+    var old=document.getElementById(id);
+    if(!old)return null;
+    if(old.dataset.v69Bound)return old;
+    var neu=old.cloneNode(true);
+    neu.dataset.v69Bound="1";
+    old.parentNode.replaceChild(neu,old);
+    neu.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      handler(e);
+      return false;
+    },true);
+    return neu;
+  }
+
+  replace("btn-edit-step-prev",function(){
+    goToStepV69(editingStepIdx-1);
+  });
+
+  replace("btn-edit-step-next",function(){
+    goToStepV69(editingStepIdx+1);
+  });
+
+  replace("btn-edit-add-step",function(){
+    var tk=currentEditingTaktikV69();
+    if(!tk||!tk.steps)return;
+
+    autoSaveStepQuietV69();
+    if(typeof saveTaktikUndo==="function")saveTaktikUndo();
+
+    var snap=currentSnap();
+    delete snap.label; // nya steg ska namnges efter sin position, inte ärva Startläge
+    tk.steps.splice(editingStepIdx+1,0,snap);
+    editingStepIdx++;
+    normalizeTaktikStepLabelsV69(tk);
+    updateEditStepUI();
+  });
+
+  replace("btn-edit-del-step",function(){
+    var tk=currentEditingTaktikV69();
+    if(!tk||!tk.steps||editingStepIdx===0)return;
+
+    if(typeof saveTaktikUndo==="function")saveTaktikUndo();
+    tk.steps.splice(editingStepIdx,1);
+    editingStepIdx=Math.min(editingStepIdx,tk.steps.length-1);
+    normalizeTaktikStepLabelsV69(tk);
+    updateEditStepUI();
+  });
+
+  // Spara steg-knappar finns kvar i DOM men gör bara tyst autosave om gammal kod skulle klicka dem.
+  replace("btn-edit-update-step",function(){
+    autoSaveStepQuietV69();
+    showToast("Steget autosparades internt");
+  });
+  replace("btn-edit-update-step2",function(){
+    autoSaveStepQuietV69();
+    showToast("Steget autosparades internt");
+  });
+
+  replace("btn-edit-taktik-save",function(){
+    saveWholeFilmV69();
+  });
+}
+
+var _updateEditStepUI_v69 = typeof updateEditStepUI==="function" ? updateEditStepUI : null;
+if(_updateEditStepUI_v69){
+  updateEditStepUI=function(){
+    var tk=currentEditingTaktikV69();
+    if(tk)normalizeTaktikStepLabelsV69(tk);
+
+    var r=_updateEditStepUI_v69.apply(this,arguments);
+
+    tk=currentEditingTaktikV69();
+    if(tk&&tk.steps&&tk.steps[editingStepIdx]){
+      var inp=document.getElementById("edit-step-name-inp");
+      var lbl=tk.steps[editingStepIdx].label || stepDefaultLabelV69(editingStepIdx);
+      if(inp && isAutoStepLabelV69(inp.value))inp.value=lbl;
+
+      var c=document.getElementById("edit-step-counter");
+      if(c)c.textContent=editingStepIdx===0 ? "Start" : (editingStepIdx+"/"+Math.max(0,tk.steps.length-1));
+    }
+
+    cleanTaktikEditorUiV69();
+    bindTaktikEditorButtonsV69();
+    return r;
+  };
+}
+
+var _renderEditSteps_v69 = typeof renderEditSteps==="function" ? renderEditSteps : null;
+if(_renderEditSteps_v69){
+  renderEditSteps=function(tk){
+    normalizeTaktikStepLabelsV69(tk);
+    var r=_renderEditSteps_v69.apply(this,arguments);
+
+    var list=document.getElementById("edit-taktik-steps");
+    if(list){
+      Array.prototype.slice.call(list.querySelectorAll(".row")).forEach(function(row){
+        var idx=parseInt(row.dataset.idx,10);
+        if(isNaN(idx))return;
+
+        var inp=row.querySelector("input");
+        if(inp){
+          var step=tk&&tk.steps?tk.steps[idx]:null;
+          inp.value=(step&&step.label)||stepDefaultLabelV69(idx);
+          if(!inp.dataset.v69LabelBound){
+            inp.dataset.v69LabelBound="1";
+            inp.addEventListener("input",function(){
+              if(tk&&tk.steps&&tk.steps[idx]){
+                var val=inp.value.trim();
+                tk.steps[idx].label=val || stepDefaultLabelV69(idx);
+              }
+            },true);
+          }
+        }
+
+        row.onclick=function(e){
+          if(e.target.tagName==="BUTTON"||e.target.tagName==="INPUT")return;
+          goToStepV69(idx);
+        };
+      });
+    }
+
+    cleanTaktikEditorUiV69();
+    return r;
+  };
+}
+
+var _openEditTaktik_v69 = typeof openEditTaktik==="function" ? openEditTaktik : null;
+if(_openEditTaktik_v69){
+  openEditTaktik=function(idx){
+    var tk=taktikFilmer && taktikFilmer[idx] ? taktikFilmer[idx] : null;
+    normalizeTaktikStepLabelsV69(tk);
+    var r=_openEditTaktik_v69.apply(this,arguments);
+    cleanTaktikEditorUiV69();
+    bindTaktikEditorButtonsV69();
+    return r;
+  };
+}
+
+var _startPlayback_v69 = typeof startPlayback==="function" ? startPlayback : null;
+if(_startPlayback_v69){
+  startPlayback=function(idx){
+    var tk=taktikFilmer && taktikFilmer[idx] ? taktikFilmer[idx] : null;
+    normalizeTaktikStepLabelsV69(tk);
+    var r=_startPlayback_v69.apply(this,arguments);
+    cleanTaktikEditorUiV69();
+    bindTaktikEditorButtonsV69();
+    return r;
+  };
+}
+
+cleanTaktikEditorUiV69();
+bindTaktikEditorButtonsV69();
+setTimeout(function(){
+  cleanTaktikEditorUiV69();
+  bindTaktikEditorButtonsV69();
+  try{
+    var tk=currentEditingTaktikV69();
+    if(tk){normalizeTaktikStepLabelsV69(tk);updateEditStepUI();}
+  }catch(e){}
+},500);
+
+/* === slut v69-taktik-editor-clean === */
