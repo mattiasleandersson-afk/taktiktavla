@@ -4510,3 +4510,150 @@ cloudLoadSaves=function(){
   },true);
 })();
 /* === slut v51 === */
+
+
+/* === v52: legacy-filer utan användardata visas och kan migreras === */
+
+// Gamla filer saknar _meta. De ska inte försvinna bara för att en profil/ett lag finns.
+// De betraktas som "mina äldre filer" tills användaren sparar om dem.
+function isLegacyFileV52(obj){
+  if(!obj)return false;
+  var m=null;
+  try{
+    if(typeof fileMetaV10==="function")m=fileMetaV10(obj);
+  }catch(e){}
+  if(!m){
+    if(obj.state && obj.state._meta)m=obj.state._meta;
+    else if(obj.data && obj.data._meta)m=obj.data._meta;
+    else if(obj._meta)m=obj._meta;
+  }
+  return !(m && (m.ownerId || m.ownerName || m.teamId || m.teamCode));
+}
+
+if(typeof isMineV10==="function"){
+  var _isMineV10_v52=isMineV10;
+  isMineV10=function(obj){
+    if(isLegacyFileV52(obj))return true;
+    return _isMineV10_v52.apply(this,arguments);
+  };
+}
+
+if(typeof isSameTeamSharedV10==="function"){
+  var _isSameTeamSharedV10_v52=isSameTeamSharedV10;
+  isSameTeamSharedV10=function(obj){
+    if(isLegacyFileV52(obj))return false;
+    return _isSameTeamSharedV10_v52.apply(this,arguments);
+  };
+}
+
+if(typeof isReadOnlyFileV10==="function"){
+  var _isReadOnlyFileV10_v52=isReadOnlyFileV10;
+  isReadOnlyFileV10=function(obj){
+    if(isLegacyFileV52(obj))return false;
+    return _isReadOnlyFileV10_v52.apply(this,arguments);
+  };
+}
+
+// Lägg tydlig men diskret markering på legacy-filer i listorna.
+function addLegacyLabelV52(row,obj){
+  if(!row || !isLegacyFileV52(obj))return;
+  if(row.querySelector && row.querySelector(".legacy-v52"))return;
+  var tag=document.createElement("span");
+  tag.className="legacy-v52";
+  tag.textContent="Äldre";
+  tag.title="Gammal fil utan användardata. Spara om den för att göra den till din.";
+  tag.style.cssText="font-size:0.58rem;color:#e8c84a;border:1px solid #5a4a18;border-radius:999px;padding:1px 5px;margin-left:4px;white-space:nowrap";
+  var name=row.querySelector(".row-name") || row.firstChild;
+  if(name && name.parentNode)name.parentNode.insertBefore(tag,name.nextSibling);
+}
+
+(function(){
+  if(typeof renderSavesList==="function"){
+    var _renderSavesList_v52=renderSavesList;
+    renderSavesList=function(){
+      var res=_renderSavesList_v52.apply(this,arguments);
+      setTimeout(function(){
+        var rows=document.querySelectorAll("#saves-list .row");
+        for(var i=0;i<rows.length && i<savedFormations.length;i++){
+          var nameEl=rows[i].querySelector(".row-name");
+          if(!nameEl)continue;
+          var nm=(nameEl.textContent||"").trim();
+          var obj=(savedFormations||[]).find(function(s){return String(s.name||"").trim()===nm;});
+          if(obj)addLegacyLabelV52(rows[i],obj);
+        }
+      },0);
+      return res;
+    };
+  }
+
+  if(typeof renderTaktikList==="function"){
+    var _renderTaktikList_v52=renderTaktikList;
+    renderTaktikList=function(){
+      var res=_renderTaktikList_v52.apply(this,arguments);
+      setTimeout(function(){
+        var rows=document.querySelectorAll("#taktik-list .row");
+        Array.prototype.slice.call(rows).forEach(function(row){
+          var nameEl=row.querySelector(".row-name");
+          if(!nameEl)return;
+          var nm=(nameEl.textContent||"").trim();
+          var obj=(taktikFilmer||[]).find(function(t){return String(t.name||"").trim()===nm;});
+          if(obj)addLegacyLabelV52(row,obj);
+        });
+      },0);
+      return res;
+    };
+  }
+})();
+
+// När en gammal fil sparas ska den få aktuell användardata.
+// addMetaToData finns redan i användarsystemet; här tvingar vi in metadata på legacy-objekt innan save.
+function migrateLegacyTaktikBeforeSaveV52(tk){
+  if(!tk || !isLegacyFileV52(tk))return tk;
+  if(typeof addMetaToData==="function"){
+    var migrated=addMetaToData(tk);
+    Object.keys(migrated||{}).forEach(function(k){tk[k]=migrated[k];});
+  }
+  return tk;
+}
+
+function migrateLegacyFormationStateBeforeSaveV52(state){
+  if(!state)return state;
+  if(typeof addMetaToData==="function"){
+    return addMetaToData(state);
+  }
+  return state;
+}
+
+if(typeof cloudSaveTaktik==="function"){
+  var _cloudSaveTaktik_v52=cloudSaveTaktik;
+  cloudSaveTaktik=function(tk){
+    migrateLegacyTaktikBeforeSaveV52(tk);
+    return _cloudSaveTaktik_v52.apply(this,arguments);
+  };
+}
+
+// Fixa sparning av utgångslägen så även "Spara som" sätter metadata på nya/gamla lägen.
+if(typeof cloudSave==="function"){
+  var _cloudSave_v52=cloudSave;
+  cloudSave=function(name){
+    // Om befintlig buildState används längre ner behöver vi låta originalet köra,
+    // men först säkerställer vi att buildState får metadata via wrappern nedan.
+    return _cloudSave_v52.apply(this,arguments);
+  };
+}
+
+if(typeof buildState==="function"){
+  var _buildState_v52=buildState;
+  buildState=function(){
+    var st=_buildState_v52.apply(this,arguments);
+    return migrateLegacyFormationStateBeforeSaveV52(st);
+  };
+}
+
+// Tvinga omritning/laddning efter att patchen är aktiv.
+setTimeout(function(){
+  try{ if(typeof renderSavesList==="function")renderSavesList(); }catch(e){}
+  try{ if(typeof renderTaktikList==="function")renderTaktikList(); }catch(e){}
+},400);
+
+/* === slut v52 === */
