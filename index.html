@@ -405,13 +405,42 @@
   }
 </style>
 
+
+<style id="v69-taktik-editor-clean-css">
+  /* Taktikredigering: behåll övre kontroller, dölj nedre dubbletter. */
+  #edit-taktik-ui.v69-clean #btn-edit-step-prev,
+  #edit-taktik-ui.v69-clean #btn-edit-step-next,
+  #edit-taktik-ui.v69-clean #btn-edit-update-step,
+  #edit-taktik-ui.v69-clean #btn-edit-update-step2{
+    display:none !important;
+  }
+
+  #edit-taktik-ui.v69-clean #edit-step-counter{
+    min-width:62px !important;
+  }
+
+  #edit-taktik-ui.v69-clean #btn-edit-add-step{
+    font-size:0.72rem !important;
+    padding:4px 9px !important;
+  }
+
+  #edit-taktik-ui.v69-clean #edit-taktik-steps{
+    max-height:210px !important;
+    margin-top:6px !important;
+  }
+
+  #edit-taktik-ui.v69-clean .v69-step-main-row{
+    gap:5px !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.9.0</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.9.1</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
