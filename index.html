@@ -160,7 +160,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7.2</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7.3</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1042,26 +1042,14 @@
       "btn-text",
       "btn-freehand",
       "btn-zone",
-      "btn-movement",
-      "btn-undo",
-      "btn-reset",
-      "btn-half",
-      "btn-backup"
+      "btn-movement"
     ];
 
     toolIds.forEach(function(id){
       var el=document.getElementById(id);
       if(el && el.parentNode!==drawer)drawer.appendChild(el);
     });
-
-    // Flytta pilnummer-checkboxen till rita-lådan.
-    var arrowNumbers=document.getElementById("chk-arrow-numbers");
-    if(arrowNumbers){
-      var lbl=arrowNumbers.closest("label");
-      if(lbl && lbl.parentNode!==drawer)drawer.appendChild(lbl);
-    }
-
-    // Behåll de viktigaste synliga i ordning: ikon, version, format, Lag, Korr, Dag, Helskärm, Rita, minimera.
+// Behåll de viktigaste synliga i ordning: ikon, version, format, Lag, Korr, Dag, Helskärm, Rita, minimera.
     var h1=row.querySelector("h1");
     var version=row.querySelector("span");
     var fmt=document.getElementById("fmt-sel");
