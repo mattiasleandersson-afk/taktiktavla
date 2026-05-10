@@ -8308,3 +8308,140 @@ setTimeout(function(){bindControlsV71();hideMovementInFullscreenV71();},500);
 setTimeout(function(){bindControlsV71();hideMovementInFullscreenV71();},1500);
 
 /* === slut v71-edit-vs-present === */
+
+
+/* === v72-fix-gotostep-recursion: stoppa rundgång i stegbläddring === */
+
+function currentTaktikV72(){
+  try{
+    if(editingTaktikIdx===null || typeof editingTaktikIdx==="undefined")return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+
+function isFullscreenPresentV72(){
+  return document.body.classList.contains("fullscreen-portrait") ||
+         document.body.classList.contains("landscape");
+}
+
+function normalizeLabelsV72(tk){
+  try{
+    if(typeof normalizeStepLabelsV70==="function")normalizeStepLabelsV70(tk);
+    else if(typeof normalizeStepLabelsV69==="function")normalizeStepLabelsV69(tk);
+  }catch(e){}
+}
+
+function saveStepBeforeNavV72(){
+  if(editingTaktikIdx===null)return;
+  if(isFullscreenPresentV72())return; // presentationsläge ska inte ändra filmen
+
+  try{
+    if(typeof saveCurrentStepV70==="function"){
+      saveCurrentStepV70({autoCreateNext:false});
+    }else if(typeof autoSaveCurrentStepLocalV16==="function"){
+      autoSaveCurrentStepLocalV16();
+    }else{
+      var tk=currentTaktikV72();
+      if(tk&&tk.steps&&tk.steps[editingStepIdx]){
+        var snap=currentSnap();
+        var inp=document.getElementById("edit-step-name-inp");
+        var lbl=inp?inp.value.trim():"";
+        if(lbl)snap.label=lbl;
+        tk.steps[editingStepIdx]=snap;
+      }
+    }
+  }catch(e){console.error("saveStepBeforeNavV72",e);}
+}
+
+function restoreStepUiV72(tk,targetIdx){
+  movementPaths=[];
+  selectedId=null;
+  editingStepIdx=targetIdx;
+
+  if(playback){
+    playback.tk=tk;
+    playback.stepIndex=targetIdx;
+  }
+
+  restoreSnap(tk.steps[targetIdx]);
+  render();
+
+  try{if(typeof updatePlaybar==="function")updatePlaybar();}catch(e){}
+  try{if(typeof updateLandscapeStrip==="function")updateLandscapeStrip();}catch(e){}
+  try{if(typeof updateFsPortraitNav==="function")updateFsPortraitNav();}catch(e){}
+
+  try{
+    if(typeof updateEditStepUI_silent==="function")updateEditStepUI_silent();
+    else if(typeof updateEditStepUI==="function")updateEditStepUI();
+  }catch(e){}
+}
+
+function goToStepV72(targetIdx){
+  var tk=currentTaktikV72();
+  if(!tk||!tk.steps||!tk.steps.length)return;
+
+  saveStepBeforeNavV72();
+  normalizeLabelsV72(tk);
+
+  // I vanlig vy: om man trycker framåt förbi sista steget efter ändring,
+  // skapa ett nytt steg utan att anropa gamla goToStep-funktioner.
+  if(!isFullscreenPresentV72() && targetIdx>=tk.steps.length){
+    try{
+      if(typeof ensureNextStepV70==="function"){
+        ensureNextStepV70("Nytt steg skapades automatiskt");
+      }else{
+        var snap=currentSnap();
+        snap.movementPaths=[];
+        snap.label="Steg "+tk.steps.length;
+        tk.steps.push(snap);
+      }
+    }catch(e){}
+  }
+
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+  restoreStepUiV72(tk,targetIdx);
+}
+
+// Ersätt alla alias med den rekursionssäkra versionen.
+goToStepV71=goToStepV72;
+goToStepV70=goToStepV72;
+goToStepV69=goToStepV72;
+goToEditStepV16=goToStepV72;
+
+function bindStepBtnV72(id,handler){
+  var old=document.getElementById(id);
+  if(!old)return;
+  var neu=old.cloneNode(true);
+  neu.dataset.v72Bound="1";
+  old.parentNode.replaceChild(neu,old);
+  neu.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    handler();
+    return false;
+  },true);
+}
+
+function bindControlsV72(){
+  bindStepBtnV72("btn-edit-step-prev",function(){goToStepV72(editingStepIdx-1);});
+  bindStepBtnV72("btn-edit-step-next",function(){goToStepV72(editingStepIdx+1);});
+
+  bindStepBtnV72("btn-first",function(){goToStepV72(0);});
+  bindStepBtnV72("btn-prev",function(){goToStepV72(editingStepIdx-1);});
+  bindStepBtnV72("btn-next",function(){goToStepV72(editingStepIdx+1);});
+
+  bindStepBtnV72("fs-first-btn",function(){goToStepV72(0);});
+  bindStepBtnV72("fs-prev-btn",function(){goToStepV72(editingStepIdx-1);});
+  bindStepBtnV72("fs-next-btn",function(){goToStepV72(editingStepIdx+1);});
+
+  bindStepBtnV72("ls-first-btn",function(){goToStepV72(0);});
+  bindStepBtnV72("ls-prev-btn",function(){goToStepV72(editingStepIdx-1);});
+  bindStepBtnV72("ls-next-btn",function(){goToStepV72(editingStepIdx+1);});
+}
+
+bindControlsV72();
+setTimeout(bindControlsV72,300);
+setTimeout(bindControlsV72,1200);
+
+/* === slut v72-fix-gotostep-recursion === */
