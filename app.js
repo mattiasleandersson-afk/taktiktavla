@@ -5141,3 +5141,190 @@ setTimeout(function(){
 },600);
 
 /* === slut v55-safe === */
+
+
+/* === v56-adopt: manuell märkning av äldre filer i databasen ===
+   Säker idé:
+   - körs bara när tränaren trycker på knappen
+   - ändrar bara rader som saknar data._meta
+   - taktik/utgångslägen får ownerId och team
+   - matcher får teamId/teamCode och blir laggemensamma
+*/
+
+function getProfileV56(){
+  try{
+    if(typeof ensureUserProfile==="function"){
+      return ensureUserProfile(false);
+    }
+    if(typeof getUserProfile==="function"){
+      return getUserProfile();
+    }
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+
+function metaMissingV56(data,kind){
+  var m=(data&&data._meta)||{};
+  if(kind==="match"){
+    return !(m.teamId || m.teamCode);
+  }
+  return !(m.ownerId || m.ownerName || m.teamId || m.teamCode);
+}
+
+function makeMetaV56(kind,p){
+  var now=new Date().toISOString();
+  if(kind==="match"){
+    return {
+      teamId:p.teamId,
+      teamCode:p.teamCode,
+      teamName:p.teamName||p.teamCode,
+      createdBy:p.ownerName,
+      updatedAt:now
+    };
+  }
+  return {
+    ownerId:p.ownerId,
+    ownerName:p.ownerName,
+    teamId:p.teamId,
+    teamCode:p.teamCode,
+    sharedWithTeam:false,
+    teamCanEdit:false,
+    updatedAt:now
+  };
+}
+
+function typeToKindV56(type){
+  if(type==="uppstallning")return "formation";
+  if(type==="taktikfilm")return "taktik";
+  if(type==="match")return "match";
+  return null;
+}
+
+function fetchRowsByTypeV56(type){
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq."+encodeURIComponent(type)+"&select=*",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){return Array.isArray(data)?data:[];});
+}
+
+function patchRowMetaV56(row,p){
+  var kind=typeToKindV56(row.type);
+  if(!kind || !row || !row.id)return Promise.resolve({skipped:true});
+  var oldData=JSON.parse(JSON.stringify(row.data||{}));
+  if(!metaMissingV56(oldData,kind))return Promise.resolve({skipped:true});
+
+  oldData._meta=Object.assign({}, oldData._meta||{}, makeMetaV56(kind,p));
+
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+row.id,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({data:oldData})
+  }).then(function(r){
+    if(!r.ok)throw new Error("Kunde inte uppdatera rad "+row.id);
+    return r.json();
+  }).then(function(){
+    return {updated:true,type:row.type,id:row.id,name:row.name||oldData.name||""};
+  });
+}
+
+function scanLegacyRowsV56(){
+  return Promise.all([
+    fetchRowsByTypeV56("uppstallning"),
+    fetchRowsByTypeV56("taktikfilm"),
+    fetchRowsByTypeV56("match")
+  ]).then(function(groups){
+    var rows=[].concat(groups[0]||[],groups[1]||[],groups[2]||[]);
+    return rows.filter(function(row){
+      var kind=typeToKindV56(row.type);
+      return kind && metaMissingV56(row.data||{},kind);
+    });
+  });
+}
+
+function runAdoptLegacyFilesV56(){
+  var p=getProfileV56();
+  if(!p || !p.ownerId || !p.teamId){
+    showToast("Fyll i profil och lag först",false);
+    if(typeof ensureUserProfile==="function")ensureUserProfile(true);
+    return;
+  }
+
+  cloudStatus("Söker äldre filer...","#7aaa88");
+  scanLegacyRowsV56().then(function(rows){
+    if(!rows.length){
+      showToast("Inga äldre omärkta filer hittades");
+      cloudStatus("✅ Inga äldre filer att märka","#4ae87a");
+      return;
+    }
+
+    var counts={uppstallning:0,taktikfilm:0,match:0};
+    rows.forEach(function(r){counts[r.type]=(counts[r.type]||0)+1;});
+
+    var msg="Jag hittade omärkta äldre filer:\n\n"+
+      "Utgångslägen: "+counts.uppstallning+"\n"+
+      "Taktikfilmer: "+counts.taktikfilm+"\n"+
+      "Matcher: "+counts.match+"\n\n"+
+      "De märks med:\n"+
+      p.ownerName+" · "+p.teamCode+"\n\n"+
+      "Utgångslägen/taktik blir dina filer. Matcher blir lagets filer.\n\n"+
+      "Vill du fortsätta?";
+
+    if(!confirm(msg)){
+      cloudStatus("Avbrutet","#7aaa88");
+      return;
+    }
+
+    cloudStatus("Märker äldre filer...","#e8c84a");
+    var done=0, failed=0;
+    var chain=Promise.resolve();
+
+    rows.forEach(function(row){
+      chain=chain.then(function(){
+        return patchRowMetaV56(row,p)
+          .then(function(res){if(res.updated)done++;})
+          .catch(function(err){failed++;console.error(err);});
+      });
+    });
+
+    return chain.then(function(){
+      var text="Märkning klar: "+done+" uppdaterade"+(failed?(", "+failed+" fel"):"");
+      showToast(text, failed?false:true);
+      cloudStatus((failed?"⚠️ ":"✅ ")+text, failed?"#e8c84a":"#4ae87a");
+
+      // Ladda om listorna efter märkning.
+      try{cloudLoadSaves();}catch(e){}
+      try{cloudLoadTaktik();}catch(e){}
+      try{loadMatcher();}catch(e){}
+    });
+  }).catch(function(err){
+    showToast("Kunde inte söka äldre filer",false);
+    cloudStatus("❌ "+err.message,"#e84a4a");
+  });
+}
+
+function addAdoptLegacyButtonV56(){
+  var topbar=document.getElementById("topbar");
+  if(!topbar || document.getElementById("btn-adopt-legacy-v56"))return;
+  var row=document.getElementById("v48-topbar-open-row") || topbar.querySelector("div") || topbar;
+
+  var btn=document.createElement("button");
+  btn.id="btn-adopt-legacy-v56";
+  btn.className="btn";
+  btn.textContent="🔧 Äldre";
+  btn.title="Märk gamla omärkta filer med din profil/lag";
+  btn.style.cssText="font-size:0.68rem;color:#e8c84a;border-color:#e8c84a";
+  btn.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    runAdoptLegacyFilesV56();
+    return false;
+  },true);
+
+  row.appendChild(btn);
+}
+
+addAdoptLegacyButtonV56();
+setTimeout(addAdoptLegacyButtonV56,300);
+setTimeout(addAdoptLegacyButtonV56,1200);
+
+/* === slut v56-adopt === */
