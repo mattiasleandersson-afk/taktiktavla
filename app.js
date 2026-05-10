@@ -6473,3 +6473,434 @@ window.addEventListener("resize",function(){
 });
 
 /* === slut v63-options-restore === */
+
+
+/* === v64-list-ui-fix: optioner upp, ta bort blink, dedupe + direkt radering === */
+
+var deletedFormationIdsV64 = {};
+var deletedTaktikIdsV64 = {};
+
+function killLegacyAdminButtonsV64(){
+  try{
+    ["btn-adopt-legacy-v56","btn-claim-invisible-v58"].forEach(function(id){
+      var b=document.getElementById(id);
+      if(b){
+        b.style.display="none";
+        b.style.visibility="hidden";
+        b.style.pointerEvents="none";
+        if(b.parentNode)b.parentNode.removeChild(b);
+      }
+    });
+    Array.prototype.slice.call(document.querySelectorAll("button")).forEach(function(b){
+      var txt=(b.textContent||"").trim();
+      if(txt==="🔧 Äldre" || txt==="🔧 Äldre+" || txt==="🔧 Ta över"){
+        b.style.display="none";
+        if(b.parentNode)b.parentNode.removeChild(b);
+      }
+    });
+  }catch(e){}
+}
+
+// Stoppa gamla setTimeout-funktioner från att kunna skapa knapparna igen.
+addAdoptLegacyButtonV56=function(){killLegacyAdminButtonsV64();};
+rebindAdoptLegacyButtonV57=function(){killLegacyAdminButtonsV64();};
+addClaimButtonV58=function(){killLegacyAdminButtonsV64();};
+
+killLegacyAdminButtonsV64();
+setTimeout(killLegacyAdminButtonsV64,50);
+setTimeout(killLegacyAdminButtonsV64,300);
+setTimeout(killLegacyAdminButtonsV64,1300);
+
+try{
+  var obsV64=new MutationObserver(killLegacyAdminButtonsV64);
+  obsV64.observe(document.body,{childList:true,subtree:true});
+}catch(e){}
+
+function profileV64(){
+  try{
+    if(typeof getProfileSafeV10==="function")return getProfileSafeV10();
+    if(typeof getUserProfile==="function")return getUserProfile();
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+function metaV64(obj){
+  try{
+    if(typeof fileMetaV10==="function")return fileMetaV10(obj)||{};
+  }catch(e){}
+  if(obj&&obj._meta)return obj._meta;
+  if(obj&&obj.state&&obj.state._meta)return obj.state._meta;
+  if(obj&&obj.data&&obj.data._meta)return obj.data._meta;
+  return {};
+}
+function isVisibleSaveV64(s){
+  try{
+    if(typeof isFileVisibleInScopeV10==="function")return isFileVisibleInScopeV10(s, typeof saveScope!=="undefined"?saveScope:"mine");
+  }catch(e){}
+  return true;
+}
+function isVisibleTaktikV64(tk){
+  try{
+    if(typeof isFileVisibleInScopeV10==="function")return isFileVisibleInScopeV10(tk, typeof taktikScope!=="undefined"?taktikScope:"mine");
+  }catch(e){}
+  return true;
+}
+function saveKeyV64(s){
+  if(s&&s.id)return "id:"+s.id;
+  var m=metaV64(s);
+  var owner=m.ownerId||"legacy";
+  return "name:"+owner+"|"+String((s&&s.name)||"").trim().toLowerCase()+"|"+String((s&&s.folder)||"Allmänt");
+}
+function taktikKeyV64(tk){
+  if(tk&&tk.dbId)return "id:"+tk.dbId;
+  var m=metaV64(tk);
+  var owner=m.ownerId||"legacy";
+  return "name:"+owner+"|"+String((tk&&tk.name)||"").trim().toLowerCase()+"|"+String((tk&&tk.folder)||"Taktik");
+}
+function dedupeSavesV64(list){
+  var by={}, order=[];
+  (list||[]).forEach(function(s){
+    if(!s)return;
+    if(s.id && deletedFormationIdsV64[String(s.id)])return;
+    var k=saveKeyV64(s);
+    if(!by[k])order.push(k);
+    by[k]=s;
+  });
+  return order.map(function(k){return by[k];});
+}
+function dedupeTaktikV64(list){
+  var by={}, order=[];
+  (list||[]).forEach(function(tk){
+    if(!tk)return;
+    if(tk.dbId && deletedTaktikIdsV64[String(tk.dbId)])return;
+    var k=taktikKeyV64(tk);
+    if(!by[k])order.push(k);
+    by[k]=tk;
+  });
+  return order.map(function(k){return by[k];});
+}
+function rebuildFoldersV64(){
+  var seen={};folders=["Allmänt"];
+  (savedFormations||[]).forEach(function(s){
+    var f=s.folder||"Allmänt";
+    if(f&&!seen[f]){seen[f]=true;if(f!=="Allmänt")folders.push(f);}
+  });
+  var tfseen={};taktikFolders=["Taktik","Träning"];tfseen["Taktik"]=true;tfseen["Träning"]=true;
+  (taktikFilmer||[]).forEach(function(tk){
+    var f=tk.folder||"Taktik";
+    if(f&&!tfseen[f]){tfseen[f]=true;taktikFolders.push(f);}
+  });
+}
+
+cloudLoadSaves=function(){
+  cloudStatus("Laddar...","#7aaa88");
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=folder.asc,id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)){cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");return;}
+      var loaded=data.filter(function(row){return row.type==="uppstallning";}).map(function(row){
+        return {id:row.id,name:row.name,state:row.data,folder:row.folder||"Allmänt"};
+      }).filter(function(s){return !s.id || !deletedFormationIdsV64[String(s.id)];})
+        .filter(isVisibleSaveV64);
+
+      savedFormations=dedupeSavesV64(loaded);
+      rebuildFoldersV64();
+      renderSavesList();
+      updateFolderSelect();
+      cloudStatus(savedFormations.length+" uppställningar ✅","#4ae87a");
+    }).catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+    });
+};
+
+cloudLoadTaktik=function(){
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)){cloudStatus("❌ Kunde inte läsa taktikfilmer","#e84a4a");return;}
+      var loaded=[];
+      data.filter(function(row){return row.type==="taktikfilm";}).forEach(function(row){
+        var tk=row.data||{};
+        if(!tk.steps||tk.steps.length<2)return;
+        tk.dbId=row.id;
+        if(!tk.folder)tk.folder=row.folder||"Taktik";
+        if(deletedTaktikIdsV64[String(tk.dbId)])return;
+        if(!isVisibleTaktikV64(tk))return;
+        loaded.push(tk);
+      });
+      taktikFilmer=dedupeTaktikV64(loaded);
+      rebuildFoldersV64();
+      renderTaktikList();
+      cloudStatus(taktikFilmer.length+" taktikfilmer laddade","#4ae87a");
+    }).catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+    });
+};
+
+cloudDelete=function(id){
+  if(id)deletedFormationIdsV64[String(id)]=true;
+  savedFormations=(savedFormations||[]).filter(function(s){return String(s.id)!==String(id);});
+  savedFormations=dedupeSavesV64(savedFormations);
+  rebuildFoldersV64();
+  renderSavesList();
+  updateFolderSelect();
+
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{
+    method:"DELETE",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"})
+  }).then(function(){
+    showToast("Raderat!");
+    setTimeout(cloudLoadSaves,250);
+  }).catch(function(err){
+    delete deletedFormationIdsV64[String(id)];
+    cloudStatus("❌ Raderingsfel: "+err.message,"#e84a4a");
+    showToast("Kunde inte radera",false);
+    cloudLoadSaves();
+  });
+};
+
+function deleteTaktik(idx){
+  var tk=taktikFilmer[idx];
+  if(!tk)return;
+  if(tk._readOnly || (typeof isReadOnlyFileV10==="function" && isReadOnlyFileV10(tk))){
+    showToast("Du kan inte radera någon annans fil",false);
+    return;
+  }
+  var id=tk.dbId;
+  if(id)deletedTaktikIdsV64[String(id)]=true;
+
+  taktikFilmer=(taktikFilmer||[]).filter(function(x,i){
+    if(id)return String(x.dbId)!==String(id);
+    return i!==idx;
+  });
+  taktikFilmer=dedupeTaktikV64(taktikFilmer);
+  rebuildFoldersV64();
+  renderTaktikList();
+
+  if(id){
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{
+      method:"DELETE",
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"})
+    }).then(function(){
+      showToast("Taktikfilm raderad!");
+      setTimeout(cloudLoadTaktik,250);
+    }).catch(function(err){
+      delete deletedTaktikIdsV64[String(id)];
+      cloudStatus("❌ Raderingsfel: "+err.message,"#e84a4a");
+      showToast("Kunde inte radera",false);
+      cloudLoadTaktik();
+    });
+  }else{
+    showToast("Taktikfilm raderad!");
+  }
+}
+window.deleteTaktik=deleteTaktik;
+
+// Säkra att render alltid kör dedupe först, ifall gamla wrappers har lagt in dubbletter.
+if(typeof renderSavesList==="function"){
+  var _renderSavesList_v64=renderSavesList;
+  renderSavesList=function(){
+    savedFormations=dedupeSavesV64(savedFormations||[]);
+    return _renderSavesList_v64.apply(this,arguments);
+  };
+}
+if(typeof renderTaktikList==="function"){
+  var _renderTaktikList_v64=renderTaktikList;
+  renderTaktikList=function(){
+    taktikFilmer=dedupeTaktikV64(taktikFilmer||[]);
+    return _renderTaktikList_v64.apply(this,arguments);
+  };
+}
+
+function placeDrawOptionsV64(){
+  try{
+    var inFs=document.body.classList.contains("fullscreen-portrait");
+    ["arrow-options","zone-options","freehand-options"].forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el)return;
+      if(inFs){
+        el.style.position="fixed";
+        el.style.top="calc(env(safe-area-inset-top,0px) + 8px)";
+        el.style.right="calc(env(safe-area-inset-right,0px) + 92px)";
+        el.style.left="auto";
+        el.style.zIndex="10020";
+        el.style.maxWidth="min(270px, calc(100vw - 118px))";
+        el.style.overflowX="auto";
+      }else{
+        el.style.position="absolute";
+        el.style.top="8px";
+        el.style.right="8px";
+        el.style.left="auto";
+        el.style.zIndex=(id==="arrow-options")?"5":"6";
+        el.style.maxWidth="";
+        el.style.overflowX="";
+      }
+    });
+  }catch(err){console.error("placeDrawOptionsV64",err);}
+}
+placeDrawOptionsV63=placeDrawOptionsV64;
+moveFullscreenOptionMenusV62=placeDrawOptionsV64;
+moveFullscreenOptionMenusV60=placeDrawOptionsV64;
+
+placeDrawOptionsV64();
+setTimeout(placeDrawOptionsV64,100);
+setTimeout(placeDrawOptionsV64,500);
+
+["btn-arrow","btn-freehand","btn-zone","fs-tb-arrow","fs-tb-freehand","fs-tb-zone"].forEach(function(id){
+  var b=document.getElementById(id);
+  if(b && !b.dataset.v64OptionPlace){
+    b.dataset.v64OptionPlace="1";
+    b.addEventListener("click",function(){
+      setTimeout(placeDrawOptionsV64,0);
+      setTimeout(placeDrawOptionsV64,120);
+    },true);
+  }
+});
+
+setTimeout(function(){
+  try{savedFormations=dedupeSavesV64(savedFormations||[]);renderSavesList();}catch(e){}
+  try{taktikFilmer=dedupeTaktikV64(taktikFilmer||[]);renderTaktikList();}catch(e){}
+},700);
+
+/* === slut v64-list-ui-fix === */
+
+
+/* === v65-black-color-options: lägg till svart i alla ritfärgval === */
+
+function addBlackDrawOptionsV65(){
+  try{
+    function addOption(selId,value,label){
+      var sel=document.getElementById(selId);
+      if(!sel)return;
+      var exists=false;
+      Array.prototype.slice.call(sel.options||[]).forEach(function(o){
+        if(String(o.value).toLowerCase()===String(value).toLowerCase())exists=true;
+      });
+      if(exists)return;
+      var opt=document.createElement("option");
+      opt.value=value;
+      opt.textContent=label;
+      sel.appendChild(opt);
+    }
+
+    addOption("arrow-color-sel","#000","■ Svart");
+    addOption("freehand-color-sel","#000","■ Svart");
+    addOption("zone-color-sel","rgba(0,0,0,0.25)","■ Svart");
+  }catch(e){console.error("addBlackDrawOptionsV65",e);}
+}
+
+addBlackDrawOptionsV65();
+setTimeout(addBlackDrawOptionsV65,300);
+setTimeout(addBlackDrawOptionsV65,1200);
+
+/* === slut v65-black-color-options === */
+
+
+/* === v66-fullscreen-bottombar: ta bort gamla bottenbaren i formationsläge === */
+
+function isTaktikFullscreenV66(){
+  try{
+    if(typeof playback!=="undefined" && playback)return true;
+    if(typeof isEditingTaktik!=="undefined" && isEditingTaktik)return true;
+    if(typeof editingTaktikIdx!=="undefined" && editingTaktikIdx!==null)return true;
+    var active=document.querySelector('.tab.on[data-panel="taktik"]');
+    return !!active;
+  }catch(e){return false;}
+}
+
+function updateFullscreenBottomBarV66(){
+  try{
+    var isFs=document.body.classList.contains("fullscreen-portrait");
+    var isTk=isTaktikFullscreenV66();
+
+    document.body.classList.toggle("v66-taktik-fs", !!(isFs && isTk));
+
+    var nav=document.getElementById("fs-portrait-nav");
+    var prevSide=document.getElementById("ls-prev-side");
+    var nextSide=document.getElementById("ls-next-side");
+    var oldDay=document.getElementById("ls-day-btn3");
+
+    if(oldDay){
+      oldDay.style.display="none";
+      oldDay.style.visibility="hidden";
+      oldDay.style.width="0";
+      oldDay.style.minWidth="0";
+      oldDay.style.height="0";
+      oldDay.style.padding="0";
+      oldDay.style.margin="0";
+      oldDay.style.border="0";
+    }
+
+    if(!isFs)return;
+
+    if(!isTk){
+      [nav,prevSide,nextSide].forEach(function(el){
+        if(!el)return;
+        el.style.display="none";
+        el.style.visibility="hidden";
+        el.style.pointerEvents="none";
+        el.style.height="0";
+        el.style.minHeight="0";
+        el.style.padding="0";
+        el.style.margin="0";
+        el.style.border="0";
+        el.style.background="transparent";
+        el.style.boxShadow="none";
+      });
+    }else{
+      if(nav){
+        nav.style.display="";
+        nav.style.visibility="";
+        nav.style.pointerEvents="";
+        nav.style.height="";
+        nav.style.minHeight="";
+        nav.style.padding="";
+        nav.style.margin="";
+        nav.style.border="";
+        nav.style.background="";
+        nav.style.boxShadow="";
+      }
+    }
+  }catch(err){console.error("updateFullscreenBottomBarV66",err);}
+}
+
+updateFullscreenBottomBarV66();
+setTimeout(updateFullscreenBottomBarV66,100);
+setTimeout(updateFullscreenBottomBarV66,500);
+setTimeout(updateFullscreenBottomBarV66,1200);
+
+var _syncFullscreenToolButtons_v66=typeof syncFullscreenToolButtons==="function"?syncFullscreenToolButtons:null;
+if(_syncFullscreenToolButtons_v66){
+  syncFullscreenToolButtons=function(){
+    _syncFullscreenToolButtons_v66.apply(this,arguments);
+    updateFullscreenBottomBarV66();
+  };
+}
+
+var _enterFullscreenPortrait_v66=typeof enterFullscreenPortrait==="function"?enterFullscreenPortrait:null;
+if(_enterFullscreenPortrait_v66){
+  enterFullscreenPortrait=function(){
+    _enterFullscreenPortrait_v66.apply(this,arguments);
+    setTimeout(updateFullscreenBottomBarV66,0);
+    setTimeout(updateFullscreenBottomBarV66,250);
+  };
+}
+
+var _exitFullscreenPortrait_v66=typeof exitFullscreenPortrait==="function"?exitFullscreenPortrait:null;
+if(_exitFullscreenPortrait_v66){
+  exitFullscreenPortrait=function(){
+    _exitFullscreenPortrait_v66.apply(this,arguments);
+    setTimeout(updateFullscreenBottomBarV66,0);
+  };
+}
+
+document.querySelectorAll(".tab").forEach(function(tab){
+  if(tab.dataset.v66BottomBound)return;
+  tab.dataset.v66BottomBound="1";
+  tab.addEventListener("click",function(){
+    setTimeout(updateFullscreenBottomBarV66,0);
+    setTimeout(updateFullscreenBottomBarV66,250);
+  },true);
+});
+
+/* === slut v66-fullscreen-bottombar === */
