@@ -4233,3 +4233,153 @@ setTimeout(cleanupTopbarDuplicatesV44,200);
   v45Cleanup();
   setTimeout(v45Cleanup,300);
 })();
+
+
+/* === v50: utgångsläge skapar ny taktikfilm direkt === */
+function openNewTaktikFromSavedFormationModalV50(saved){
+  if(!saved)return;
+
+  var old=document.getElementById("modal-new-taktik-from-formation-v50");
+  if(old)old.remove();
+
+  var modal=document.createElement("div");
+  modal.id="modal-new-taktik-from-formation-v50";
+  modal.className="modal";
+
+  var box=document.createElement("div");
+  box.className="modal-box";
+
+  var h=document.createElement("h2");
+  h.textContent="Ny taktikfilm från utgångsläge";
+  box.appendChild(h);
+
+  var p=document.createElement("p");
+  p.style.cssText="font-size:0.78rem;color:#7aaa88;line-height:1.35;margin:4px 0 10px";
+  p.textContent="Utgångsläget blir startsteget i en ny film. Du kommer direkt in i redigeringsläget.";
+  box.appendChild(p);
+
+  var inp=document.createElement("input");
+  inp.type="text";
+  inp.id="taktik-from-formation-name-v50";
+  inp.placeholder="Namn på film";
+  inp.value=(saved.name? saved.name+" – taktik" : "Ny taktikfilm");
+  inp.style.cssText="width:100%;box-sizing:border-box;margin-bottom:8px";
+  box.appendChild(inp);
+
+  var row=document.createElement("div");
+  row.style.cssText="display:flex;gap:6px;justify-content:flex-end";
+
+  var cancel=document.createElement("button");
+  cancel.className="btn";
+  cancel.textContent="Avbryt";
+  cancel.addEventListener("click",function(){modal.remove();});
+
+  var ok=document.createElement("button");
+  ok.className="btn on";
+  ok.textContent="Skapa film";
+  ok.addEventListener("click",function(){
+    var name=inp.value.trim();
+    if(!name)return;
+    modal.remove();
+    createTaktikFilmFromSavedFormationV50(saved,name);
+  });
+
+  row.appendChild(cancel);
+  row.appendChild(ok);
+  box.appendChild(row);
+
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  setTimeout(function(){inp.focus();inp.select();},80);
+}
+
+function createTaktikFilmFromSavedFormationV50(saved,name){
+  try{
+    var currentKey=workspaceKeyFromPanel(activeWorkspacePanel);
+    workspaceStates[currentKey]=captureWorkspaceState();
+  }catch(e){}
+
+  if(playback && typeof stopPlayback==="function"){
+    try{stopPlayback();}catch(e){}
+  }
+
+  var ws=workspaceFromSavedFormation(saved);
+  format=ws.format||format||11;
+  var fmtSel=document.getElementById("fmt-sel");
+  if(fmtSel)fmtSel.value=String(format);
+  halfMode=0;
+  if(typeof updateViewBox==="function")updateViewBox();
+
+  var snap=JSON.parse(JSON.stringify(ws.snap));
+  snap.movementPaths=[];
+
+  var newFilm={
+    name:name,
+    folder:"Taktik",
+    steps:[snap],
+    _isDraft:true,
+    _sourceFormationName:saved.name||"Utgångsläge"
+  };
+
+  taktikFilmer.push(newFilm);
+  var idx=taktikFilmer.length-1;
+
+  try{
+    workspaceStates.taktik=ws;
+    workspaceStates.taktik.snap=snap;
+  }catch(e){}
+
+  openPanelByName("taktik");
+  renderTaktikList();
+  startPlayback(idx);
+
+  showToast("Ny film skapad från utgångsläge");
+  cloudStatus("Utkast: "+name+" – lägg till steg och spara filmen","#7aaa88");
+}
+
+// Viktigt: alla befintliga knappar som anropar sendSavedFormationToTaktik
+// ska nu öppna filmnamnsrutan i stället för att bara kopiera läget till taktikytan.
+sendSavedFormationToTaktik=function(saved){
+  openNewTaktikFromSavedFormationModalV50(saved);
+};
+
+// Gör knappen tydligare.
+(function(){
+  function relabelImportButtonsV50(){
+    var b=document.getElementById("btn-import-start-taktik");
+    if(b){
+      b.textContent="Ny film från utgångsläge";
+      b.title="Välj ett utgångsläge och skapa en ny taktikfilm";
+    }
+
+    // I listan med utgångslägen heter gamla knappen "Till taktik".
+    // Den får behålla samma funktion men bättre text när listan renderas om.
+    var savesList=document.getElementById("saves-list");
+    if(savesList){
+      Array.prototype.slice.call(savesList.querySelectorAll("button")).forEach(function(btn){
+        if((btn.textContent||"").trim()==="Till taktik"){
+          btn.textContent="Ny film";
+          btn.title="Skapa ny taktikfilm från detta utgångsläge";
+        }
+      });
+    }
+  }
+
+  var oldRenderSaves=renderSavesList;
+  renderSavesList=function(){
+    var res=oldRenderSaves.apply(this,arguments);
+    relabelImportButtonsV50();
+    return res;
+  };
+
+  var oldRenderTaktik=renderTaktikList;
+  renderTaktikList=function(){
+    var res=oldRenderTaktik.apply(this,arguments);
+    relabelImportButtonsV50();
+    return res;
+  };
+
+  setTimeout(relabelImportButtonsV50,300);
+})();
+/* === slut v50 === */
