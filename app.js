@@ -5328,3 +5328,248 @@ setTimeout(addAdoptLegacyButtonV56,300);
 setTimeout(addAdoptLegacyButtonV56,1200);
 
 /* === slut v56-adopt === */
+
+
+/* === v57-adopt-broad: hitta gamla filer även om type/folder/name saknas ===
+   v56 sökte bara rader med type=uppstallning/taktikfilm/match.
+   v57 söker ALLA rader när man trycker på 🔧 Äldre, klassar dem efter data-innehåll,
+   och sätter både data._meta och korrekt top-level type/folder/name vid behov.
+   Detta körs fortfarande inte vid vanlig uppstart.
+*/
+
+function getProfileV57(){
+  try{
+    if(typeof ensureUserProfile==="function")return ensureUserProfile(false);
+    if(typeof getUserProfile==="function")return getUserProfile();
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+
+function metaV57(data){
+  return (data&&data._meta)||{};
+}
+
+function classifyRowV57(row){
+  if(!row)return null;
+  var d=row.data||{};
+  var t=row.type||"";
+
+  if(t==="taktikfilm" || (Array.isArray(d.steps) && d.steps.length>=2)){
+    return "taktikfilm";
+  }
+
+  if(t==="uppstallning"){
+    return "uppstallning";
+  }
+
+  // Utgångslägen kan se lite olika ut i äldre versioner.
+  // Vanliga tecken: players-array, ball, arrows/freehand/zones, format, formation.
+  if(
+    (Array.isArray(d.players) && !Array.isArray(d.steps)) ||
+    (d.ball && !Array.isArray(d.steps)) ||
+    (d.formation && !Array.isArray(d.steps)) ||
+    (d.format && !Array.isArray(d.steps) && !d.trupp)
+  ){
+    return "uppstallning";
+  }
+
+  if(t==="match"){
+    return "match";
+  }
+
+  // Matchrader kan sakna type men har datum/motstånd/startade.
+  if(d.datum && (d.motstand || d.motstånd || d.opponent || Array.isArray(d.startade))){
+    return "match";
+  }
+
+  return null;
+}
+
+function rowNeedsAdoptV57(row,kind){
+  var d=row.data||{};
+  var m=metaV57(d);
+
+  // Om type saknas/fel ska den fixas även om meta redan finns.
+  if(row.type!==kind)return true;
+
+  // Om folder/name saknas på filer som ska visas i listor ska de fixas.
+  if((kind==="uppstallning" || kind==="taktikfilm") && !row.name && !d.name)return true;
+  if((kind==="uppstallning" || kind==="taktikfilm") && !row.folder && !d.folder)return true;
+
+  if(kind==="match"){
+    return !(m.teamId || m.teamCode);
+  }
+
+  return !(m.ownerId || m.ownerName || m.teamId || m.teamCode);
+}
+
+function makeMetaV57(kind,p){
+  var now=new Date().toISOString();
+  if(kind==="match"){
+    return {
+      teamId:p.teamId,
+      teamCode:p.teamCode,
+      teamName:p.teamName||p.teamCode,
+      createdBy:p.ownerName,
+      updatedAt:now
+    };
+  }
+  return {
+    ownerId:p.ownerId,
+    ownerName:p.ownerName,
+    teamId:p.teamId,
+    teamCode:p.teamCode,
+    sharedWithTeam:false,
+    teamCanEdit:false,
+    updatedAt:now
+  };
+}
+
+function defaultNameV57(row,kind,d){
+  if(row.name)return row.name;
+  if(d.name)return d.name;
+  if(kind==="taktikfilm")return "Äldre taktikfilm "+row.id;
+  if(kind==="uppstallning")return "Äldre utgångsläge "+row.id;
+  if(kind==="match")return (d.datum||"Match")+" "+(d.motstand||d.motstånd||"");
+  return "Äldre fil "+row.id;
+}
+
+function defaultFolderV57(row,kind,d){
+  if(row.folder)return row.folder;
+  if(d.folder)return d.folder;
+  if(kind==="taktikfilm")return "Taktik";
+  return "Allmänt";
+}
+
+function patchAdoptRowV57(row,kind,p){
+  var d=JSON.parse(JSON.stringify(row.data||{}));
+  var oldMeta=d._meta||{};
+  d._meta=Object.assign({}, oldMeta, makeMetaV57(kind,p));
+
+  var body={data:d,type:kind};
+
+  if(kind==="uppstallning" || kind==="taktikfilm"){
+    body.name=defaultNameV57(row,kind,d);
+    body.folder=defaultFolderV57(row,kind,d);
+  }else if(kind==="match"){
+    body.name=defaultNameV57(row,kind,d);
+    body.folder=row.folder||"Matcher";
+  }
+
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+row.id,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify(body)
+  }).then(function(r){
+    if(!r.ok)throw new Error("Kunde inte uppdatera rad "+row.id);
+    return r.json();
+  }).then(function(){
+    return {updated:true,type:kind,id:row.id,name:body.name};
+  });
+}
+
+function scanAllRowsForAdoptionV57(){
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?select=*&order=id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data))return [];
+      return data.map(function(row){
+        var kind=classifyRowV57(row);
+        return {row:row,kind:kind};
+      }).filter(function(x){
+        return x.kind && rowNeedsAdoptV57(x.row,x.kind);
+      });
+    });
+}
+
+function runAdoptLegacyFilesV57(){
+  var p=getProfileV57();
+  if(!p || !p.ownerId || !p.teamId){
+    showToast("Fyll i profil och lag först",false);
+    if(typeof ensureUserProfile==="function")ensureUserProfile(true);
+    return;
+  }
+
+  cloudStatus("Söker äldre filer brett...","#7aaa88");
+
+  scanAllRowsForAdoptionV57().then(function(items){
+    if(!items.length){
+      showToast("Inga äldre omärkta filer hittades");
+      cloudStatus("✅ Inga äldre filer att märka","#4ae87a");
+      return;
+    }
+
+    var counts={uppstallning:0,taktikfilm:0,match:0};
+    items.forEach(function(x){counts[x.kind]=(counts[x.kind]||0)+1;});
+
+    var msg="Jag hittade äldre/omärkta rader att fixa:\n\n"+
+      "Utgångslägen: "+counts.uppstallning+"\n"+
+      "Taktikfilmer: "+counts.taktikfilm+"\n"+
+      "Matcher: "+counts.match+"\n\n"+
+      "Jag sätter också rätt typ/folder/namn om det saknas.\n\n"+
+      "De märks med:\n"+p.ownerName+" · "+p.teamCode+"\n\n"+
+      "Vill du fortsätta?";
+
+    if(!confirm(msg)){
+      cloudStatus("Avbrutet","#7aaa88");
+      return;
+    }
+
+    cloudStatus("Märker äldre filer...","#e8c84a");
+
+    var done=0, failed=0;
+    var chain=Promise.resolve();
+
+    items.forEach(function(item){
+      chain=chain.then(function(){
+        return patchAdoptRowV57(item.row,item.kind,p)
+          .then(function(){done++;})
+          .catch(function(err){failed++;console.error(err);});
+      });
+    });
+
+    return chain.then(function(){
+      var text="Märkning klar: "+done+" uppdaterade"+(failed?(", "+failed+" fel"):"");
+      showToast(text, failed?false:true);
+      cloudStatus((failed?"⚠️ ":"✅ ")+text, failed?"#e8c84a":"#4ae87a");
+
+      // Ladda om allt efter att top-level type/folder/name nu är korrigerat.
+      setTimeout(function(){
+        try{cloudLoadSaves();}catch(e){}
+        try{cloudLoadTaktik();}catch(e){}
+        try{loadMatcher();}catch(e){}
+        try{renderSavesList();}catch(e){}
+        try{renderTaktikList();}catch(e){}
+      },500);
+    });
+  }).catch(function(err){
+    showToast("Kunde inte söka äldre filer",false);
+    cloudStatus("❌ "+err.message,"#e84a4a");
+  });
+}
+
+// Byt funktion på befintliga 🔧 Äldre-knappen från v56 till bredare v57-variant.
+function rebindAdoptLegacyButtonV57(){
+  var btn=document.getElementById("btn-adopt-legacy-v56");
+  if(!btn)return;
+  btn.textContent="🔧 Äldre+";
+  btn.title="Hitta och märk gamla filer även om typ/folder saknas";
+  if(btn.dataset.v57Bound)return;
+  var clone=btn.cloneNode(true);
+  btn.parentNode.replaceChild(clone,btn);
+  clone.id="btn-adopt-legacy-v56";
+  clone.dataset.v57Bound="1";
+  clone.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    runAdoptLegacyFilesV57();
+    return false;
+  },true);
+}
+
+rebindAdoptLegacyButtonV57();
+setTimeout(rebindAdoptLegacyButtonV57,300);
+setTimeout(rebindAdoptLegacyButtonV57,1200);
+
+/* === slut v57-adopt-broad === */
