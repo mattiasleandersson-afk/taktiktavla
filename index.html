@@ -154,13 +154,46 @@
   }
 </style>
 
+
+<style id="v53-bugfix-css">
+  /* Fullscreen: lägg ritverktygen uppe till vänster så de inte ligger över målvakten/centrum. */
+  body.fullscreen-portrait #fs-top-tools{
+    left: calc(env(safe-area-inset-left,0px) + 8px) !important;
+    right: auto !important;
+    top: calc(env(safe-area-inset-top,0px) + 8px) !important;
+    transform: none !important;
+    max-width: min(260px, calc(100vw - 16px)) !important;
+    padding: 4px 5px !important;
+    gap: 3px !important;
+    opacity: .92;
+  }
+  body.fullscreen-portrait #fs-top-tools .ls-btn{
+    min-width: 28px !important;
+    height: 28px !important;
+    padding: 2px 5px !important;
+    font-size: .72rem !important;
+  }
+
+  /* I formation/fullscreen behövs inte taktikpilarna. JS styr också, men CSS säkrar. */
+  body.fullscreen-portrait:not(.v53-taktik-fs) #fs-first-btn,
+  body.fullscreen-portrait:not(.v53-taktik-fs) #fs-prev-btn,
+  body.fullscreen-portrait:not(.v53-taktik-fs) #fs-next-btn,
+  body.fullscreen-portrait:not(.v53-taktik-fs) #fs-step-label,
+  body.fullscreen-portrait:not(.v53-taktik-fs) #fs-tb-movement{
+    display:none !important;
+  }
+
+  /* Bara aktiv panel ska visas. Detta stoppar sparade matcher-listan från att ligga kvar visuellt. */
+  .panel:not(.on){display:none !important;}
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7.4</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.7.5</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
