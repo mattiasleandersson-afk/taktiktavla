@@ -434,13 +434,24 @@
   }
 </style>
 
+
+<style id="v71-edit-vs-present-css">
+  /* Fullskärm är presentationsläge: rörelse är en redigeringsfunktion och ska inte visas där. */
+  body.fullscreen-portrait #fs-tb-movement,
+  body.fullscreen-portrait #btn-tb-movement{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.9.1</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.9.3</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
