@@ -6904,3 +6904,463 @@ document.querySelectorAll(".tab").forEach(function(tab){
 });
 
 /* === slut v66-fullscreen-bottombar === */
+
+
+/* === v67-dedupe-unsaved: hårdare dedupe utgångslägen + sparat nollställer varning === */
+
+function metaForV67(obj){
+  try{
+    if(typeof fileMetaV10==="function")return fileMetaV10(obj)||{};
+  }catch(e){}
+  if(obj&&obj._meta)return obj._meta;
+  if(obj&&obj.state&&obj.state._meta)return obj.state._meta;
+  if(obj&&obj.data&&obj.data._meta)return obj.data._meta;
+  return {};
+}
+
+function normalizeNameV67(s){
+  return String(s||"").trim().toLowerCase().replace(/\s+/g," ");
+}
+
+function normalizeFolderV67(s, fallback){
+  return String(s||fallback||"Allmänt").trim().toLowerCase().replace(/\s+/g," ");
+}
+
+function formationContentSignatureV67(s){
+  try{
+    var st=s&&s.state?s.state:(s&&s.data?s.data:null);
+    if(!st)return "";
+    var c=JSON.parse(JSON.stringify(st));
+    delete c._meta;
+    delete c.meta;
+    // Grov men stabil signatur: tillräckligt för gamla dubletter.
+    return JSON.stringify(c);
+  }catch(e){return "";}
+}
+
+function saveDedupeKeyV67(s){
+  if(!s)return "empty";
+  var m=metaForV67(s);
+  var owner=m.ownerId||m.ownerName||"legacy";
+  var name=normalizeNameV67(s.name);
+  var folder=normalizeFolderV67(s.folder,"Allmänt");
+  var sig=formationContentSignatureV67(s);
+
+  // För utgångslägen vill vi inte visa samma fil två gånger bara för att den fått nytt id vid migrering.
+  // Namn+mapp+ägare räcker i normalfallet. Om namn saknas använder vi innehållet.
+  if(name)return "nf:"+owner+"|"+folder+"|"+name;
+  if(sig)return "sig:"+owner+"|"+folder+"|"+sig;
+  if(s.id)return "id:"+s.id;
+  return "unknown:"+Math.random();
+}
+
+function dedupeFormationsHardV67(list){
+  var by={}, order=[];
+  (list||[]).forEach(function(s){
+    if(!s)return;
+    if(typeof deletedFormationIdsV64!=="undefined" && s.id && deletedFormationIdsV64[String(s.id)])return;
+
+    var k=saveDedupeKeyV67(s);
+
+    // Behåll nyaste/id-högsta raden om två har samma namn+mapp.
+    if(!by[k]){
+      by[k]=s;
+      order.push(k);
+    }else{
+      var old=by[k];
+      var oldId=parseInt(old.id||0,10)||0;
+      var newId=parseInt(s.id||0,10)||0;
+      if(newId>=oldId)by[k]=s;
+    }
+  });
+  return order.map(function(k){return by[k];});
+}
+
+// Koppla in hårdare dedupe där tidigare v64 använde mildare dedupe.
+dedupeSavesV64=dedupeFormationsHardV67;
+
+function rebuildFormationFoldersV67(){
+  var seen={};folders=["Allmänt"];
+  (savedFormations||[]).forEach(function(s){
+    var f=s.folder||"Allmänt";
+    if(f&&!seen[f]){seen[f]=true;if(f!=="Allmänt")folders.push(f);}
+  });
+  try{updateFolderSelect();}catch(e){}
+}
+
+var _renderSavesList_v67 = typeof renderSavesList==="function" ? renderSavesList : null;
+if(_renderSavesList_v67){
+  renderSavesList=function(){
+    savedFormations=dedupeFormationsHardV67(savedFormations||[]);
+    rebuildFormationFoldersV67();
+    return _renderSavesList_v67.apply(this,arguments);
+  };
+}
+
+var _cloudLoadSaves_v67_base = typeof cloudLoadSaves==="function" ? cloudLoadSaves : null;
+cloudLoadSaves=function(){
+  cloudStatus("Laddar...","#7aaa88");
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=folder.asc,id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)){
+        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        return;
+      }
+      var loaded=data.filter(function(row){return row.type==="uppstallning";}).map(function(row){
+        return {id:row.id,name:row.name,state:row.data,folder:row.folder||"Allmänt"};
+      }).filter(function(s){
+        return !(typeof deletedFormationIdsV64!=="undefined" && s.id && deletedFormationIdsV64[String(s.id)]);
+      }).filter(function(s){
+        try{
+          if(typeof isFileVisibleInScopeV10==="function")return isFileVisibleInScopeV10(s, typeof saveScope!=="undefined"?saveScope:"mine");
+        }catch(e){}
+        return true;
+      });
+
+      savedFormations=dedupeFormationsHardV67(loaded);
+      rebuildFormationFoldersV67();
+      renderSavesList();
+      cloudStatus(savedFormations.length+" uppställningar ✅","#4ae87a");
+    }).catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+    });
+};
+
+// Rensa ev. redan laddade dubbletter utan att behöva starta om.
+setTimeout(function(){
+  try{
+    savedFormations=dedupeFormationsHardV67(savedFormations||[]);
+    rebuildFormationFoldersV67();
+    renderSavesList();
+  }catch(e){}
+},300);
+
+// --- Osparat-varningen: nollställ baslinje direkt efter faktisk sparning ---
+function normalizeTaktikForCompareV67(tk){
+  try{
+    var c=JSON.parse(JSON.stringify(tk||{}));
+    delete c._readOnly;
+    delete c._isDraft;
+    delete c._meta;
+    delete c.meta;
+    delete c.updatedAt;
+    delete c.createdAt;
+    delete c.dbId;
+    return JSON.stringify(c);
+  }catch(e){return "";}
+}
+
+function currentEditingTaktikV67(){
+  try{
+    if(editingTaktikIdx===null || typeof editingTaktikIdx==="undefined")return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+
+function markTaktikSavedCleanV67(tk){
+  try{
+    if(typeof autoSaveCurrentStepLocalV16==="function" && editingTaktikIdx!==null){
+      autoSaveCurrentStepLocalV16();
+    }
+  }catch(e){}
+  var cur=tk || currentEditingTaktikV67();
+  try{
+    if(typeof savedTaktikSnapshotV21!=="undefined"){
+      savedTaktikSnapshotV21=normalizeTaktikForCompareV67(cur);
+    }
+  }catch(e){}
+  try{taktikDirtyV17=false;}catch(e){}
+  try{window.taktikDirtyV17=false;}catch(e){}
+}
+
+var _cloudSaveTaktik_v67 = typeof cloudSaveTaktik==="function" ? cloudSaveTaktik : null;
+if(_cloudSaveTaktik_v67){
+  cloudSaveTaktik=function(tk){
+    var res=_cloudSaveTaktik_v67.apply(this,arguments);
+
+    // Sätt clean direkt så inte användaren får varning efter att ha tryckt spara.
+    // Om sparningen skulle misslyckas sätts dirty tillbaka i catch.
+    markTaktikSavedCleanV67(tk);
+
+    Promise.resolve(res).then(function(){
+      markTaktikSavedCleanV67(tk);
+    }).catch(function(){
+      try{taktikDirtyV17=true;}catch(e){}
+    });
+
+    setTimeout(function(){markTaktikSavedCleanV67(tk);},300);
+    setTimeout(function(){markTaktikSavedCleanV67(tk);},900);
+    return res;
+  };
+}
+
+function saveCurrentTaktikFileV67(){
+  if(editingTaktikIdx===null)return;
+  try{
+    if(typeof autoSaveCurrentStepLocalV16==="function")autoSaveCurrentStepLocalV16();
+  }catch(e){}
+  var tk=currentEditingTaktikV67();
+  if(!tk)return;
+  cloudSaveTaktik(tk);
+  markTaktikSavedCleanV67(tk);
+  showToast("Film sparad!");
+  cloudStatus("✅ Film sparad","#4ae87a");
+}
+
+function bindSaveButtonV67(){
+  var btn=document.getElementById("btn-edit-taktik-save");
+  if(!btn || btn.dataset.v67Bound)return;
+  var clone=btn.cloneNode(true);
+  clone.dataset.v67Bound="1";
+  btn.parentNode.replaceChild(clone,btn);
+  clone.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    saveCurrentTaktikFileV67();
+    return false;
+  },true);
+}
+bindSaveButtonV67();
+setTimeout(bindSaveButtonV67,500);
+setTimeout(bindSaveButtonV67,1500);
+
+// Gör jämförelsefunktionen mer tolerant om den gamla v21-funktionen används vid exit.
+hasUnsavedTaktikChangesV21=function(){
+  var tk=currentEditingTaktikV67();
+  if(!tk)return false;
+  try{
+    if(typeof autoSaveCurrentStepLocalV16==="function")autoSaveCurrentStepLocalV16();
+  }catch(e){}
+  var now=normalizeTaktikForCompareV67(tk);
+  if(typeof savedTaktikSnapshotV21==="undefined" || savedTaktikSnapshotV21===null){
+    savedTaktikSnapshotV21=now;
+    return false;
+  }
+  return now!==savedTaktikSnapshotV21;
+};
+
+/* === slut v67-dedupe-unsaved === */
+
+
+/* === v68-owner-permissions: ägare får radera/ändra delning även från Lagets ===
+   Problemet var att äldre logik tolkade "Lagets"-vyn som någon annans fil.
+   Nu avgörs behörighet bara av metadata: ownerId/ownerName mot aktuell profil.
+*/
+
+function profileV68(){
+  try{
+    if(typeof getProfileSafeV10==="function")return getProfileSafeV10();
+    if(typeof getUserProfile==="function")return getUserProfile();
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+
+function metaV68(obj){
+  try{
+    if(typeof fileMetaV10==="function")return fileMetaV10(obj)||{};
+  }catch(e){}
+  if(obj&&obj._meta)return obj._meta;
+  if(obj&&obj.meta)return obj.meta;
+  if(obj&&obj.state&&obj.state._meta)return obj.state._meta;
+  if(obj&&obj.data&&obj.data._meta)return obj.data._meta;
+  return {};
+}
+
+function isOwnerV68(obj){
+  var p=profileV68();
+  var m=metaV68(obj);
+
+  // Gamla filer utan ägare räknas som mina.
+  if(!m.ownerId && !m.ownerName)return true;
+  if(!p)return true;
+
+  if(m.ownerId && p.ownerId && String(m.ownerId)===String(p.ownerId))return true;
+  if(m.ownerName && p.ownerName && String(m.ownerName).trim().toLowerCase()===String(p.ownerName).trim().toLowerCase())return true;
+
+  return false;
+}
+
+function isSameTeamSharedV68(obj){
+  var p=profileV68();
+  var m=metaV68(obj);
+  if(!p||!m.teamId)return false;
+  return String(m.teamId)===String(p.teamId) && !!m.sharedWithTeam && !isOwnerV68(obj);
+}
+
+// Ersätt v10-behörigheten globalt.
+isMineV10=isOwnerV68;
+isSameTeamSharedV10=isSameTeamSharedV68;
+isFileVisibleInScopeV10=function(obj,scope){
+  if(scope==="team"){
+    var m=metaV68(obj);
+    var p=profileV68();
+    if(!p||!m.teamId)return false;
+    // Lagets visar delade filer från laget, även mina egna delade.
+    return String(m.teamId)===String(p.teamId) && !!m.sharedWithTeam;
+  }
+  return isOwnerV68(obj);
+};
+isReadOnlyFileV10=function(obj){
+  var m=metaV68(obj);
+  return !isOwnerV68(obj) && !m.teamCanEdit;
+};
+
+function updateShareMetaV68(data,share,canEdit){
+  var d=JSON.parse(JSON.stringify(data||{}));
+  var meta=d._meta||{};
+  var p=profileV68();
+  if(p){
+    // Om filen redan har ägare: behåll den. Om den saknar ägare: sätt aktuell profil.
+    meta.ownerId=meta.ownerId||p.ownerId;
+    meta.ownerName=meta.ownerName||p.ownerName;
+    meta.teamId=meta.teamId||p.teamId;
+    meta.teamCode=meta.teamCode||p.teamCode;
+    meta.teamName=meta.teamName||p.teamName||p.teamCode;
+  }
+  meta.sharedWithTeam=!!share;
+  meta.teamCanEdit=!!canEdit;
+  meta.updatedAt=new Date().toISOString();
+  d._meta=meta;
+  return d;
+}
+updateShareMetaV10=updateShareMetaV68;
+
+patchFormationShareV10=function(s,share){
+  if(!s||!s.id)return;
+  if(!isOwnerV68(s)){
+    showToast("Du kan bara ändra delning på filer du äger",false);
+    return;
+  }
+
+  var newState=updateShareMetaV68(s.state,share,false);
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({data:newState})
+  }).then(function(){
+    s.state=newState;
+    showToast(share?"Delad med laget":"Inte längre delad");
+
+    // Om man står i Lagets och slutar dela ska filen försvinna därifrån direkt.
+    if(typeof saveScope!=="undefined" && saveScope==="team" && !share){
+      savedFormations=(savedFormations||[]).filter(function(x){return String(x.id)!==String(s.id);});
+    }
+
+    if(typeof renderSavesList==="function")renderSavesList();
+    setTimeout(function(){try{cloudLoadSaves();}catch(e){}},250);
+  }).catch(function(err){
+    showToast("Kunde inte ändra delning",false);
+    cloudStatus("❌ "+err.message,"#e84a4a");
+  });
+};
+
+patchTaktikShareV10=function(tk,share){
+  if(!tk||!tk.dbId)return;
+  if(!isOwnerV68(tk)){
+    showToast("Du kan bara ändra delning på filer du äger",false);
+    return;
+  }
+
+  var newTk=updateShareMetaV68(tk,share,false);
+  Object.keys(newTk).forEach(function(k){tk[k]=newTk[k];});
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({data:newTk})
+  }).then(function(){
+    showToast(share?"Film delad med laget":"Film inte längre delad");
+
+    // Om man står i Lagets och slutar dela ska filmen försvinna därifrån direkt.
+    if(typeof taktikScope!=="undefined" && taktikScope==="team" && !share){
+      taktikFilmer=(taktikFilmer||[]).filter(function(x){return String(x.dbId)!==String(tk.dbId);});
+    }
+
+    if(typeof renderTaktikList==="function")renderTaktikList();
+    setTimeout(function(){try{cloudLoadTaktik();}catch(e){}},250);
+  }).catch(function(err){
+    showToast("Kunde inte ändra delning",false);
+    cloudStatus("❌ "+err.message,"#e84a4a");
+  });
+};
+
+// Ägare får radera även om filen visas under Lagets.
+var _cloudDelete_v68_base = typeof cloudDelete==="function" ? cloudDelete : null;
+cloudDelete=function(id){
+  var s=(savedFormations||[]).find(function(x){return String(x.id)===String(id);});
+  if(s && !isOwnerV68(s)){
+    showToast("Du kan inte radera någon annans fil",false);
+    return;
+  }
+
+  if(typeof deletedFormationIdsV64!=="undefined" && id)deletedFormationIdsV64[String(id)]=true;
+
+  savedFormations=(savedFormations||[]).filter(function(x){return String(x.id)!==String(id);});
+  try{if(typeof dedupeSavesV64==="function")savedFormations=dedupeSavesV64(savedFormations);}catch(e){}
+  try{renderSavesList();}catch(e){}
+  try{updateFolderSelect();}catch(e){}
+
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{
+    method:"DELETE",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"})
+  }).then(function(){
+    showToast("Raderat!");
+    setTimeout(function(){try{cloudLoadSaves();}catch(e){}},250);
+  }).catch(function(err){
+    if(typeof deletedFormationIdsV64!=="undefined")delete deletedFormationIdsV64[String(id)];
+    cloudStatus("❌ Raderingsfel: "+err.message,"#e84a4a");
+    showToast("Kunde inte radera",false);
+    try{cloudLoadSaves();}catch(e){}
+  });
+};
+
+deleteTaktik=function(idx){
+  var tk=taktikFilmer[idx];
+  if(!tk)return;
+
+  if(!isOwnerV68(tk)){
+    showToast("Du kan inte radera någon annans film",false);
+    return;
+  }
+
+  var id=tk.dbId;
+  if(id && typeof deletedTaktikIdsV64!=="undefined")deletedTaktikIdsV64[String(id)]=true;
+
+  taktikFilmer=(taktikFilmer||[]).filter(function(x,i){
+    if(id)return String(x.dbId)!==String(id);
+    return i!==idx;
+  });
+
+  try{if(typeof dedupeTaktikV64==="function")taktikFilmer=dedupeTaktikV64(taktikFilmer);}catch(e){}
+  try{renderTaktikList();}catch(e){}
+
+  if(id){
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id,{
+      method:"DELETE",
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"})
+    }).then(function(){
+      showToast("Taktikfilm raderad!");
+      setTimeout(function(){try{cloudLoadTaktik();}catch(e){}},250);
+    }).catch(function(err){
+      if(typeof deletedTaktikIdsV64!=="undefined")delete deletedTaktikIdsV64[String(id)];
+      cloudStatus("❌ Raderingsfel: "+err.message,"#e84a4a");
+      showToast("Kunde inte radera",false);
+      try{cloudLoadTaktik();}catch(e){}
+    });
+  }else{
+    showToast("Taktikfilm raderad!");
+  }
+};
+window.deleteTaktik=deleteTaktik;
+
+// Tvinga omrendering så knapparna Dela/Dölj/Radera visas även i Lagets för egna filer.
+setTimeout(function(){
+  try{renderSavesList();}catch(e){}
+  try{renderTaktikList();}catch(e){}
+},300);
+
+/* === slut v68-owner-permissions === */
