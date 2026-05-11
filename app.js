@@ -10604,3 +10604,230 @@ if(typeof renderTaktikList==="function"){
 setTimeout(tt79RebindCopyButtons,300);
 
 /* === slut v79-direct-copy-to-mine === */
+
+
+/* === v80-taktik-library-mode: taktikmeny som filbibliotek + städa plan vid avslut === */
+
+var tt80DefaultSnap = null;
+
+function tt80Clone(o){
+  try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}
+}
+
+function tt80CaptureDefaultSnap(){
+  if(tt80DefaultSnap)return;
+  try{
+    tt80DefaultSnap={
+      players:tt80Clone(players||[]),
+      ball:tt80Clone(ball||{x:W/2,y:H/2}),
+      arrows:[],
+      labels:[],
+      freehandPaths:[],
+      zones:[],
+      movementPaths:[]
+    };
+  }catch(e){}
+}
+
+function tt80ClearDrawingsAndSelection(){
+  try{arrows=[];}catch(e){}
+  try{labels=[];}catch(e){}
+  try{freehandPaths=[];}catch(e){}
+  try{zones=[];}catch(e){}
+  try{movementPaths=[];}catch(e){}
+  try{selectedId=null;}catch(e){}
+  try{arrowStart=null;arrowCurrent=null;}catch(e){}
+  try{freehandCurrent=null;freehandDrawing=false;}catch(e){}
+  try{zoneStart=null;zonePreview=null;}catch(e){}
+  try{movementCurrent=null;}catch(e){}
+  try{dragging=null;}catch(e){}
+}
+
+function tt80ResetBoardToDefault(){
+  tt80CaptureDefaultSnap();
+  tt80ClearDrawingsAndSelection();
+  try{
+    if(tt80DefaultSnap && typeof restoreSnap==="function"){
+      restoreSnap(tt80Clone(tt80DefaultSnap));
+    }else{
+      if(typeof initPlayers==="function")initPlayers(typeof _defaultFormation!=="undefined"?_defaultFormation:null);
+      ball={x:W/2,y:H/2};
+    }
+  }catch(e){}
+  try{render();}catch(e){}
+}
+
+function tt80IsOnTaktikPanel(){
+  try{
+    var p=document.getElementById("panel-taktik");
+    return !!(p && p.classList.contains("on"));
+  }catch(e){return false;}
+}
+
+function tt80IsEditingOrPlayingTaktik(){
+  try{
+    if(editingTaktikIdx!==null && typeof editingTaktikIdx!=="undefined")return true;
+  }catch(e){}
+  try{
+    if(isEditingTaktik)return true;
+  }catch(e){}
+  try{
+    if(playback && playback.tk)return true;
+  }catch(e){}
+  return false;
+}
+
+function tt80ApplyLibraryMode(){
+  var on=tt80IsOnTaktikPanel() && !tt80IsEditingOrPlayingTaktik() &&
+         !document.body.classList.contains("fullscreen-portrait") &&
+         !document.body.classList.contains("landscape");
+  document.body.classList.toggle("tt-v80-taktik-library",!!on);
+  if(on){
+    tt80ClearDrawingsAndSelection();
+    try{renderTaktikList();}catch(e){}
+  }
+}
+
+function tt80ShowTaktikLibrary(){
+  try{if(animFrame)cancelAnimationFrame(animFrame);}catch(e){}
+  try{playback=null;}catch(e){}
+  try{editingTaktikIdx=null;}catch(e){}
+  try{editingStepIdx=0;}catch(e){}
+  try{isEditingTaktik=false;}catch(e){}
+  try{tt76ForceClean();}catch(e){}
+  try{tt80ResetBoardToDefault();}catch(e){}
+
+  var bp=document.getElementById("bottompanel");
+  if(bp)bp.classList.remove("hidden");
+
+  var tb=document.getElementById("taktikbar");
+  if(tb)tb.style.display="none";
+
+  var edit=document.getElementById("edit-taktik-ui");
+  if(edit)edit.style.display="none";
+
+  var rec=document.getElementById("rec-ui");
+  if(rec)rec.style.display="none";
+
+  var no=document.getElementById("no-rec-ui");
+  if(no)no.style.display="none";
+
+  try{
+    document.querySelectorAll(".tab").forEach(function(t){
+      t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");
+    });
+    document.querySelectorAll(".panel").forEach(function(p){
+      p.classList.toggle("on",p.id==="panel-taktik");
+    });
+  }catch(e){}
+
+  try{renderTaktikList();}catch(e){}
+  setTimeout(tt80ApplyLibraryMode,0);
+}
+
+function tt80EnterTaktikWorkMode(){
+  document.body.classList.remove("tt-v80-taktik-library");
+}
+
+// När man öppnar/spelar/redigerar taktik: visa planen igen.
+var _tt80_startPlayback_base=typeof startPlayback==="function"?startPlayback:null;
+if(_tt80_startPlayback_base){
+  startPlayback=function(){
+    tt80EnterTaktikWorkMode();
+    var r=_tt80_startPlayback_base.apply(this,arguments);
+    setTimeout(tt80ApplyLibraryMode,0);
+    return r;
+  };
+}
+
+var _tt80_openEditTaktik_base=typeof openEditTaktik==="function"?openEditTaktik:null;
+if(_tt80_openEditTaktik_base){
+  openEditTaktik=function(){
+    tt80EnterTaktikWorkMode();
+    var r=_tt80_openEditTaktik_base.apply(this,arguments);
+    setTimeout(tt80ApplyLibraryMode,0);
+    return r;
+  };
+}
+
+// Ersätt avslut från taktikfilm så den går tillbaka till biblioteket
+// och inte lämnar gamla spelarflyttar/ritningar på planen.
+if(typeof stopPlayback==="function"){
+  stopPlayback=function(){
+    if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return;
+    tt80ShowTaktikLibrary();
+  };
+}
+
+if(typeof exitEditTaktik==="function"){
+  exitEditTaktik=function(){
+    if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return;
+    tt80ShowTaktikLibrary();
+  };
+}
+
+function tt80BindExitButtons(){
+  function bind(id){
+    var old=document.getElementById(id);
+    if(!old || old.dataset.tt80ExitBound)return;
+    var neu=old.cloneNode(true);
+    neu.dataset.tt80ExitBound="1";
+    old.parentNode.replaceChild(neu,old);
+    neu.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return false;
+      tt80ShowTaktikLibrary();
+      return false;
+    },true);
+  }
+  bind("btn-stop-play");
+  bind("btn-edit-taktik-exit");
+}
+
+if(typeof renderTaktikList==="function"){
+  var _renderTaktikList_v80=renderTaktikList;
+  renderTaktikList=function(){
+    var r=_renderTaktikList_v80.apply(this,arguments);
+    setTimeout(function(){
+      try{if(typeof tt78PatchReadonlyEyeIcons==="function")tt78PatchReadonlyEyeIcons();}catch(e){}
+      try{if(typeof tt79RebindCopyButtons==="function")tt79RebindCopyButtons();}catch(e){}
+      tt80BindExitButtons();
+      tt80ApplyLibraryMode();
+    },0);
+    return r;
+  };
+}
+
+// När man växlar flik: aktivera biblioteksläge om Taktik är huvudvy.
+document.addEventListener("click",function(e){
+  try{
+    var t=e.target.closest && e.target.closest(".tab");
+    if(t){
+      setTimeout(function(){
+        if(t.getAttribute("data-panel")==="taktik" && !tt80IsEditingOrPlayingTaktik()){
+          tt80ResetBoardToDefault();
+        }
+        tt80ApplyLibraryMode();
+      },50);
+    }
+  }catch(err){}
+},true);
+
+// När en ny taktik skapas/öppnas, ta bort biblioteksläget.
+["btn-new-taktik","new-taktik-ok"].forEach(function(id){
+  var b=document.getElementById(id);
+  if(b && !b.dataset.tt80WorkBound){
+    b.dataset.tt80WorkBound="1";
+    b.addEventListener("click",function(){setTimeout(tt80EnterTaktikWorkMode,0);},true);
+  }
+});
+
+tt80CaptureDefaultSnap();
+tt80BindExitButtons();
+setTimeout(tt80ApplyLibraryMode,500);
+setTimeout(tt80BindExitButtons,800);
+setTimeout(tt80ApplyLibraryMode,1500);
+
+/* === slut v80-taktik-library-mode === */
