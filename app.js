@@ -13374,3 +13374,1599 @@ setTimeout(ui99TopAlign,700);
 setTimeout(ui99TopAlign,1600);
 
 /* === slut v99-formation-top-align-icons === */
+
+
+/* === v101-match-save-editor-fix: bevara startmarkeringar efter spara + dölj matchlistan vid redigering === */
+
+function tt101Clone(obj){
+  try{return JSON.parse(JSON.stringify(obj||{}));}catch(e){return obj;}
+}
+
+function tt101CurrentMatchSelections(){
+  var out={};
+  try{
+    Object.keys(matchSelections||{}).forEach(function(id){
+      if(matchSelections[id])out[id]=matchSelections[id];
+    });
+  }catch(e){}
+  return out;
+}
+
+function tt101RestoreSelections(sel){
+  try{
+    matchSelections=tt101Clone(sel||{});
+    if(typeof renderMatchTruppList==="function")renderMatchTruppList();
+  }catch(e){}
+}
+
+function tt101SetMatchEditorActive(active){
+  try{
+    document.body.classList.toggle("tt101-match-editor-active",!!active);
+  }catch(e){}
+
+  var saved=document.getElementById("lag-sparade");
+  if(saved && active){
+    saved.style.display="none";
+  }
+}
+
+function tt101HideSavedMatchesInEditor(){
+  try{
+    var lm=document.getElementById("lag-match");
+    var isMatchVisible=lm && lm.style.display!=="none";
+    if(isMatchVisible || window._editingMatchId){
+      tt101SetMatchEditorActive(true);
+    }
+  }catch(e){}
+}
+
+function tt101ShowSavedMatchesList(){
+  try{document.body.classList.remove("tt101-match-editor-active");}catch(e){}
+  var saved=document.getElementById("lag-sparade");
+  if(saved)saved.style.display="";
+}
+
+function tt101SyncMatchCounter(){
+  try{
+    var n=Object.keys(matchSelections||{}).filter(function(id){return matchSelections[id];}).length;
+    var el=document.getElementById("match-counter");
+    if(el)el.textContent=n+" vald"+(n===1?"":"a");
+  }catch(e){}
+}
+
+function tt101BuildMatchFromCurrentUI(){
+  var datum=document.getElementById("match-datum").value;
+  var motstand=document.getElementById("match-motstand").value.trim();
+  if(!datum){
+    showToast("Välj datum!");
+    return null;
+  }
+
+  var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";}).map(function(sp){return sp.id;});
+  var avbytare=trupp.filter(function(sp){return matchSelections[sp.id]==="avbytare";}).map(function(sp){return sp.id;});
+
+  // Spara aktuell laguppställningsvariant innan matchen byggs.
+  try{
+    if(matchVariants.length>0 && typeof saveCurrentVariant==="function")saveCurrentVariant();
+    else if(Object.keys(matchAssignments||{}).length>0){
+      matchVariants=[{
+        namn:"Uppst. 1",
+        assignments:tt101Clone(matchAssignments),
+        playerStates:players.filter(function(p){return p.team==="home";}).map(function(p){
+          return {id:p.id,number:p.number,name:p.name,x:p.x,y:p.y};
+        })
+      }];
+      activeVariantIdx=0;
+    }
+  }catch(e){}
+
+  return {
+    datum:datum,
+    motstand:motstand||"Okänd",
+    startade:startade,
+    avbytare:avbytare,
+    uppstallningar:tt101Clone(matchVariants||[]),
+    mal_hemma:matchGoals&&typeof matchGoals.home!=="undefined"?matchGoals.home:0,
+    mal_borta:matchGoals&&typeof matchGoals.away!=="undefined"?matchGoals.away:0
+  };
+}
+
+function tt101SaveMatchPreserveUI(){
+  var beforeSel=tt101CurrentMatchSelections();
+  var match=tt101BuildMatchFromCurrentUI();
+  if(!match)return;
+
+  var editId=window._editingMatchId||null;
+  var payloadData=(typeof addMetaToData==="function"?addMetaToData(match):match);
+
+  function afterSaved(dbId,label){
+    match.dbId=dbId;
+    window._editingMatchId=dbId;
+
+    var savedMatch=Object.assign({},match,{dbId:dbId});
+    var idx=matcher.findIndex(function(x){return String(x.dbId)===String(dbId);});
+    if(idx>=0)matcher[idx]=savedMatch;
+    else matcher.push(savedMatch);
+
+    // Viktigt: återställ markeringarna direkt efter save.
+    matchSelections=beforeSel;
+    tt101SyncMatchCounter();
+    if(typeof renderMatchTruppList==="function")renderMatchTruppList();
+    tt101RestoreSelections(beforeSel);
+
+    if(typeof renderStatistik==="function")renderStatistik();
+    if(typeof renderMatchHistory==="function")renderMatchHistory();
+    if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();
+
+    tt101SetMatchEditorActive(true);
+    showToast(label);
+  }
+
+  if(editId){
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+editId,{
+      method:"PATCH",
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+      body:JSON.stringify({
+        name:match.datum+" "+match.motstand,
+        data:payloadData,
+        type:"match",
+        folder:"Allmänt"
+      })
+    })
+    .then(function(r){return r.json();})
+    .then(function(){afterSaved(editId,"Match uppdaterad!");})
+    .catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+      showToast("Kunde inte uppdatera match",false);
+      tt101RestoreSelections(beforeSel);
+    });
+  }else{
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{
+      method:"POST",
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+      body:JSON.stringify({
+        name:match.datum+" "+match.motstand,
+        data:payloadData,
+        type:"match",
+        folder:"Allmänt"
+      })
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!data || !data[0] || !data[0].id){
+        var errMsg=(data&&data.message)?data.message:"Matchen kunde inte sparas";
+        showToast(errMsg,false);
+        cloudStatus("❌ "+errMsg,"#e84a4a");
+        tt101RestoreSelections(beforeSel);
+        return;
+      }
+      afterSaved(data[0].id,"Match sparad: "+match.datum+" vs "+match.motstand);
+    })
+    .catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+      showToast("Kunde inte spara match",false);
+      tt101RestoreSelections(beforeSel);
+    });
+  }
+}
+
+// Stoppa gamla spara-lyssnaren som nollställde matchSelections efter save.
+(function(){
+  var btn=document.getElementById("btn-spara-match");
+  if(btn && !btn.dataset.tt101SaveBound){
+    btn.dataset.tt101SaveBound="1";
+    btn.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt101SaveMatchPreserveUI();
+      return false;
+    },true);
+  }
+})();
+
+// När match öppnas från sparade matcher: dölj själva listan.
+if(typeof openEditMatch==="function" && !openEditMatch._tt101Wrapped){
+  var _openEditMatch_tt101=openEditMatch;
+  openEditMatch=function(m){
+    var r=_openEditMatch_tt101.apply(this,arguments);
+    setTimeout(function(){
+      tt101SetMatchEditorActive(true);
+      var saved=document.getElementById("lag-sparade");
+      if(saved)saved.style.display="none";
+    },0);
+    return r;
+  };
+  openEditMatch._tt101Wrapped=true;
+}
+
+// När man trycker Laguppställning för match: dölj sparade matchlistan också.
+(function(){
+  var b=document.getElementById("btn-match-to-taktik");
+  if(b && !b.dataset.tt101HideSavedBound){
+    b.dataset.tt101HideSavedBound="1";
+    b.addEventListener("click",function(){
+      setTimeout(function(){tt101SetMatchEditorActive(true);},0);
+    },true);
+  }
+})();
+
+// När Sparade matcher-fliken väljs ska listan visas igen.
+document.addEventListener("click",function(e){
+  try{
+    var btn=e.target.closest && e.target.closest("[data-lag]");
+    if(!btn)return;
+    var target=btn.getAttribute("data-lag");
+    if(target==="sparade"){
+      window._editingMatchId=window._editingMatchId||null;
+      setTimeout(function(){
+        tt101ShowSavedMatchesList();
+        if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();
+      },0);
+    }else if(target==="match"){
+      setTimeout(tt101HideSavedMatchesInEditor,0);
+    }
+  }catch(err){}
+},true);
+
+if(typeof renderSparadeMatcherList==="function" && !renderSparadeMatcherList._tt101Wrapped){
+  var _renderSparadeMatcherList_tt101=renderSparadeMatcherList;
+  renderSparadeMatcherList=function(){
+    var r=_renderSparadeMatcherList_tt101.apply(this,arguments);
+    setTimeout(tt101HideSavedMatchesInEditor,0);
+    return r;
+  };
+  renderSparadeMatcherList._tt101Wrapped=true;
+}
+
+setTimeout(tt101HideSavedMatchesInEditor,800);
+
+/* === slut v101-match-save-editor-fix === */
+
+
+/* === v102-match-list-user-button-fix: sparade matcher visas igen + kompakt användarknapp === */
+
+function tt102ShowSavedMatches(){
+  try{document.body.classList.remove("tt101-match-editor-active");}catch(e){}
+  var saved=document.getElementById("lag-sparade");
+  var match=document.getElementById("lag-match");
+  var truppEl=document.getElementById("lag-trupp");
+  var stat=document.getElementById("lag-statistik");
+
+  if(saved)saved.style.display="";
+  if(match)match.style.display="none";
+  if(truppEl)truppEl.style.display="none";
+  if(stat)stat.style.display="none";
+
+  try{
+    document.querySelectorAll("[data-lag]").forEach(function(b){
+      b.classList.toggle("on",b.getAttribute("data-lag")==="sparade");
+    });
+  }catch(e){}
+
+  setTimeout(function(){
+    try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
+    try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
+    var list=document.getElementById("sparade-match-list");
+    if(list){
+      list.style.display="";
+      list.style.visibility="visible";
+      list.style.maxHeight="240px";
+      list.style.overflowY="auto";
+    }
+    if(saved)saved.style.display="";
+  },120);
+}
+
+document.addEventListener("click",function(e){
+  try{
+    var b=e.target.closest && e.target.closest("[data-lag]");
+    if(!b)return;
+    if(b.getAttribute("data-lag")==="sparade"){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt102ShowSavedMatches();
+      return false;
+    }
+  }catch(err){}
+},true);
+
+if(typeof renderSparadeMatcherList==="function" && !renderSparadeMatcherList._tt102Wrapped){
+  var _renderSparadeMatcherList_tt102=renderSparadeMatcherList;
+  renderSparadeMatcherList=function(){
+    var r=_renderSparadeMatcherList_tt102.apply(this,arguments);
+    setTimeout(function(){
+      var active=false;
+      try{
+        active=Array.prototype.slice.call(document.querySelectorAll("[data-lag]")).some(function(b){
+          return b.getAttribute("data-lag")==="sparade" && b.classList.contains("on");
+        });
+      }catch(e){}
+      if(active){
+        document.body.classList.remove("tt101-match-editor-active");
+        var saved=document.getElementById("lag-sparade");
+        if(saved)saved.style.display="";
+      }
+    },0);
+    return r;
+  };
+  renderSparadeMatcherList._tt102Wrapped=true;
+}
+
+if(typeof tt101SaveMatchPreserveUI==="function" && !tt101SaveMatchPreserveUI._tt102Wrapped){
+  var _tt101SaveMatchPreserveUI_v102=tt101SaveMatchPreserveUI;
+  tt101SaveMatchPreserveUI=function(){
+    var r=_tt101SaveMatchPreserveUI_v102.apply(this,arguments);
+    setTimeout(function(){try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}},700);
+    return r;
+  };
+  tt101SaveMatchPreserveUI._tt102Wrapped=true;
+}
+
+function tt102GetProfile(){
+  try{if(typeof getUserProfile==="function"){var p=getUserProfile(); if(p)return p;}}catch(e){}
+  try{if(typeof getProfileSafeV10==="function"){var p2=getProfileSafeV10(); if(p2)return p2;}}catch(e){}
+  try{var raw=localStorage.getItem("tt_profile_v1"); return raw?JSON.parse(raw):null;}catch(e){}
+  return null;
+}
+
+function tt102SaveProfile(name,team){
+  name=String(name||"").trim()||"Tränare";
+  team=String(team||"").trim()||"MITT-LAG";
+  try{
+    if(typeof saveUserProfile==="function"){
+      return saveUserProfile(name,team);
+    }
+  }catch(e){}
+  var old=tt102GetProfile()||{};
+  var code=team.toUpperCase().replace(/\s+/g,"-");
+  var p={
+    ownerId:old.ownerId || ("user_"+Math.random().toString(36).slice(2,10)),
+    ownerName:name,
+    teamId:code,
+    teamCode:code,
+    teamName:code
+  };
+  localStorage.setItem("tt_profile_v1",JSON.stringify(p));
+  return p;
+}
+
+function tt102OpenProfileModal(){
+  var old=document.getElementById("tt102-profile-modal");
+  if(old)old.remove();
+
+  var p=tt102GetProfile()||{};
+  var modal=document.createElement("div");
+  modal.id="tt102-profile-modal";
+
+  var box=document.createElement("div");
+  box.className="tt102-box";
+
+  var h=document.createElement("h2");
+  h.textContent="Profil och lag";
+  box.appendChild(h);
+
+  var lab1=document.createElement("label");
+  lab1.textContent="Tränarnamn";
+  var name=document.createElement("input");
+  name.value=p.ownerName||"";
+
+  var lab2=document.createElement("label");
+  lab2.textContent="Lagkod / lagnamn";
+  var team=document.createElement("input");
+  team.value=p.teamCode||p.teamId||"";
+
+  box.appendChild(lab1);box.appendChild(name);
+  box.appendChild(lab2);box.appendChild(team);
+
+  var info=document.createElement("div");
+  info.style.cssText="font-size:.72rem;color:#7aaa88;line-height:1.3;margin-top:8px";
+  info.textContent="Samma lagkod används för att dela taktik, utgångslägen och matcher mellan tränare.";
+  box.appendChild(info);
+
+  var actions=document.createElement("div");
+  actions.className="tt102-actions";
+
+  var cancel=document.createElement("button");
+  cancel.className="btn";
+  cancel.textContent="Stäng";
+  cancel.addEventListener("click",function(){modal.remove();});
+
+  var save=document.createElement("button");
+  save.className="btn on";
+  save.textContent="Spara";
+  save.addEventListener("click",function(){
+    tt102SaveProfile(name.value,team.value);
+    modal.remove();
+    tt102CompactUserButton();
+    try{if(typeof cloudLoadSaves==="function")cloudLoadSaves();}catch(e){}
+    try{if(typeof cloudLoadTaktik==="function")cloudLoadTaktik();}catch(e){}
+    try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
+    showToast("Profil sparad");
+  });
+
+  actions.appendChild(cancel);
+  actions.appendChild(save);
+  box.appendChild(actions);
+  modal.appendChild(box);
+  modal.addEventListener("click",function(e){if(e.target===modal)modal.remove();});
+  document.body.appendChild(modal);
+  setTimeout(function(){name.focus();},80);
+}
+
+function tt102LooksLikeProfileButton(b){
+  if(!b)return false;
+  var id=String(b.id||"").toLowerCase();
+  var title=String(b.title||"").toLowerCase();
+  var txt=String(b.textContent||"").trim();
+  if(id.indexOf("profile")>=0 || id.indexOf("profil")>=0 || id.indexOf("user")>=0 || id.indexOf("konto")>=0)return true;
+  if(title.indexOf("profil")>=0 || title.indexOf("använd")>=0 || title.indexOf("user")>=0 || title.indexOf("konto")>=0)return true;
+  var p=tt102GetProfile();
+  if(p && p.ownerName && txt.indexOf(p.ownerName)>=0)return true;
+  if(p && p.teamCode && txt.indexOf(p.teamCode)>=0)return true;
+  return false;
+}
+
+function tt102CompactUserButton(){
+  var top=document.getElementById("topbar") || document.querySelector(".topbar");
+  if(!top)return;
+  var candidates=[];
+  try{
+    Array.prototype.slice.call(top.querySelectorAll("button")).forEach(function(b){
+      if(tt102LooksLikeProfileButton(b))candidates.push(b);
+    });
+  }catch(e){}
+
+  if(!candidates.length){
+    var b=document.createElement("button");
+    b.className="btn tt102-profile-btn";
+    b.id="tt102-profile-btn";
+    b.title="Profil och lag";
+    b.textContent="👤";
+    top.appendChild(b);
+    candidates.push(b);
+  }
+
+  candidates.forEach(function(b){
+    b.classList.add("tt102-profile-btn");
+    if(window.innerWidth<=760)b.classList.add("tt102-user-icon-only");
+    else b.classList.remove("tt102-user-icon-only");
+    b.title="Profil och lag";
+    if(!b.dataset.tt102ProfileBound){
+      b.dataset.tt102ProfileBound="1";
+      b.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+        tt102OpenProfileModal();
+        return false;
+      },true);
+    }
+  });
+}
+
+window.addEventListener("resize",function(){setTimeout(tt102CompactUserButton,80);});
+setTimeout(tt102CompactUserButton,500);
+setTimeout(tt102CompactUserButton,1600);
+
+/* === slut v102-match-list-user-button-fix === */
+
+
+/* === v103-desktop-player-drag-fix: spelare prioriteras framför boll på desktop ===
+   Problem: på dator kan bollens SVG-lager hamna ovanpå en spelare, så musdrag flyttar bollen.
+   Fix: fånga mousedown tidigt. Om klickpunkten ligger på/vid en spelare startas spelardrag,
+   även om det översta SVG-objektet råkar vara bollen.
+*/
+
+function tt103Dist2(a,b,c,d){
+  var dx=a-c,dy=b-d;
+  return dx*dx+dy*dy;
+}
+
+function tt103NearestPlayerAt(pt,radius){
+  radius=radius||22;
+  var best=null,bestD=radius*radius;
+  try{
+    (players||[]).forEach(function(p){
+      var d=tt103Dist2(pt.x,pt.y,p.x,p.y);
+      if(d<=bestD){
+        best=p;
+        bestD=d;
+      }
+    });
+  }catch(e){}
+  return best;
+}
+
+function tt103IsBallTarget(target){
+  try{
+    return !!(target && target.closest && target.closest(".ball-token"));
+  }catch(e){return false;}
+}
+
+function tt103IsPlayerTarget(target){
+  try{
+    return !!(target && target.closest && target.closest(".player-token"));
+  }catch(e){return false;}
+}
+
+function tt103FindNearestHomePitchPlayerFromClient(cx,cy,exceptId){
+  try{
+    var pt=svgPt(cx,cy);
+    var best=null,bestD=50*50;
+    (players||[]).forEach(function(p){
+      if(p.team!=="home")return;
+      if(exceptId && p.id===exceptId)return;
+      var d=tt103Dist2(pt.x,pt.y,p.x,p.y);
+      if(d<bestD){
+        best=p.id;
+        bestD=d;
+      }
+    });
+    return best;
+  }catch(e){return null;}
+}
+
+function tt103SwapAssignments(srcPid,targetPid){
+  if(!srcPid || !targetPid || srcPid===targetPid)return false;
+  try{
+    var srcTid=matchAssignments[srcPid]||null;
+    var tgtTid=matchAssignments[targetPid]||null;
+
+    if(srcTid)matchAssignments[targetPid]=srcTid;
+    else delete matchAssignments[targetPid];
+
+    if(tgtTid)matchAssignments[srcPid]=tgtTid;
+    else delete matchAssignments[srcPid];
+
+    var srcSp=srcTid?matchRoster.find(function(x){return x.id===srcTid;}):null;
+    var tgtSp=tgtTid?matchRoster.find(function(x){return x.id===tgtTid;}):null;
+    var srcP=players.find(function(x){return x.id===srcPid;});
+    var tgtP=players.find(function(x){return x.id===targetPid;});
+
+    if(srcP){srcP.number=tgtSp?tgtSp.nr:0;srcP.name=tgtSp?tgtSp.namn:"";}
+    if(tgtP){tgtP.number=srcSp?srcSp.nr:0;tgtP.name=srcSp?srcSp.namn:"";}
+
+    if(typeof render==="function")render();
+    if(typeof renderBench==="function")renderBench();
+    showToast("Spelare bytte plats!");
+    return true;
+  }catch(e){return false;}
+}
+
+function tt103ReturnAssignedPlayerToBench(pid){
+  try{
+    if(!pid || !matchAssignments[pid])return false;
+    delete matchAssignments[pid];
+    var p=players.find(function(x){return x.id===pid;});
+    if(p){p.number=0;p.name="";}
+    if(typeof render==="function")render();
+    if(typeof renderBench==="function")renderBench();
+    showToast("Spelare återlagd till avbytare!");
+    return true;
+  }catch(e){return false;}
+}
+
+function tt103StartDesktopPlayerDrag(ev,p){
+  if(!p || mode!=="move")return false;
+
+  ev.preventDefault();
+  ev.stopPropagation();
+  if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
+
+  try{if(typeof saveUndo==="function")saveUndo();}catch(e){}
+  selectedId=p.id;
+
+  var startX=ev.clientX,startY=ev.clientY;
+  var moved=false;
+
+  // I matchläge med placerade hemmaspelare: desktop ska kunna byta plats/åter till bänk som touch gör.
+  if((matchRoster||[]).length && p.team==="home"){
+    var ghost=null;
+
+    function makeGhost(){
+      if(ghost || !matchAssignments[p.id])return;
+      var sp=matchRoster.find(function(x){return x.id===matchAssignments[p.id];});
+      if(!sp)return;
+      ghost=document.createElement("div");
+      ghost.style.cssText="position:fixed;z-index:9999;pointer-events:none;background:#4ae87a;color:#0a1a0d;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.8rem;transform:translate(-50%,-50%)";
+      ghost.textContent="#"+sp.nr;
+      document.body.appendChild(ghost);
+    }
+
+    function mm(e2){
+      var dx=e2.clientX-startX,dy=e2.clientY-startY;
+      if(!moved && dx*dx+dy*dy>64){
+        moved=true;
+        makeGhost();
+      }
+      if(moved && ghost){
+        ghost.style.left=e2.clientX+"px";
+        ghost.style.top=e2.clientY+"px";
+      }
+      try{if(typeof highlightNearestPlayer==="function")highlightNearestPlayer(e2.clientX,e2.clientY);}catch(e){}
+    }
+
+    function mu(e2){
+      window.removeEventListener("mousemove",mm,true);
+      window.removeEventListener("mouseup",mu,true);
+      if(ghost){ghost.remove();ghost=null;}
+      try{if(typeof clearPlayerHighlights==="function")clearPlayerHighlights();}catch(e){}
+
+      if(!moved){
+        // Klick utan drag: behåll normal logik så man kan välja spelare via modal.
+        try{if(typeof openPlayerPicker==="function")openPlayerPicker(p.id);}catch(e){}
+        return;
+      }
+
+      var benchBar=document.getElementById("bench-bar");
+      var br=benchBar?benchBar.getBoundingClientRect():null;
+      var droppedOnBench=br && e2.clientX>=br.left && e2.clientX<=br.right && e2.clientY>=br.top && e2.clientY<=br.bottom;
+      if(droppedOnBench){
+        tt103ReturnAssignedPlayerToBench(p.id);
+        return;
+      }
+
+      var targetPid=null;
+      try{
+        if(typeof findNearestHomePitchPlayer==="function")targetPid=findNearestHomePitchPlayer(e2.clientX,e2.clientY,50);
+      }catch(e){}
+      if(!targetPid)targetPid=tt103FindNearestHomePitchPlayerFromClient(e2.clientX,e2.clientY,p.id);
+
+      if(targetPid && targetPid!==p.id){
+        tt103SwapAssignments(p.id,targetPid);
+      }
+    }
+
+    window.addEventListener("mousemove",mm,true);
+    window.addEventListener("mouseup",mu,true);
+    return true;
+  }
+
+  // Vanligt utgångsläge/taktik: flytta själva spelartoken.
+  var pt=svgPt(ev.clientX,ev.clientY);
+  dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};
+
+  function mm2(e2){onMM(e2);}
+  function mu2(e2){
+    window.removeEventListener("mousemove",mm2,true);
+    window.removeEventListener("mouseup",mu2,true);
+    onMU(e2);
+  }
+
+  window.addEventListener("mousemove",mm2,true);
+  window.addEventListener("mouseup",mu2,true);
+  return true;
+}
+
+function tt103InstallDesktopPlayerPriority(){
+  var s=document.getElementById("pitch-svg");
+  if(!s || s.dataset.tt103DesktopDrag)return;
+  s.dataset.tt103DesktopDrag="1";
+
+  s.addEventListener("mousedown",function(ev){
+    try{
+      if(ev.button!==0)return;
+      if(mode!=="move")return;
+
+      var pt=svgPt(ev.clientX,ev.clientY);
+      var p=null;
+
+      // Om klicket redan är på spelare: använd den.
+      var pg=ev.target && ev.target.closest ? ev.target.closest(".player-token") : null;
+      if(pg){
+        var id=pg.getAttribute("data-id");
+        p=(players||[]).find(function(x){return x.id===id;})||null;
+      }
+
+      // Om klicket är på bollen men en spelare ligger under/nära: välj spelaren i stället.
+      if(!p && tt103IsBallTarget(ev.target)){
+        p=tt103NearestPlayerAt(pt,24);
+      }
+
+      // Extra tolerans: om man klickar väldigt nära spelare, prioritera spelaren framför plan/boll.
+      if(!p && !tt103IsPlayerTarget(ev.target)){
+        p=tt103NearestPlayerAt(pt,18);
+      }
+
+      if(p){
+        tt103StartDesktopPlayerDrag(ev,p);
+      }
+    }catch(err){}
+  },true);
+}
+
+tt103InstallDesktopPlayerPriority();
+setTimeout(tt103InstallDesktopPlayerPriority,800);
+setTimeout(tt103InstallDesktopPlayerPriority,1800);
+
+/* === slut v103-desktop-player-drag-fix === */
+
+
+/* === v104-desktop-bench-drag-fix: dra avbytare från bänk till plan på dator === */
+
+function tt104BenchPlayerFromElement(el){
+  try{
+    var txt=String(el.textContent||"").trim();
+    var nrMatch=txt.match(/#\s*(\d+)/);
+    var nr=nrMatch?String(nrMatch[1]):"";
+    var name=txt.replace(/#\s*\d+/,"").trim();
+
+    var candidates=(matchRoster||[]).filter(function(sp){
+      var assigned=false;
+      try{assigned=Object.values(matchAssignments||{}).indexOf(sp.id)>=0;}catch(e){}
+      return !assigned;
+    });
+
+    if(nr){
+      var byNr=candidates.find(function(sp){return String(sp.nr)===nr;});
+      if(byNr)return byNr;
+    }
+    if(name){
+      var low=name.toLowerCase();
+      var byName=candidates.find(function(sp){return String(sp.namn||"").toLowerCase()===low;});
+      if(byName)return byName;
+    }
+  }catch(e){}
+  return null;
+}
+
+function tt104MakeGhost(sp,x,y){
+  var ghost=document.createElement("div");
+  ghost.style.cssText="position:fixed;z-index:9999;pointer-events:none;background:#4ae87a;color:#0a1a0d;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.8rem;transform:translate(-50%,-50%)";
+  ghost.textContent="#"+sp.nr;
+  ghost.style.left=x+"px";
+  ghost.style.top=y+"px";
+  document.body.appendChild(ghost);
+  return ghost;
+}
+
+function tt104FindDropPitchPlayer(cx,cy){
+  var pid=null;
+  try{
+    if(typeof findNearestHomePitchPlayer==="function")pid=findNearestHomePitchPlayer(cx,cy,65);
+  }catch(e){}
+  if(pid)return pid;
+
+  try{
+    var pt=svgPt(cx,cy);
+    var best=null,bestD=65*65;
+    (players||[]).forEach(function(p){
+      if(p.team!=="home")return;
+      var dx=pt.x-p.x,dy=pt.y-p.y,d=dx*dx+dy*dy;
+      if(d<bestD){best=p.id;bestD=d;}
+    });
+    return best;
+  }catch(e){}
+  return null;
+}
+
+function tt104AssignBenchToPitch(sp,pid){
+  if(!sp || !pid)return false;
+  try{
+    assignPlayerToPosition(pid,sp.id);
+    showToast("#"+sp.nr+" in på planen");
+    return true;
+  }catch(e){}
+
+  try{
+    Object.keys(matchAssignments||{}).forEach(function(k){
+      if(matchAssignments[k]===sp.id)delete matchAssignments[k];
+    });
+    matchAssignments[pid]=sp.id;
+    var p=players.find(function(x){return x.id===pid;});
+    if(p){p.number=sp.nr;p.name=sp.namn;}
+    if(typeof render==="function")render();
+    if(typeof renderBench==="function")renderBench();
+    showToast("#"+sp.nr+" in på planen");
+    return true;
+  }catch(e){}
+  return false;
+}
+
+function tt104StartBenchMouseDrag(ev,el,sp){
+  if(!sp)return false;
+  ev.preventDefault();
+  ev.stopPropagation();
+  if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
+
+  var startX=ev.clientX,startY=ev.clientY;
+  var moved=false;
+  var ghost=null;
+
+  function mm(e2){
+    var dx=e2.clientX-startX,dy=e2.clientY-startY;
+    if(!moved && dx*dx+dy*dy>36){
+      moved=true;
+      ghost=tt104MakeGhost(sp,e2.clientX,e2.clientY);
+    }
+    if(moved && ghost){
+      ghost.style.left=e2.clientX+"px";
+      ghost.style.top=e2.clientY+"px";
+      try{if(typeof highlightNearestPlayer==="function")highlightNearestPlayer(e2.clientX,e2.clientY);}catch(e){}
+    }
+  }
+
+  function mu(e2){
+    window.removeEventListener("mousemove",mm,true);
+    window.removeEventListener("mouseup",mu,true);
+    if(ghost){ghost.remove();ghost=null;}
+    try{if(typeof clearPlayerHighlights==="function")clearPlayerHighlights();}catch(e){}
+
+    if(!moved){
+      // Klick på avbytare: gör inget, så vi inte råkar placera fel.
+      return;
+    }
+
+    var pid=tt104FindDropPitchPlayer(e2.clientX,e2.clientY);
+    if(pid){
+      tt104AssignBenchToPitch(sp,pid);
+    }else{
+      showToast("Släpp på en position på planen",false);
+    }
+  }
+
+  window.addEventListener("mousemove",mm,true);
+  window.addEventListener("mouseup",mu,true);
+  return true;
+}
+
+function tt104InstallBenchDesktopDrag(){
+  var bar=document.getElementById("bench-bar");
+  if(!bar || bar.dataset.tt104BenchDrag)return;
+  bar.dataset.tt104BenchDrag="1";
+
+  bar.addEventListener("mousedown",function(ev){
+    try{
+      if(ev.button!==0)return;
+      var el=ev.target.closest && ev.target.closest(".bench-player");
+      if(!el)return;
+      var sp=tt104BenchPlayerFromElement(el);
+      if(!sp)return;
+      tt104StartBenchMouseDrag(ev,el,sp);
+    }catch(e){}
+  },true);
+}
+
+tt104InstallBenchDesktopDrag();
+setTimeout(tt104InstallBenchDesktopDrag,800);
+setTimeout(tt104InstallBenchDesktopDrag,1800);
+
+if(typeof renderBench==="function" && !renderBench._tt104Wrapped){
+  var _renderBench_tt104=renderBench;
+  renderBench=function(){
+    var r=_renderBench_tt104.apply(this,arguments);
+    setTimeout(tt104InstallBenchDesktopDrag,0);
+    return r;
+  };
+  renderBench._tt104Wrapped=true;
+}
+
+/* === slut v104-desktop-bench-drag-fix === */
+
+
+/* === v105-bench-player-id-fix: rätt avbytare vid desktop-drag + tyst placering === */
+
+function tt105BenchList(){
+  try{
+    var assignedTids={};
+    Object.values(matchAssignments||{}).forEach(function(tid){assignedTids[tid]=true;});
+    return (matchRoster||[]).slice()
+      .sort(function(a,b){return String(a.namn||"").localeCompare(String(b.namn||""),"sv");})
+      .filter(function(sp){return !assignedTids[sp.id];});
+  }catch(e){return [];}
+}
+
+function tt105TagBenchPlayers(){
+  try{
+    var cont=document.getElementById("bench-players");
+    if(!cont)return;
+    var bench=tt105BenchList();
+    Array.prototype.slice.call(cont.querySelectorAll(".bench-player")).forEach(function(el,idx){
+      var sp=bench[idx];
+      if(sp){
+        el.dataset.playerId=sp.id;
+        el.dataset.nr=sp.nr;
+        el.dataset.name=sp.namn||"";
+        el.title="#"+sp.nr+" "+(sp.namn||"");
+      }
+    });
+  }catch(e){}
+}
+
+function tt105BenchPlayerFromElement(el){
+  if(!el)return null;
+
+  try{
+    var pid=el.dataset.playerId;
+    if(pid){
+      var exact=(matchRoster||[]).find(function(sp){return String(sp.id)===String(pid);});
+      if(exact)return exact;
+    }
+  }catch(e){}
+
+  // Fallback: använd positionen i bänklistan, inte texten. Text kan ge fel vid liknande namn/nummer.
+  try{
+    var cont=document.getElementById("bench-players");
+    var nodes=Array.prototype.slice.call(cont.querySelectorAll(".bench-player"));
+    var idx=nodes.indexOf(el);
+    if(idx>=0){
+      var bench=tt105BenchList();
+      if(bench[idx])return bench[idx];
+    }
+  }catch(e){}
+
+  // Sista fallback: gamla texttolkningen från v104, men helst används aldrig denna.
+  try{
+    if(typeof tt104BenchPlayerFromElement==="function"){
+      return tt104BenchPlayerFromElement(el);
+    }
+  }catch(e){}
+
+  return null;
+}
+
+function tt105FindDropPitchPlayer(cx,cy){
+  try{
+    if(typeof tt104FindDropPitchPlayer==="function"){
+      var pid=tt104FindDropPitchPlayer(cx,cy);
+      if(pid)return pid;
+    }
+  }catch(e){}
+
+  try{
+    var pt=svgPt(cx,cy);
+    var best=null,bestD=65*65;
+    (players||[]).forEach(function(p){
+      if(p.team!=="home")return;
+      var dx=pt.x-p.x,dy=pt.y-p.y,d=dx*dx+dy*dy;
+      if(d<bestD){best=p.id;bestD=d;}
+    });
+    return best;
+  }catch(e){return null;}
+}
+
+function tt105AssignBenchToPitchSilent(sp,pid){
+  if(!sp || !pid)return false;
+
+  try{
+    // Gör samma sak som assignPlayerToPosition men utan toast.
+    Object.keys(matchAssignments||{}).forEach(function(k){
+      if(matchAssignments[k]===sp.id && k!==pid)delete matchAssignments[k];
+    });
+    matchAssignments[pid]=sp.id;
+
+    var p=players.find(function(x){return x.id===pid;});
+    if(p){
+      p.number=sp.nr;
+      p.name=sp.namn;
+    }
+
+    if(typeof render==="function")render();
+    if(typeof renderBench==="function")renderBench();
+    return true;
+  }catch(e){}
+
+  return false;
+}
+
+function tt105MakeGhost(sp,x,y){
+  var ghost=document.createElement("div");
+  ghost.style.cssText="position:fixed;z-index:9999;pointer-events:none;background:#4ae87a;color:#0a1a0d;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.8rem;transform:translate(-50%,-50%)";
+  ghost.textContent="#"+sp.nr;
+  ghost.style.left=x+"px";
+  ghost.style.top=y+"px";
+  document.body.appendChild(ghost);
+  return ghost;
+}
+
+function tt105StartBenchMouseDrag(ev,el,sp){
+  if(!sp)return false;
+
+  ev.preventDefault();
+  ev.stopPropagation();
+  if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
+
+  var startX=ev.clientX,startY=ev.clientY;
+  var moved=false;
+  var ghost=null;
+
+  function mm(e2){
+    var dx=e2.clientX-startX,dy=e2.clientY-startY;
+    if(!moved && dx*dx+dy*dy>36){
+      moved=true;
+      ghost=tt105MakeGhost(sp,e2.clientX,e2.clientY);
+    }
+    if(moved && ghost){
+      ghost.style.left=e2.clientX+"px";
+      ghost.style.top=e2.clientY+"px";
+      try{if(typeof highlightNearestPlayer==="function")highlightNearestPlayer(e2.clientX,e2.clientY);}catch(e){}
+    }
+  }
+
+  function mu(e2){
+    window.removeEventListener("mousemove",mm,true);
+    window.removeEventListener("mouseup",mu,true);
+    if(ghost){ghost.remove();ghost=null;}
+    try{if(typeof clearPlayerHighlights==="function")clearPlayerHighlights();}catch(e){}
+
+    if(!moved)return;
+
+    var pid=tt105FindDropPitchPlayer(e2.clientX,e2.clientY);
+    if(pid){
+      tt105AssignBenchToPitchSilent(sp,pid);
+    }
+  }
+
+  window.addEventListener("mousemove",mm,true);
+  window.addEventListener("mouseup",mu,true);
+  return true;
+}
+
+function tt105InstallBenchDrag(){
+  var bar=document.getElementById("bench-bar");
+  if(!bar)return;
+
+  // Byt ut v104-hanteraren genom att fånga tidigare och stoppa allt.
+  if(!bar.dataset.tt105BenchDrag){
+    bar.dataset.tt105BenchDrag="1";
+    bar.addEventListener("mousedown",function(ev){
+      try{
+        if(ev.button!==0)return;
+        var el=ev.target.closest && ev.target.closest(".bench-player");
+        if(!el)return;
+        var sp=tt105BenchPlayerFromElement(el);
+        if(!sp)return;
+        tt105StartBenchMouseDrag(ev,el,sp);
+        return false;
+      }catch(e){}
+    },true);
+  }
+
+  tt105TagBenchPlayers();
+}
+
+if(typeof renderBench==="function" && !renderBench._tt105Wrapped){
+  var _renderBench_tt105=renderBench;
+  renderBench=function(){
+    var r=_renderBench_tt105.apply(this,arguments);
+    setTimeout(tt105TagBenchPlayers,0);
+    setTimeout(tt105InstallBenchDrag,0);
+    return r;
+  };
+  renderBench._tt105Wrapped=true;
+}
+
+tt105InstallBenchDrag();
+setTimeout(tt105InstallBenchDrag,500);
+setTimeout(tt105InstallBenchDrag,1500);
+
+/* === slut v105-bench-player-id-fix === */
+
+
+/* === v106-bench-override-old-handler: tvinga även gamla v104-draget att välja rätt spelare ===
+   v105 lade rätt id på bänkspelarna, men v104:s gamla mousedown-lyssnare sitter kvar
+   och körs före v105. Därför måste v104:s egna lookup/assign-funktioner överskrivas.
+*/
+
+function tt106BenchList(){
+  try{
+    var assignedTids={};
+    Object.values(matchAssignments||{}).forEach(function(tid){assignedTids[String(tid)]=true;});
+    return (matchRoster||[]).slice()
+      .sort(function(a,b){return String(a.namn||"").localeCompare(String(b.namn||""),"sv");})
+      .filter(function(sp){return !assignedTids[String(sp.id)];});
+  }catch(e){return [];}
+}
+
+function tt106TagBenchPlayers(){
+  try{
+    var cont=document.getElementById("bench-players");
+    if(!cont)return;
+    var bench=tt106BenchList();
+    Array.prototype.slice.call(cont.querySelectorAll(".bench-player")).forEach(function(el,idx){
+      var sp=bench[idx];
+      if(!sp)return;
+      el.setAttribute("data-player-id",sp.id);
+      el.setAttribute("data-player-nr",sp.nr);
+      el.setAttribute("data-player-name",sp.namn||"");
+      el.title="#"+sp.nr+" "+(sp.namn||"");
+    });
+  }catch(e){}
+}
+
+function tt106BenchPlayerFromElement(el){
+  if(!el)return null;
+
+  // 1. Exakt id från data-attribut.
+  try{
+    var pid=el.getAttribute("data-player-id") || (el.dataset&&el.dataset.playerId);
+    if(pid){
+      var exact=(matchRoster||[]).find(function(sp){return String(sp.id)===String(pid);});
+      if(exact)return exact;
+    }
+  }catch(e){}
+
+  // 2. Index i nuvarande bänklista. Detta matchar renderBench:s sort/filter.
+  try{
+    var cont=document.getElementById("bench-players");
+    var nodes=Array.prototype.slice.call(cont.querySelectorAll(".bench-player"));
+    var idx=nodes.indexOf(el);
+    var bench=tt106BenchList();
+    if(idx>=0 && bench[idx])return bench[idx];
+  }catch(e){}
+
+  return null;
+}
+
+function tt106AssignBenchToPitchSilent(sp,pid){
+  if(!sp || !pid)return false;
+  try{
+    Object.keys(matchAssignments||{}).forEach(function(k){
+      if(String(matchAssignments[k])===String(sp.id) && String(k)!==String(pid))delete matchAssignments[k];
+    });
+
+    matchAssignments[pid]=sp.id;
+
+    var p=(players||[]).find(function(x){return String(x.id)===String(pid);});
+    if(p){
+      p.number=sp.nr;
+      p.name=sp.namn;
+    }
+
+    if(typeof render==="function")render();
+    if(typeof renderBench==="function")renderBench();
+    return true;
+  }catch(e){return false;}
+}
+
+// Viktig del: överskriv v104-funktionerna som den gamla eventlyssnaren redan använder.
+try{
+  tt104BenchPlayerFromElement = tt106BenchPlayerFromElement;
+}catch(e){}
+try{
+  tt104AssignBenchToPitch = tt106AssignBenchToPitchSilent;
+}catch(e){}
+
+// Även v105 ska använda samma robusta lookup om den finns kvar.
+try{
+  tt105BenchPlayerFromElement = tt106BenchPlayerFromElement;
+}catch(e){}
+try{
+  tt105AssignBenchToPitchSilent = tt106AssignBenchToPitchSilent;
+}catch(e){}
+
+if(typeof renderBench==="function" && !renderBench._tt106Wrapped){
+  var _renderBench_tt106=renderBench;
+  renderBench=function(){
+    var r=_renderBench_tt106.apply(this,arguments);
+    setTimeout(tt106TagBenchPlayers,0);
+    setTimeout(function(){
+      try{tt104BenchPlayerFromElement = tt106BenchPlayerFromElement;}catch(e){}
+      try{tt104AssignBenchToPitch = tt106AssignBenchToPitchSilent;}catch(e){}
+      try{tt105BenchPlayerFromElement = tt106BenchPlayerFromElement;}catch(e){}
+      try{tt105AssignBenchToPitchSilent = tt106AssignBenchToPitchSilent;}catch(e){}
+    },0);
+    return r;
+  };
+  renderBench._tt106Wrapped=true;
+}
+
+tt106TagBenchPlayers();
+setTimeout(tt106TagBenchPlayers,300);
+setTimeout(tt106TagBenchPlayers,1000);
+setTimeout(function(){
+  try{tt104BenchPlayerFromElement = tt106BenchPlayerFromElement;}catch(e){}
+  try{tt104AssignBenchToPitch = tt106AssignBenchToPitchSilent;}catch(e){}
+  try{tt105BenchPlayerFromElement = tt106BenchPlayerFromElement;}catch(e){}
+  try{tt105AssignBenchToPitchSilent = tt106AssignBenchToPitchSilent;}catch(e){}
+},300);
+
+/* === slut v106-bench-override-old-handler === */
+
+
+/* === v108-desktop-bench-visibility-fix: endast dator, återställ dold avbytarbänk ===
+   Bas: v106. 
+   iPhone/iPad fungerar redan, därför aktiveras denna bara i desktop/musläge.
+*/
+
+function tt108IsDesktop(){
+  try{
+    if(window.matchMedia && window.matchMedia("(pointer:fine)").matches)return true;
+    if(document.body.classList.contains("desktop"))return true;
+    return window.innerWidth>=900;
+  }catch(e){
+    return false;
+  }
+}
+
+function tt108IsInFormationPanel(){
+  try{
+    var tab=document.querySelector('.tab.on[data-panel="formations"]');
+    var panel=document.getElementById("panel-formations");
+    return !!(tab || (panel && panel.classList.contains("on")));
+  }catch(e){
+    return false;
+  }
+}
+
+function tt108ShouldShowBench(){
+  try{
+    return tt108IsDesktop() && !!((matchRoster||[]).length) && tt108IsInFormationPanel();
+  }catch(e){
+    return false;
+  }
+}
+
+function tt108ForceBenchVisibleDesktop(){
+  if(!tt108ShouldShowBench()){
+    try{document.body.classList.remove("tt108-desktop-match-lineup");}catch(e){}
+    return;
+  }
+
+  var bar=document.getElementById("bench-bar");
+  var cont=document.getElementById("bench-players");
+  if(!bar)return;
+
+  document.body.classList.add("tt108-desktop-match-lineup");
+
+  bar.classList.add("active");
+  bar.style.display="flex";
+  bar.style.visibility="visible";
+  bar.style.opacity="1";
+
+  if(cont){
+    cont.style.display="flex";
+    cont.style.visibility="visible";
+    cont.style.opacity="1";
+  }
+
+  try{if(typeof tt106TagBenchPlayers==="function")tt106TagBenchPlayers();}catch(e){}
+  try{if(typeof tt105TagBenchPlayers==="function")tt105TagBenchPlayers();}catch(e){}
+}
+
+function tt108ScheduleBenchVisibleDesktop(){
+  if(!tt108IsDesktop())return;
+  setTimeout(tt108ForceBenchVisibleDesktop,0);
+  setTimeout(tt108ForceBenchVisibleDesktop,120);
+  setTimeout(tt108ForceBenchVisibleDesktop,450);
+}
+
+(function(){
+  var btn=document.getElementById("btn-match-to-taktik");
+  if(btn && !btn.dataset.tt108DesktopBenchVisible){
+    btn.dataset.tt108DesktopBenchVisible="1";
+    btn.addEventListener("click",function(){
+      tt108ScheduleBenchVisibleDesktop();
+    },true);
+  }
+})();
+
+if(typeof renderBench==="function" && !renderBench._tt108Wrapped){
+  var _renderBench_tt108=renderBench;
+  renderBench=function(){
+    var r=_renderBench_tt108.apply(this,arguments);
+    if(tt108ShouldShowBench()){
+      var bar=document.getElementById("bench-bar");
+      var cont=document.getElementById("bench-players");
+      document.body.classList.add("tt108-desktop-match-lineup");
+      if(bar){
+        bar.classList.add("active");
+        bar.style.display="flex";
+        bar.style.visibility="visible";
+        bar.style.opacity="1";
+      }
+      if(cont){
+        cont.style.display="flex";
+        cont.style.visibility="visible";
+        cont.style.opacity="1";
+      }
+    }
+    return r;
+  };
+  renderBench._tt108Wrapped=true;
+}
+
+// När man laddar sparad uppställning från matchlistan.
+document.addEventListener("click",function(e){
+  try{
+    if(!tt108IsDesktop())return;
+    var txt=String(e.target&&e.target.textContent||"");
+    if(txt.indexOf("Ladda uppst")>=0 || e.target.id==="btn-match-to-taktik"){
+      tt108ScheduleBenchVisibleDesktop();
+    }
+  }catch(err){}
+},true);
+
+// Mild desktop-only självläkning: bara när matchRoster finns och man står i uppställningspanelen.
+setInterval(function(){
+  try{
+    if(!tt108ShouldShowBench())return;
+    var bar=document.getElementById("bench-bar");
+    if(bar && (bar.style.display==="none" || !bar.classList.contains("active") || bar.style.visibility==="hidden")){
+      tt108ForceBenchVisibleDesktop();
+    }
+  }catch(e){}
+},900);
+
+/* === slut v108-desktop-bench-visibility-fix === */
+
+
+/* === v119-taktik-owner-fallback: hitta egna taktikfiler även om ownerId bytts ===
+   Bas: v118/v108.
+   Orsak: filer kan ha skapats med ett äldre lokalt ownerId. Då ska Mina även känna igen
+   ägare via ägarnamn + lagkod/team, och äldre filer utan metadata ska räknas som Mina.
+*/
+
+function tt119Norm(v){
+  return String(v||"").trim().toLowerCase();
+}
+
+function tt119Meta(obj){
+  try{
+    if(typeof fileMetaV10==="function")return fileMetaV10(obj)||{};
+  }catch(e){}
+  if(!obj)return {};
+  if(obj._meta)return obj._meta;
+  if(obj.meta)return obj.meta;
+  if(obj.data&&obj.data._meta)return obj.data._meta;
+  if(obj.state&&obj.state._meta)return obj.state._meta;
+  return {};
+}
+
+function tt119Profile(){
+  try{
+    if(typeof getUserProfile==="function"){
+      var p=getUserProfile();
+      if(p)return p;
+    }
+  }catch(e){}
+  try{
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){}
+  return null;
+}
+
+function tt119SameTeam(p,m){
+  if(!p||!m)return false;
+  var pt=tt119Norm(p.teamId||p.teamCode||p.teamName);
+  var mt=tt119Norm(m.teamId||m.teamCode||m.teamName);
+  return !!(pt&&mt&&pt===mt);
+}
+
+function tt119SameOwnerName(p,m){
+  if(!p||!m)return false;
+  return !!(tt119Norm(p.ownerName)&&tt119Norm(m.ownerName)&&tt119Norm(p.ownerName)===tt119Norm(m.ownerName));
+}
+
+function tt119IsMine(obj){
+  var p=tt119Profile();
+  var m=tt119Meta(obj);
+
+  // Legacy: metadata saknas helt. Behandla som Mina, annars försvinner äldre filer.
+  if(!m || (!m.ownerId && !m.ownerName && !m.teamId && !m.teamCode))return true;
+
+  // Stark match: samma lokala ownerId.
+  if(p && p.ownerId && m.ownerId && String(p.ownerId)===String(m.ownerId))return true;
+
+  // Fallback: samma tränarnamn + samma lagkod/team.
+  if(p && tt119SameOwnerName(p,m) && tt119SameTeam(p,m))return true;
+
+  // Extra fallback: samma namn och filen är inte uttryckligen delad från någon annan.
+  if(p && tt119SameOwnerName(p,m) && m.sharedWithTeam!==true)return true;
+
+  return false;
+}
+
+function tt119IsTeamShared(obj){
+  var p=tt119Profile();
+  var m=tt119Meta(obj);
+  if(!p||!m)return false;
+  return tt119SameTeam(p,m) && !!m.sharedWithTeam && !tt119IsMine(obj);
+}
+
+// Överskriv v10:s ägarfilter. renderTaktikList använder dessa dynamiskt.
+try{
+  isMineV10 = tt119IsMine;
+}catch(e){}
+
+try{
+  isSameTeamSharedV10 = tt119IsTeamShared;
+}catch(e){}
+
+try{
+  isFileVisibleInScopeV10 = function(obj,scope){
+    return scope==="team" ? tt119IsTeamShared(obj) : tt119IsMine(obj);
+  };
+}catch(e){}
+
+try{
+  isReadOnlyFileV10 = function(obj){
+    var m=tt119Meta(obj);
+    return !tt119IsMine(obj) && !m.teamCanEdit;
+  };
+}catch(e){}
+
+// Om mappfiltret står på en mapp där inget visas, återgå till Alla.
+// Det här gör att filer inte "försvinner" bara för att man råkat vara i fel mappfilter.
+function tt119EnsureValidTaktikFolder(){
+  try{
+    if(typeof taktikFilmer==="undefined")return;
+    var scope=(typeof taktikScope!=="undefined")?taktikScope:"mine";
+    var visible=(taktikFilmer||[]).filter(function(tk){
+      return scope==="team" ? tt119IsTeamShared(tk) : tt119IsMine(tk);
+    });
+    if(currentTaktikFolder==="Alla")return;
+
+    var hasInCurrent=visible.some(function(tk){
+      return (tk.folder||"Taktik")===currentTaktikFolder;
+    });
+
+    if(!hasInCurrent)currentTaktikFolder="Alla";
+  }catch(e){}
+}
+
+if(typeof renderTaktikList==="function" && !renderTaktikList._tt119Wrapped){
+  var _renderTaktikList_tt119=renderTaktikList;
+  renderTaktikList=function(){
+    tt119EnsureValidTaktikFolder();
+    return _renderTaktikList_tt119.apply(this,arguments);
+  };
+  renderTaktikList._tt119Wrapped=true;
+}
+
+setTimeout(function(){
+  try{tt119EnsureValidTaktikFolder();}catch(e){}
+  try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+},300);
+
+setTimeout(function(){
+  try{tt119EnsureValidTaktikFolder();}catch(e){}
+  try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+},1200);
+
+/* === slut v119-taktik-owner-fallback === */
+
+
+/* === v120-taktik-share-team-fix: Dela till Lagets även när ownerId återställts via fallback ===
+   Bas: v119.
+   v119 gjorde att Mina-filer syntes igen. v120 gör att samma filer också räknas som
+   ägda/redigerbara vid delning, och att delade egna filer syns i Lagets.
+*/
+
+function tt120Profile(){
+  try{
+    if(typeof getUserProfile==="function"){
+      var p=getUserProfile();
+      if(p)return p;
+    }
+  }catch(e){}
+  try{
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){}
+  return null;
+}
+
+function tt120Meta(obj){
+  try{if(typeof tt119Meta==="function")return tt119Meta(obj)||{};}catch(e){}
+  try{if(typeof fileMetaV10==="function")return fileMetaV10(obj)||{};}catch(e){}
+  if(!obj)return {};
+  return obj._meta || obj.meta || (obj.data&&obj.data._meta) || {};
+}
+
+function tt120Norm(v){
+  try{if(typeof tt119Norm==="function")return tt119Norm(v);}catch(e){}
+  return String(v||"").trim().toLowerCase();
+}
+
+function tt120SameTeam(p,m){
+  var pt=tt120Norm((p&&p.teamId)||(p&&p.teamCode)||(p&&p.teamName));
+  var mt=tt120Norm((m&&m.teamId)||(m&&m.teamCode)||(m&&m.teamName));
+  return !!(pt&&mt&&pt===mt);
+}
+
+function tt120IsMine(obj){
+  try{if(typeof tt119IsMine==="function" && tt119IsMine(obj))return true;}catch(e){}
+  var p=tt120Profile(), m=tt120Meta(obj);
+  if(!m || (!m.ownerId && !m.ownerName && !m.teamId && !m.teamCode))return true;
+  if(p&&p.ownerId&&m.ownerId&&String(p.ownerId)===String(m.ownerId))return true;
+  if(p&&tt120Norm(p.ownerName)&&tt120Norm(m.ownerName)&&tt120Norm(p.ownerName)===tt120Norm(m.ownerName)&&tt120SameTeam(p,m))return true;
+  return false;
+}
+
+function tt120IsTeamShared(obj){
+  var p=tt120Profile(), m=tt120Meta(obj);
+  if(!p||!m)return false;
+  // Viktigt: Lagets ska visa delade filer i laget, även om det är mina egna delade filer.
+  return tt120SameTeam(p,m) && !!m.sharedWithTeam;
+}
+
+function tt120UpdateShareMeta(data,share,canEdit){
+  var d=JSON.parse(JSON.stringify(data||{}));
+  var meta=d._meta||{};
+  var p=tt120Profile();
+
+  // Viktigt: vid delning skriver vi över med aktuell profil.
+  // Annars kan gamla ownerId/teamId ligga kvar och filen hamnar inte i Lagets.
+  if(p){
+    meta.ownerId=p.ownerId;
+    meta.ownerName=p.ownerName;
+    meta.teamId=p.teamId || p.teamCode || p.teamName;
+    meta.teamCode=p.teamCode || p.teamId || p.teamName;
+    meta.teamName=p.teamName || p.teamCode || p.teamId;
+  }
+
+  meta.sharedWithTeam=!!share;
+  meta.teamCanEdit=!!canEdit;
+  meta.updatedAt=new Date().toISOString();
+  d._meta=meta;
+  return d;
+}
+
+function tt120PatchTaktikShare(tk,share){
+  if(!tk||!tk.dbId){
+    showToast("Spara filmen först",false);
+    return;
+  }
+
+  if(!tt120IsMine(tk)){
+    showToast("Du kan inte ändra delning på någon annans fil",false);
+    return;
+  }
+
+  var newTk=tt120UpdateShareMeta(tk,share,false);
+  Object.keys(newTk).forEach(function(k){tk[k]=newTk[k];});
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({
+      data:newTk,
+      name:tk.name,
+      type:"taktikfilm",
+      folder:tk.folder||"Taktik"
+    })
+  }).then(function(){
+    showToast(share?"Film delad med laget":"Film inte längre delad");
+    try{taktikScope=share?"team":"mine";}catch(e){}
+    try{currentTaktikFolder="Alla";}catch(e){}
+    setTimeout(function(){
+      try{cloudLoadTaktik();}catch(e){}
+      try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+    },250);
+  }).catch(function(err){
+    showToast("Kunde inte ändra delning",false);
+    try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e){}
+  });
+}
+
+// Överskriv v10/v119-funktionerna som renderTaktikList använder.
+try{isMineV10=tt120IsMine;}catch(e){}
+try{isSameTeamSharedV10=tt120IsTeamShared;}catch(e){}
+try{
+  isFileVisibleInScopeV10=function(obj,scope){
+    return scope==="team" ? tt120IsTeamShared(obj) : tt120IsMine(obj);
+  };
+}catch(e){}
+try{
+  isReadOnlyFileV10=function(obj){
+    return !tt120IsMine(obj);
+  };
+}catch(e){}
+try{updateShareMetaV10=tt120UpdateShareMeta;}catch(e){}
+try{patchTaktikShareV10=tt120PatchTaktikShare;}catch(e){}
+
+// Efter att sidan laddat: rendera om, så knapparna får rätt Dela-funktion.
+setTimeout(function(){
+  try{currentTaktikFolder="Alla";}catch(e){}
+  try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+},300);
+
+setTimeout(function(){
+  try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+},1200);
+
+/* === slut v120-taktik-share-team-fix === */
