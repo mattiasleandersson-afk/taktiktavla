@@ -508,13 +508,54 @@
   }
 </style>
 
+
+<style id="v82-taktik-library-safe-css">
+  /* Endast när Taktik-fliken är i menyläge. Dölj planen men inte taktikpanelen/listan. */
+  body.tt-v82-taktik-library #pitch-wrapper,
+  body.tt-v82-taktik-library #taktikbar,
+  body.tt-v82-taktik-library #rec-ui,
+  body.tt-v82-taktik-library #edit-taktik-ui {
+    display: none !important;
+  }
+
+  body.tt-v82-taktik-library #bottompanel {
+    flex: 1 1 auto !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: calc(100vh - 92px) !important;
+    overflow: auto !important;
+  }
+
+  body.tt-v82-taktik-library #panel-taktik.on {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  body.tt-v82-taktik-library #panel-taktik > div {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  body.tt-v82-taktik-library #no-rec-ui {
+    display: block !important;
+  }
+
+  body.tt-v82-taktik-library #taktik-list {
+    max-height: calc(100vh - 245px) !important;
+    overflow-y: auto !important;
+    padding-bottom: 40px !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.5 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.6 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
