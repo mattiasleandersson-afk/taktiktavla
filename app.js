@@ -14693,204 +14693,31 @@ setInterval(function(){
 /* === slut v108-desktop-bench-visibility-fix === */
 
 
-/* === v109-lag-startpage: Lag startsida = sparade matcher, avsluta uppställning går dit === */
+/* === v111-lag-home-simple: Sparade matcher som startsida, enkel robust variant === */
 
-function tt109SetPitchHidden(hidden){
-  try{document.body.classList.toggle("tt109-lag-home-active",!!hidden);}catch(e){}
-  try{document.body.classList.toggle("tt109-lineup-active",!hidden);}catch(e){}
+function tt111ShowLagSubpanel(key){
+  key=key||"sparade";
 
-  var bench=document.getElementById("bench-bar");
-  var goal=document.getElementById("goal-overlay");
-
-  if(hidden){
-    if(bench){
-      bench.classList.remove("active");
-      bench.style.display="none";
-      bench.style.visibility="hidden";
-    }
-    if(goal){
-      goal.style.display="none";
-      goal.style.visibility="hidden";
-    }
-  }else{
-    if((matchRoster||[]).length && bench){
-      bench.classList.add("active");
-      bench.style.display="flex";
-      bench.style.visibility="visible";
-      bench.style.opacity="1";
-    }
-    if((matchRoster||[]).length && goal){
-      goal.style.display="flex";
-      goal.style.visibility="visible";
-      goal.style.opacity="1";
-    }
-  }
-}
-
-function tt109ShowLagHome(){
-  try{document.body.classList.remove("tt101-match-editor-active");}catch(e){}
-  try{document.body.classList.remove("tt108-desktop-match-lineup");}catch(e){}
-
-  var panel=document.getElementById("panel-lag");
-  if(panel)panel.classList.add("tt109-home");
-
-  var truppEl=document.getElementById("lag-trupp");
-  var matchEl=document.getElementById("lag-match");
-  var statEl=document.getElementById("lag-statistik");
-  var savedEl=document.getElementById("lag-sparade");
-
-  if(truppEl)truppEl.style.display="none";
-  if(matchEl)matchEl.style.display="none";
-  if(statEl)statEl.style.display="none";
-  if(savedEl)savedEl.style.display="";
-
-  try{
-    document.querySelectorAll("[data-lag]").forEach(function(b){
-      b.classList.toggle("on",b.getAttribute("data-lag")==="sparade");
-    });
-  }catch(e){}
-
-  tt109SetPitchHidden(true);
-
-  try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
-  setTimeout(function(){
-    try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
-    if(savedEl)savedEl.style.display="";
-  },150);
-}
-
-function tt109EnterLagLineup(){
-  var panel=document.getElementById("panel-lag");
-  if(panel)panel.classList.remove("tt109-home");
-  try{document.body.classList.remove("tt109-lag-home-active");}catch(e){}
-  try{document.body.classList.add("tt109-lineup-active");}catch(e){}
-
-  tt109SetPitchHidden(false);
-
-  try{
-    document.querySelectorAll(".tab").forEach(function(t){
-      t.classList.toggle("on",t.getAttribute("data-panel")==="formations");
-    });
-    document.querySelectorAll(".panel").forEach(function(p){
-      p.classList.toggle("on",p.id==="panel-formations");
-      p.style.display=p.id==="panel-formations"?"":"none";
-    });
-  }catch(e){}
-
-  setTimeout(function(){
-    tt109SetPitchHidden(false);
-    try{if(typeof renderBench==="function")renderBench();}catch(e){}
-    try{if(typeof tt106TagBenchPlayers==="function")tt106TagBenchPlayers();}catch(e){}
-  },80);
-}
-
-function tt109IsLagTabClickTarget(e){
-  try{
-    var tab=e.target.closest && e.target.closest('.tab[data-panel="lag"]');
-    return !!tab;
-  }catch(err){return false;}
-}
-
-function tt109InstallLagStart(){
-  document.addEventListener("click",function(e){
-    try{
-      var tab=e.target.closest && e.target.closest('.tab[data-panel]');
-      if(tab && tab.getAttribute("data-panel")==="lag"){
-        setTimeout(tt109ShowLagHome,60);
-        return;
-      }
-
-      var lagBtn=e.target.closest && e.target.closest("[data-lag]");
-      if(lagBtn){
-        var key=lagBtn.getAttribute("data-lag");
-        if(key==="sparade"){
-          setTimeout(tt109ShowLagHome,20);
-        }else{
-          var panel=document.getElementById("panel-lag");
-          if(panel)panel.classList.remove("tt109-home");
-          tt109SetPitchHidden(true);
-        }
-      }
-    }catch(err){}
-  },true);
-
-  var benchExit=document.getElementById("bench-exit-btn");
-  if(benchExit && !benchExit.dataset.tt109ExitHome){
-    benchExit.dataset.tt109ExitHome="1";
-    benchExit.addEventListener("click",function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-      tt109ShowLagHome();
-      return false;
-    },true);
-  }
-
-  var btnLineup=document.getElementById("btn-match-to-taktik");
-  if(btnLineup && !btnLineup.dataset.tt109LineupEnter){
-    btnLineup.dataset.tt109LineupEnter="1";
-    btnLineup.addEventListener("click",function(){
-      setTimeout(tt109EnterLagLineup,80);
-      setTimeout(tt109EnterLagLineup,350);
-    },true);
-  }
-}
-
-// När sparad match laddas med "Ladda uppst." ska planen visas.
-document.addEventListener("click",function(e){
-  try{
-    var txt=String(e.target&&e.target.textContent||"");
-    if(txt.indexOf("Ladda uppst")>=0){
-      setTimeout(tt109EnterLagLineup,80);
-      setTimeout(tt109EnterLagLineup,350);
-    }
-  }catch(err){}
-},true);
-
-// Om panelbyte sker via kod, håll Lag-panelens startläge ren.
-if(typeof switchWorkspacePanel==="function" && !switchWorkspacePanel._tt109Wrapped){
-  var _switchWorkspacePanel_tt109=switchWorkspacePanel;
-  switchWorkspacePanel=function(nextPanel){
-    var r=_switchWorkspacePanel_tt109.apply(this,arguments);
-    setTimeout(function(){
-      try{
-        if(nextPanel==="lag" || document.querySelector('.tab.on[data-panel="lag"]')){
-          tt109ShowLagHome();
-        }else{
-          document.body.classList.remove("tt109-lag-home-active");
-          var panel=document.getElementById("panel-lag");
-          if(panel)panel.classList.remove("tt109-home");
-        }
-      }catch(e){}
-    },80);
-    return r;
+  var map={
+    trupp:"lag-trupp",
+    statistik:"lag-statistik",
+    match:"lag-match",
+    sparade:"lag-sparade"
   };
-  switchWorkspacePanel._tt109Wrapped=true;
-}
 
-tt109InstallLagStart();
-setTimeout(tt109InstallLagStart,500);
-setTimeout(function(){
+  Object.keys(map).forEach(function(k){
+    var el=document.getElementById(map[k]);
+    if(el)el.style.display=(k===key)?"":"none";
+  });
+
   try{
-    if(document.querySelector('.tab.on[data-panel="lag"]'))tt109ShowLagHome();
+    document.querySelectorAll("[data-lag]").forEach(function(btn){
+      btn.classList.toggle("on",btn.getAttribute("data-lag")===key);
+    });
   }catch(e){}
-},900);
 
-/* === slut v109-lag-startpage === */
+  try{document.body.classList.add("tt111-lag-home");}catch(e){}
 
-
-/* === v110-lag-lists-start: sparade matcher öppnas direkt + maximerade listor === */
-
-function tt110LagPanel(){
-  return document.getElementById("panel-lag");
-}
-
-function tt110SetLagListMode(on){
-  var p=tt110LagPanel();
-  if(p)p.classList.toggle("tt110-list-mode",!!on);
-}
-
-function tt110HideLineupChrome(){
   var bench=document.getElementById("bench-bar");
   var goal=document.getElementById("goal-overlay");
   if(bench){
@@ -14902,136 +14729,113 @@ function tt110HideLineupChrome(){
     goal.style.display="none";
     goal.style.visibility="hidden";
   }
-  try{document.body.classList.remove("tt108-desktop-match-lineup");}catch(e){}
-  try{document.body.classList.add("tt109-lag-home-active");}catch(e){}
-}
-
-function tt110ShowLagSection(key){
-  key=key||"sparade";
-
-  var ids={
-    trupp:"lag-trupp",
-    statistik:"lag-statistik",
-    match:"lag-match",
-    sparade:"lag-sparade"
-  };
-
-  Object.keys(ids).forEach(function(k){
-    var el=document.getElementById(ids[k]);
-    if(el)el.style.display=(k===key)?"":"none";
-  });
-
-  try{
-    document.querySelectorAll("[data-lag]").forEach(function(b){
-      b.classList.toggle("on",b.getAttribute("data-lag")===key);
-    });
-  }catch(e){}
-
-  tt110SetLagListMode(true);
 
   if(key==="sparade"){
     try{document.body.classList.remove("tt101-match-editor-active");}catch(e){}
-    tt110HideLineupChrome();
     try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
     setTimeout(function(){
       try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
-      var el=document.getElementById("lag-sparade");
-      if(el)el.style.display="";
+      var saved=document.getElementById("lag-sparade");
       var list=document.getElementById("sparade-match-list");
+      if(saved)saved.style.display="";
       if(list){
         list.style.display="";
         list.style.visibility="visible";
-        list.style.maxHeight="none";
-        list.style.height=window.innerWidth>760?"calc(100vh - 185px)":"";
+        list.style.maxHeight="calc(100vh - 185px)";
+        list.style.minHeight="330px";
         list.style.overflowY="auto";
       }
-    },80);
-  }else{
-    tt110HideLineupChrome();
-    if(key==="trupp"){
-      try{if(typeof renderTruppList==="function")renderTruppList();}catch(e){}
-    }
-    if(key==="statistik"){
-      try{if(typeof renderStatistik==="function")renderStatistik();}catch(e){}
-      try{if(typeof renderMatchHistory==="function")renderMatchHistory();}catch(e){}
-    }
-    if(key==="match"){
-      try{if(typeof renderMatchTruppList==="function")renderMatchTruppList();}catch(e){}
-    }
+    },120);
+  }
+
+  if(key==="trupp"){
+    try{if(typeof renderTruppList==="function")renderTruppList();}catch(e){}
+  }
+  if(key==="statistik"){
+    try{if(typeof renderStatistik==="function")renderStatistik();}catch(e){}
+    try{if(typeof renderMatchHistory==="function")renderMatchHistory();}catch(e){}
+  }
+  if(key==="match"){
+    try{if(typeof renderMatchTruppList==="function")renderMatchTruppList();}catch(e){}
   }
 }
 
-function tt110ShowLagHome(){
-  tt110ShowLagSection("sparade");
+function tt111ShowLagHome(){
+  tt111ShowLagSubpanel("sparade");
 }
 
-function tt110EnterLineupMode(){
-  tt110SetLagListMode(false);
-  try{document.body.classList.remove("tt109-lag-home-active");}catch(e){}
-  try{document.body.classList.add("tt109-lineup-active");}catch(e){}
-  var p=tt110LagPanel();
-  if(p)p.classList.remove("tt109-home");
+function tt111EnterLineup(){
+  try{document.body.classList.remove("tt111-lag-home");}catch(e){}
+  var bench=document.getElementById("bench-bar");
+  var goal=document.getElementById("goal-overlay");
+  if((matchRoster||[]).length && bench){
+    bench.classList.add("active");
+    bench.style.display="flex";
+    bench.style.visibility="visible";
+    bench.style.opacity="1";
+  }
+  if((matchRoster||[]).length && goal){
+    goal.style.display="flex";
+    goal.style.visibility="visible";
+    goal.style.opacity="1";
+  }
 }
 
-function tt110Install(){
-  // Lag-fliken ska alltid öppna startsidan = Sparade matcher.
+function tt111InstallLagHome(){
+  if(document.body.dataset.tt111LagHomeInstalled)return;
+  document.body.dataset.tt111LagHomeInstalled="1";
+
   document.addEventListener("click",function(e){
     try{
-      var mainTab=e.target.closest && e.target.closest('.tab[data-panel="lag"]');
-      if(mainTab){
-        setTimeout(tt110ShowLagHome,30);
-        setTimeout(tt110ShowLagHome,180);
+      var mainLag=e.target.closest && e.target.closest('.tab[data-panel="lag"]');
+      if(mainLag){
+        setTimeout(tt111ShowLagHome,60);
+        setTimeout(tt111ShowLagHome,220);
         return;
       }
 
-      var lagTab=e.target.closest && e.target.closest("[data-lag]");
-      if(lagTab){
-        var key=lagTab.getAttribute("data-lag");
+      var lagBtn=e.target.closest && e.target.closest("[data-lag]");
+      if(lagBtn){
+        var key=lagBtn.getAttribute("data-lag");
         if(key==="sparade" || key==="trupp" || key==="statistik" || key==="match"){
           e.preventDefault();
           e.stopPropagation();
           if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-          tt110ShowLagSection(key);
+          tt111ShowLagSubpanel(key);
           return false;
         }
       }
 
       var txt=String(e.target&&e.target.textContent||"");
       if(txt.indexOf("Ladda uppst")>=0 || e.target.id==="btn-match-to-taktik"){
-        setTimeout(tt110EnterLineupMode,50);
-        setTimeout(tt110EnterLineupMode,250);
+        setTimeout(tt111EnterLineup,80);
+        setTimeout(tt111EnterLineup,300);
       }
     }catch(err){}
   },true);
 
   var exit=document.getElementById("bench-exit-btn");
-  if(exit && !exit.dataset.tt110ExitHome){
-    exit.dataset.tt110ExitHome="1";
+  if(exit && !exit.dataset.tt111ExitHome){
+    exit.dataset.tt111ExitHome="1";
     exit.addEventListener("click",function(e){
       e.preventDefault();
       e.stopPropagation();
       if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-      tt110ShowLagHome();
+      tt111ShowLagHome();
       return false;
     },true);
   }
 }
 
-// Överskriv v109:s startsidefunktion så andra gamla anrop också får rätt beteende.
-try{
-  tt109ShowLagHome = tt110ShowLagHome;
-}catch(e){}
+tt111InstallLagHome();
+setTimeout(tt111InstallLagHome,500);
 
-tt110Install();
-setTimeout(tt110Install,400);
-
-// Om Lag råkar vara aktiv vid start/efter panelbyte: visa Sparade matcher direkt.
 setTimeout(function(){
   try{
     if(document.querySelector('.tab.on[data-panel="lag"]')){
-      tt110ShowLagHome();
+      tt111ShowLagHome();
     }
   }catch(e){}
-},700);
+},900);
 
-/* === slut v110-lag-lists-start === */
+/* === slut v111-lag-home-simple === */
