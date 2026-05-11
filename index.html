@@ -966,76 +966,35 @@
 </style>
 
 
-<style id="v113-lag-home-safe-css">
-  /* v113: Lag-starten får egen yta, men bara när body uttryckligen säger Lag-hem. */
-  body.tt113-lag-home #pitch-wrapper,
-  body.tt113-lag-home #bench-bar,
-  body.tt113-lag-home #goal-overlay {
-    display: none !important;
-    visibility: hidden !important;
-  }
-
-  body.tt113-lag-home #bottompanel {
-    flex: 1 1 auto !important;
-    width: 100% !important;
-    max-width: none !important;
-    min-height: calc(100vh - 82px) !important;
-    height: calc(100vh - 82px) !important;
-    overflow: hidden !important;
-  }
-
-  body.tt113-lag-home #panel-lag.on {
-    display: block !important;
-    width: 100% !important;
-    max-width: none !important;
-    min-height: calc(100vh - 92px) !important;
-    height: calc(100vh - 92px) !important;
-    box-sizing: border-box !important;
-  }
-
-  body.tt113-lag-home #panel-lag.on > div {
-    height: 100% !important;
-    min-height: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  body.tt113-lag-home #lag-sparade,
-  body.tt113-lag-home #lag-trupp,
-  body.tt113-lag-home #lag-statistik,
-  body.tt113-lag-home #lag-match {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-  }
-
-  body.tt113-lag-home #sparade-match-list,
-  body.tt113-lag-home #trupp-list,
-  body.tt113-lag-home #match-trupp-list,
-  body.tt113-lag-home #stat-list,
-  body.tt113-lag-home #statistik-list,
-  body.tt113-lag-home #statistik-content {
-    height: calc(100vh - 185px) !important;
+<style id="v114-safe-lag-taktik-css">
+  /* v114: bara Lag-panelen, inga globala panel-regler */
+  body.tt114-lag-list #panel-lag #sparade-match-list,
+  body.tt114-lag-list #panel-lag #trupp-list,
+  body.tt114-lag-list #panel-lag #match-trupp-list,
+  body.tt114-lag-list #panel-lag #stat-list,
+  body.tt114-lag-list #panel-lag #statistik-list,
+  body.tt114-lag-list #panel-lag #statistik-content {
     max-height: calc(100vh - 185px) !important;
     min-height: 340px !important;
     overflow-y: auto !important;
     box-sizing: border-box !important;
   }
 
-  @media (max-width: 760px) {
-    body.tt113-lag-home #bottompanel {
-      min-height: calc(100vh - 76px) !important;
-      height: calc(100vh - 76px) !important;
-    }
+  body.tt114-lag-sparade-home #bench-bar,
+  body.tt114-lag-sparade-home #goal-overlay {
+    display: none !important;
+    visibility: hidden !important;
+  }
 
-    body.tt113-lag-home #sparade-match-list,
-    body.tt113-lag-home #trupp-list,
-    body.tt113-lag-home #match-trupp-list,
-    body.tt113-lag-home #stat-list,
-    body.tt113-lag-home #statistik-list,
-    body.tt113-lag-home #statistik-content {
-      height: calc(100vh - 172px) !important;
-      max-height: calc(100vh - 172px) !important;
-      min-height: 290px !important;
+  @media (max-width: 760px) {
+    body.tt114-lag-list #panel-lag #sparade-match-list,
+    body.tt114-lag-list #panel-lag #trupp-list,
+    body.tt114-lag-list #panel-lag #match-trupp-list,
+    body.tt114-lag-list #panel-lag #stat-list,
+    body.tt114-lag-list #panel-lag #statistik-list,
+    body.tt114-lag-list #panel-lag #statistik-content {
+      max-height: calc(100vh - 175px) !important;
+      min-height: 285px !important;
     }
   }
 </style>
@@ -1046,7 +1005,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.37 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.38 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
