@@ -1038,13 +1038,67 @@
   }
 </style>
 
+
+<style id="v127-iphone-taktik-scroll-hard-css">
+  /*
+    v127: hårdare men smal iPhone-fix för taktikfilm-menyn.
+    Scrollbar rad, inte sticky. Avsluta röd/vit.
+  */
+  @media (max-width: 760px) {
+    body.tt127-taktik-film-scroll #rec-ui,
+    body.tt127-taktik-film-scroll #edit-taktik-ui,
+    body.tt127-taktik-film-scroll #taktikbar {
+      max-width: 100vw !important;
+      box-sizing: border-box !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      scrollbar-width: none !important;
+      white-space: nowrap !important;
+    }
+
+    body.tt127-taktik-film-scroll #rec-ui::-webkit-scrollbar,
+    body.tt127-taktik-film-scroll #edit-taktik-ui::-webkit-scrollbar,
+    body.tt127-taktik-film-scroll #taktikbar::-webkit-scrollbar {
+      display: none !important;
+    }
+
+    body.tt127-taktik-film-scroll #rec-ui > *,
+    body.tt127-taktik-film-scroll #edit-taktik-ui > *,
+    body.tt127-taktik-film-scroll #taktikbar > * {
+      flex: 0 0 auto !important;
+    }
+
+    body.tt127-taktik-film-scroll #rec-ui button,
+    body.tt127-taktik-film-scroll #edit-taktik-ui button,
+    body.tt127-taktik-film-scroll #taktikbar button {
+      flex: 0 0 auto !important;
+      white-space: nowrap !important;
+      font-size: 0.66rem !important;
+      padding: 3px 6px !important;
+      min-width: auto !important;
+    }
+
+    body.tt127-taktik-film-scroll .tt127-exit-red {
+      position: static !important;
+      right: auto !important;
+      z-index: auto !important;
+      background: #e84a4a !important;
+      border-color: #e84a4a !important;
+      color: #fff !important;
+      box-shadow: none !important;
+      font-weight: 800 !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.50 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.52 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
