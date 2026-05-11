@@ -12922,3 +12922,213 @@ setTimeout(function(){
 },700);
 
 /* === slut v94-formation-owner-mine-and-team-label === */
+
+
+/* === v95-formation-ownername-fallback: gamla utgångslägen med gammalt ownerId ska visas i Mina ===
+   Bakgrund:
+   Äldre utgångslägen kan ha ownerId från en tidigare lokal profil.
+   Då syns de i Lagets eftersom team/shared stämmer, men inte i Mina eftersom ownerId inte matchar.
+   Fix:
+   - För utgångslägen räknas filen som min om ownerId matchar
+   - eller om ownerName + teamCode/teamId matchar aktuell profil
+   - eller om ownerId saknas men ownerName/team matchar.
+*/
+
+function ff95CleanName(v){
+  return String(v||"").trim().toLowerCase();
+}
+
+function ff95NormTeam(v){
+  return String(v||"").trim().toUpperCase().replace(/\s+/g,"-");
+}
+
+function ff95Profile(){
+  try{ if(typeof ff94Profile==="function"){var p=ff94Profile(); if(p)return p;} }catch(e){}
+  try{ if(typeof ff93Profile==="function"){var p2=ff93Profile(); if(p2)return p2;} }catch(e){}
+  try{ if(typeof getProfileSafeV10==="function"){var p3=getProfileSafeV10(); if(p3)return p3;} }catch(e){}
+  try{ if(typeof getUserProfile==="function"){var p4=getUserProfile(); if(p4)return p4;} }catch(e){}
+  try{ var raw=localStorage.getItem("tt_profile_v1"); return raw?JSON.parse(raw):null; }catch(e){}
+  return null;
+}
+
+function ff95Meta(s){
+  if(typeof ff94Meta==="function")return ff94Meta(s);
+  if(typeof ff93Meta==="function")return ff93Meta(s);
+  if(!s)return {};
+  if(s._meta)return s._meta;
+  if(s.state && s.state._meta)return s.state._meta;
+  if(s.data && s.data._meta)return s.data._meta;
+  return {};
+}
+
+function ff95State(s){
+  if(typeof ff94State==="function")return ff94State(s);
+  if(typeof ff93State==="function")return ff93State(s);
+  return s && (s.state || s.data || s) || {};
+}
+
+function ff95IsFormation(obj){
+  if(!obj || obj.steps)return false;
+  var st=ff95State(obj);
+  return !!(st && (st.players || st.ball || st.arrows || st.labels || st.zones || obj.state || obj.data));
+}
+
+function ff95SameTeamFormation(s){
+  var p=ff95Profile();
+  var m=ff95Meta(s);
+  if(!p || !m)return false;
+  var pt=ff95NormTeam(p.teamId||p.teamCode);
+  var mt=ff95NormTeam(m.teamId||m.teamCode);
+  return !!pt && !!mt && pt===mt;
+}
+
+function ff95IsMineFormation(s){
+  var p=ff95Profile();
+  var m=ff95Meta(s);
+
+  // Gamla lokala filer utan metadata ska fortfarande betraktas som mina.
+  if(!m || (!m.ownerId && !m.ownerName))return true;
+  if(!p)return true;
+
+  // Primär modern jämförelse.
+  if(m.ownerId && p.ownerId && String(m.ownerId)===String(p.ownerId))return true;
+
+  // Viktig fallback för äldre utgångslägen:
+  // samma ägarnamn + samma lag = min fil, även om ownerId skapats om.
+  var sameName = !!m.ownerName && !!p.ownerName && ff95CleanName(m.ownerName)===ff95CleanName(p.ownerName);
+  var sameTeam = ff95SameTeamFormation(s);
+
+  if(sameName && sameTeam)return true;
+
+  return false;
+}
+
+function ff95SharedToMyTeamFormation(s){
+  var m=ff95Meta(s);
+  return ff95SameTeamFormation(s) && !!m.sharedWithTeam && !ff95IsMineFormation(s);
+}
+
+function ff95FormationVisible(s,scope){
+  if(scope==="team")return ff95SharedToMyTeamFormation(s);
+  return ff95IsMineFormation(s);
+}
+
+// Sätt om globala behörighetsfunktioner, men lämna taktikfilmer till v92.
+isMineV10=function(obj){
+  if(obj && obj.steps && typeof tt92IsMine==="function")return tt92IsMine(obj);
+  if(ff95IsFormation(obj))return ff95IsMineFormation(obj);
+  return ff95IsMineFormation(obj);
+};
+
+isSameTeamSharedV10=function(obj){
+  if(obj && obj.steps && typeof tt92IsSharedToMyTeam==="function")return tt92IsSharedToMyTeam(obj);
+  if(ff95IsFormation(obj))return ff95SharedToMyTeamFormation(obj);
+  return ff95SharedToMyTeamFormation(obj);
+};
+
+isFileVisibleInScopeV10=function(obj,scope){
+  if(obj && obj.steps && typeof tt92IsSharedToMyTeam==="function"){
+    return scope==="team" ? tt92IsSharedToMyTeam(obj) : tt92IsMine(obj);
+  }
+  return ff95FormationVisible(obj,scope);
+};
+
+isReadOnlyFileV10=function(obj){
+  if(obj && obj.steps && typeof tt92IsMine==="function"){
+    var mt=(typeof tt92Meta==="function"?tt92Meta(obj):{});
+    return !tt92IsMine(obj) && !mt.teamCanEdit;
+  }
+  var m=ff95Meta(obj);
+  return !ff95IsMineFormation(obj) && !m.teamCanEdit;
+};
+
+// Ladda egna + andras delade igen med den mer toleranta ägarlogiken.
+cloudLoadSaves=function(){
+  cloudStatus("Laddar...","#7aaa88");
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)){
+        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        return;
+      }
+
+      var loaded=[];
+      data.filter(function(row){return row.type==="uppstallning";}).forEach(function(row){
+        if(!row.name && !(row.data && row.data.players))return;
+
+        var s;
+        if(typeof ff93NormalizeLoadedFormation==="function"){
+          s=ff93NormalizeLoadedFormation(row);
+        }else{
+          s={id:row.id,name:row.name||"Namnlöst utgångsläge",state:row.data||{},folder:row.folder||"Allmänt"};
+          if(s.state && s.state._meta)s._meta=s.state._meta;
+        }
+
+        if(ff95IsMineFormation(s) || ff95SharedToMyTeamFormation(s)){
+          loaded.push(s);
+        }
+      });
+
+      if(typeof ff93DedupeSaves==="function")savedFormations=ff93DedupeSaves(loaded);
+      else{
+        var by={};
+        loaded.forEach(function(s){by[s.id?"id:"+s.id:String(s.name||"")]=s;});
+        savedFormations=Object.keys(by).map(function(k){return by[k];});
+      }
+
+      if(typeof ff93RebuildFolders==="function")ff93RebuildFolders();
+      else if(typeof updateFolderSelect==="function")updateFolderSelect();
+
+      try{renderSavesList();}catch(e){}
+      cloudStatus(savedFormations.length+" utgångslägen laddade ✅","#4ae87a");
+    })
+    .catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+    });
+};
+
+function ff95PatchTeamLabels(){
+  try{
+    if(typeof saveScope!=="undefined" && saveScope!=="team")return;
+
+    Array.prototype.slice.call(document.querySelectorAll("#saves-list .row")).forEach(function(row){
+      var nm=row.querySelector(".row-name");
+      var sub=row.querySelector(".row-sub");
+      if(!nm || !sub)return;
+
+      var name=String(nm.textContent||"").trim();
+      var s=(savedFormations||[]).find(function(x){return String(x.name||"").trim()===name;});
+      if(!s)return;
+
+      if(ff95IsMineFormation(s))return;
+
+      var folder=s.folder||"Allmänt";
+      var m=ff95Meta(s);
+      var owner=m.ownerName||"Okänd ägare";
+      sub.textContent=folder+" · "+owner+" · skrivskyddad";
+    });
+  }catch(e){}
+}
+
+if(typeof renderSavesList==="function" && !renderSavesList._ff95Wrapped){
+  var _renderSavesList_v95=renderSavesList;
+  renderSavesList=function(){
+    var r=_renderSavesList_v95.apply(this,arguments);
+    setTimeout(function(){
+      ff95PatchTeamLabels();
+      try{if(typeof ff93RebindFormationButtons==="function")ff93RebindFormationButtons();}catch(e){}
+      try{if(typeof ff94PatchTeamRows==="function")ff94PatchTeamRows();}catch(e){}
+    },0);
+    setTimeout(ff95PatchTeamLabels,120);
+    setTimeout(ff95PatchTeamLabels,350);
+    return r;
+  };
+  renderSavesList._ff95Wrapped=true;
+}
+
+setTimeout(function(){
+  try{cloudLoadSaves();}catch(e){}
+},700);
+
+/* === slut v95-formation-ownername-fallback === */
