@@ -13132,3 +13132,134 @@ setTimeout(function(){
 },700);
 
 /* === slut v95-formation-ownername-fallback === */
+
+
+/* === v98-formation-compact-css-only: försiktig layoutkompaktning för Utgångslägen ===
+   Viktigt: flyttar inte Mina/Lagets, duplicerar inga kontroller.
+*/
+
+function ui98FormationPanel(){
+  return document.getElementById("panel-saves") ||
+         document.getElementById("panel-uppstallning") ||
+         document.getElementById("panel-start") ||
+         null;
+}
+
+function ui98SavesList(panel){
+  if(!panel)return null;
+  return panel.querySelector("#saves-list") || document.getElementById("saves-list");
+}
+
+function ui98LooksLoadedInfo(txt){
+  txt=String(txt||"").trim().toLowerCase();
+  return /^(\d+\s+)?(utgångslägen|uppställningar)\s+laddade/.test(txt) ||
+         /^(\d+\s+)?(utgångslägen|uppställningar)\s+laddade\s*✅?$/.test(txt);
+}
+
+function ui98HideLoadedInfo(panel){
+  if(!panel)return;
+  try{
+    Array.prototype.slice.call(panel.querySelectorAll("div,span,p,small")).forEach(function(el){
+      var txt=String(el.textContent||"").trim();
+      if(txt && ui98LooksLoadedInfo(txt)){
+        el.classList.add("tt98-hide-loaded-info");
+      }
+    });
+  }catch(e){}
+}
+
+function ui98IsFolderButton(btn){
+  if(!btn)return false;
+  var txt=String(btn.textContent||"").trim();
+  var title=String(btn.title||"").toLowerCase();
+  var cls=String(btn.className||"").toLowerCase();
+  if(!txt)return false;
+  if(txt==="Mina" || txt==="Lagets")return false;
+  if(title.indexOf("dela")>=0 || title.indexOf("kopiera")>=0 || title.indexOf("radera")>=0 || title.indexOf("flytta")>=0)return false;
+  if(cls.indexOf("sa")>=0)return false; // filradsknappar
+  if(txt.length>28)return false;
+  return true;
+}
+
+function ui98MarkFolderRow(panel,list){
+  if(!panel || !list)return;
+
+  // Rensa bara v98-markeringar inom denna panel.
+  try{
+    Array.prototype.slice.call(panel.querySelectorAll(".tt98-folder-row")).forEach(function(el){
+      el.classList.remove("tt98-folder-row");
+    });
+  }catch(e){}
+
+  var listTop=0;
+  try{listTop=list.getBoundingClientRect().top;}catch(e){}
+
+  var candidates=[];
+  Array.prototype.slice.call(panel.children).forEach(function(el){
+    if(el===list)return;
+    if(el.id==="saves-list")return;
+
+    var buttons=Array.prototype.slice.call(el.querySelectorAll("button")).filter(ui98IsFolderButton);
+    if(buttons.length<2)return;
+
+    var txt=String(el.textContent||"");
+    if(txt.indexOf("Mina")>=0 && txt.indexOf("Lagets")>=0)return;
+
+    var r={top:0,height:0};
+    try{r=el.getBoundingClientRect();}catch(e){}
+    if(listTop && r.top>listTop)return;
+    if(r.height>95)return;
+
+    // Kandidat ska ligga nära ovanför listan, inte uppe i global nav.
+    candidates.push({el:el,dist:Math.abs(listTop-r.top)});
+  });
+
+  if(candidates.length){
+    candidates.sort(function(a,b){return a.dist-b.dist;});
+    candidates[0].el.classList.add("tt98-folder-row");
+  }
+}
+
+function ui98Apply(){
+  var panel=ui98FormationPanel();
+  if(!panel)return;
+
+  var list=ui98SavesList(panel);
+  if(!list)return;
+
+  panel.classList.add("tt-v98-formation-compact");
+  ui98HideLoadedInfo(panel);
+  ui98MarkFolderRow(panel,list);
+}
+
+if(typeof renderSavesList==="function" && !renderSavesList._ui98Wrapped){
+  var _renderSavesList_v98=renderSavesList;
+  renderSavesList=function(){
+    var r=_renderSavesList_v98.apply(this,arguments);
+    setTimeout(function(){
+      ui98Apply();
+      try{if(typeof ff95PatchTeamLabels==="function")ff95PatchTeamLabels();}catch(e){}
+      try{if(typeof ff93RebindFormationButtons==="function")ff93RebindFormationButtons();}catch(e){}
+    },0);
+    setTimeout(ui98Apply,150);
+    return r;
+  };
+  renderSavesList._ui98Wrapped=true;
+}
+
+document.addEventListener("click",function(e){
+  try{
+    var tab=e.target.closest && e.target.closest(".tab");
+    if(tab){
+      var p=tab.getAttribute("data-panel")||"";
+      if(p==="saves" || p==="uppstallning" || p==="start"){
+        setTimeout(ui98Apply,100);
+      }
+    }
+  }catch(err){}
+},true);
+
+setTimeout(ui98Apply,700);
+setTimeout(ui98Apply,1600);
+
+/* === slut v98-formation-compact-css-only === */
