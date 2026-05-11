@@ -14564,3 +14564,130 @@ setTimeout(function(){
 },300);
 
 /* === slut v106-bench-override-old-handler === */
+
+
+/* === v108-desktop-bench-visibility-fix: endast dator, återställ dold avbytarbänk ===
+   Bas: v106. 
+   iPhone/iPad fungerar redan, därför aktiveras denna bara i desktop/musläge.
+*/
+
+function tt108IsDesktop(){
+  try{
+    if(window.matchMedia && window.matchMedia("(pointer:fine)").matches)return true;
+    if(document.body.classList.contains("desktop"))return true;
+    return window.innerWidth>=900;
+  }catch(e){
+    return false;
+  }
+}
+
+function tt108IsInFormationPanel(){
+  try{
+    var tab=document.querySelector('.tab.on[data-panel="formations"]');
+    var panel=document.getElementById("panel-formations");
+    return !!(tab || (panel && panel.classList.contains("on")));
+  }catch(e){
+    return false;
+  }
+}
+
+function tt108ShouldShowBench(){
+  try{
+    return tt108IsDesktop() && !!((matchRoster||[]).length) && tt108IsInFormationPanel();
+  }catch(e){
+    return false;
+  }
+}
+
+function tt108ForceBenchVisibleDesktop(){
+  if(!tt108ShouldShowBench()){
+    try{document.body.classList.remove("tt108-desktop-match-lineup");}catch(e){}
+    return;
+  }
+
+  var bar=document.getElementById("bench-bar");
+  var cont=document.getElementById("bench-players");
+  if(!bar)return;
+
+  document.body.classList.add("tt108-desktop-match-lineup");
+
+  bar.classList.add("active");
+  bar.style.display="flex";
+  bar.style.visibility="visible";
+  bar.style.opacity="1";
+
+  if(cont){
+    cont.style.display="flex";
+    cont.style.visibility="visible";
+    cont.style.opacity="1";
+  }
+
+  try{if(typeof tt106TagBenchPlayers==="function")tt106TagBenchPlayers();}catch(e){}
+  try{if(typeof tt105TagBenchPlayers==="function")tt105TagBenchPlayers();}catch(e){}
+}
+
+function tt108ScheduleBenchVisibleDesktop(){
+  if(!tt108IsDesktop())return;
+  setTimeout(tt108ForceBenchVisibleDesktop,0);
+  setTimeout(tt108ForceBenchVisibleDesktop,120);
+  setTimeout(tt108ForceBenchVisibleDesktop,450);
+}
+
+(function(){
+  var btn=document.getElementById("btn-match-to-taktik");
+  if(btn && !btn.dataset.tt108DesktopBenchVisible){
+    btn.dataset.tt108DesktopBenchVisible="1";
+    btn.addEventListener("click",function(){
+      tt108ScheduleBenchVisibleDesktop();
+    },true);
+  }
+})();
+
+if(typeof renderBench==="function" && !renderBench._tt108Wrapped){
+  var _renderBench_tt108=renderBench;
+  renderBench=function(){
+    var r=_renderBench_tt108.apply(this,arguments);
+    if(tt108ShouldShowBench()){
+      var bar=document.getElementById("bench-bar");
+      var cont=document.getElementById("bench-players");
+      document.body.classList.add("tt108-desktop-match-lineup");
+      if(bar){
+        bar.classList.add("active");
+        bar.style.display="flex";
+        bar.style.visibility="visible";
+        bar.style.opacity="1";
+      }
+      if(cont){
+        cont.style.display="flex";
+        cont.style.visibility="visible";
+        cont.style.opacity="1";
+      }
+    }
+    return r;
+  };
+  renderBench._tt108Wrapped=true;
+}
+
+// När man laddar sparad uppställning från matchlistan.
+document.addEventListener("click",function(e){
+  try{
+    if(!tt108IsDesktop())return;
+    var txt=String(e.target&&e.target.textContent||"");
+    if(txt.indexOf("Ladda uppst")>=0 || e.target.id==="btn-match-to-taktik"){
+      tt108ScheduleBenchVisibleDesktop();
+    }
+  }catch(err){}
+},true);
+
+// Mild desktop-only självläkning: bara när matchRoster finns och man står i uppställningspanelen.
+setInterval(function(){
+  try{
+    if(!tt108ShouldShowBench())return;
+    var bar=document.getElementById("bench-bar");
+    if(bar && (bar.style.display==="none" || !bar.classList.contains("active") || bar.style.visibility==="hidden")){
+      tt108ForceBenchVisibleDesktop();
+    }
+  }catch(e){}
+},900);
+
+/* === slut v108-desktop-bench-visibility-fix === */
