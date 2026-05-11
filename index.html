@@ -445,13 +445,42 @@
   }
 </style>
 
+
+<style id="v74-readonly-present-css">
+  body.v74-readonly-taktik #btn-edit-add-step,
+  body.v74-readonly-taktik #btn-edit-del-step,
+  body.v74-readonly-taktik #btn-edit-taktik-save,
+  body.v74-readonly-taktik #btn-edit-taktik-meta,
+  body.v74-readonly-taktik #btn-export-step-formation,
+  body.v74-readonly-taktik #btn-edit-update-step,
+  body.v74-readonly-taktik #btn-edit-update-step2,
+  body.v74-readonly-taktik #btn-tb-movement,
+  body.v74-readonly-taktik #fs-tb-movement{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+  body.v74-readonly-taktik #edit-step-name-inp{
+    pointer-events:none !important;
+    opacity:.55 !important;
+  }
+  body.v74-readonly-taktik:not(.fullscreen-portrait) #pitch-svg{
+    pointer-events:none !important;
+  }
+  body.v74-readonly-taktik #edit-taktik-title-lbl::after{
+    content:"  · skrivskyddad";
+    color:#e8c84a;
+    font-weight:700;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.9.5</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.9.6</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
