@@ -474,13 +474,47 @@
   }
 </style>
 
+
+<style id="v76-clean-taktik-core-css">
+  body.tt-v76-readonly #btn-edit-add-step,
+  body.tt-v76-readonly #btn-edit-del-step,
+  body.tt-v76-readonly #btn-edit-taktik-save,
+  body.tt-v76-readonly #btn-edit-taktik-meta,
+  body.tt-v76-readonly #btn-edit-update-step,
+  body.tt-v76-readonly #btn-edit-update-step2,
+  body.tt-v76-readonly #btn-export-step-formation,
+  body.tt-v76-readonly #btn-tb-movement,
+  body.tt-v76-readonly #fs-tb-movement{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+  body.tt-v76-readonly #edit-step-name-inp{
+    pointer-events:none !important;
+    opacity:.55 !important;
+  }
+  body.tt-v76-readonly:not(.fullscreen-portrait):not(.landscape) #pitch-svg{
+    pointer-events:none !important;
+  }
+  body.fullscreen-portrait #fs-tb-movement,
+  body.landscape #fs-tb-movement{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+  body.tt-v76-readonly #edit-taktik-title-lbl::after{
+    content:" · skrivskyddad";
+    color:#e8c84a;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.9.7</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.0 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
