@@ -11624,3 +11624,479 @@ setTimeout(tt89BindSaveMetaGuard,500);
 setTimeout(tt89BindSaveMetaGuard,1500);
 
 /* === slut v89-modern-meta-on-save === */
+
+
+/* === v90-fix-false-legacy-label: stoppa felaktig "Äldre"-märkning på nya taktikfilmer ===
+   Den gula "Äldre"-brickan kommer från gamla markLegacyRowsV53/V55.
+   Nya filmer ska räknas som moderna om de har, eller kan få, _meta via aktuell profil.
+*/
+
+function tt90Profile(){
+  try{
+    if(typeof getProfileSafeV10==="function"){
+      var p=getProfileSafeV10();
+      if(p)return p;
+    }
+  }catch(e){}
+  try{
+    if(typeof getUserProfile==="function"){
+      var p2=getUserProfile();
+      if(p2)return p2;
+    }
+  }catch(e){}
+  try{
+    if(typeof ensureUserProfile==="function"){
+      var p3=ensureUserProfile(false);
+      if(p3)return p3;
+    }
+  }catch(e){}
+  return null;
+}
+
+function tt90IsTaktikFilm(obj){
+  return !!(obj && obj.steps && obj.steps.length>=2);
+}
+
+function tt90EnsureMetaInPlace(obj){
+  if(!obj || typeof obj!=="object")return obj;
+
+  // Uppställningar har ofta metadata i state; taktikfilmer direkt på objektet.
+  var target = obj.state && !obj.steps ? obj.state : obj;
+
+  if(!target._meta || typeof target._meta!=="object")target._meta={};
+
+  var p=tt90Profile();
+  if(!p){
+    // Sista skyddet: gör ändå filen modern lokalt, så den inte felmärks.
+    p={ownerId:"local-owner",ownerName:"Tränare",teamId:"MITT-LAG",teamCode:"MITT-LAG",teamName:"MITT-LAG"};
+  }
+
+  target._meta.ownerId = target._meta.ownerId || p.ownerId || "local-owner";
+  target._meta.ownerName = target._meta.ownerName || p.ownerName || "Tränare";
+  target._meta.teamId = target._meta.teamId || p.teamId || p.teamCode || "MITT-LAG";
+  target._meta.teamCode = target._meta.teamCode || p.teamCode || p.teamId || "MITT-LAG";
+  target._meta.teamName = target._meta.teamName || p.teamName || target._meta.teamCode;
+  if(typeof target._meta.sharedWithTeam==="undefined")target._meta.sharedWithTeam=false;
+  if(typeof target._meta.teamCanEdit==="undefined")target._meta.teamCanEdit=false;
+  target._meta.updatedAt = target._meta.updatedAt || new Date().toISOString();
+  target._meta.schemaVersion = target._meta.schemaVersion || 2;
+  target._meta.kind = target._meta.kind || (tt90IsTaktikFilm(target)?"taktikfilm":"file");
+
+  // spegla upp så äldre fileMetaV10 också hittar den
+  if(obj!==target)obj._meta = target._meta;
+  else obj._meta = target._meta;
+
+  delete obj._legacyV53;
+  delete obj._legacyV55;
+  delete target._legacyV53;
+  delete target._legacyV55;
+
+  return obj;
+}
+
+function tt90MetaLooksModern(obj){
+  if(!obj)return false;
+  var m={};
+  try{
+    if(typeof fileMetaV10==="function")m=fileMetaV10(obj)||{};
+  }catch(e){m={};}
+
+  if(obj.state && obj.state._meta)m=obj.state._meta;
+  if(obj.data && obj.data._meta)m=obj.data._meta;
+  if(obj._meta)m=obj._meta;
+
+  return !!(m && (m.ownerId || m.ownerName || m.teamId || m.teamCode));
+}
+
+function tt90IsLegacy(obj){
+  if(!obj)return false;
+
+  // Taktikfilmer som finns i Mina ska moderniseras automatiskt.
+  // De ska inte få "Äldre"-bricka bara för att de skapats via ny sparknapp.
+  if(tt90IsTaktikFilm(obj)){
+    tt90EnsureMetaInPlace(obj);
+    return !tt90MetaLooksModern(obj);
+  }
+
+  // För andra objekt: behåll legacy om metadata verkligen saknas.
+  return !tt90MetaLooksModern(obj);
+}
+
+// Överstyr de gamla legacy-testerna som markLegacyRowsV53/V55 använder.
+isLegacyFileV53 = tt90IsLegacy;
+isLegacyFileV55 = tt90IsLegacy;
+
+function tt90RepairAllLoaded(){
+  try{
+    (taktikFilmer||[]).forEach(function(tk){
+      if(tt90IsTaktikFilm(tk))tt90EnsureMetaInPlace(tk);
+    });
+  }catch(e){}
+}
+
+function tt90RemoveWrongLegacyBadges(){
+  try{
+    Array.prototype.slice.call(document.querySelectorAll("#taktik-list .row")).forEach(function(row){
+      var nm=row.querySelector(".row-name");
+      if(!nm)return;
+      var name=String(nm.textContent||"").trim();
+      var tk=(taktikFilmer||[]).find(function(t){return String(t.name||"").trim()===name;});
+      if(!tk)return;
+
+      // Modernisera först, kontrollera sedan.
+      tt90EnsureMetaInPlace(tk);
+
+      if(!tt90IsLegacy(tk)){
+        Array.prototype.slice.call(row.querySelectorAll(".legacy-v55,.legacy-v54,.legacy-v53,.legacy-v52")).forEach(function(b){
+          b.parentNode.removeChild(b);
+        });
+      }
+    });
+  }catch(e){}
+}
+
+// Intercepta fetch mot Supabase-sparning av taktikfilm.
+// Detta fångar även äldre sparknappar som gör fetch direkt i stället för cloudSaveTaktik.
+if(typeof window!=="undefined" && window.fetch && !window.fetch._tt90Wrapped){
+  var _tt90_fetch=window.fetch.bind(window);
+  window.fetch=function(input,init){
+    try{
+      var url=String(input&&input.url?input.url:input||"");
+      if(init && init.body && url.indexOf(SUPA_TABLE)>=0){
+        var body=JSON.parse(init.body);
+        if(body && body.type==="taktikfilm" && body.data && body.data.steps && body.data.steps.length>=2){
+          tt90EnsureMetaInPlace(body.data);
+          if(!body.folder)body.folder=body.data.folder||"Taktik";
+          body.data.folder=body.data.folder||body.folder||"Taktik";
+          init=Object.assign({},init,{body:JSON.stringify(body)});
+        }
+      }
+    }catch(e){}
+    return _tt90_fetch(input,init);
+  };
+  window.fetch._tt90Wrapped=true;
+}
+
+// Gör även cloudSave-vägen explicit.
+if(typeof cloudSaveTaktik==="function" && !cloudSaveTaktik._tt90Wrapped){
+  var _tt90_cloudSaveTaktik=cloudSaveTaktik;
+  cloudSaveTaktik=function(tk){
+    if(!tk){
+      try{
+        if(editingTaktikIdx!==null && typeof editingTaktikIdx!=="undefined"){
+          tk=taktikFilmer&&taktikFilmer[editingTaktikIdx];
+        }
+      }catch(e){}
+    }
+    if(tk)tt90EnsureMetaInPlace(tk);
+    return _tt90_cloudSaveTaktik.apply(this,arguments);
+  };
+  cloudSaveTaktik._tt90Wrapped=true;
+}
+
+if(typeof renderTaktikList==="function" && !renderTaktikList._tt90Wrapped){
+  var _renderTaktikList_v90=renderTaktikList;
+  renderTaktikList=function(){
+    tt90RepairAllLoaded();
+    var r=_renderTaktikList_v90.apply(this,arguments);
+    setTimeout(function(){
+      tt90RepairAllLoaded();
+      tt90RemoveWrongLegacyBadges();
+      try{if(typeof tt88BindExitButton==="function")tt88BindExitButton();}catch(e){}
+      try{if(typeof tt88StyleExitButton==="function")tt88StyleExitButton();}catch(e){}
+      try{if(typeof tt79RebindCopyButtons==="function")tt79RebindCopyButtons();}catch(e){}
+    },0);
+    setTimeout(tt90RemoveWrongLegacyBadges,60);
+    setTimeout(tt90RemoveWrongLegacyBadges,250);
+    return r;
+  };
+  renderTaktikList._tt90Wrapped=true;
+}
+
+// Om gamla markLegacyRows kör efter oss via timeout: städa bort felmärkningen igen.
+setInterval(function(){
+  try{tt90RemoveWrongLegacyBadges();}catch(e){}
+},1200);
+
+tt90RepairAllLoaded();
+setTimeout(function(){
+  tt90RepairAllLoaded();
+  tt90RemoveWrongLegacyBadges();
+  try{renderTaktikList();}catch(e){}
+},600);
+
+/* === slut v90-fix-false-legacy-label === */
+
+
+/* === v91-new-film-from-formation-taktik-modal: öppna "ny film från utgångsläge" i Taktik ===
+   Buggen: knappen i Taktik öppnade/visade rutan i Utgångsläge-fliken.
+   Fix: fånga klicket, håll Taktik-panelen aktiv och visa en egen enkel modal/lista.
+*/
+
+function tt91ActivateTaktikPanel(){
+  try{
+    document.querySelectorAll(".tab").forEach(function(t){
+      t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");
+    });
+    document.querySelectorAll(".panel").forEach(function(p){
+      p.classList.toggle("on",p.id==="panel-taktik");
+    });
+  }catch(e){}
+  try{document.body.classList.add("tt-v82-taktik-library");}catch(e){}
+  var no=document.getElementById("no-rec-ui"); if(no)no.style.display="block";
+  var edit=document.getElementById("edit-taktik-ui"); if(edit)edit.style.display="none";
+  var rec=document.getElementById("rec-ui"); if(rec)rec.style.display="none";
+}
+
+function tt91CloseFormationPicker(){
+  var old=document.getElementById("tt91-formation-picker");
+  if(old)old.remove();
+}
+
+function tt91SavedFormationName(s){
+  return String((s && s.name) || "Utgångsläge");
+}
+
+function tt91SavedFormationFolder(s){
+  return String((s && s.folder) || "Allmänt");
+}
+
+function tt91SnapFromSavedFormation(s){
+  if(!s)return null;
+  var st=s.state || s.data || s;
+  // sparade uppställningar brukar ligga som state med players/ball/arrows...
+  return {
+    players: JSON.parse(JSON.stringify(st.players || [])),
+    ball: JSON.parse(JSON.stringify(st.ball || {x:W/2,y:H/2})),
+    arrows: JSON.parse(JSON.stringify(st.arrows || [])),
+    labels: JSON.parse(JSON.stringify(st.labels || [])),
+    freehandPaths: JSON.parse(JSON.stringify(st.freehandPaths || [])),
+    zones: JSON.parse(JSON.stringify(st.zones || [])),
+    movementPaths: []
+  };
+}
+
+function tt91CreateFilmFromFormation(s){
+  if(!s){
+    showToast("Kunde inte läsa utgångsläget",false);
+    return;
+  }
+
+  var snap=tt91SnapFromSavedFormation(s);
+  if(!snap || !snap.players || !snap.players.length){
+    showToast("Utgångsläget saknar spelare",false);
+    return;
+  }
+
+  var baseName=tt91SavedFormationName(s);
+  var film={
+    name:"Film från "+baseName,
+    folder:"Taktik",
+    steps:[
+      {name:"Startläge",snap:JSON.parse(JSON.stringify(snap))},
+      {name:"Steg 1",snap:JSON.parse(JSON.stringify(snap))}
+    ]
+  };
+
+  try{
+    if(typeof tt90EnsureMetaInPlace==="function")tt90EnsureMetaInPlace(film);
+    else if(typeof tt89EnsureModernMeta==="function")tt89EnsureModernMeta(film);
+    else if(typeof addMetaToData==="function")film=addMetaToData(film);
+  }catch(e){}
+
+  try{
+    taktikFilmer=(taktikFilmer||[]).concat([film]);
+    editingTaktikIdx=taktikFilmer.length-1;
+    editingStepIdx=0;
+    isEditingTaktik=true;
+    playback=null;
+  }catch(e){}
+
+  try{tt91CloseFormationPicker();}catch(e){}
+  try{document.body.classList.remove("tt-v82-taktik-library");}catch(e){}
+  var pitch=document.getElementById("pitch-wrapper");
+  if(pitch)pitch.style.display="";
+
+  try{
+    if(typeof restoreSnap==="function")restoreSnap(JSON.parse(JSON.stringify(snap)));
+    else{
+      players=JSON.parse(JSON.stringify(snap.players||[]));
+      ball=JSON.parse(JSON.stringify(snap.ball||{x:W/2,y:H/2}));
+      arrows=JSON.parse(JSON.stringify(snap.arrows||[]));
+      labels=JSON.parse(JSON.stringify(snap.labels||[]));
+      freehandPaths=JSON.parse(JSON.stringify(snap.freehandPaths||[]));
+      zones=JSON.parse(JSON.stringify(snap.zones||[]));
+      movementPaths=[];
+    }
+  }catch(e){}
+
+  var no=document.getElementById("no-rec-ui"); if(no)no.style.display="none";
+  var rec=document.getElementById("rec-ui"); if(rec)rec.style.display="none";
+  var edit=document.getElementById("edit-taktik-ui"); if(edit)edit.style.display="block";
+  var tb=document.getElementById("taktikbar"); if(tb)tb.style.display="flex";
+
+  try{
+    if(document.getElementById("edit-taktik-title-lbl"))document.getElementById("edit-taktik-title-lbl").textContent="✏ "+film.name;
+    if(document.getElementById("taktikbar-title"))document.getElementById("taktikbar-title").textContent=film.name;
+    if(typeof renderEditSteps==="function")renderEditSteps();
+    if(typeof updateEditStepUI==="function")updateEditStepUI();
+    if(typeof tt76LoadStep==="function")tt76LoadStep(0);
+    if(typeof render==="function")render();
+    if(typeof tt88CaptureSavedSnapshot==="function")tt88CaptureSavedSnapshot();
+  }catch(e){}
+
+  showToast("Ny film skapad från utgångsläge");
+}
+
+function tt91OpenFormationPickerInTaktik(){
+  tt91ActivateTaktikPanel();
+  tt91CloseFormationPicker();
+
+  var modal=document.createElement("div");
+  modal.id="tt91-formation-picker";
+  modal.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box";
+
+  var box=document.createElement("div");
+  box.style.cssText="width:min(520px,96vw);max-height:80vh;overflow:auto;background:#111a14;border:1px solid #2d4a35;border-radius:12px;padding:12px;box-shadow:0 18px 50px rgba(0,0,0,.45);box-sizing:border-box";
+
+  var top=document.createElement("div");
+  top.style.cssText="display:flex;align-items:center;gap:8px;margin-bottom:10px";
+
+  var title=document.createElement("div");
+  title.textContent="Ny film från utgångsläge";
+  title.style.cssText="font-weight:900;color:#edf5ee;font-size:1rem;flex:1";
+
+  var close=document.createElement("button");
+  close.className="btn";
+  close.textContent="Stäng";
+  close.addEventListener("click",function(){tt91CloseFormationPicker();});
+
+  top.appendChild(title);
+  top.appendChild(close);
+  box.appendChild(top);
+
+  var hint=document.createElement("div");
+  hint.textContent="Välj ett sparat utgångsläge. Filmen skapas i Taktik och sparas först när du trycker Spara.";
+  hint.style.cssText="font-size:.76rem;color:#7aaa88;margin-bottom:10px;line-height:1.3";
+  box.appendChild(hint);
+
+  var list=document.createElement("div");
+  list.style.cssText="display:flex;flex-direction:column;gap:6px";
+
+  var items=(savedFormations||[]).slice().sort(function(a,b){
+    return tt91SavedFormationName(a).localeCompare(tt91SavedFormationName(b),"sv");
+  });
+
+  if(!items.length){
+    var empty=document.createElement("div");
+    empty.textContent="Inga sparade utgångslägen hittades.";
+    empty.style.cssText="color:#7aaa88;font-size:.85rem;padding:12px;border:1px dashed #2d4a35;border-radius:8px";
+    list.appendChild(empty);
+  }else{
+    items.forEach(function(s){
+      var row=document.createElement("button");
+      row.type="button";
+      row.style.cssText="display:flex;align-items:center;gap:8px;text-align:left;background:#17251b;border:1px solid #2d4a35;border-radius:8px;color:#edf5ee;padding:8px;cursor:pointer;width:100%;box-sizing:border-box";
+      var txt=document.createElement("span");
+      txt.style.cssText="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0";
+      var name=document.createElement("span");
+      name.textContent=tt91SavedFormationName(s);
+      name.style.cssText="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis";
+      var sub=document.createElement("span");
+      sub.textContent=tt91SavedFormationFolder(s);
+      sub.style.cssText="font-size:.72rem;color:#7aaa88";
+      txt.appendChild(name);
+      txt.appendChild(sub);
+      var go=document.createElement("span");
+      go.textContent="Skapa";
+      go.style.cssText="font-size:.72rem;color:#4ae87a;border:1px solid #4ae87a;border-radius:999px;padding:3px 7px";
+      row.appendChild(txt);
+      row.appendChild(go);
+      row.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        tt91CreateFilmFromFormation(s);
+      });
+      list.appendChild(row);
+    });
+  }
+
+  box.appendChild(list);
+  modal.appendChild(box);
+  modal.addEventListener("click",function(e){
+    if(e.target===modal)tt91CloseFormationPicker();
+  });
+
+  document.body.appendChild(modal);
+}
+
+function tt91BindNewFilmFromFormationButtons(){
+  var candidates=[];
+  try{
+    document.querySelectorAll("button").forEach(function(b){
+      var txt=String(b.textContent||"").toLowerCase();
+      var title=String(b.title||"").toLowerCase();
+      var id=String(b.id||"").toLowerCase();
+      if(
+        (txt.indexOf("ny film")>=0 && (txt.indexOf("utgång")>=0 || txt.indexOf("uppställ")>=0)) ||
+        (title.indexOf("ny film")>=0 && (title.indexOf("utgång")>=0 || title.indexOf("uppställ")>=0)) ||
+        id.indexOf("from-formation")>=0 ||
+        id.indexOf("formation-to-taktik")>=0 ||
+        id.indexOf("new-taktik-from")>=0
+      ){
+        candidates.push(b);
+      }
+    });
+  }catch(e){}
+
+  candidates.forEach(function(b){
+    if(b.dataset.tt91Bound==="1")return;
+    b.dataset.tt91Bound="1";
+    b.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt91OpenFormationPickerInTaktik();
+      return false;
+    },true);
+  });
+}
+
+if(typeof renderTaktikList==="function" && !renderTaktikList._tt91Wrapped){
+  var _renderTaktikList_v91=renderTaktikList;
+  renderTaktikList=function(){
+    var r=_renderTaktikList_v91.apply(this,arguments);
+    setTimeout(function(){
+      tt91BindNewFilmFromFormationButtons();
+      try{if(typeof tt90RemoveWrongLegacyBadges==="function")tt90RemoveWrongLegacyBadges();}catch(e){}
+      try{if(typeof tt88BindExitButton==="function")tt88BindExitButton();}catch(e){}
+      try{if(typeof tt88StyleExitButton==="function")tt88StyleExitButton();}catch(e){}
+      try{if(typeof tt79RebindCopyButtons==="function")tt79RebindCopyButtons();}catch(e){}
+    },0);
+    return r;
+  };
+  renderTaktikList._tt91Wrapped=true;
+}
+
+document.addEventListener("click",function(e){
+  try{
+    var b=e.target.closest && e.target.closest("button");
+    if(!b)return;
+    var txt=String(b.textContent||"").toLowerCase();
+    var title=String(b.title||"").toLowerCase();
+    if((txt.indexOf("ny film")>=0 && (txt.indexOf("utgång")>=0 || txt.indexOf("uppställ")>=0)) ||
+       (title.indexOf("ny film")>=0 && (title.indexOf("utgång")>=0 || title.indexOf("uppställ")>=0))){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt91OpenFormationPickerInTaktik();
+      return false;
+    }
+  }catch(err){}
+},true);
+
+tt91BindNewFilmFromFormationButtons();
+setTimeout(tt91BindNewFilmFromFormationButtons,500);
+setTimeout(tt91BindNewFilmFromFormationButtons,1500);
+
+/* === slut v91-new-film-from-formation-taktik-modal === */
