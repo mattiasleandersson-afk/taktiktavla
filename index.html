@@ -550,66 +550,16 @@
 </style>
 
 
-<style id="v83-exit-to-library-hard-css">
-  /* Hård säkerhet: när v83 uttryckligen säger biblioteksläge ska planen inte synas. */
-  body.tt-v83-force-library #pitch-wrapper,
-  body.tt-v83-force-library #taktikbar,
-  body.tt-v83-force-library #rec-ui,
-  body.tt-v83-force-library #edit-taktik-ui {
-    display: none !important;
-  }
-
-  body.tt-v83-force-library #no-rec-ui {
-    display: block !important;
-  }
-
-  body.tt-v83-force-library #bottompanel {
-    display: block !important;
-    width: 100% !important;
-    max-width: none !important;
-    min-height: calc(100vh - 92px) !important;
-    overflow: auto !important;
-  }
-
-  body.tt-v83-force-library #panel-taktik.on {
-    display: block !important;
-    width: 100% !important;
-  }
-
-  body.tt-v83-force-library #taktik-list {
-    max-height: calc(100vh - 245px) !important;
-    overflow-y: auto !important;
-    padding-bottom: 40px !important;
-  }
-</style>
-
-
-<style id="v84-close-taktikbar-library-css">
-  /* När taktikbiblioteket är aktivt får ingen gammal film-/stegmeny ligga kvar och hålla planen öppen. */
-  body.tt-v84-library #pitch-wrapper,
-  body.tt-v84-library #taktikbar,
-  body.tt-v84-library #edit-taktik-ui,
-  body.tt-v84-library #rec-ui,
-  body.tt-v84-library #fs-portrait-nav,
-  body.tt-v84-library #landscape-ui,
-  body.tt-v84-library #ls-controls,
-  body.tt-v84-library #fs-top-tools {
+<style id="v85-hide-duplicate-save-exit-css">
+  /*
+    Taktikredigering har redan spara/stäng uppe i taktikbaren.
+    Dölj de dubbla knapparna inne i stegpanelen för att undvika två olika avslutsflöden.
+  */
+  #btn-edit-taktik-save,
+  #btn-edit-taktik-exit {
     display: none !important;
     visibility: hidden !important;
     pointer-events: none !important;
-  }
-
-  body.tt-v84-library #bottompanel {
-    display: block !important;
-    visibility: visible !important;
-  }
-
-  body.tt-v84-library #panel-taktik.on,
-  body.tt-v84-library #no-rec-ui,
-  body.tt-v84-library #taktik-list {
-    display: block !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
   }
 </style>
 
@@ -619,7 +569,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.8 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.9 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
