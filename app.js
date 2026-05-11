@@ -12341,3 +12341,372 @@ setTimeout(function(){
 },700);
 
 /* === slut v92-team-share-cross-device === */
+
+
+/* === v93-formation-share-cross-device: delade utgångslägen ska synas på andra enheter ===
+   Motsvarande v92, men för Utgångslägen/Uppställningar.
+*/
+
+function ff93NormTeam(v){
+  return String(v||"").trim().toUpperCase().replace(/\s+/g,"-");
+}
+
+function ff93Profile(){
+  try{ if(typeof getProfileSafeV10==="function"){var p=getProfileSafeV10(); if(p)return p;} }catch(e){}
+  try{ if(typeof getUserProfile==="function"){var p2=getUserProfile(); if(p2)return p2;} }catch(e){}
+  try{ var raw=localStorage.getItem("tt_profile_v1"); return raw?JSON.parse(raw):null; }catch(e){}
+  return null;
+}
+
+function ff93State(s){
+  if(!s)return {};
+  return s.state || s.data || s;
+}
+
+function ff93Meta(s){
+  if(!s)return {};
+  if(s._meta)return s._meta;
+  if(s.state && s.state._meta)return s.state._meta;
+  if(s.data && s.data._meta)return s.data._meta;
+  return {};
+}
+
+function ff93EnsureMetaInPlace(s){
+  if(!s || typeof s!=="object")return s;
+  var p=ff93Profile();
+  if(!p){
+    p={ownerId:"local-owner",ownerName:"Tränare",teamId:"MITT-LAG",teamCode:"MITT-LAG",teamName:"MITT-LAG"};
+  }
+
+  var st=ff93State(s);
+  if(!st._meta || typeof st._meta!=="object")st._meta={};
+
+  st._meta.ownerId = st._meta.ownerId || p.ownerId || "local-owner";
+  st._meta.ownerName = st._meta.ownerName || p.ownerName || "Tränare";
+  st._meta.teamId = st._meta.teamId || p.teamId || p.teamCode || "MITT-LAG";
+  st._meta.teamCode = st._meta.teamCode || p.teamCode || p.teamId || "MITT-LAG";
+  st._meta.teamName = st._meta.teamName || p.teamName || st._meta.teamCode;
+  if(typeof st._meta.sharedWithTeam==="undefined")st._meta.sharedWithTeam=false;
+  if(typeof st._meta.teamCanEdit==="undefined")st._meta.teamCanEdit=false;
+  st._meta.updatedAt = st._meta.updatedAt || new Date().toISOString();
+  st._meta.schemaVersion = st._meta.schemaVersion || 2;
+  st._meta.kind = "uppstallning";
+
+  s._meta = st._meta;
+  if(s.state)s.state=st;
+  else if(s.data)s.data=st;
+  else s.state=st;
+
+  delete s._legacyV53;
+  delete s._legacyV55;
+
+  return s;
+}
+
+function ff93IsMine(s){
+  var p=ff93Profile();
+  var m=ff93Meta(s);
+  if(!p || !m || !m.ownerId)return true;
+  return String(m.ownerId)===String(p.ownerId);
+}
+
+function ff93SameTeam(s){
+  var p=ff93Profile();
+  var m=ff93Meta(s);
+  if(!p || !m)return false;
+  var pt=ff93NormTeam(p.teamId||p.teamCode);
+  var mt=ff93NormTeam(m.teamId||m.teamCode);
+  return !!pt && !!mt && pt===mt;
+}
+
+function ff93SharedToMyTeam(s){
+  var m=ff93Meta(s);
+  return ff93SameTeam(s) && !!m.sharedWithTeam && !ff93IsMine(s);
+}
+
+function ff93VisibleInScope(s,scope){
+  return scope==="team" ? ff93SharedToMyTeam(s) : ff93IsMine(s);
+}
+
+isMineV10=function(obj){
+  if(obj && obj.steps && typeof tt92IsMine==="function")return tt92IsMine(obj);
+  return ff93IsMine(obj);
+};
+isSameTeamSharedV10=function(obj){
+  if(obj && obj.steps && typeof tt92IsSharedToMyTeam==="function")return tt92IsSharedToMyTeam(obj);
+  return ff93SharedToMyTeam(obj);
+};
+isFileVisibleInScopeV10=function(obj,scope){
+  if(obj && obj.steps && typeof tt92IsSharedToMyTeam==="function"){
+    return scope==="team" ? tt92IsSharedToMyTeam(obj) : tt92IsMine(obj);
+  }
+  return ff93VisibleInScope(obj,scope);
+};
+isReadOnlyFileV10=function(obj){
+  if(obj && obj.steps && typeof tt92IsMine==="function"){
+    var mt=(typeof tt92Meta==="function"?tt92Meta(obj):{});
+    return !tt92IsMine(obj) && !mt.teamCanEdit;
+  }
+  var m=ff93Meta(obj);
+  return !ff93IsMine(obj) && !m.teamCanEdit;
+};
+
+function ff93ApplyShareMeta(s,share,canEdit){
+  ff93EnsureMetaInPlace(s);
+  var st=ff93State(s);
+  st._meta.sharedWithTeam=!!share;
+  st._meta.teamCanEdit=!!canEdit;
+  st._meta.updatedAt=new Date().toISOString();
+  st._meta.schemaVersion=st._meta.schemaVersion||2;
+  st._meta.kind="uppstallning";
+  s._meta=st._meta;
+  if(s.state)s.state=st;
+  else s.state=st;
+  return s;
+}
+
+patchFormationShareV10=function(s,share){
+  if(!s || !s.id){
+    showToast("Spara utgångsläget innan du delar det",false);
+    return;
+  }
+  if(!ff93IsMine(s)){
+    showToast("Du kan inte ändra delning på någon annans fil",false);
+    return;
+  }
+
+  var copy=JSON.parse(JSON.stringify(s));
+  ff93ApplyShareMeta(copy,share,false);
+  var data=ff93State(copy);
+
+  cloudStatus(share?"Delar utgångsläge med laget...":"Tar bort delning...","#7aaa88");
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({
+      name:copy.name,
+      data:data,
+      type:"uppstallning",
+      folder:copy.folder||"Allmänt"
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(){
+    s.state=data;
+    s._meta=data._meta;
+    showToast(share?"Utgångsläge delat med laget":"Utgångsläge inte längre delat");
+    cloudStatus(share?"✅ Delat med laget":"✅ Delning borttagen","#4ae87a");
+    setTimeout(function(){try{cloudLoadSaves();}catch(e){}},350);
+  })
+  .catch(function(err){
+    showToast("Kunde inte ändra delning",false);
+    cloudStatus("❌ "+err.message,"#e84a4a");
+  });
+};
+
+patchFormationShareV26=patchFormationShareV10;
+patchFormationShareV68=patchFormationShareV10;
+
+function ff93NormalizeLoadedFormation(row){
+  var s={
+    id:row.id,
+    name:row.name || (row.data && row.data.name) || "Namnlöst utgångsläge",
+    state:row.data || {},
+    folder:row.folder || (row.data && row.data.folder) || "Allmänt"
+  };
+  if(s.state && s.state._meta)s._meta=s.state._meta;
+  return s;
+}
+
+function ff93DedupeSaves(list){
+  var by={};
+  (list||[]).forEach(function(s){
+    if(!s)return;
+    var key=s.id ? "id:"+s.id : "local:"+String(s.name||"").trim().toLowerCase()+"|"+String(s.folder||"Allmänt");
+    by[key]=s;
+  });
+  return Object.keys(by).map(function(k){return by[k];});
+}
+
+function ff93RebuildFolders(){
+  try{
+    var seen={};folders=["Allmänt"];seen["Allmänt"]=true;
+    (savedFormations||[]).forEach(function(s){
+      var f=s.folder||"Allmänt";
+      if(f&&!seen[f]){seen[f]=true;folders.push(f);}
+    });
+    if(typeof updateFolderSelect==="function")updateFolderSelect();
+  }catch(e){}
+}
+
+cloudLoadSaves=function(){
+  cloudStatus("Laddar...","#7aaa88");
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)){
+        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        return;
+      }
+
+      var loaded=[];
+      data.filter(function(row){return row.type==="uppstallning";}).forEach(function(row){
+        if(!row.name && !(row.data && row.data.players))return;
+        var s=ff93NormalizeLoadedFormation(row);
+        if(ff93IsMine(s) || ff93SharedToMyTeam(s)){
+          loaded.push(s);
+        }
+      });
+
+      savedFormations=ff93DedupeSaves(loaded);
+      ff93RebuildFolders();
+
+      try{renderSavesList();}catch(e){}
+      cloudStatus(savedFormations.length+" utgångslägen laddade ✅","#4ae87a");
+    })
+    .catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+    });
+};
+
+function ff93CopyFormationToMine(s){
+  if(!s){
+    showToast("Kunde inte kopiera utgångsläge",false);
+    return;
+  }
+
+  var srcState=ff93State(s);
+  var copyState=JSON.parse(JSON.stringify(srcState||{}));
+  delete copyState._meta;
+
+  var p=ff93Profile() || {ownerId:"local-owner",ownerName:"Tränare",teamId:"MITT-LAG",teamCode:"MITT-LAG",teamName:"MITT-LAG"};
+  copyState._meta={
+    ownerId:p.ownerId,
+    ownerName:p.ownerName,
+    teamId:p.teamId||p.teamCode,
+    teamCode:p.teamCode||p.teamId,
+    teamName:p.teamName||p.teamCode||p.teamId,
+    sharedWithTeam:false,
+    teamCanEdit:false,
+    updatedAt:new Date().toISOString(),
+    schemaVersion:2,
+    kind:"uppstallning"
+  };
+
+  var name="Kopia av "+(s.name||"utgångsläge");
+  var folder=s.folder||"Allmänt";
+
+  cloudStatus("Skapar kopia...","#7aaa88");
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{
+    method:"POST",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({
+      name:name,
+      data:copyState,
+      type:"uppstallning",
+      folder:folder
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data && data[0] && data[0].id){
+      savedFormations=(savedFormations||[]).concat([{
+        id:data[0].id,
+        name:name,
+        state:copyState,
+        folder:folder,
+        _meta:copyState._meta
+      }]);
+      try{saveScope="mine";}catch(e){}
+      try{currentFolder="Alla";}catch(e){}
+      showToast("Kopia skapad i Mina");
+      cloudStatus("✅ Kopia skapad","#4ae87a");
+      setTimeout(function(){try{cloudLoadSaves();}catch(e){}},350);
+    }else{
+      var msg=(data&&data.message)?data.message:"Kunde inte skapa kopia";
+      showToast(msg,false);
+      cloudStatus("❌ "+msg,"#e84a4a");
+    }
+  })
+  .catch(function(err){
+    showToast("Kunde inte kopiera utgångsläge",false);
+    cloudStatus("❌ "+err.message,"#e84a4a");
+  });
+}
+
+function ff93RebindFormationButtons(){
+  try{
+    var rows=document.querySelectorAll("#saves-list .row");
+    Array.prototype.slice.call(rows).forEach(function(row){
+      var nm=row.querySelector(".row-name"); if(!nm)return;
+      var name=String(nm.textContent||"").trim();
+      var s=(savedFormations||[]).find(function(x){return String(x.name||"").trim()===name;});
+      if(!s)return;
+
+      var mine=ff93IsMine(s);
+      var buttons=Array.prototype.slice.call(row.querySelectorAll("button.sa"));
+
+      if(mine){
+        var shareBtn=buttons.find(function(b){
+          var title=String(b.title||"").toLowerCase();
+          var txt=String(b.textContent||"");
+          return title.indexOf("dela")>=0 || title.indexOf("sluta dela")>=0 || txt.indexOf("👥")>=0 || txt.indexOf("🙈")>=0;
+        });
+        if(shareBtn && shareBtn.dataset.ff93ShareBound!=="1"){
+          var clone=shareBtn.cloneNode(true);
+          clone.dataset.ff93ShareBound="1";
+          shareBtn.parentNode.replaceChild(clone,shareBtn);
+          clone.addEventListener("click",function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+            patchFormationShareV10(s,!ff93Meta(s).sharedWithTeam);
+            return false;
+          },true);
+        }
+      }
+
+      if(!mine){
+        var copyBtn=buttons.find(function(b){
+          var title=String(b.title||"").toLowerCase();
+          var txt=String(b.textContent||"");
+          return title.indexOf("kopiera")>=0 || txt.indexOf("⧉")>=0 || txt.toLowerCase().indexOf("kopiera")>=0;
+        });
+        if(copyBtn && copyBtn.dataset.ff93CopyBound!=="1"){
+          var c=copyBtn.cloneNode(true);
+          c.dataset.ff93CopyBound="1";
+          copyBtn.parentNode.replaceChild(c,copyBtn);
+          c.addEventListener("click",function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+            ff93CopyFormationToMine(s);
+            return false;
+          },true);
+        }
+      }
+    });
+  }catch(e){}
+}
+
+if(typeof renderSavesList==="function" && !renderSavesList._ff93Wrapped){
+  var _renderSavesList_v93=renderSavesList;
+  renderSavesList=function(){
+    var r=_renderSavesList_v93.apply(this,arguments);
+    setTimeout(function(){
+      ff93RebindFormationButtons();
+      try{if(typeof tt90RemoveWrongLegacyBadges==="function")tt90RemoveWrongLegacyBadges();}catch(e){}
+    },0);
+    setTimeout(ff93RebindFormationButtons,120);
+    return r;
+  };
+  renderSavesList._ff93Wrapped=true;
+}
+
+setTimeout(function(){
+  try{cloudLoadSaves();}catch(e){}
+},700);
+
+/* === slut v93-formation-share-cross-device === */
