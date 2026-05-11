@@ -2079,15 +2079,103 @@ function updateShareMetaV10(data,share,canEdit){
 }
 function patchFormationShareV10(s,share){
   if(!s||!s.id)return;
-  if(!isMineV10(s)){showToast("Du kan inte ändra delning på någon annans fil",false);return;}
+
+  /*
+    v126 kirurgisk fix:
+    Rör bara Utgångsläge-delning.
+    Ändrar inte isMineV10 globalt, renderTaktikList eller Taktik/Mina.
+    Orsak: äldre utgångslägen kan ligga i "Mina" men ha gammalt ownerId.
+  */
+  function norm(v){return String(v||"").trim().toLowerCase();}
+  function profile(){
+    try{
+      if(typeof getUserProfile==="function"){
+        var p=getUserProfile();
+        if(p)return p;
+      }
+    }catch(e){}
+    try{
+      var raw=localStorage.getItem("tt_profile_v1");
+      return raw?JSON.parse(raw):null;
+    }catch(e){}
+    return null;
+  }
+  function metaFromFormation(x){
+    if(!x)return {};
+    if(x.state&&x.state._meta)return x.state._meta;
+    if(x._meta)return x._meta;
+    if(x.meta)return x.meta;
+    try{
+      if(typeof fileMetaV10==="function")return fileMetaV10(x)||{};
+    }catch(e){}
+    return {};
+  }
+  function sameTeam(p,m){
+    var pt=norm((p&&p.teamId)||(p&&p.teamCode)||(p&&p.teamName));
+    var mt=norm((m&&m.teamId)||(m&&m.teamCode)||(m&&m.teamName));
+    return !!(pt&&mt&&pt===mt);
+  }
+  function isMineFormationOnly(x){
+    try{if(typeof isMineV10==="function" && isMineV10(x))return true;}catch(e){}
+
+    var p=profile();
+    var m=metaFromFormation(x);
+
+    if(!m || (!m.ownerId && !m.ownerName && !m.teamId && !m.teamCode))return true;
+
+    if(p&&p.ownerId&&m.ownerId&&String(p.ownerId)===String(m.ownerId))return true;
+
+    if(
+      p &&
+      norm(p.ownerName) &&
+      norm(m.ownerName) &&
+      norm(p.ownerName)===norm(m.ownerName) &&
+      sameTeam(p,m)
+    ){
+      return true;
+    }
+
+    return false;
+  }
+
+  if(!isMineFormationOnly(s)){
+    showToast("Du kan inte ändra delning på någon annans fil",false);
+    return;
+  }
+
   var newState=updateShareMetaV10(s.state,share,false);
+
+  var p=profile();
+  if(p){
+    newState._meta=newState._meta||{};
+    newState._meta.ownerId=p.ownerId;
+    newState._meta.ownerName=p.ownerName;
+    newState._meta.teamId=p.teamId||p.teamCode||p.teamName;
+    newState._meta.teamCode=p.teamCode||p.teamId||p.teamName;
+    newState._meta.teamName=p.teamName||p.teamCode||p.teamId;
+    newState._meta.sharedWithTeam=!!share;
+    newState._meta.teamCanEdit=false;
+    newState._meta.updatedAt=new Date().toISOString();
+  }
+
   fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
     method:"PATCH",
     headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
     body:JSON.stringify({data:newState})
-  }).then(function(){s.state=newState;showToast(share?"Delad med laget":"Inte längre delad");cloudLoadSaves();})
+  }).then(function(){
+    s.state=newState;
+
+    try{
+      var idx=(savedFormations||[]).findIndex(function(x){return String(x.id)===String(s.id);});
+      if(idx>=0)savedFormations[idx].state=newState;
+    }catch(e){}
+
+    showToast(share?"Delad med laget":"Inte längre delad");
+    cloudLoadSaves();
+  })
     .catch(function(err){showToast("Kunde inte ändra delning",false);cloudStatus("❌ "+err.message,"#e84a4a");});
 }
+
 function copyFormationToMineV10(s){
   if(!s)return;
   var p=getProfileSafeV10();
@@ -14975,12 +15063,14 @@ setTimeout(function(){
 /* v123 rollback: tillbaka till v120. v121/v122 är borttagna. */
 
 
-/* === v124-iphone-film-menu-fix: håll Avsluta synlig i taktikfilm på iPhone ===
-   Bas: v123/v120.
-   Rör bara visningen av mobilmenyn när taktikfilm/uppspelning/redigering är aktiv.
+
+
+
+/* === v125-iphone-film-menu-scroll: scrollbar meny, Avsluta röd men inte sticky ===
+   Bas: v124/v123.
 */
 
-function tt124IsSmallScreen(){
+function tt125IsSmallScreen(){
   try{
     return window.innerWidth <= 760 || (window.matchMedia && window.matchMedia("(max-width: 760px)").matches);
   }catch(e){
@@ -14988,7 +15078,7 @@ function tt124IsSmallScreen(){
   }
 }
 
-function tt124IsTaktikFilmActive(){
+function tt125IsTaktikFilmActive(){
   try{
     if(typeof playback !== "undefined" && playback)return true;
     if(typeof isEditingTaktik !== "undefined" && isEditingTaktik)return true;
@@ -15001,11 +15091,10 @@ function tt124IsTaktikFilmActive(){
   return false;
 }
 
-function tt124FindExitButtons(){
+function tt125FindExitButtons(){
   var out=[];
   try{
-    var candidates=document.querySelectorAll("button");
-    candidates.forEach(function(b){
+    document.querySelectorAll("button").forEach(function(b){
       var txt=String(b.textContent||"").trim().toLowerCase();
       var title=String(b.title||"").trim().toLowerCase();
       var id=String(b.id||"").toLowerCase();
@@ -15016,7 +15105,6 @@ function tt124FindExitButtons(){
         id.indexOf("exit")>=0 ||
         id.indexOf("close")>=0
       ){
-        // Undvik fel knappar i modal om de är dolda.
         var r=b.getBoundingClientRect();
         if(r.width>0 && r.height>0)out.push(b);
       }
@@ -15025,61 +15113,55 @@ function tt124FindExitButtons(){
   return out;
 }
 
-function tt124ApplyFilmMenuFix(){
-  var active=tt124IsSmallScreen() && tt124IsTaktikFilmActive();
-  document.body.classList.toggle("tt124-taktik-film-active",active);
+function tt125ApplyFilmMenuFix(){
+  var active=tt125IsSmallScreen() && tt125IsTaktikFilmActive();
+  document.body.classList.toggle("tt125-taktik-film-active",active);
 
   try{
-    tt124FindExitButtons().forEach(function(b){
-      if(active)b.classList.add("tt124-exit-visible");
-      else b.classList.remove("tt124-exit-visible");
+    tt125FindExitButtons().forEach(function(b){
+      b.classList.toggle("tt125-exit-red",active);
+      // Säkerställ att eventuell gammal v124-klass inte gör den sticky.
+      b.classList.remove("tt124-exit-visible");
     });
   }catch(e){}
 
-  if(active){
-    // Försök rulla raden så Avsluta syns direkt.
-    setTimeout(function(){
-      try{
-        var btns=tt124FindExitButtons();
-        if(btns.length){
-          btns[0].scrollIntoView({block:"nearest",inline:"nearest"});
-        }
-      }catch(e){}
-    },80);
-  }
+  // Ta även bort v124 body-klassen om den råkar finnas.
+  try{document.body.classList.remove("tt124-taktik-film-active");}catch(e){}
 }
 
-// Kör när man går in/ut ur taktikfilm och när UI renderas.
 ["click","touchend","resize","orientationchange"].forEach(function(evt){
   window.addEventListener(evt,function(){
-    setTimeout(tt124ApplyFilmMenuFix,80);
-    setTimeout(tt124ApplyFilmMenuFix,300);
+    setTimeout(tt125ApplyFilmMenuFix,80);
+    setTimeout(tt125ApplyFilmMenuFix,300);
   },true);
 });
 
-if(typeof startPlayback==="function" && !startPlayback._tt124Wrapped){
-  var _startPlayback_tt124=startPlayback;
+if(typeof startPlayback==="function" && !startPlayback._tt125Wrapped){
+  var _startPlayback_tt125=startPlayback;
   startPlayback=function(){
-    var r=_startPlayback_tt124.apply(this,arguments);
-    setTimeout(tt124ApplyFilmMenuFix,80);
-    setTimeout(tt124ApplyFilmMenuFix,300);
+    var r=_startPlayback_tt125.apply(this,arguments);
+    setTimeout(tt125ApplyFilmMenuFix,80);
+    setTimeout(tt125ApplyFilmMenuFix,300);
     return r;
   };
-  startPlayback._tt124Wrapped=true;
+  startPlayback._tt125Wrapped=true;
 }
 
-if(typeof openEditTaktik==="function" && !openEditTaktik._tt124Wrapped){
-  var _openEditTaktik_tt124=openEditTaktik;
+if(typeof openEditTaktik==="function" && !openEditTaktik._tt125Wrapped){
+  var _openEditTaktik_tt125=openEditTaktik;
   openEditTaktik=function(){
-    var r=_openEditTaktik_tt124.apply(this,arguments);
-    setTimeout(tt124ApplyFilmMenuFix,80);
-    setTimeout(tt124ApplyFilmMenuFix,300);
+    var r=_openEditTaktik_tt125.apply(this,arguments);
+    setTimeout(tt125ApplyFilmMenuFix,80);
+    setTimeout(tt125ApplyFilmMenuFix,300);
     return r;
   };
-  openEditTaktik._tt124Wrapped=true;
+  openEditTaktik._tt125Wrapped=true;
 }
 
-setTimeout(tt124ApplyFilmMenuFix,500);
-setTimeout(tt124ApplyFilmMenuFix,1200);
+setTimeout(tt125ApplyFilmMenuFix,500);
+setTimeout(tt125ApplyFilmMenuFix,1200);
 
-/* === slut v124-iphone-film-menu-fix === */
+/* === slut v125-iphone-film-menu-scroll === */
+
+
+/* v126: kirurgisk fix endast i patchFormationShareV10 för Utgångsläge. */
