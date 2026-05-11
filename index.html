@@ -999,13 +999,77 @@
   }
 </style>
 
+
+<style id="v110-lag-lists-start-css">
+  /* v110: Lag-startsida och listor ska använda ytan bättre */
+  #panel-lag.tt110-list-mode {
+    min-height: calc(100vh - 86px) !important;
+    height: calc(100vh - 86px) !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  #panel-lag.tt110-list-mode > div {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+
+  #panel-lag.tt110-list-mode #lag-sparade,
+  #panel-lag.tt110-list-mode #lag-trupp,
+  #panel-lag.tt110-list-mode #lag-statistik,
+  #panel-lag.tt110-list-mode #lag-match {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  #panel-lag.tt110-list-mode #sparade-match-list,
+  #panel-lag.tt110-list-mode #trupp-list,
+  #panel-lag.tt110-list-mode #match-trupp-list,
+  #panel-lag.tt110-list-mode #stat-list,
+  #panel-lag.tt110-list-mode #statistik-list,
+  #panel-lag.tt110-list-mode #statistik-content {
+    max-height: none !important;
+    min-height: 260px !important;
+    height: calc(100vh - 185px) !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  @media (max-width: 760px) {
+    #panel-lag.tt110-list-mode {
+      height: auto !important;
+      min-height: calc(100vh - 80px) !important;
+    }
+
+    #panel-lag.tt110-list-mode #sparade-match-list,
+    #panel-lag.tt110-list-mode #trupp-list,
+    #panel-lag.tt110-list-mode #match-trupp-list,
+    #panel-lag.tt110-list-mode #stat-list,
+    #panel-lag.tt110-list-mode #statistik-list,
+    #panel-lag.tt110-list-mode #statistik-content {
+      height: auto !important;
+      max-height: calc(100vh - 175px) !important;
+      min-height: 260px !important;
+    }
+  }
+
+  body.tt109-lag-home-active #bench-bar,
+  body.tt109-lag-home-active #goal-overlay {
+    display: none !important;
+    visibility: hidden !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.33 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.34 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
