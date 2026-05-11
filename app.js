@@ -15146,3 +15146,250 @@ setTimeout(function(){
 },1200);
 
 /* === slut v121-formation-owner-share-fix === */
+
+
+/* === v122-formation-share-hard-fix: hård fix för delning av Utgångsläge ===
+   Bas: v121.
+   Problem:
+   - äldre filer stoppas av gammal delningshandler
+   - nya filer kan försvinna ur både Mina/Lagets efter PATCH
+   Lösning:
+   - skriv över patchFormationShareV10 igen
+   - uppdatera lokal array direkt
+   - stanna kvar i Mina efter delning
+   - rendera om från lokal state först, ladda moln därefter
+*/
+
+function tt122Profile(){
+  try{
+    if(typeof getUserProfile==="function"){
+      var p=getUserProfile();
+      if(p)return p;
+    }
+  }catch(e){}
+  try{
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){}
+  return null;
+}
+
+function tt122Norm(v){
+  return String(v||"").trim().toLowerCase();
+}
+
+function tt122Meta(obj){
+  if(!obj)return {};
+  if(obj._meta)return obj._meta;
+  if(obj.meta)return obj.meta;
+  if(obj.state&&obj.state._meta)return obj.state._meta;
+  if(obj.data&&obj.data._meta)return obj.data._meta;
+  try{
+    if(typeof fileMetaV10==="function")return fileMetaV10(obj)||{};
+  }catch(e){}
+  return {};
+}
+
+function tt122SameTeam(p,m){
+  var pt=tt122Norm((p&&p.teamId)||(p&&p.teamCode)||(p&&p.teamName));
+  var mt=tt122Norm((m&&m.teamId)||(m&&m.teamCode)||(m&&m.teamName));
+  return !!(pt&&mt&&pt===mt);
+}
+
+function tt122IsMineFormation(s){
+  var p=tt122Profile();
+  var m=tt122Meta(s);
+
+  // Viktigt: ligger filen i sparade formationer och saknar metadata, behandla som min.
+  if(!m || (!m.ownerId && !m.ownerName && !m.teamId && !m.teamCode))return true;
+
+  if(p&&p.ownerId&&m.ownerId&&String(p.ownerId)===String(m.ownerId))return true;
+
+  if(
+    p &&
+    tt122Norm(p.ownerName) &&
+    tt122Norm(m.ownerName) &&
+    tt122Norm(p.ownerName)===tt122Norm(m.ownerName) &&
+    tt122SameTeam(p,m)
+  ){
+    return true;
+  }
+
+  // Om den just ligger i Mina-scope och inte är uttryckligt skrivskyddad ska vi inte blockera delning.
+  try{
+    if(saveScope==="mine" && !s._readOnly && !s.readOnly && !s.readonly)return true;
+  }catch(e){}
+
+  return false;
+}
+
+function tt122IsTeamSharedFormation(s){
+  var p=tt122Profile();
+  var m=tt122Meta(s);
+  return !!(p&&m&&tt122SameTeam(p,m)&&m.sharedWithTeam);
+}
+
+function tt122BuildSharedState(state,share){
+  var d=JSON.parse(JSON.stringify(state||{}));
+  var meta=d._meta||{};
+  var p=tt122Profile();
+
+  if(p){
+    meta.ownerId=p.ownerId;
+    meta.ownerName=p.ownerName;
+    meta.teamId=p.teamId || p.teamCode || p.teamName || "MITT-LAG";
+    meta.teamCode=p.teamCode || p.teamId || p.teamName || "MITT-LAG";
+    meta.teamName=p.teamName || p.teamCode || p.teamId || "MITT-LAG";
+  }
+
+  meta.sharedWithTeam=!!share;
+  meta.teamCanEdit=false;
+  meta.updatedAt=new Date().toISOString();
+  d._meta=meta;
+  return d;
+}
+
+function tt122PatchFormationShare(s,share){
+  if(!s||!s.id){
+    showToast("Spara utgångsläget först",false);
+    return;
+  }
+
+  if(!tt122IsMineFormation(s)){
+    showToast("Du kan inte ändra delning på någon annans fil",false);
+    return;
+  }
+
+  var newState=tt122BuildSharedState(s.state||{},share);
+
+  // Uppdatera lokalt direkt så filen inte försvinner medan molnet laddar.
+  s.state=newState;
+  s.folder=s.folder||"Allmänt";
+
+  try{
+    var idx=(savedFormations||[]).findIndex(function(x){return String(x.id)===String(s.id);});
+    if(idx>=0){
+      savedFormations[idx].state=newState;
+      savedFormations[idx].folder=s.folder||"Allmänt";
+      savedFormations[idx].name=s.name||savedFormations[idx].name;
+    }
+  }catch(e){}
+
+  // Stanna kvar i Mina efter delning. Annars upplevs filen som borta om Lagets inte hunnit ladda.
+  try{saveScope="mine";}catch(e){}
+  try{currentFolder="Alla";}catch(e){}
+
+  try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({
+      name:s.name||"Utgångsläge",
+      data:newState,
+      type:"formation",
+      folder:s.folder||"Allmänt"
+    })
+  }).then(function(r){
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json();
+  }).then(function(data){
+    showToast(share?"Utgångsläge delat med laget":"Utgångsläge inte längre delat");
+
+    // Behåll lokala uppdateringen; ladda sedan om och rendera.
+    setTimeout(function(){
+      try{cloudLoadSaves();}catch(e){}
+      try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
+    },350);
+  }).catch(function(err){
+    showToast("Kunde inte ändra delning",false);
+    try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e){}
+  });
+}
+
+// Gör V10/V121 helpers konsekventa.
+try{patchFormationShareV10=tt122PatchFormationShare;}catch(e){}
+try{
+  isMineV10=function(obj){
+    // Taktik ska fortfarande kunna använda v120/tt120 om den finns.
+    try{
+      if(obj&&obj.steps&&typeof tt120IsMine==="function")return tt120IsMine(obj);
+    }catch(e){}
+    return tt122IsMineFormation(obj);
+  };
+}catch(e){}
+try{
+  isSameTeamSharedV10=function(obj){
+    try{
+      if(obj&&obj.steps&&typeof tt120IsTeamShared==="function")return tt120IsTeamShared(obj);
+    }catch(e){}
+    return tt122IsTeamSharedFormation(obj);
+  };
+}catch(e){}
+try{
+  isFileVisibleInScopeV10=function(obj,scope){
+    if(obj&&obj.steps&&typeof tt120IsMine==="function"){
+      return scope==="team" ? tt120IsTeamShared(obj) : tt120IsMine(obj);
+    }
+    return scope==="team" ? tt122IsTeamSharedFormation(obj) : tt122IsMineFormation(obj);
+  };
+}catch(e){}
+try{
+  isReadOnlyFileV10=function(obj){
+    if(obj&&obj.steps&&typeof tt120IsMine==="function")return !tt120IsMine(obj);
+    return !tt122IsMineFormation(obj);
+  };
+}catch(e){}
+
+// Fånga befintliga Dela/Dölj-knappar i Utgångsläge före gammal handler om den ändå sitter kvar.
+// Vi identifierar raden via knapptext och filnamn från raden.
+document.addEventListener("click",function(e){
+  try{
+    var btn=e.target.closest&&e.target.closest("button");
+    if(!btn)return;
+    var txt=String(btn.textContent||"").trim();
+    if(txt!=="Dela" && txt!=="Dölj")return;
+
+    // Endast när huvudfliken Utgångsläge/Saves är aktiv.
+    var active=document.querySelector(".tab.on[data-panel]");
+    if(!active || active.getAttribute("data-panel")!=="saves")return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+
+    var row=btn.closest(".row");
+    var nameEl=row&&(row.querySelector(".row-name")||row.querySelector("span"));
+    var nm=nameEl?String(nameEl.textContent||"").trim():"";
+
+    var s=null;
+    if(nm){
+      s=(savedFormations||[]).find(function(x){return String(x.name||"").trim()===nm;});
+    }
+
+    // Fallback: hitta via index i synliga rader.
+    if(!s&&row){
+      var rows=Array.prototype.slice.call((document.getElementById("saves-list")||document).querySelectorAll(".row"));
+      var idx=rows.indexOf(row);
+      var visible=(savedFormations||[]).filter(function(x){
+        try{return isFileVisibleInScopeV10(x,saveScope||"mine");}catch(e){return true;}
+      });
+      if((currentFolder||"Alla")!=="Alla"){
+        visible=visible.filter(function(x){return (x.folder||"Allmänt")===currentFolder;});
+      }
+      if(idx>=0&&visible[idx])s=visible[idx];
+    }
+
+    if(s){
+      var share=txt==="Dela";
+      tt122PatchFormationShare(s,share);
+      return false;
+    }
+  }catch(err){}
+},true);
+
+setTimeout(function(){
+  try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
+},300);
+
+/* === slut v122-formation-share-hard-fix === */
