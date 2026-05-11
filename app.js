@@ -14082,3 +14082,165 @@ setTimeout(tt103InstallDesktopPlayerPriority,800);
 setTimeout(tt103InstallDesktopPlayerPriority,1800);
 
 /* === slut v103-desktop-player-drag-fix === */
+
+
+/* === v104-desktop-bench-drag-fix: dra avbytare från bänk till plan på dator === */
+
+function tt104BenchPlayerFromElement(el){
+  try{
+    var txt=String(el.textContent||"").trim();
+    var nrMatch=txt.match(/#\s*(\d+)/);
+    var nr=nrMatch?String(nrMatch[1]):"";
+    var name=txt.replace(/#\s*\d+/,"").trim();
+
+    var candidates=(matchRoster||[]).filter(function(sp){
+      var assigned=false;
+      try{assigned=Object.values(matchAssignments||{}).indexOf(sp.id)>=0;}catch(e){}
+      return !assigned;
+    });
+
+    if(nr){
+      var byNr=candidates.find(function(sp){return String(sp.nr)===nr;});
+      if(byNr)return byNr;
+    }
+    if(name){
+      var low=name.toLowerCase();
+      var byName=candidates.find(function(sp){return String(sp.namn||"").toLowerCase()===low;});
+      if(byName)return byName;
+    }
+  }catch(e){}
+  return null;
+}
+
+function tt104MakeGhost(sp,x,y){
+  var ghost=document.createElement("div");
+  ghost.style.cssText="position:fixed;z-index:9999;pointer-events:none;background:#4ae87a;color:#0a1a0d;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.8rem;transform:translate(-50%,-50%)";
+  ghost.textContent="#"+sp.nr;
+  ghost.style.left=x+"px";
+  ghost.style.top=y+"px";
+  document.body.appendChild(ghost);
+  return ghost;
+}
+
+function tt104FindDropPitchPlayer(cx,cy){
+  var pid=null;
+  try{
+    if(typeof findNearestHomePitchPlayer==="function")pid=findNearestHomePitchPlayer(cx,cy,65);
+  }catch(e){}
+  if(pid)return pid;
+
+  try{
+    var pt=svgPt(cx,cy);
+    var best=null,bestD=65*65;
+    (players||[]).forEach(function(p){
+      if(p.team!=="home")return;
+      var dx=pt.x-p.x,dy=pt.y-p.y,d=dx*dx+dy*dy;
+      if(d<bestD){best=p.id;bestD=d;}
+    });
+    return best;
+  }catch(e){}
+  return null;
+}
+
+function tt104AssignBenchToPitch(sp,pid){
+  if(!sp || !pid)return false;
+  try{
+    assignPlayerToPosition(pid,sp.id);
+    showToast("#"+sp.nr+" in på planen");
+    return true;
+  }catch(e){}
+
+  try{
+    Object.keys(matchAssignments||{}).forEach(function(k){
+      if(matchAssignments[k]===sp.id)delete matchAssignments[k];
+    });
+    matchAssignments[pid]=sp.id;
+    var p=players.find(function(x){return x.id===pid;});
+    if(p){p.number=sp.nr;p.name=sp.namn;}
+    if(typeof render==="function")render();
+    if(typeof renderBench==="function")renderBench();
+    showToast("#"+sp.nr+" in på planen");
+    return true;
+  }catch(e){}
+  return false;
+}
+
+function tt104StartBenchMouseDrag(ev,el,sp){
+  if(!sp)return false;
+  ev.preventDefault();
+  ev.stopPropagation();
+  if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
+
+  var startX=ev.clientX,startY=ev.clientY;
+  var moved=false;
+  var ghost=null;
+
+  function mm(e2){
+    var dx=e2.clientX-startX,dy=e2.clientY-startY;
+    if(!moved && dx*dx+dy*dy>36){
+      moved=true;
+      ghost=tt104MakeGhost(sp,e2.clientX,e2.clientY);
+    }
+    if(moved && ghost){
+      ghost.style.left=e2.clientX+"px";
+      ghost.style.top=e2.clientY+"px";
+      try{if(typeof highlightNearestPlayer==="function")highlightNearestPlayer(e2.clientX,e2.clientY);}catch(e){}
+    }
+  }
+
+  function mu(e2){
+    window.removeEventListener("mousemove",mm,true);
+    window.removeEventListener("mouseup",mu,true);
+    if(ghost){ghost.remove();ghost=null;}
+    try{if(typeof clearPlayerHighlights==="function")clearPlayerHighlights();}catch(e){}
+
+    if(!moved){
+      // Klick på avbytare: gör inget, så vi inte råkar placera fel.
+      return;
+    }
+
+    var pid=tt104FindDropPitchPlayer(e2.clientX,e2.clientY);
+    if(pid){
+      tt104AssignBenchToPitch(sp,pid);
+    }else{
+      showToast("Släpp på en position på planen",false);
+    }
+  }
+
+  window.addEventListener("mousemove",mm,true);
+  window.addEventListener("mouseup",mu,true);
+  return true;
+}
+
+function tt104InstallBenchDesktopDrag(){
+  var bar=document.getElementById("bench-bar");
+  if(!bar || bar.dataset.tt104BenchDrag)return;
+  bar.dataset.tt104BenchDrag="1";
+
+  bar.addEventListener("mousedown",function(ev){
+    try{
+      if(ev.button!==0)return;
+      var el=ev.target.closest && ev.target.closest(".bench-player");
+      if(!el)return;
+      var sp=tt104BenchPlayerFromElement(el);
+      if(!sp)return;
+      tt104StartBenchMouseDrag(ev,el,sp);
+    }catch(e){}
+  },true);
+}
+
+tt104InstallBenchDesktopDrag();
+setTimeout(tt104InstallBenchDesktopDrag,800);
+setTimeout(tt104InstallBenchDesktopDrag,1800);
+
+if(typeof renderBench==="function" && !renderBench._tt104Wrapped){
+  var _renderBench_tt104=renderBench;
+  renderBench=function(){
+    var r=_renderBench_tt104.apply(this,arguments);
+    setTimeout(tt104InstallBenchDesktopDrag,0);
+    return r;
+  };
+  renderBench._tt104Wrapped=true;
+}
+
+/* === slut v104-desktop-bench-drag-fix === */
