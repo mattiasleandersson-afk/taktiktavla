@@ -10606,88 +10606,58 @@ setTimeout(tt79RebindCopyButtons,300);
 /* === slut v79-direct-copy-to-mine === */
 
 
-/* === v81-safe-exit-cleanup: säker återgång från taktikfilm utan layoutgömning ===
-   Byggd från v79. V80:s bibliotekslayout är inte med.
-   Fixar bara att gamla spelarflyttar/ritningar inte ligger kvar efter avslutad film.
+/* === v82-taktik-library-safe: dölj bara planen i taktikens menyläge ===
+   Byggd från v79. Ingen v80/v81-kod.
 */
 
-var tt81DefaultSnap = null;
-
-function tt81Clone(o){
-  try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}
-}
-
-function tt81CaptureDefault(){
-  if(tt81DefaultSnap)return;
+function tt82OnTaktikPanel(){
   try{
-    tt81DefaultSnap={
-      players:tt81Clone(players||[]),
-      ball:tt81Clone(ball||{x:W/2,y:H/2}),
-      arrows:[],
-      labels:[],
-      freehandPaths:[],
-      zones:[],
-      movementPaths:[]
-    };
-  }catch(e){}
+    var p=document.getElementById("panel-taktik");
+    return !!(p && p.classList.contains("on"));
+  }catch(e){return false;}
 }
 
-function tt81ClearAllTemporaryBoardState(){
-  try{arrows=[];}catch(e){}
-  try{labels=[];}catch(e){}
-  try{freehandPaths=[];}catch(e){}
-  try{zones=[];}catch(e){}
-  try{movementPaths=[];}catch(e){}
-  try{selectedId=null;}catch(e){}
-  try{arrowStart=null;arrowCurrent=null;}catch(e){}
-  try{freehandCurrent=null;freehandDrawing=false;}catch(e){}
-  try{zoneStart=null;zonePreview=null;}catch(e){}
-  try{movementCurrent=null;}catch(e){}
-  try{dragging=null;}catch(e){}
-}
-
-function tt81ResetBoardAfterTaktik(){
-  tt81CaptureDefault();
-  tt81ClearAllTemporaryBoardState();
+function tt82InTaktikFilm(){
   try{
-    if(tt81DefaultSnap && typeof restoreSnap==="function"){
-      restoreSnap(tt81Clone(tt81DefaultSnap));
-    }else{
-      if(typeof initPlayers==="function"){
-        initPlayers(typeof _defaultFormation!=="undefined"?_defaultFormation:null);
-      }
-      ball={x:W/2,y:H/2};
-    }
+    if(editingTaktikIdx!==null && typeof editingTaktikIdx!=="undefined")return true;
   }catch(e){}
-  try{render();}catch(e){}
+  try{if(isEditingTaktik)return true;}catch(e){}
+  try{if(playback && playback.tk)return true;}catch(e){}
+  return false;
 }
 
-function tt81ReturnToTaktikMenu(){
+function tt82ApplyLibraryMode(){
+  var on=tt82OnTaktikPanel() && !tt82InTaktikFilm() &&
+         !document.body.classList.contains("fullscreen-portrait") &&
+         !document.body.classList.contains("landscape");
+  document.body.classList.toggle("tt-v82-taktik-library",!!on);
+}
+
+function tt82EnterFilmMode(){
+  document.body.classList.remove("tt-v82-taktik-library");
+}
+
+function tt82ReturnToTaktikMenu(){
   try{if(animFrame)cancelAnimationFrame(animFrame);}catch(e){}
   try{playback=null;}catch(e){}
-  try{movementPaths=[];}catch(e){}
-  try{selectedId=null;}catch(e){}
   try{editingTaktikIdx=null;}catch(e){}
   try{editingStepIdx=0;}catch(e){}
   try{isEditingTaktik=false;}catch(e){}
+  try{movementPaths=[];}catch(e){}
+  try{selectedId=null;}catch(e){}
+  try{arrows=[];labels=[];freehandPaths=[];zones=[];}catch(e){}
   try{tt76ForceClean();}catch(e){}
-
-  tt81ResetBoardAfterTaktik();
 
   var tb=document.getElementById("taktikbar");
   if(tb)tb.style.display="none";
-
-  var bp=document.getElementById("bottompanel");
-  if(bp)bp.classList.remove("hidden");
-
   var edit=document.getElementById("edit-taktik-ui");
   if(edit)edit.style.display="none";
-
   var rec=document.getElementById("rec-ui");
   if(rec)rec.style.display="none";
-
   var no=document.getElementById("no-rec-ui");
   if(no)no.style.display="block";
+  var bp=document.getElementById("bottompanel");
+  if(bp)bp.classList.remove("hidden");
 
   try{
     document.querySelectorAll(".tab").forEach(function(t){
@@ -10699,46 +10669,95 @@ function tt81ReturnToTaktikMenu(){
   }catch(e){}
 
   try{renderTaktikList();}catch(e){}
+  setTimeout(tt82ApplyLibraryMode,0);
 }
 
-// Ersätt bara avslutet, inte hela taktiklayouten.
+var _tt82_startPlayback_base=typeof startPlayback==="function"?startPlayback:null;
+if(_tt82_startPlayback_base){
+  startPlayback=function(){
+    tt82EnterFilmMode();
+    var r=_tt82_startPlayback_base.apply(this,arguments);
+    setTimeout(tt82ApplyLibraryMode,0);
+    return r;
+  };
+}
+
+var _tt82_openEditTaktik_base=typeof openEditTaktik==="function"?openEditTaktik:null;
+if(_tt82_openEditTaktik_base){
+  openEditTaktik=function(){
+    tt82EnterFilmMode();
+    var r=_tt82_openEditTaktik_base.apply(this,arguments);
+    setTimeout(tt82ApplyLibraryMode,0);
+    return r;
+  };
+}
+
 if(typeof stopPlayback==="function"){
   stopPlayback=function(){
     if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return;
-    tt81ReturnToTaktikMenu();
+    tt82ReturnToTaktikMenu();
   };
 }
 
 if(typeof exitEditTaktik==="function"){
   exitEditTaktik=function(){
     if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return;
-    tt81ReturnToTaktikMenu();
+    tt82ReturnToTaktikMenu();
   };
 }
 
-function tt81BindExitButtons(){
-  function bind(id){
+function tt82BindExitButtons(){
+  ["btn-stop-play","btn-edit-taktik-exit"].forEach(function(id){
     var old=document.getElementById(id);
-    if(!old || old.dataset.tt81ExitBound)return;
+    if(!old || old.dataset.tt82ExitBound)return;
     var neu=old.cloneNode(true);
-    neu.dataset.tt81ExitBound="1";
+    neu.dataset.tt82ExitBound="1";
     old.parentNode.replaceChild(neu,old);
     neu.addEventListener("click",function(e){
       e.preventDefault();
       e.stopPropagation();
       if(e.stopImmediatePropagation)e.stopImmediatePropagation();
       if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return false;
-      tt81ReturnToTaktikMenu();
+      tt82ReturnToTaktikMenu();
       return false;
     },true);
-  }
-  bind("btn-stop-play");
-  bind("btn-edit-taktik-exit");
+  });
 }
 
-tt81CaptureDefault();
-tt81BindExitButtons();
-setTimeout(tt81BindExitButtons,500);
-setTimeout(tt81BindExitButtons,1500);
+if(typeof renderTaktikList==="function"){
+  var _renderTaktikList_v82=renderTaktikList;
+  renderTaktikList=function(){
+    var r=_renderTaktikList_v82.apply(this,arguments);
+    setTimeout(function(){
+      try{if(typeof tt78PatchReadonlyEyeIcons==="function")tt78PatchReadonlyEyeIcons();}catch(e){}
+      try{if(typeof tt79RebindCopyButtons==="function")tt79RebindCopyButtons();}catch(e){}
+      tt82BindExitButtons();
+      tt82ApplyLibraryMode();
+    },0);
+    return r;
+  };
+}
 
-/* === slut v81-safe-exit-cleanup === */
+document.addEventListener("click",function(e){
+  try{
+    var tab=e.target.closest && e.target.closest(".tab");
+    if(tab){
+      setTimeout(tt82ApplyLibraryMode,80);
+    }
+  }catch(err){}
+},true);
+
+["btn-new-taktik","new-taktik-ok"].forEach(function(id){
+  var b=document.getElementById(id);
+  if(b && !b.dataset.tt82EnterBound){
+    b.dataset.tt82EnterBound="1";
+    b.addEventListener("click",function(){tt82EnterFilmMode();},true);
+  }
+});
+
+tt82BindExitButtons();
+setTimeout(tt82ApplyLibraryMode,500);
+setTimeout(tt82BindExitButtons,800);
+setTimeout(tt82ApplyLibraryMode,1500);
+
+/* === slut v82-taktik-library-safe === */
