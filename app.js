@@ -14244,3 +14244,202 @@ if(typeof renderBench==="function" && !renderBench._tt104Wrapped){
 }
 
 /* === slut v104-desktop-bench-drag-fix === */
+
+
+/* === v105-bench-player-id-fix: rätt avbytare vid desktop-drag + tyst placering === */
+
+function tt105BenchList(){
+  try{
+    var assignedTids={};
+    Object.values(matchAssignments||{}).forEach(function(tid){assignedTids[tid]=true;});
+    return (matchRoster||[]).slice()
+      .sort(function(a,b){return String(a.namn||"").localeCompare(String(b.namn||""),"sv");})
+      .filter(function(sp){return !assignedTids[sp.id];});
+  }catch(e){return [];}
+}
+
+function tt105TagBenchPlayers(){
+  try{
+    var cont=document.getElementById("bench-players");
+    if(!cont)return;
+    var bench=tt105BenchList();
+    Array.prototype.slice.call(cont.querySelectorAll(".bench-player")).forEach(function(el,idx){
+      var sp=bench[idx];
+      if(sp){
+        el.dataset.playerId=sp.id;
+        el.dataset.nr=sp.nr;
+        el.dataset.name=sp.namn||"";
+        el.title="#"+sp.nr+" "+(sp.namn||"");
+      }
+    });
+  }catch(e){}
+}
+
+function tt105BenchPlayerFromElement(el){
+  if(!el)return null;
+
+  try{
+    var pid=el.dataset.playerId;
+    if(pid){
+      var exact=(matchRoster||[]).find(function(sp){return String(sp.id)===String(pid);});
+      if(exact)return exact;
+    }
+  }catch(e){}
+
+  // Fallback: använd positionen i bänklistan, inte texten. Text kan ge fel vid liknande namn/nummer.
+  try{
+    var cont=document.getElementById("bench-players");
+    var nodes=Array.prototype.slice.call(cont.querySelectorAll(".bench-player"));
+    var idx=nodes.indexOf(el);
+    if(idx>=0){
+      var bench=tt105BenchList();
+      if(bench[idx])return bench[idx];
+    }
+  }catch(e){}
+
+  // Sista fallback: gamla texttolkningen från v104, men helst används aldrig denna.
+  try{
+    if(typeof tt104BenchPlayerFromElement==="function"){
+      return tt104BenchPlayerFromElement(el);
+    }
+  }catch(e){}
+
+  return null;
+}
+
+function tt105FindDropPitchPlayer(cx,cy){
+  try{
+    if(typeof tt104FindDropPitchPlayer==="function"){
+      var pid=tt104FindDropPitchPlayer(cx,cy);
+      if(pid)return pid;
+    }
+  }catch(e){}
+
+  try{
+    var pt=svgPt(cx,cy);
+    var best=null,bestD=65*65;
+    (players||[]).forEach(function(p){
+      if(p.team!=="home")return;
+      var dx=pt.x-p.x,dy=pt.y-p.y,d=dx*dx+dy*dy;
+      if(d<bestD){best=p.id;bestD=d;}
+    });
+    return best;
+  }catch(e){return null;}
+}
+
+function tt105AssignBenchToPitchSilent(sp,pid){
+  if(!sp || !pid)return false;
+
+  try{
+    // Gör samma sak som assignPlayerToPosition men utan toast.
+    Object.keys(matchAssignments||{}).forEach(function(k){
+      if(matchAssignments[k]===sp.id && k!==pid)delete matchAssignments[k];
+    });
+    matchAssignments[pid]=sp.id;
+
+    var p=players.find(function(x){return x.id===pid;});
+    if(p){
+      p.number=sp.nr;
+      p.name=sp.namn;
+    }
+
+    if(typeof render==="function")render();
+    if(typeof renderBench==="function")renderBench();
+    return true;
+  }catch(e){}
+
+  return false;
+}
+
+function tt105MakeGhost(sp,x,y){
+  var ghost=document.createElement("div");
+  ghost.style.cssText="position:fixed;z-index:9999;pointer-events:none;background:#4ae87a;color:#0a1a0d;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.8rem;transform:translate(-50%,-50%)";
+  ghost.textContent="#"+sp.nr;
+  ghost.style.left=x+"px";
+  ghost.style.top=y+"px";
+  document.body.appendChild(ghost);
+  return ghost;
+}
+
+function tt105StartBenchMouseDrag(ev,el,sp){
+  if(!sp)return false;
+
+  ev.preventDefault();
+  ev.stopPropagation();
+  if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
+
+  var startX=ev.clientX,startY=ev.clientY;
+  var moved=false;
+  var ghost=null;
+
+  function mm(e2){
+    var dx=e2.clientX-startX,dy=e2.clientY-startY;
+    if(!moved && dx*dx+dy*dy>36){
+      moved=true;
+      ghost=tt105MakeGhost(sp,e2.clientX,e2.clientY);
+    }
+    if(moved && ghost){
+      ghost.style.left=e2.clientX+"px";
+      ghost.style.top=e2.clientY+"px";
+      try{if(typeof highlightNearestPlayer==="function")highlightNearestPlayer(e2.clientX,e2.clientY);}catch(e){}
+    }
+  }
+
+  function mu(e2){
+    window.removeEventListener("mousemove",mm,true);
+    window.removeEventListener("mouseup",mu,true);
+    if(ghost){ghost.remove();ghost=null;}
+    try{if(typeof clearPlayerHighlights==="function")clearPlayerHighlights();}catch(e){}
+
+    if(!moved)return;
+
+    var pid=tt105FindDropPitchPlayer(e2.clientX,e2.clientY);
+    if(pid){
+      tt105AssignBenchToPitchSilent(sp,pid);
+    }
+  }
+
+  window.addEventListener("mousemove",mm,true);
+  window.addEventListener("mouseup",mu,true);
+  return true;
+}
+
+function tt105InstallBenchDrag(){
+  var bar=document.getElementById("bench-bar");
+  if(!bar)return;
+
+  // Byt ut v104-hanteraren genom att fånga tidigare och stoppa allt.
+  if(!bar.dataset.tt105BenchDrag){
+    bar.dataset.tt105BenchDrag="1";
+    bar.addEventListener("mousedown",function(ev){
+      try{
+        if(ev.button!==0)return;
+        var el=ev.target.closest && ev.target.closest(".bench-player");
+        if(!el)return;
+        var sp=tt105BenchPlayerFromElement(el);
+        if(!sp)return;
+        tt105StartBenchMouseDrag(ev,el,sp);
+        return false;
+      }catch(e){}
+    },true);
+  }
+
+  tt105TagBenchPlayers();
+}
+
+if(typeof renderBench==="function" && !renderBench._tt105Wrapped){
+  var _renderBench_tt105=renderBench;
+  renderBench=function(){
+    var r=_renderBench_tt105.apply(this,arguments);
+    setTimeout(tt105TagBenchPlayers,0);
+    setTimeout(tt105InstallBenchDrag,0);
+    return r;
+  };
+  renderBench._tt105Wrapped=true;
+}
+
+tt105InstallBenchDrag();
+setTimeout(tt105InstallBenchDrag,500);
+setTimeout(tt105InstallBenchDrag,1500);
+
+/* === slut v105-bench-player-id-fix === */
