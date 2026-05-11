@@ -14828,3 +14828,145 @@ setTimeout(function(){
 },1200);
 
 /* === slut v119-taktik-owner-fallback === */
+
+
+/* === v120-taktik-share-team-fix: Dela till Lagets även när ownerId återställts via fallback ===
+   Bas: v119.
+   v119 gjorde att Mina-filer syntes igen. v120 gör att samma filer också räknas som
+   ägda/redigerbara vid delning, och att delade egna filer syns i Lagets.
+*/
+
+function tt120Profile(){
+  try{
+    if(typeof getUserProfile==="function"){
+      var p=getUserProfile();
+      if(p)return p;
+    }
+  }catch(e){}
+  try{
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){}
+  return null;
+}
+
+function tt120Meta(obj){
+  try{if(typeof tt119Meta==="function")return tt119Meta(obj)||{};}catch(e){}
+  try{if(typeof fileMetaV10==="function")return fileMetaV10(obj)||{};}catch(e){}
+  if(!obj)return {};
+  return obj._meta || obj.meta || (obj.data&&obj.data._meta) || {};
+}
+
+function tt120Norm(v){
+  try{if(typeof tt119Norm==="function")return tt119Norm(v);}catch(e){}
+  return String(v||"").trim().toLowerCase();
+}
+
+function tt120SameTeam(p,m){
+  var pt=tt120Norm((p&&p.teamId)||(p&&p.teamCode)||(p&&p.teamName));
+  var mt=tt120Norm((m&&m.teamId)||(m&&m.teamCode)||(m&&m.teamName));
+  return !!(pt&&mt&&pt===mt);
+}
+
+function tt120IsMine(obj){
+  try{if(typeof tt119IsMine==="function" && tt119IsMine(obj))return true;}catch(e){}
+  var p=tt120Profile(), m=tt120Meta(obj);
+  if(!m || (!m.ownerId && !m.ownerName && !m.teamId && !m.teamCode))return true;
+  if(p&&p.ownerId&&m.ownerId&&String(p.ownerId)===String(m.ownerId))return true;
+  if(p&&tt120Norm(p.ownerName)&&tt120Norm(m.ownerName)&&tt120Norm(p.ownerName)===tt120Norm(m.ownerName)&&tt120SameTeam(p,m))return true;
+  return false;
+}
+
+function tt120IsTeamShared(obj){
+  var p=tt120Profile(), m=tt120Meta(obj);
+  if(!p||!m)return false;
+  // Viktigt: Lagets ska visa delade filer i laget, även om det är mina egna delade filer.
+  return tt120SameTeam(p,m) && !!m.sharedWithTeam;
+}
+
+function tt120UpdateShareMeta(data,share,canEdit){
+  var d=JSON.parse(JSON.stringify(data||{}));
+  var meta=d._meta||{};
+  var p=tt120Profile();
+
+  // Viktigt: vid delning skriver vi över med aktuell profil.
+  // Annars kan gamla ownerId/teamId ligga kvar och filen hamnar inte i Lagets.
+  if(p){
+    meta.ownerId=p.ownerId;
+    meta.ownerName=p.ownerName;
+    meta.teamId=p.teamId || p.teamCode || p.teamName;
+    meta.teamCode=p.teamCode || p.teamId || p.teamName;
+    meta.teamName=p.teamName || p.teamCode || p.teamId;
+  }
+
+  meta.sharedWithTeam=!!share;
+  meta.teamCanEdit=!!canEdit;
+  meta.updatedAt=new Date().toISOString();
+  d._meta=meta;
+  return d;
+}
+
+function tt120PatchTaktikShare(tk,share){
+  if(!tk||!tk.dbId){
+    showToast("Spara filmen först",false);
+    return;
+  }
+
+  if(!tt120IsMine(tk)){
+    showToast("Du kan inte ändra delning på någon annans fil",false);
+    return;
+  }
+
+  var newTk=tt120UpdateShareMeta(tk,share,false);
+  Object.keys(newTk).forEach(function(k){tk[k]=newTk[k];});
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({
+      data:newTk,
+      name:tk.name,
+      type:"taktikfilm",
+      folder:tk.folder||"Taktik"
+    })
+  }).then(function(){
+    showToast(share?"Film delad med laget":"Film inte längre delad");
+    try{taktikScope=share?"team":"mine";}catch(e){}
+    try{currentTaktikFolder="Alla";}catch(e){}
+    setTimeout(function(){
+      try{cloudLoadTaktik();}catch(e){}
+      try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+    },250);
+  }).catch(function(err){
+    showToast("Kunde inte ändra delning",false);
+    try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e){}
+  });
+}
+
+// Överskriv v10/v119-funktionerna som renderTaktikList använder.
+try{isMineV10=tt120IsMine;}catch(e){}
+try{isSameTeamSharedV10=tt120IsTeamShared;}catch(e){}
+try{
+  isFileVisibleInScopeV10=function(obj,scope){
+    return scope==="team" ? tt120IsTeamShared(obj) : tt120IsMine(obj);
+  };
+}catch(e){}
+try{
+  isReadOnlyFileV10=function(obj){
+    return !tt120IsMine(obj);
+  };
+}catch(e){}
+try{updateShareMetaV10=tt120UpdateShareMeta;}catch(e){}
+try{patchTaktikShareV10=tt120PatchTaktikShare;}catch(e){}
+
+// Efter att sidan laddat: rendera om, så knapparna får rätt Dela-funktion.
+setTimeout(function(){
+  try{currentTaktikFolder="Alla";}catch(e){}
+  try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+},300);
+
+setTimeout(function(){
+  try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+},1200);
+
+/* === slut v120-taktik-share-team-fix === */
