@@ -965,13 +965,92 @@
   }
 </style>
 
+
+<style id="v124-iphone-film-menu-fix-css">
+  /*
+    v124: iPhone-fix för film/taktikläge.
+    Gör lägesraden kompakt och horisontellt scrollbar så Avsluta inte hamnar utanför skärmen.
+  */
+  @media (max-width: 760px) {
+    body.tt124-taktik-film-active #topbar,
+    body.tt124-taktik-film-active #toolbar,
+    body.tt124-taktik-film-active .toolbar,
+    body.tt124-taktik-film-active #modebar,
+    body.tt124-taktik-film-active .modebar {
+      max-width: 100vw !important;
+      box-sizing: border-box !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      scrollbar-width: none !important;
+      white-space: nowrap !important;
+    }
+
+    body.tt124-taktik-film-active #topbar::-webkit-scrollbar,
+    body.tt124-taktik-film-active #toolbar::-webkit-scrollbar,
+    body.tt124-taktik-film-active .toolbar::-webkit-scrollbar,
+    body.tt124-taktik-film-active #modebar::-webkit-scrollbar,
+    body.tt124-taktik-film-active .modebar::-webkit-scrollbar {
+      display: none !important;
+    }
+
+    body.tt124-taktik-film-active #topbar button,
+    body.tt124-taktik-film-active #toolbar button,
+    body.tt124-taktik-film-active .toolbar button,
+    body.tt124-taktik-film-active #modebar button,
+    body.tt124-taktik-film-active .modebar button {
+      flex: 0 0 auto !important;
+      white-space: nowrap !important;
+      font-size: 0.66rem !important;
+      padding: 3px 6px !important;
+      min-width: auto !important;
+    }
+
+    /* Viktigt: Avsluta ska alltid kunna nås, även om raden är bred. */
+    body.tt124-taktik-film-active #btn-exit-playback,
+    body.tt124-taktik-film-active #btn-close-playback,
+    body.tt124-taktik-film-active #btn-taktik-exit,
+    body.tt124-taktik-film-active #exit-playback-btn,
+    body.tt124-taktik-film-active .taktik-exit-btn,
+    body.tt124-taktik-film-active button[data-action="exit-playback"] {
+      position: sticky !important;
+      right: 0 !important;
+      z-index: 10020 !important;
+      background: #111a14 !important;
+      border-color: #e84a4a !important;
+      color: #e84a4a !important;
+      box-shadow: -8px 0 10px rgba(10,26,13,.85) !important;
+    }
+
+    /* Om Avsluta saknar egen id/class men heter Avsluta, får JS en klass på knappen. */
+    body.tt124-taktik-film-active .tt124-exit-visible {
+      position: sticky !important;
+      right: 0 !important;
+      z-index: 10020 !important;
+      background: #111a14 !important;
+      border-color: #e84a4a !important;
+      color: #e84a4a !important;
+      box-shadow: -8px 0 10px rgba(10,26,13,.85) !important;
+    }
+
+    body.tt124-taktik-film-active #rec-ui,
+    body.tt124-taktik-film-active #edit-taktik-ui,
+    body.tt124-taktik-film-active #taktikbar {
+      max-width: 100vw !important;
+      box-sizing: border-box !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.47 rollback v120</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.48 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
