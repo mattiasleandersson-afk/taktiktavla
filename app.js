@@ -10447,3 +10447,160 @@ if(typeof renderTaktikList==="function"){
 setTimeout(tt78PatchReadonlyEyeIcons,300);
 
 /* === slut v78-safe-copy-display-fix === */
+
+
+/* === v79-direct-copy-to-mine: kopia från Lagets gör riktig ny POST till Mina === */
+
+function tt79CopyMetaToMine(data){
+  var copy=JSON.parse(JSON.stringify(data||{}));
+
+  delete copy.dbId;
+  delete copy.id;
+  delete copy._readOnly;
+  delete copy._isDraft;
+
+  // Tvinga ny ägare/ny metadata för kopian.
+  delete copy._meta;
+  delete copy.meta;
+
+  if(typeof addMetaToData==="function"){
+    copy=addMetaToData(copy);
+  }else if(typeof updateShareMetaV10==="function"){
+    copy=updateShareMetaV10(copy,false,false);
+  }
+
+  if(!copy._meta)copy._meta={};
+  var p=null;
+  try{
+    if(typeof getProfileSafeV10==="function")p=getProfileSafeV10();
+    else if(typeof getUserProfile==="function")p=getUserProfile();
+  }catch(e){}
+
+  if(p){
+    copy._meta.ownerId=p.ownerId;
+    copy._meta.ownerName=p.ownerName;
+    copy._meta.teamId=p.teamId;
+    copy._meta.teamCode=p.teamCode;
+    copy._meta.teamName=p.teamName||p.teamCode;
+  }
+
+  copy._meta.sharedWithTeam=false;
+  copy._meta.teamCanEdit=false;
+  copy._meta.updatedAt=new Date().toISOString();
+
+  return copy;
+}
+
+function tt79ShowMineAndReload(){
+  try{taktikScope="mine";}catch(e){}
+  try{currentTaktikFolder="Alla";}catch(e){}
+  try{taktikSearch="";}catch(e){}
+  try{
+    var inp=document.getElementById("taktik-search");
+    if(inp)inp.value="";
+  }catch(e){}
+  try{renderTaktikList();}catch(e){}
+  setTimeout(function(){
+    try{cloudLoadTaktik();}catch(e){}
+  },500);
+}
+
+function tt79CopyTaktikToMine(tk){
+  if(!tk||!tk.steps||tk.steps.length<2){
+    showToast("Kan inte kopiera tom film",false);
+    return;
+  }
+
+  var copy=tt79CopyMetaToMine(tk);
+  copy.name="Kopia av "+(tk.name||"taktikfilm");
+  copy.folder=copy.folder||tk.folder||"Taktik";
+  if(typeof tt76NormalizeFilm==="function")tt76NormalizeFilm(copy);
+
+  cloudStatus("Skapar kopia...","#7aaa88");
+
+  // Viktigt: använd INTE cloudSaveTaktik här.
+  // Den vanliga sparfunktionen kan tolka källfilen/namn/dbId/readOnly fel.
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{
+    method:"POST",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({
+      name:copy.name,
+      data:copy,
+      type:"taktikfilm",
+      folder:copy.folder
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data&&data[0]&&data[0].id){
+      copy.dbId=data[0].id;
+      taktikFilmer=(taktikFilmer||[]).concat([copy]);
+      showToast("Kopia skapad i Mina");
+      cloudStatus("✅ Kopia skapad","#4ae87a");
+      tt79ShowMineAndReload();
+    }else{
+      var msg=(data&&data.message)?data.message:"Kunde inte skapa kopia";
+      showToast(msg,false);
+      cloudStatus("❌ "+msg,"#e84a4a");
+    }
+  })
+  .catch(function(err){
+    showToast("Kunde inte kopiera film",false);
+    cloudStatus("❌ "+err.message,"#e84a4a");
+  });
+}
+
+copyTaktikToMineV10=tt79CopyTaktikToMine;
+duplicateTaktik=function(idx){
+  var tk=(taktikFilmer||[])[idx];
+  tt79CopyTaktikToMine(tk);
+};
+
+// Säkra att kopieringsknappen i listan använder rätt objekt även om listan är filtrerad.
+function tt79RebindCopyButtons(){
+  try{
+    var rows=document.querySelectorAll("#taktik-list .row");
+    Array.prototype.slice.call(rows).forEach(function(row){
+      var nm=row.querySelector(".row-name");
+      if(!nm)return;
+      var name=String(nm.textContent||"").trim();
+      var tk=(taktikFilmer||[]).find(function(x){
+        return String(x.name||"").trim()===name;
+      });
+      if(!tk)return;
+
+      var buttons=Array.prototype.slice.call(row.querySelectorAll("button.sa"));
+      var copyBtn=buttons.find(function(b){
+        return b.textContent==="⧉" || b.title==="Kopiera";
+      });
+      if(!copyBtn || copyBtn.dataset.v79CopyBound)return;
+
+      var clone=copyBtn.cloneNode(true);
+      clone.dataset.v79CopyBound="1";
+      copyBtn.parentNode.replaceChild(clone,copyBtn);
+      clone.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+        tt79CopyTaktikToMine(tk);
+        return false;
+      },true);
+    });
+  }catch(e){}
+}
+
+if(typeof renderTaktikList==="function"){
+  var _renderTaktikList_v79=renderTaktikList;
+  renderTaktikList=function(){
+    var r=_renderTaktikList_v79.apply(this,arguments);
+    setTimeout(function(){
+      try{if(typeof tt78PatchReadonlyEyeIcons==="function")tt78PatchReadonlyEyeIcons();}catch(e){}
+      tt79RebindCopyButtons();
+    },0);
+    return r;
+  };
+}
+
+setTimeout(tt79RebindCopyButtons,300);
+
+/* === slut v79-direct-copy-to-mine === */
