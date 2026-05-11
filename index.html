@@ -715,13 +715,128 @@
   }
 </style>
 
+
+<style id="v99-formation-top-align-icons">
+  /* v99: Utgångslägen ska ligga högst upp, listan får plats, ikonknappar till höger */
+
+  #panel-saves.tt-v99-formation-top,
+  #panel-uppstallning.tt-v99-formation-top,
+  #panel-start.tt-v99-formation-top {
+    align-self: stretch !important;
+    justify-self: start !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    align-content: flex-start !important;
+    vertical-align: top !important;
+    padding-top: 4px !important;
+    margin-top: 0 !important;
+    min-height: calc(100vh - 92px) !important;
+    max-height: calc(100vh - 72px) !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(#panel-saves.tt-v99-formation-top.on) #bottompanel,
+  body:has(#panel-uppstallning.tt-v99-formation-top.on) #bottompanel,
+  body:has(#panel-start.tt-v99-formation-top.on) #bottompanel {
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    align-content: flex-start !important;
+    padding-top: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #panel-saves.tt-v99-formation-top > *,
+  #panel-uppstallning.tt-v99-formation-top > *,
+  #panel-start.tt-v99-formation-top > * {
+    flex-shrink: 0 !important;
+  }
+
+  #panel-saves.tt-v99-formation-top #saves-list,
+  #panel-uppstallning.tt-v99-formation-top #saves-list,
+  #panel-start.tt-v99-formation-top #saves-list {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-height: 340px !important;
+    max-height: calc(100vh - 165px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    margin-top: 2px !important;
+    padding-bottom: 56px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  #panel-saves.tt-v99-formation-top #saves-list .row,
+  #panel-uppstallning.tt-v99-formation-top #saves-list .row,
+  #panel-start.tt-v99-formation-top #saves-list .row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) repeat(5, 27px) !important;
+    align-items: center !important;
+    column-gap: 3px !important;
+    min-height: 35px !important;
+    padding: 4px 4px !important;
+  }
+
+  #panel-saves.tt-v99-formation-top #saves-list .row-name,
+  #panel-uppstallning.tt-v99-formation-top #saves-list .row-name,
+  #panel-start.tt-v99-formation-top #saves-list .row-name {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #panel-saves.tt-v99-formation-top #saves-list .row-sub,
+  #panel-uppstallning.tt-v99-formation-top #saves-list .row-sub,
+  #panel-start.tt-v99-formation-top #saves-list .row-sub {
+    grid-column: 1 / 2 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #panel-saves.tt-v99-formation-top #saves-list button.sa,
+  #panel-uppstallning.tt-v99-formation-top #saves-list button.sa,
+  #panel-start.tt-v99-formation-top #saves-list button.sa {
+    width: 27px !important;
+    min-width: 27px !important;
+    max-width: 27px !important;
+    height: 27px !important;
+    min-height: 27px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: .78rem !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+  }
+
+  @media (max-width: 720px) {
+    #panel-saves.tt-v99-formation-top,
+    #panel-uppstallning.tt-v99-formation-top,
+    #panel-start.tt-v99-formation-top {
+      min-height: calc(100vh - 78px) !important;
+      max-height: calc(100vh - 58px) !important;
+    }
+
+    #panel-saves.tt-v99-formation-top #saves-list,
+    #panel-uppstallning.tt-v99-formation-top #saves-list,
+    #panel-start.tt-v99-formation-top #saves-list {
+      min-height: 360px !important;
+      max-height: calc(100vh - 150px) !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.22 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.23 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
