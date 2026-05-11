@@ -10763,30 +10763,35 @@ setTimeout(tt82ApplyLibraryMode,1500);
 /* === slut v82-taktik-library-safe === */
 
 
-/* === v83-exit-to-library-hard: avsluta film ska alltid tillbaka till meny utan plan === */
+/* === v85-hide-duplicate-save-exit: ta bort dubbla spara/avsluta i stegpanelen === */
 
-function tt83ForceLibraryMode(){
+function tt85HideDuplicateSaveExit(){
+  ["btn-edit-taktik-save","btn-edit-taktik-exit"].forEach(function(id){
+    var b=document.getElementById(id);
+    if(b){
+      b.style.display="none";
+      b.style.visibility="hidden";
+      b.style.pointerEvents="none";
+      b.setAttribute("aria-hidden","true");
+      b.tabIndex=-1;
+    }
+  });
+}
+
+// Säkerställ att de övre knapparna i taktikbaren är de som används.
+// btn-stop-play/krysset ska tillbaka till taktikmenyn. I v82 fungerar biblioteksläget
+// när man klickar Taktik-fliken; här återanvänder vi samma väg efter krysset.
+function tt85CloseViaTopCross(){
+  if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return;
+
   try{if(animFrame)cancelAnimationFrame(animFrame);}catch(e){}
   try{playback=null;}catch(e){}
   try{editingTaktikIdx=null;}catch(e){}
   try{editingStepIdx=0;}catch(e){}
   try{isEditingTaktik=false;}catch(e){}
   try{selectedId=null;}catch(e){}
-  try{movementPaths=[];}catch(e){}
-  try{arrows=[];labels=[];freehandPaths=[];zones=[];}catch(e){}
-  try{document.body.classList.remove("fullscreen-portrait","landscape");}catch(e){}
-
-  try{
-    document.querySelectorAll(".tab").forEach(function(t){
-      t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");
-    });
-    document.querySelectorAll(".panel").forEach(function(p){
-      p.classList.toggle("on",p.id==="panel-taktik");
-    });
-  }catch(e){}
-
-  var pitch=document.getElementById("pitch-wrapper");
-  if(pitch)pitch.style.display="none";
+  try{movementPaths=[];arrows=[];labels=[];freehandPaths=[];zones=[];}catch(e){}
+  try{tt76ForceClean();}catch(e){}
 
   var tb=document.getElementById("taktikbar");
   if(tb)tb.style.display="none";
@@ -10803,174 +10808,6 @@ function tt83ForceLibraryMode(){
   var bp=document.getElementById("bottompanel");
   if(bp)bp.classList.remove("hidden");
 
-  document.body.classList.add("tt-v82-taktik-library");
-  document.body.classList.add("tt-v83-force-library");
-
-  try{renderTaktikList();}catch(e){}
-
-  // Kör flera gånger eftersom äldre wrappers ibland ändrar display efter klicket.
-  [0,50,150,400].forEach(function(ms){
-    setTimeout(function(){
-      try{playback=null;editingTaktikIdx=null;isEditingTaktik=false;}catch(e){}
-      document.body.classList.add("tt-v82-taktik-library");
-      document.body.classList.add("tt-v83-force-library");
-      var p=document.getElementById("pitch-wrapper");if(p)p.style.display="none";
-      var t=document.getElementById("taktikbar");if(t)t.style.display="none";
-      var eui=document.getElementById("edit-taktik-ui");if(eui)eui.style.display="none";
-      var nui=document.getElementById("no-rec-ui");if(nui)nui.style.display="block";
-    },ms);
-  });
-}
-
-function tt83EnterFilmMode(){
-  document.body.classList.remove("tt-v82-taktik-library");
-  document.body.classList.remove("tt-v83-force-library");
-  var pitch=document.getElementById("pitch-wrapper");
-  if(pitch)pitch.style.display="";
-}
-
-var _tt83_startPlayback_base=typeof startPlayback==="function"?startPlayback:null;
-if(_tt83_startPlayback_base){
-  startPlayback=function(){
-    tt83EnterFilmMode();
-    return _tt83_startPlayback_base.apply(this,arguments);
-  };
-}
-
-var _tt83_openEditTaktik_base=typeof openEditTaktik==="function"?openEditTaktik:null;
-if(_tt83_openEditTaktik_base){
-  openEditTaktik=function(){
-    tt83EnterFilmMode();
-    return _tt83_openEditTaktik_base.apply(this,arguments);
-  };
-}
-
-stopPlayback=function(){
-  if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return;
-  try{tt76ForceClean();}catch(e){}
-  tt83ForceLibraryMode();
-};
-
-exitEditTaktik=function(){
-  if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return;
-  try{tt76ForceClean();}catch(e){}
-  tt83ForceLibraryMode();
-};
-
-function tt83BindExitButtons(){
-  ["btn-stop-play","btn-edit-taktik-exit"].forEach(function(id){
-    var old=document.getElementById(id);
-    if(!old)return;
-    if(old.dataset.tt83ExitBound==="1")return;
-    var neu=old.cloneNode(true);
-    neu.dataset.tt83ExitBound="1";
-    old.parentNode.replaceChild(neu,old);
-    neu.addEventListener("click",function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-      if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return false;
-      try{tt76ForceClean();}catch(err){}
-      tt83ForceLibraryMode();
-      return false;
-    },true);
-  });
-}
-
-if(typeof renderTaktikList==="function"){
-  var _renderTaktikList_v83=renderTaktikList;
-  renderTaktikList=function(){
-    var r=_renderTaktikList_v83.apply(this,arguments);
-    setTimeout(function(){
-      try{if(typeof tt78PatchReadonlyEyeIcons==="function")tt78PatchReadonlyEyeIcons();}catch(e){}
-      try{if(typeof tt79RebindCopyButtons==="function")tt79RebindCopyButtons();}catch(e){}
-      tt83BindExitButtons();
-    },0);
-    return r;
-  };
-}
-
-document.addEventListener("click",function(e){
-  try{
-    var tab=e.target.closest && e.target.closest(".tab");
-    if(tab && tab.getAttribute("data-panel")==="taktik"){
-      setTimeout(function(){
-        if(!(editingTaktikIdx!==null && typeof editingTaktikIdx!=="undefined") && !playback){
-          tt83ForceLibraryMode();
-        }
-      },80);
-    }
-  }catch(err){}
-},true);
-
-tt83BindExitButtons();
-setTimeout(tt83BindExitButtons,500);
-setTimeout(tt83BindExitButtons,1500);
-
-/* === slut v83-exit-to-library-hard === */
-
-
-/* === v84-close-taktikbar-library: stäng kvarvarande steg-/uppspelningsmeny vid avslut === */
-
-function tt84HardClosePlaybackMenus(){
-  var ids=[
-    "taktikbar",
-    "edit-taktik-ui",
-    "rec-ui",
-    "fs-portrait-nav",
-    "fs-top-tools",
-    "landscape-ui",
-    "ls-controls",
-    "ls-prev-side",
-    "ls-next-side",
-    "playbar",
-    "play-controls"
-  ];
-
-  ids.forEach(function(id){
-    var el=document.getElementById(id);
-    if(el){
-      el.style.display="none";
-      el.style.visibility="hidden";
-      el.style.pointerEvents="none";
-    }
-  });
-
-  // I menyläge ska taktikens filbibliotek alltid synas.
-  var no=document.getElementById("no-rec-ui");
-  if(no){
-    no.style.display="block";
-    no.style.visibility="visible";
-    no.style.pointerEvents="auto";
-  }
-
-  var bp=document.getElementById("bottompanel");
-  if(bp){
-    bp.classList.remove("hidden");
-    bp.style.display="block";
-    bp.style.visibility="visible";
-  }
-
-  var panel=document.getElementById("panel-taktik");
-  if(panel){
-    panel.classList.add("on");
-    panel.style.display="block";
-    panel.style.visibility="visible";
-  }
-}
-
-function tt84HardExitToLibrary(){
-  try{if(animFrame)cancelAnimationFrame(animFrame);}catch(e){}
-  try{playback=null;}catch(e){}
-  try{editingTaktikIdx=null;}catch(e){}
-  try{editingStepIdx=0;}catch(e){}
-  try{isEditingTaktik=false;}catch(e){}
-  try{selectedId=null;}catch(e){}
-  try{movementPaths=[];}catch(e){}
-  try{arrows=[];labels=[];freehandPaths=[];zones=[];}catch(e){}
-  try{arrowStart=null;arrowCurrent=null;movementCurrent=null;dragging=null;}catch(e){}
-  try{document.body.classList.remove("fullscreen-portrait","landscape","v53-taktik-fs");}catch(e){}
-
   try{
     document.querySelectorAll(".tab").forEach(function(t){
       t.classList.toggle("on",t.getAttribute("data-panel")==="taktik");
@@ -10980,134 +10817,60 @@ function tt84HardExitToLibrary(){
     });
   }catch(e){}
 
-  document.body.classList.add("tt-v82-taktik-library");
-  document.body.classList.add("tt-v83-force-library");
-  document.body.classList.add("tt-v84-library");
-
-  tt84HardClosePlaybackMenus();
-
-  var pitch=document.getElementById("pitch-wrapper");
-  if(pitch){
-    pitch.style.display="none";
-    pitch.style.visibility="hidden";
-    pitch.style.pointerEvents="none";
-  }
-
   try{renderTaktikList();}catch(e){}
-
-  // Äldre kod kan återställa taktikbarens display efter klick/animation.
-  // Kör därför igen efter att eventstacken och eventuella timeouts gått klart.
-  [0,30,80,180,400,900].forEach(function(ms){
-    setTimeout(function(){
-      try{playback=null;editingTaktikIdx=null;isEditingTaktik=false;}catch(e){}
+  try{
+    if(typeof tt82ApplyLibraryMode==="function")tt82ApplyLibraryMode();
+  }catch(e){}
+  setTimeout(function(){
+    try{
       document.body.classList.add("tt-v82-taktik-library");
-      document.body.classList.add("tt-v83-force-library");
-      document.body.classList.add("tt-v84-library");
-      tt84HardClosePlaybackMenus();
       var p=document.getElementById("pitch-wrapper");
-      if(p){
-        p.style.display="none";
-        p.style.visibility="hidden";
-        p.style.pointerEvents="none";
-      }
-    },ms);
-  });
+      if(p)p.style.display="none";
+    }catch(e){}
+  },80);
 }
 
-function tt84EnterFilmMode(){
-  document.body.classList.remove("tt-v82-taktik-library");
-  document.body.classList.remove("tt-v83-force-library");
-  document.body.classList.remove("tt-v84-library");
-
-  ["pitch-wrapper","taktikbar","edit-taktik-ui","fs-portrait-nav","fs-top-tools"].forEach(function(id){
-    var el=document.getElementById(id);
-    if(el){
-      el.style.visibility="";
-      el.style.pointerEvents="";
-      if(id==="pitch-wrapper")el.style.display="";
-    }
-  });
-}
-
-var _tt84_startPlayback_base=typeof startPlayback==="function"?startPlayback:null;
-if(_tt84_startPlayback_base){
-  startPlayback=function(){
-    tt84EnterFilmMode();
-    return _tt84_startPlayback_base.apply(this,arguments);
-  };
-}
-
-var _tt84_openEditTaktik_base=typeof openEditTaktik==="function"?openEditTaktik:null;
-if(_tt84_openEditTaktik_base){
-  openEditTaktik=function(){
-    tt84EnterFilmMode();
-    return _tt84_openEditTaktik_base.apply(this,arguments);
-  };
-}
-
-stopPlayback=function(){
-  if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return;
-  try{tt76ForceClean();}catch(e){}
-  tt84HardExitToLibrary();
-};
-
-exitEditTaktik=function(){
-  if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return;
-  try{tt76ForceClean();}catch(e){}
-  tt84HardExitToLibrary();
-};
-
-function tt84BindExitButtons(){
-  ["btn-stop-play","btn-edit-taktik-exit"].forEach(function(id){
-    var old=document.getElementById(id);
-    if(!old)return;
-    if(old.dataset.tt84ExitBound==="1")return;
-
-    var neu=old.cloneNode(true);
-    neu.dataset.tt84ExitBound="1";
-    old.parentNode.replaceChild(neu,old);
-
-    neu.addEventListener("click",function(e){
+function tt85BindTopButtons(){
+  // Övre kryssknappen
+  var stop=document.getElementById("btn-stop-play");
+  if(stop && stop.dataset.tt85Bound!=="1"){
+    var n=stop.cloneNode(true);
+    n.dataset.tt85Bound="1";
+    stop.parentNode.replaceChild(n,stop);
+    n.addEventListener("click",function(e){
       e.preventDefault();
       e.stopPropagation();
       if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-      if(typeof confirmUnsavedV21==="function" && !confirmUnsavedV21())return false;
-      try{tt76ForceClean();}catch(err){}
-      tt84HardExitToLibrary();
+      tt85CloseViaTopCross();
       return false;
     },true);
-  });
+  }
+
+  // Övre disketten/spara i taktikbaren ska använda v76/v79:s sparflöde.
+  var save=document.getElementById("btn-edit-taktik-save-top") || document.getElementById("btn-save-film") || document.getElementById("btn-edit-taktik-save");
+  // OBS: btn-edit-taktik-save är dold i stegpanelen. Om ingen separat toppdiskett har id här
+  // lämnar vi befintlig toppknapp orörd.
 }
 
 if(typeof renderTaktikList==="function"){
-  var _renderTaktikList_v84=renderTaktikList;
+  var _renderTaktikList_v85=renderTaktikList;
   renderTaktikList=function(){
-    var r=_renderTaktikList_v84.apply(this,arguments);
+    var r=_renderTaktikList_v85.apply(this,arguments);
     setTimeout(function(){
+      tt85HideDuplicateSaveExit();
+      tt85BindTopButtons();
       try{if(typeof tt78PatchReadonlyEyeIcons==="function")tt78PatchReadonlyEyeIcons();}catch(e){}
       try{if(typeof tt79RebindCopyButtons==="function")tt79RebindCopyButtons();}catch(e){}
-      tt84BindExitButtons();
     },0);
     return r;
   };
 }
 
-// Om användaren trycker Taktik-fliken manuellt ska biblioteksläge också slå på.
-document.addEventListener("click",function(e){
-  try{
-    var tab=e.target.closest && e.target.closest(".tab");
-    if(tab && tab.getAttribute("data-panel")==="taktik"){
-      setTimeout(function(){
-        if(!(editingTaktikIdx!==null && typeof editingTaktikIdx!=="undefined") && !playback){
-          tt84HardExitToLibrary();
-        }
-      },80);
-    }
-  }catch(err){}
-},true);
+tt85HideDuplicateSaveExit();
+tt85BindTopButtons();
+setTimeout(tt85HideDuplicateSaveExit,500);
+setTimeout(tt85BindTopButtons,500);
+setTimeout(tt85HideDuplicateSaveExit,1500);
+setTimeout(tt85BindTopButtons,1500);
 
-tt84BindExitButtons();
-setTimeout(tt84BindExitButtons,500);
-setTimeout(tt84BindExitButtons,1500);
-
-/* === slut v84-close-taktikbar-library === */
+/* === slut v85-hide-duplicate-save-exit === */
