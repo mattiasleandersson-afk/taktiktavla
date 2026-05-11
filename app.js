@@ -14693,9 +14693,36 @@ setInterval(function(){
 /* === slut v108-desktop-bench-visibility-fix === */
 
 
-/* === v111-lag-home-simple: Sparade matcher som startsida, enkel robust variant === */
+/* === v113-lag-home-safe: säker Lag-start utan att röra Taktik/Formation/Utgångsläge ===
+   Bas: v108.
+   Viktigt: vi manipulerar INTE alla .panel globalt. Vi sätter bara body-klass
+   när huvudfliken Lag är aktiv, och tar bort den när andra huvudflikar används.
+*/
 
-function tt111ShowLagSubpanel(key){
+function tt113IsLagMainActive(){
+  try{
+    var tab=document.querySelector('.tab.on[data-panel="lag"]');
+    var panel=document.getElementById("panel-lag");
+    return !!(tab && panel && panel.classList.contains("on"));
+  }catch(e){return false;}
+}
+
+function tt113SetLagHome(on){
+  try{document.body.classList.toggle("tt113-lag-home",!!on);}catch(e){}
+  var pitch=document.getElementById("pitch-wrapper");
+  var bench=document.getElementById("bench-bar");
+  var goal=document.getElementById("goal-overlay");
+
+  if(on){
+    if(pitch){pitch.style.display="none";pitch.style.visibility="hidden";}
+    if(bench){bench.classList.remove("active");bench.style.display="none";bench.style.visibility="hidden";}
+    if(goal){goal.style.display="none";goal.style.visibility="hidden";}
+  }else{
+    if(pitch){pitch.style.display="";pitch.style.visibility="";}
+  }
+}
+
+function tt113ShowLagSub(key){
   key=key||"sparade";
 
   var map={
@@ -14711,24 +14738,15 @@ function tt111ShowLagSubpanel(key){
   });
 
   try{
-    document.querySelectorAll("[data-lag]").forEach(function(btn){
-      btn.classList.toggle("on",btn.getAttribute("data-lag")===key);
+    document.querySelectorAll("#panel-lag [data-lag], [data-lag]").forEach(function(b){
+      if(b.getAttribute && b.getAttribute("data-lag")){
+        b.classList.toggle("on",b.getAttribute("data-lag")===key);
+      }
     });
   }catch(e){}
 
-  try{document.body.classList.add("tt111-lag-home");}catch(e){}
-
-  var bench=document.getElementById("bench-bar");
-  var goal=document.getElementById("goal-overlay");
-  if(bench){
-    bench.classList.remove("active");
-    bench.style.display="none";
-    bench.style.visibility="hidden";
-  }
-  if(goal){
-    goal.style.display="none";
-    goal.style.visibility="hidden";
-  }
+  // Lag-underpaneler är listläge, inte planläge.
+  tt113SetLagHome(true);
 
   if(key==="sparade"){
     try{document.body.classList.remove("tt101-match-editor-active");}catch(e){}
@@ -14741,11 +14759,12 @@ function tt111ShowLagSubpanel(key){
       if(list){
         list.style.display="";
         list.style.visibility="visible";
-        list.style.maxHeight="calc(100vh - 185px)";
-        list.style.minHeight="330px";
+        list.style.height=window.innerWidth>760?"calc(100vh - 185px)":"calc(100vh - 172px)";
+        list.style.maxHeight=list.style.height;
+        list.style.minHeight=window.innerWidth>760?"340px":"290px";
         list.style.overflowY="auto";
       }
-    },120);
+    },160);
   }
 
   if(key==="trupp"){
@@ -14760,14 +14779,17 @@ function tt111ShowLagSubpanel(key){
   }
 }
 
-function tt111ShowLagHome(){
-  tt111ShowLagSubpanel("sparade");
+function tt113ShowLagHome(){
+  tt113ShowLagSub("sparade");
 }
 
-function tt111EnterLineup(){
-  try{document.body.classList.remove("tt111-lag-home");}catch(e){}
+function tt113EnterLineup(){
+  tt113SetLagHome(false);
+  try{document.body.classList.remove("tt113-lag-home");}catch(e){}
+
   var bench=document.getElementById("bench-bar");
   var goal=document.getElementById("goal-overlay");
+
   if((matchRoster||[]).length && bench){
     bench.classList.add("active");
     bench.style.display="flex";
@@ -14781,238 +14803,78 @@ function tt111EnterLineup(){
   }
 }
 
-function tt111InstallLagHome(){
-  if(document.body.dataset.tt111LagHomeInstalled)return;
-  document.body.dataset.tt111LagHomeInstalled="1";
+function tt113Install(){
+  if(document.body.dataset.tt113Installed)return;
+  document.body.dataset.tt113Installed="1";
 
   document.addEventListener("click",function(e){
     try{
-      var mainLag=e.target.closest && e.target.closest('.tab[data-panel="lag"]');
-      if(mainLag){
-        setTimeout(tt111ShowLagHome,60);
-        setTimeout(tt111ShowLagHome,220);
+      var mainTab=e.target.closest && e.target.closest('.tab[data-panel]');
+      if(mainTab){
+        var panel=mainTab.getAttribute("data-panel");
+        if(panel==="lag"){
+          setTimeout(tt113ShowLagHome,80);
+          setTimeout(tt113ShowLagHome,260);
+        }else{
+          // Mycket viktigt: andra huvudfunktioner ska aldrig ha Lag-home-klassen.
+          tt113SetLagHome(false);
+          document.body.classList.remove("tt113-lag-home");
+        }
         return;
       }
 
       var lagBtn=e.target.closest && e.target.closest("[data-lag]");
-      if(lagBtn){
+      if(lagBtn && tt113IsLagMainActive()){
         var key=lagBtn.getAttribute("data-lag");
         if(key==="sparade" || key==="trupp" || key==="statistik" || key==="match"){
           e.preventDefault();
           e.stopPropagation();
           if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-          tt111ShowLagSubpanel(key);
+          tt113ShowLagSub(key);
           return false;
         }
       }
 
       var txt=String(e.target&&e.target.textContent||"");
       if(txt.indexOf("Ladda uppst")>=0 || e.target.id==="btn-match-to-taktik"){
-        setTimeout(tt111EnterLineup,80);
-        setTimeout(tt111EnterLineup,300);
+        setTimeout(tt113EnterLineup,80);
+        setTimeout(tt113EnterLineup,320);
       }
     }catch(err){}
   },true);
 
   var exit=document.getElementById("bench-exit-btn");
-  if(exit && !exit.dataset.tt111ExitHome){
-    exit.dataset.tt111ExitHome="1";
+  if(exit && !exit.dataset.tt113Exit){
+    exit.dataset.tt113Exit="1";
     exit.addEventListener("click",function(e){
       e.preventDefault();
       e.stopPropagation();
       if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-      tt111ShowLagHome();
+      // Gå tillbaka till huvudfliken Lag + startsidan, utan att manipulera andra paneler.
+      try{
+        document.querySelectorAll(".tab").forEach(function(t){
+          t.classList.toggle("on",t.getAttribute("data-panel")==="lag");
+        });
+        document.querySelectorAll(".panel").forEach(function(p){
+          p.classList.toggle("on",p.id==="panel-lag");
+          p.style.display=p.id==="panel-lag"?"":"none";
+        });
+      }catch(err){}
+      tt113ShowLagHome();
       return false;
     },true);
   }
 }
 
-tt111InstallLagHome();
-setTimeout(tt111InstallLagHome,500);
+tt113Install();
+setTimeout(tt113Install,500);
 
+// Säker start om användaren redan står i Lag när appen laddat.
 setTimeout(function(){
   try{
-    if(document.querySelector('.tab.on[data-panel="lag"]')){
-      tt111ShowLagHome();
-    }
+    if(tt113IsLagMainActive())tt113ShowLagHome();
+    else document.body.classList.remove("tt113-lag-home");
   }catch(e){}
 },900);
 
-/* === slut v111-lag-home-simple === */
-
-
-/* === v112-lag-home-hide-pitch: dölj plan på Lag-start + robust Avsluta === */
-
-function tt112SetLagHomeMode(on){
-  try{document.body.classList.toggle("tt112-lag-home",!!on);}catch(e){}
-  try{document.body.classList.toggle("tt111-lag-home",!!on);}catch(e){}
-
-  var pitch=document.getElementById("pitch-wrapper");
-  var bench=document.getElementById("bench-bar");
-  var goal=document.getElementById("goal-overlay");
-
-  if(on){
-    if(pitch){
-      pitch.style.display="none";
-      pitch.style.visibility="hidden";
-    }
-    if(bench){
-      bench.classList.remove("active");
-      bench.style.display="none";
-      bench.style.visibility="hidden";
-    }
-    if(goal){
-      goal.style.display="none";
-      goal.style.visibility="hidden";
-    }
-  }else{
-    if(pitch){
-      pitch.style.display="";
-      pitch.style.visibility="";
-    }
-    if((matchRoster||[]).length && bench){
-      bench.classList.add("active");
-      bench.style.display="flex";
-      bench.style.visibility="visible";
-      bench.style.opacity="1";
-    }
-    if((matchRoster||[]).length && goal){
-      goal.style.display="flex";
-      goal.style.visibility="visible";
-      goal.style.opacity="1";
-    }
-  }
-}
-
-function tt112ShowLagHome(){
-  try{
-    document.querySelectorAll(".tab").forEach(function(t){
-      t.classList.toggle("on",t.getAttribute("data-panel")==="lag");
-    });
-    document.querySelectorAll(".panel").forEach(function(p){
-      p.classList.toggle("on",p.id==="panel-lag");
-      p.style.display=p.id==="panel-lag"?"":"none";
-    });
-  }catch(e){}
-
-  try{
-    if(typeof tt111ShowLagSubpanel==="function"){
-      tt111ShowLagSubpanel("sparade");
-    }
-  }catch(e){}
-
-  var truppEl=document.getElementById("lag-trupp");
-  var matchEl=document.getElementById("lag-match");
-  var statEl=document.getElementById("lag-statistik");
-  var savedEl=document.getElementById("lag-sparade");
-
-  if(truppEl)truppEl.style.display="none";
-  if(matchEl)matchEl.style.display="none";
-  if(statEl)statEl.style.display="none";
-  if(savedEl)savedEl.style.display="";
-
-  try{
-    document.querySelectorAll("[data-lag]").forEach(function(b){
-      b.classList.toggle("on",b.getAttribute("data-lag")==="sparade");
-    });
-  }catch(e){}
-
-  tt112SetLagHomeMode(true);
-
-  try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
-  setTimeout(function(){
-    try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
-    tt112SetLagHomeMode(true);
-    var list=document.getElementById("sparade-match-list");
-    if(list){
-      list.style.display="";
-      list.style.visibility="visible";
-      list.style.height=window.innerWidth>760?"calc(100vh - 175px)":"calc(100vh - 165px)";
-      list.style.maxHeight=list.style.height;
-      list.style.overflowY="auto";
-    }
-  },120);
-}
-
-function tt112EnterLineup(){
-  tt112SetLagHomeMode(false);
-
-  try{
-    document.querySelectorAll(".tab").forEach(function(t){
-      t.classList.toggle("on",t.getAttribute("data-panel")==="formations");
-    });
-    document.querySelectorAll(".panel").forEach(function(p){
-      p.classList.toggle("on",p.id==="panel-formations");
-      p.style.display=p.id==="panel-formations"?"":"none";
-    });
-  }catch(e){}
-
-  setTimeout(function(){
-    tt112SetLagHomeMode(false);
-    try{if(typeof renderBench==="function")renderBench();}catch(e){}
-  },80);
-}
-
-function tt112Install(){
-  document.addEventListener("click",function(e){
-    try{
-      var mainLag=e.target.closest && e.target.closest('.tab[data-panel="lag"]');
-      if(mainLag){
-        setTimeout(tt112ShowLagHome,50);
-        setTimeout(tt112ShowLagHome,180);
-        return;
-      }
-
-      var lagBtn=e.target.closest && e.target.closest("[data-lag]");
-      if(lagBtn){
-        var key=lagBtn.getAttribute("data-lag");
-        if(key==="sparade"){
-          e.preventDefault();
-          e.stopPropagation();
-          if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-          tt112ShowLagHome();
-          return false;
-        }
-        if(key==="trupp" || key==="statistik" || key==="match"){
-          tt112SetLagHomeMode(true);
-          setTimeout(function(){tt112SetLagHomeMode(true);},80);
-        }
-      }
-
-      var txt=String(e.target&&e.target.textContent||"");
-      if(txt.indexOf("Ladda uppst")>=0 || e.target.id==="btn-match-to-taktik"){
-        setTimeout(tt112EnterLineup,100);
-        setTimeout(tt112EnterLineup,360);
-      }
-    }catch(err){}
-  },true);
-
-  var exit=document.getElementById("bench-exit-btn");
-  if(exit && !exit.dataset.tt112ExitHome){
-    exit.dataset.tt112ExitHome="1";
-    exit.addEventListener("click",function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-      tt112ShowLagHome();
-      return false;
-    },true);
-  }
-}
-
-// Överskriv de äldre funktionerna om de anropas av gamla lyssnare.
-try{tt111ShowLagHome=tt112ShowLagHome;}catch(e){}
-try{tt111EnterLineup=tt112EnterLineup;}catch(e){}
-
-tt112Install();
-setTimeout(tt112Install,500);
-
-setTimeout(function(){
-  try{
-    if(document.querySelector('.tab.on[data-panel="lag"]')){
-      tt112ShowLagHome();
-    }
-  }catch(e){}
-},850);
-
-/* === slut v112-lag-home-hide-pitch === */
+/* === slut v113-lag-home-safe === */
