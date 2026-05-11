@@ -549,13 +549,47 @@
   }
 </style>
 
+
+<style id="v83-exit-to-library-hard-css">
+  /* Hård säkerhet: när v83 uttryckligen säger biblioteksläge ska planen inte synas. */
+  body.tt-v83-force-library #pitch-wrapper,
+  body.tt-v83-force-library #taktikbar,
+  body.tt-v83-force-library #rec-ui,
+  body.tt-v83-force-library #edit-taktik-ui {
+    display: none !important;
+  }
+
+  body.tt-v83-force-library #no-rec-ui {
+    display: block !important;
+  }
+
+  body.tt-v83-force-library #bottompanel {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: calc(100vh - 92px) !important;
+    overflow: auto !important;
+  }
+
+  body.tt-v83-force-library #panel-taktik.on {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  body.tt-v83-force-library #taktik-list {
+    max-height: calc(100vh - 245px) !important;
+    overflow-y: auto !important;
+    padding-bottom: 40px !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.6 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.7 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
