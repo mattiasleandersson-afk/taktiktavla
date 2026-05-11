@@ -13263,3 +13263,114 @@ setTimeout(ui98Apply,700);
 setTimeout(ui98Apply,1600);
 
 /* === slut v98-formation-compact-css-only === */
+
+
+/* === v99-formation-top-align-icons: toppjustera Utgångslägen + ikonknappar === */
+
+function ui99FormationPanel(){
+  return document.getElementById("panel-saves") ||
+         document.getElementById("panel-uppstallning") ||
+         document.getElementById("panel-start") ||
+         null;
+}
+
+function ui99List(panel){
+  return panel ? (panel.querySelector("#saves-list") || document.getElementById("saves-list")) : null;
+}
+
+function ui99ShortenFormationButtons(panel){
+  if(!panel)return;
+  var list=ui99List(panel);
+  if(!list)return;
+
+  try{
+    Array.prototype.slice.call(list.querySelectorAll("button.sa")).forEach(function(b){
+      var txt=String(b.textContent||"").trim().toLowerCase();
+      var title=String(b.title||"").trim();
+
+      // Sätt title innan texten kortas om title saknas.
+      if(!title && b.textContent)b.title=String(b.textContent||"").trim();
+
+      if(txt==="ladda" || txt==="öppna" || txt==="oppna" || txt==="visa"){
+        b.textContent="↙";
+        b.title=b.title||"Ladda";
+      }else if(txt.indexOf("till taktik")>=0 || txt==="taktik"){
+        b.textContent="↗";
+        b.title=b.title||"Till taktik";
+      }else if(txt.indexOf("kopiera")>=0 || txt==="copy"){
+        b.textContent="⧉";
+        b.title=b.title||"Kopiera";
+      }else if(txt.indexOf("flytta")>=0){
+        b.textContent="⇆";
+        b.title=b.title||"Flytta";
+      }else if(txt.indexOf("dela")>=0 || txt.indexOf("laget")>=0){
+        b.textContent="👥";
+        b.title=b.title||"Dela med laget";
+      }else if(txt.indexOf("sluta")>=0 || txt.indexOf("dölj")>=0){
+        b.textContent="🙈";
+        b.title=b.title||"Sluta dela";
+      }else if(txt==="×" || txt==="x" || txt.indexOf("radera")>=0){
+        b.textContent="×";
+        b.title=b.title||"Radera";
+      }
+    });
+  }catch(e){}
+}
+
+function ui99TopAlign(){
+  var panel=ui99FormationPanel();
+  if(!panel)return;
+  panel.classList.add("tt-v99-formation-top");
+
+  var bp=document.getElementById("bottompanel");
+  if(bp && panel.classList.contains("on")){
+    bp.style.alignItems="flex-start";
+    bp.style.justifyContent="flex-start";
+    bp.style.alignContent="flex-start";
+    bp.style.paddingTop="0";
+  }
+
+  var list=ui99List(panel);
+  if(list){
+    list.style.overflowY="auto";
+    list.style.webkitOverflowScrolling="touch";
+  }
+
+  ui99ShortenFormationButtons(panel);
+
+  try{
+    if(typeof ui98Apply==="function")ui98Apply();
+    if(typeof ff95PatchTeamLabels==="function")ff95PatchTeamLabels();
+    if(typeof ff93RebindFormationButtons==="function")ff93RebindFormationButtons();
+  }catch(e){}
+}
+
+if(typeof renderSavesList==="function" && !renderSavesList._ui99Wrapped){
+  var _renderSavesList_v99=renderSavesList;
+  renderSavesList=function(){
+    var r=_renderSavesList_v99.apply(this,arguments);
+    setTimeout(ui99TopAlign,0);
+    setTimeout(ui99TopAlign,120);
+    setTimeout(ui99TopAlign,350);
+    return r;
+  };
+  renderSavesList._ui99Wrapped=true;
+}
+
+document.addEventListener("click",function(e){
+  try{
+    var tab=e.target.closest && e.target.closest(".tab");
+    if(tab){
+      var p=tab.getAttribute("data-panel")||"";
+      if(p==="saves" || p==="uppstallning" || p==="start"){
+        setTimeout(ui99TopAlign,80);
+        setTimeout(ui99TopAlign,250);
+      }
+    }
+  }catch(err){}
+},true);
+
+setTimeout(ui99TopAlign,700);
+setTimeout(ui99TopAlign,1600);
+
+/* === slut v99-formation-top-align-icons === */
