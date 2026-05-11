@@ -14693,103 +14693,116 @@ setInterval(function(){
 /* === slut v108-desktop-bench-visibility-fix === */
 
 
-/* === v113-lag-home-safe: säker Lag-start utan att röra Taktik/Formation/Utgångsläge ===
-   Bas: v108.
-   Viktigt: vi manipulerar INTE alla .panel globalt. Vi sätter bara body-klass
-   när huvudfliken Lag är aktiv, och tar bort den när andra huvudflikar används.
+/* === v114-safe-lag-taktik: smal fix för Sparade matcher + Taktik/Mina ===
+   Bas: v108. Inga breda ändringar av .panel förutom när Lag-fliken uttryckligen används.
 */
 
-function tt113IsLagMainActive(){
+function tt114MainPanelName(){
   try{
-    var tab=document.querySelector('.tab.on[data-panel="lag"]');
-    var panel=document.getElementById("panel-lag");
-    return !!(tab && panel && panel.classList.contains("on"));
-  }catch(e){return false;}
+    var tab=document.querySelector(".tab.on[data-panel]");
+    return tab?tab.getAttribute("data-panel"):"";
+  }catch(e){return "";}
 }
 
-function tt113SetLagHome(on){
-  try{document.body.classList.toggle("tt113-lag-home",!!on);}catch(e){}
-  var pitch=document.getElementById("pitch-wrapper");
-  var bench=document.getElementById("bench-bar");
-  var goal=document.getElementById("goal-overlay");
+function tt114IsLagActive(){
+  return tt114MainPanelName()==="lag";
+}
 
-  if(on){
-    if(pitch){pitch.style.display="none";pitch.style.visibility="hidden";}
-    if(bench){bench.classList.remove("active");bench.style.display="none";bench.style.visibility="hidden";}
-    if(goal){goal.style.display="none";goal.style.visibility="hidden";}
-  }else{
-    if(pitch){pitch.style.display="";pitch.style.visibility="";}
+function tt114ClearLagClassesIfNotLag(){
+  if(!tt114IsLagActive()){
+    document.body.classList.remove("tt114-lag-list");
+    document.body.classList.remove("tt114-lag-sparade-home");
   }
 }
 
-function tt113ShowLagSub(key){
+function tt114ShowLagSection(key){
+  if(!tt114IsLagActive())return;
   key=key||"sparade";
 
-  var map={
-    trupp:"lag-trupp",
-    statistik:"lag-statistik",
-    match:"lag-match",
-    sparade:"lag-sparade"
-  };
+  var trupp=document.getElementById("lag-trupp");
+  var match=document.getElementById("lag-match");
+  var statistik=document.getElementById("lag-statistik");
+  var sparade=document.getElementById("lag-sparade");
 
-  Object.keys(map).forEach(function(k){
-    var el=document.getElementById(map[k]);
-    if(el)el.style.display=(k===key)?"":"none";
-  });
+  if(trupp)trupp.style.display=key==="trupp"?"":"none";
+  if(match)match.style.display=key==="match"?"":"none";
+  if(statistik)statistik.style.display=key==="statistik"?"":"none";
+  if(sparade)sparade.style.display=key==="sparade"?"":"none";
 
   try{
-    document.querySelectorAll("#panel-lag [data-lag], [data-lag]").forEach(function(b){
-      if(b.getAttribute && b.getAttribute("data-lag")){
-        b.classList.toggle("on",b.getAttribute("data-lag")===key);
-      }
+    document.querySelectorAll("#panel-lag [data-lag], .lag-tab[data-lag]").forEach(function(b){
+      b.classList.toggle("on",b.getAttribute("data-lag")===key);
     });
   }catch(e){}
 
-  // Lag-underpaneler är listläge, inte planläge.
-  tt113SetLagHome(true);
+  document.body.classList.add("tt114-lag-list");
+  document.body.classList.toggle("tt114-lag-sparade-home",key==="sparade");
 
   if(key==="sparade"){
     try{document.body.classList.remove("tt101-match-editor-active");}catch(e){}
+    var bench=document.getElementById("bench-bar");
+    var goal=document.getElementById("goal-overlay");
+    if(bench){
+      bench.classList.remove("active");
+      bench.style.display="none";
+      bench.style.visibility="hidden";
+    }
+    if(goal){
+      goal.style.display="none";
+      goal.style.visibility="hidden";
+    }
+
+    // Säkerställ att matcherna faktiskt är laddade och renderade.
     try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
     setTimeout(function(){
       try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
-      var saved=document.getElementById("lag-sparade");
+      var s=document.getElementById("lag-sparade");
       var list=document.getElementById("sparade-match-list");
-      if(saved)saved.style.display="";
+      if(s){
+        s.style.display="";
+        s.style.visibility="visible";
+      }
       if(list){
         list.style.display="";
         list.style.visibility="visible";
-        list.style.height=window.innerWidth>760?"calc(100vh - 185px)":"calc(100vh - 172px)";
-        list.style.maxHeight=list.style.height;
-        list.style.minHeight=window.innerWidth>760?"340px":"290px";
+        list.style.opacity="1";
+        list.style.maxHeight=window.innerWidth>760?"calc(100vh - 185px)":"calc(100vh - 175px)";
+        list.style.minHeight=window.innerWidth>760?"340px":"285px";
         list.style.overflowY="auto";
       }
-    },160);
-  }
+    },180);
+  }else{
+    document.body.classList.remove("tt114-lag-sparade-home");
+    var bench2=document.getElementById("bench-bar");
+    var goal2=document.getElementById("goal-overlay");
+    if(bench2){
+      bench2.classList.remove("active");
+      bench2.style.display="none";
+      bench2.style.visibility="hidden";
+    }
+    if(goal2){
+      goal2.style.display="none";
+      goal2.style.visibility="hidden";
+    }
 
-  if(key==="trupp"){
-    try{if(typeof renderTruppList==="function")renderTruppList();}catch(e){}
-  }
-  if(key==="statistik"){
-    try{if(typeof renderStatistik==="function")renderStatistik();}catch(e){}
-    try{if(typeof renderMatchHistory==="function")renderMatchHistory();}catch(e){}
-  }
-  if(key==="match"){
-    try{if(typeof renderMatchTruppList==="function")renderMatchTruppList();}catch(e){}
+    if(key==="trupp"){
+      try{if(typeof renderTruppList==="function")renderTruppList();}catch(e){}
+    }
+    if(key==="match"){
+      try{if(typeof renderMatchTruppList==="function")renderMatchTruppList();}catch(e){}
+    }
+    if(key==="statistik"){
+      try{if(typeof renderStatistik==="function")renderStatistik();}catch(e){}
+      try{if(typeof renderMatchHistory==="function")renderMatchHistory();}catch(e){}
+    }
   }
 }
 
-function tt113ShowLagHome(){
-  tt113ShowLagSub("sparade");
-}
-
-function tt113EnterLineup(){
-  tt113SetLagHome(false);
-  try{document.body.classList.remove("tt113-lag-home");}catch(e){}
-
+function tt114EnterLineup(){
+  document.body.classList.remove("tt114-lag-sparade-home");
+  document.body.classList.remove("tt114-lag-list");
   var bench=document.getElementById("bench-bar");
   var goal=document.getElementById("goal-overlay");
-
   if((matchRoster||[]).length && bench){
     bench.classList.add("active");
     bench.style.display="flex";
@@ -14803,54 +14816,52 @@ function tt113EnterLineup(){
   }
 }
 
-function tt113Install(){
-  if(document.body.dataset.tt113Installed)return;
-  document.body.dataset.tt113Installed="1";
+function tt114InstallLagSafe(){
+  if(document.body.dataset.tt114LagSafeInstalled)return;
+  document.body.dataset.tt114LagSafeInstalled="1";
 
   document.addEventListener("click",function(e){
     try{
-      var mainTab=e.target.closest && e.target.closest('.tab[data-panel]');
+      var mainTab=e.target.closest && e.target.closest(".tab[data-panel]");
       if(mainTab){
-        var panel=mainTab.getAttribute("data-panel");
-        if(panel==="lag"){
-          setTimeout(tt113ShowLagHome,80);
-          setTimeout(tt113ShowLagHome,260);
+        var p=mainTab.getAttribute("data-panel");
+        if(p==="lag"){
+          setTimeout(function(){tt114ShowLagSection("sparade");},90);
+          setTimeout(function(){tt114ShowLagSection("sparade");},300);
         }else{
-          // Mycket viktigt: andra huvudfunktioner ska aldrig ha Lag-home-klassen.
-          tt113SetLagHome(false);
-          document.body.classList.remove("tt113-lag-home");
+          setTimeout(tt114ClearLagClassesIfNotLag,30);
         }
         return;
       }
 
-      var lagBtn=e.target.closest && e.target.closest("[data-lag]");
-      if(lagBtn && tt113IsLagMainActive()){
+      var lagBtn=e.target.closest && e.target.closest(".lag-tab[data-lag], #panel-lag [data-lag]");
+      if(lagBtn && tt114IsLagActive()){
         var key=lagBtn.getAttribute("data-lag");
-        if(key==="sparade" || key==="trupp" || key==="statistik" || key==="match"){
+        if(key==="sparade" || key==="trupp" || key==="match" || key==="statistik"){
           e.preventDefault();
           e.stopPropagation();
           if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-          tt113ShowLagSub(key);
+          tt114ShowLagSection(key);
           return false;
         }
       }
 
       var txt=String(e.target&&e.target.textContent||"");
       if(txt.indexOf("Ladda uppst")>=0 || e.target.id==="btn-match-to-taktik"){
-        setTimeout(tt113EnterLineup,80);
-        setTimeout(tt113EnterLineup,320);
+        setTimeout(tt114EnterLineup,80);
+        setTimeout(tt114EnterLineup,320);
       }
     }catch(err){}
   },true);
 
   var exit=document.getElementById("bench-exit-btn");
-  if(exit && !exit.dataset.tt113Exit){
-    exit.dataset.tt113Exit="1";
+  if(exit && !exit.dataset.tt114Exit){
+    exit.dataset.tt114Exit="1";
     exit.addEventListener("click",function(e){
       e.preventDefault();
       e.stopPropagation();
       if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-      // Gå tillbaka till huvudfliken Lag + startsidan, utan att manipulera andra paneler.
+
       try{
         document.querySelectorAll(".tab").forEach(function(t){
           t.classList.toggle("on",t.getAttribute("data-panel")==="lag");
@@ -14860,21 +14871,107 @@ function tt113Install(){
           p.style.display=p.id==="panel-lag"?"":"none";
         });
       }catch(err){}
-      tt113ShowLagHome();
+
+      setTimeout(function(){tt114ShowLagSection("sparade");},30);
+      setTimeout(function(){tt114ShowLagSection("sparade");},220);
       return false;
     },true);
   }
 }
 
-tt113Install();
-setTimeout(tt113Install,500);
+/* Taktik/Mina-skydd:
+   Om äldre filter råkar gömma egna filer i Mina-läget, rendera om utifrån owner/team-meta.
+   Detta kör bara när huvudfliken Taktik är aktiv.
+*/
+function tt114NormalizeOwner(v){
+  if(v==null)return "";
+  return String(v).trim().toLowerCase();
+}
 
-// Säker start om användaren redan står i Lag när appen laddat.
+function tt114IsMineTaktik(tk){
+  try{
+    var p=(typeof getUserProfile==="function")?getUserProfile():null;
+    var oid=p&&p.ownerId;
+    var oname=p&&p.ownerName;
+    var meta=tk&&tk._meta?tk._meta:(tk&&tk.data&&tk.data._meta?tk.data._meta:null);
+
+    if(meta){
+      if(oid && meta.ownerId && String(meta.ownerId)===String(oid))return true;
+      if(oname && meta.ownerName && tt114NormalizeOwner(meta.ownerName)===tt114NormalizeOwner(oname))return true;
+    }
+
+    if(tk){
+      if(oid && tk.ownerId && String(tk.ownerId)===String(oid))return true;
+      if(oname && tk.ownerName && tt114NormalizeOwner(tk.ownerName)===tt114NormalizeOwner(oname))return true;
+    }
+
+    // Äldre lokala egna filer saknar ibland meta. Är den inte markerad som delad/read-only ska den räknas som Mina.
+    if(!meta && tk && !tk.sharedWithTeam && !tk.readonly && !tk.readOnly)return true;
+    if(meta && meta.sharedWithTeam!==true && !tk.readonly && !tk.readOnly)return true;
+  }catch(e){}
+  return false;
+}
+
+function tt114RepairMineTaktikList(){
+  try{
+    if(tt114MainPanelName()!=="taktik")return;
+    var mineBtn=document.querySelector("[data-taktik-filter='mine'].on, .taktik-filter.on[data-filter='mine'], #btn-taktik-mine.on, [data-scope='mine'].on");
+    var list=document.getElementById("taktik-list") || document.getElementById("taktik-filmer-list");
+    if(!list)return;
+
+    // Om listan redan har innehåll, stör inte.
+    if(String(list.textContent||"").trim().length>8 && !/inga|saknas|tom/i.test(String(list.textContent||"")))return;
+
+    var arr=(window.taktikFilmer||taktikFilmer||[]).filter(tt114IsMineTaktik);
+    if(!arr.length)return;
+
+    list.innerHTML="";
+    arr.forEach(function(tk,idx){
+      var row=document.createElement("div");
+      row.className="list-row tt114-mine-taktik-row";
+      row.style.cssText="display:flex;align-items:center;gap:6px;padding:7px 8px;border-bottom:1px solid #1a3020;cursor:pointer";
+      var name=document.createElement("div");
+      name.style.cssText="flex:1;font-size:0.82rem;color:#edf5ee;font-weight:700";
+      name.textContent=tk.namn||tk.name||tk.title||("Taktikfilm "+(idx+1));
+      var sub=document.createElement("div");
+      sub.style.cssText="font-size:0.68rem;color:#7aaa88";
+      sub.textContent="Mina";
+      row.appendChild(name);
+      row.appendChild(sub);
+      row.addEventListener("click",function(){
+        try{
+          if(typeof openTaktikFilm==="function")openTaktikFilm(tk);
+          else if(typeof loadTaktik==="function")loadTaktik(tk);
+          else if(typeof startEditTaktik==="function")startEditTaktik(tk);
+        }catch(e){}
+      });
+      list.appendChild(row);
+    });
+  }catch(e){}
+}
+
+document.addEventListener("click",function(e){
+  try{
+    var tab=e.target.closest && e.target.closest(".tab[data-panel]");
+    if(tab && tab.getAttribute("data-panel")!=="lag"){
+      document.body.classList.remove("tt114-lag-list");
+      document.body.classList.remove("tt114-lag-sparade-home");
+    }
+    var t=String(e.target&&e.target.textContent||"").toLowerCase();
+    if(t.indexOf("mina")>=0 || t.indexOf("taktik")>=0){
+      setTimeout(tt114RepairMineTaktikList,250);
+      setTimeout(tt114RepairMineTaktikList,900);
+    }
+  }catch(err){}
+},true);
+
+tt114InstallLagSafe();
+setTimeout(tt114InstallLagSafe,500);
 setTimeout(function(){
   try{
-    if(tt113IsLagMainActive())tt113ShowLagHome();
-    else document.body.classList.remove("tt113-lag-home");
+    if(tt114IsLagActive())tt114ShowLagSection("sparade");
+    else tt114ClearLagClassesIfNotLag();
   }catch(e){}
 },900);
 
-/* === slut v113-lag-home-safe === */
+/* === slut v114-safe-lag-taktik === */
