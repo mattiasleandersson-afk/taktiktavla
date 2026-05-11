@@ -15369,3 +15369,220 @@ document.addEventListener("click",function(e){
 },true);
 
 /* === slut v128-single-unsaved-confirm === */
+
+
+/* === v129-final-formation-share-surgical: sista ordet för Utgångsläge Dela/Dölj ===
+   Bas: v128.
+   Orsak till v126-problemet:
+   patchFormationShareV10 skrevs över senare i filen av äldre ff93/ff94-lager.
+   Denna patch ligger sist och rör endast Utgångsläge-delning.
+*/
+
+function tt129Norm(v){return String(v||"").trim().toLowerCase();}
+
+function tt129Profile(){
+  try{
+    if(typeof getUserProfile==="function"){
+      var p=getUserProfile();
+      if(p)return p;
+    }
+  }catch(e){}
+  try{
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){}
+  return null;
+}
+
+function tt129Meta(s){
+  if(!s)return {};
+  if(s.state&&s.state._meta)return s.state._meta;
+  if(s._meta)return s._meta;
+  if(s.meta)return s.meta;
+  if(s.data&&s.data._meta)return s.data._meta;
+  return {};
+}
+
+function tt129SameTeam(p,m){
+  var pt=tt129Norm((p&&p.teamId)||(p&&p.teamCode)||(p&&p.teamName));
+  var mt=tt129Norm((m&&m.teamId)||(m&&m.teamCode)||(m&&m.teamName));
+  return !!(pt&&mt&&pt===mt);
+}
+
+function tt129IsMineFormation(s){
+  // Dela får aldrig ändras från Lagets.
+  try{
+    if(typeof saveScope!=="undefined" && saveScope==="team")return false;
+  }catch(e){}
+
+  // Om objektet finns i listan och användaren är i Mina är det säkrare att låta delning reparera metadata.
+  try{
+    if(typeof saveScope!=="undefined" && saveScope==="mine" && Array.isArray(savedFormations)){
+      var exists=savedFormations.some(function(x){return String(x.id)===String(s.id);});
+      if(exists)return true;
+    }
+  }catch(e){}
+
+  var p=tt129Profile();
+  var m=tt129Meta(s);
+
+  // Äldre filer utan metadata.
+  if(!m || (!m.ownerId && !m.ownerName && !m.teamId && !m.teamCode))return true;
+
+  if(p&&p.ownerId&&m.ownerId&&String(p.ownerId)===String(m.ownerId))return true;
+
+  if(
+    p &&
+    tt129Norm(p.ownerName) &&
+    tt129Norm(m.ownerName) &&
+    tt129Norm(p.ownerName)===tt129Norm(m.ownerName) &&
+    tt129SameTeam(p,m)
+  ){
+    return true;
+  }
+
+  return false;
+}
+
+function tt129BuildFormationState(s,share){
+  var base={};
+  try{base=JSON.parse(JSON.stringify((s&&s.state)||{}));}catch(e){base=(s&&s.state)||{};}
+
+  var p=tt129Profile();
+  base._meta=base._meta||{};
+
+  if(p){
+    base._meta.ownerId=p.ownerId;
+    base._meta.ownerName=p.ownerName;
+    base._meta.teamId=p.teamId||p.teamCode||p.teamName||"MITT-LAG";
+    base._meta.teamCode=p.teamCode||p.teamId||p.teamName||"MITT-LAG";
+    base._meta.teamName=p.teamName||p.teamCode||p.teamId||"MITT-LAG";
+  }
+
+  base._meta.sharedWithTeam=!!share;
+  base._meta.teamCanEdit=false;
+  base._meta.updatedAt=new Date().toISOString();
+  base._meta.schemaVersion=base._meta.schemaVersion||2;
+  base._meta.kind=base._meta.kind||"uppstallning";
+
+  return base;
+}
+
+function tt129PatchFormationShare(s,share){
+  if(!s||!s.id){
+    showToast("Spara utgångsläget innan du delar det",false);
+    return;
+  }
+
+  if(!tt129IsMineFormation(s)){
+    showToast("Du kan inte ändra delning på någon annans fil",false);
+    return;
+  }
+
+  var newState=tt129BuildFormationState(s,share);
+  var oldScope=(typeof saveScope!=="undefined")?saveScope:"mine";
+  try{if(typeof saveScope!=="undefined")saveScope="mine";}catch(e){}
+
+  // Uppdatera lokalt direkt så filen inte hinner försvinna visuellt.
+  s.state=newState;
+  s._meta=newState._meta;
+  try{
+    var idx=(savedFormations||[]).findIndex(function(x){return String(x.id)===String(s.id);});
+    if(idx>=0){
+      savedFormations[idx].state=newState;
+      savedFormations[idx]._meta=newState._meta;
+      savedFormations[idx].folder=savedFormations[idx].folder || s.folder || "Allmänt";
+      savedFormations[idx].name=savedFormations[idx].name || s.name || "Utgångsläge";
+    }
+  }catch(e){}
+
+  try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
+
+  cloudStatus(share?"Delar utgångsläge med laget...":"Tar bort delning...","#7aaa88");
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({
+      data:newState,
+      name:s.name||"Utgångsläge",
+      type:"formation",
+      folder:s.folder||"Allmänt"
+    })
+  }).then(function(r){
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json();
+  }).then(function(){
+    showToast(share?"Delad med laget":"Inte längre delad");
+    cloudStatus(share?"✅ Delat med laget":"✅ Delning borttagen","#4ae87a");
+
+    // Stanna i Mina efter själva klicket. Användaren kan själv gå till Lagets och kontrollera.
+    try{if(typeof saveScope!=="undefined")saveScope="mine";}catch(e){}
+    setTimeout(function(){
+      try{cloudLoadSaves();}catch(e){}
+      try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
+    },350);
+  }).catch(function(err){
+    try{if(typeof saveScope!=="undefined")saveScope=oldScope;}catch(e){}
+    showToast("Kunde inte ändra delning",false);
+    try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e){}
+  });
+}
+
+// Lägg sist och uppdatera gamla alias så senare rebinders också hamnar rätt.
+patchFormationShareV10=tt129PatchFormationShare;
+try{patchFormationShareV26=tt129PatchFormationShare;}catch(e){}
+try{patchFormationShareV68=tt129PatchFormationShare;}catch(e){}
+
+// Efter render: säkerställ att Dela/Dölj-knapparna i Utgångsläge går till sista patchen.
+function tt129RebindFormationShareButtons(){
+  try{
+    var list=document.getElementById("saves-list");
+    if(!list)return;
+    var rows=Array.prototype.slice.call(list.querySelectorAll(".row"));
+    var visible=(savedFormations||[]).filter(function(s){
+      var folderOk=(typeof currentFolder==="undefined"||currentFolder==="Alla"||(s.folder||"Allmänt")===currentFolder);
+      var searchOk=(typeof searchQuery==="undefined"||!searchQuery||String(s.name||"").toLowerCase().indexOf(String(searchQuery).toLowerCase())>=0);
+      return folderOk&&searchOk;
+    }).sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""),"sv");});
+
+    rows.forEach(function(row,i){
+      var s=visible[i];
+      if(!s)return;
+      Array.prototype.slice.call(row.querySelectorAll("button")).forEach(function(btn){
+        var txt=String(btn.textContent||"").trim();
+        var title=String(btn.title||"").toLowerCase();
+        if(txt==="Dela" || txt==="Dölj" || title.indexOf("dela med laget")>=0 || title.indexOf("sluta dela")>=0){
+          if(btn.dataset.tt129ShareBound==="1")return;
+          var clone=btn.cloneNode(true);
+          clone.dataset.tt129ShareBound="1";
+          btn.parentNode.replaceChild(clone,btn);
+          clone.addEventListener("click",function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+            var m=tt129Meta(s);
+            tt129PatchFormationShare(s,!m.sharedWithTeam);
+            return false;
+          },true);
+        }
+      });
+    });
+  }catch(e){}
+}
+
+if(typeof renderSavesList==="function" && !renderSavesList._tt129Wrapped){
+  var _renderSavesList_tt129=renderSavesList;
+  renderSavesList=function(){
+    var r=_renderSavesList_tt129.apply(this,arguments);
+    setTimeout(tt129RebindFormationShareButtons,0);
+    setTimeout(tt129RebindFormationShareButtons,80);
+    return r;
+  };
+  renderSavesList._tt129Wrapped=true;
+}
+
+setTimeout(tt129RebindFormationShareButtons,300);
+setTimeout(tt129RebindFormationShareButtons,1000);
+
+/* === slut v129-final-formation-share-surgical === */
