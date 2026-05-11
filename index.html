@@ -917,13 +917,24 @@
   }
 </style>
 
+
+<style id="v103-desktop-player-drag-css">
+  /* v103: gör spelare lättare att träffa med mus på dator */
+  .player-token {
+    cursor: grab;
+  }
+  .player-token:active {
+    cursor: grabbing;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.26 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.27 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
