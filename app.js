@@ -14443,3 +14443,124 @@ setTimeout(tt105InstallBenchDrag,500);
 setTimeout(tt105InstallBenchDrag,1500);
 
 /* === slut v105-bench-player-id-fix === */
+
+
+/* === v106-bench-override-old-handler: tvinga även gamla v104-draget att välja rätt spelare ===
+   v105 lade rätt id på bänkspelarna, men v104:s gamla mousedown-lyssnare sitter kvar
+   och körs före v105. Därför måste v104:s egna lookup/assign-funktioner överskrivas.
+*/
+
+function tt106BenchList(){
+  try{
+    var assignedTids={};
+    Object.values(matchAssignments||{}).forEach(function(tid){assignedTids[String(tid)]=true;});
+    return (matchRoster||[]).slice()
+      .sort(function(a,b){return String(a.namn||"").localeCompare(String(b.namn||""),"sv");})
+      .filter(function(sp){return !assignedTids[String(sp.id)];});
+  }catch(e){return [];}
+}
+
+function tt106TagBenchPlayers(){
+  try{
+    var cont=document.getElementById("bench-players");
+    if(!cont)return;
+    var bench=tt106BenchList();
+    Array.prototype.slice.call(cont.querySelectorAll(".bench-player")).forEach(function(el,idx){
+      var sp=bench[idx];
+      if(!sp)return;
+      el.setAttribute("data-player-id",sp.id);
+      el.setAttribute("data-player-nr",sp.nr);
+      el.setAttribute("data-player-name",sp.namn||"");
+      el.title="#"+sp.nr+" "+(sp.namn||"");
+    });
+  }catch(e){}
+}
+
+function tt106BenchPlayerFromElement(el){
+  if(!el)return null;
+
+  // 1. Exakt id från data-attribut.
+  try{
+    var pid=el.getAttribute("data-player-id") || (el.dataset&&el.dataset.playerId);
+    if(pid){
+      var exact=(matchRoster||[]).find(function(sp){return String(sp.id)===String(pid);});
+      if(exact)return exact;
+    }
+  }catch(e){}
+
+  // 2. Index i nuvarande bänklista. Detta matchar renderBench:s sort/filter.
+  try{
+    var cont=document.getElementById("bench-players");
+    var nodes=Array.prototype.slice.call(cont.querySelectorAll(".bench-player"));
+    var idx=nodes.indexOf(el);
+    var bench=tt106BenchList();
+    if(idx>=0 && bench[idx])return bench[idx];
+  }catch(e){}
+
+  return null;
+}
+
+function tt106AssignBenchToPitchSilent(sp,pid){
+  if(!sp || !pid)return false;
+  try{
+    Object.keys(matchAssignments||{}).forEach(function(k){
+      if(String(matchAssignments[k])===String(sp.id) && String(k)!==String(pid))delete matchAssignments[k];
+    });
+
+    matchAssignments[pid]=sp.id;
+
+    var p=(players||[]).find(function(x){return String(x.id)===String(pid);});
+    if(p){
+      p.number=sp.nr;
+      p.name=sp.namn;
+    }
+
+    if(typeof render==="function")render();
+    if(typeof renderBench==="function")renderBench();
+    return true;
+  }catch(e){return false;}
+}
+
+// Viktig del: överskriv v104-funktionerna som den gamla eventlyssnaren redan använder.
+try{
+  tt104BenchPlayerFromElement = tt106BenchPlayerFromElement;
+}catch(e){}
+try{
+  tt104AssignBenchToPitch = tt106AssignBenchToPitchSilent;
+}catch(e){}
+
+// Även v105 ska använda samma robusta lookup om den finns kvar.
+try{
+  tt105BenchPlayerFromElement = tt106BenchPlayerFromElement;
+}catch(e){}
+try{
+  tt105AssignBenchToPitchSilent = tt106AssignBenchToPitchSilent;
+}catch(e){}
+
+if(typeof renderBench==="function" && !renderBench._tt106Wrapped){
+  var _renderBench_tt106=renderBench;
+  renderBench=function(){
+    var r=_renderBench_tt106.apply(this,arguments);
+    setTimeout(tt106TagBenchPlayers,0);
+    setTimeout(function(){
+      try{tt104BenchPlayerFromElement = tt106BenchPlayerFromElement;}catch(e){}
+      try{tt104AssignBenchToPitch = tt106AssignBenchToPitchSilent;}catch(e){}
+      try{tt105BenchPlayerFromElement = tt106BenchPlayerFromElement;}catch(e){}
+      try{tt105AssignBenchToPitchSilent = tt106AssignBenchToPitchSilent;}catch(e){}
+    },0);
+    return r;
+  };
+  renderBench._tt106Wrapped=true;
+}
+
+tt106TagBenchPlayers();
+setTimeout(tt106TagBenchPlayers,300);
+setTimeout(tt106TagBenchPlayers,1000);
+setTimeout(function(){
+  try{tt104BenchPlayerFromElement = tt106BenchPlayerFromElement;}catch(e){}
+  try{tt104AssignBenchToPitch = tt106AssignBenchToPitchSilent;}catch(e){}
+  try{tt105BenchPlayerFromElement = tt106BenchPlayerFromElement;}catch(e){}
+  try{tt105AssignBenchToPitchSilent = tt106AssignBenchToPitchSilent;}catch(e){}
+},300);
+
+/* === slut v106-bench-override-old-handler === */
