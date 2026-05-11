@@ -15165,3 +15165,207 @@ setTimeout(tt125ApplyFilmMenuFix,1200);
 
 
 /* v126: kirurgisk fix endast i patchFormationShareV10 för Utgångsläge. */
+
+
+/* === v127-iphone-taktik-scroll-hard: återställ scrollbar meny i taktikfilm på iPhone === */
+
+function tt127Small(){
+  try{return window.innerWidth<=760 || (window.matchMedia&&window.matchMedia("(max-width: 760px)").matches);}
+  catch(e){return false;}
+}
+
+function tt127FilmActive(){
+  try{
+    if(typeof playback!=="undefined" && playback)return true;
+    if(typeof isEditingTaktik!=="undefined" && isEditingTaktik)return true;
+    if(typeof editingTaktikIdx!=="undefined" && editingTaktikIdx!==null)return true;
+
+    var rec=document.getElementById("rec-ui");
+    var edit=document.getElementById("edit-taktik-ui");
+    var bar=document.getElementById("taktikbar");
+
+    if(rec && getComputedStyle(rec).display!=="none")return true;
+    if(edit && getComputedStyle(edit).display!=="none")return true;
+    if(bar && getComputedStyle(bar).display!=="none" && document.querySelector('.tab.on[data-panel="taktik"]'))return true;
+  }catch(e){}
+  return false;
+}
+
+function tt127MakeRowScrollable(el){
+  if(!el)return;
+  el.style.maxWidth="100vw";
+  el.style.boxSizing="border-box";
+  el.style.overflowX="auto";
+  el.style.overflowY="hidden";
+  el.style.webkitOverflowScrolling="touch";
+  el.style.whiteSpace="nowrap";
+
+  try{
+    Array.prototype.slice.call(el.children).forEach(function(ch){
+      ch.style.flex="0 0 auto";
+      if(ch.tagName==="BUTTON"){
+        ch.style.whiteSpace="nowrap";
+        ch.style.fontSize="0.66rem";
+        ch.style.padding="3px 6px";
+        ch.style.minWidth="auto";
+      }
+    });
+  }catch(e){}
+}
+
+function tt127ExitButtons(){
+  var out=[];
+  try{
+    document.querySelectorAll("#rec-ui button,#edit-taktik-ui button,#taktikbar button").forEach(function(b){
+      var txt=String(b.textContent||"").trim().toLowerCase();
+      var title=String(b.title||"").trim().toLowerCase();
+      var id=String(b.id||"").toLowerCase();
+      if(txt.indexOf("avsluta")>=0 || title.indexOf("avsluta")>=0 || id.indexOf("exit")>=0 || id.indexOf("close")>=0){
+        out.push(b);
+      }
+    });
+  }catch(e){}
+  return out;
+}
+
+function tt127Apply(){
+  var active=tt127Small() && tt127FilmActive();
+  document.body.classList.toggle("tt127-taktik-film-scroll",active);
+
+  // Ta bort gammal sticky-klass om den finns.
+  try{document.body.classList.remove("tt124-taktik-film-active");}catch(e){}
+
+  if(!active)return;
+
+  tt127MakeRowScrollable(document.getElementById("rec-ui"));
+  tt127MakeRowScrollable(document.getElementById("edit-taktik-ui"));
+  tt127MakeRowScrollable(document.getElementById("taktikbar"));
+
+  tt127ExitButtons().forEach(function(b){
+    b.classList.add("tt127-exit-red");
+    b.classList.remove("tt124-exit-visible");
+    b.style.position="static";
+    b.style.background="#e84a4a";
+    b.style.borderColor="#e84a4a";
+    b.style.color="#fff";
+    b.style.boxShadow="none";
+  });
+}
+
+["click","touchend","resize","orientationchange"].forEach(function(evt){
+  window.addEventListener(evt,function(){
+    setTimeout(tt127Apply,60);
+    setTimeout(tt127Apply,250);
+    setTimeout(tt127Apply,700);
+  },true);
+});
+
+if(typeof startPlayback==="function" && !startPlayback._tt127Wrapped){
+  var _startPlayback_tt127=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt127.apply(this,arguments);
+    setTimeout(tt127Apply,60);
+    setTimeout(tt127Apply,250);
+    setTimeout(tt127Apply,700);
+    return r;
+  };
+  startPlayback._tt127Wrapped=true;
+}
+
+if(typeof openEditTaktik==="function" && !openEditTaktik._tt127Wrapped){
+  var _openEditTaktik_tt127=openEditTaktik;
+  openEditTaktik=function(){
+    var r=_openEditTaktik_tt127.apply(this,arguments);
+    setTimeout(tt127Apply,60);
+    setTimeout(tt127Apply,250);
+    setTimeout(tt127Apply,700);
+    return r;
+  };
+  openEditTaktik._tt127Wrapped=true;
+}
+
+setTimeout(tt127Apply,500);
+setTimeout(tt127Apply,1500);
+
+/* === slut v127-iphone-taktik-scroll-hard === */
+
+
+/* === v128-single-unsaved-confirm: bara en osparat-varning per klick ===
+   Bas: v127.
+   Problem: flera gamla listeners kan fråga samtidigt vid panelbyte från osparad taktikfilm.
+   Lösning: en global confirm-spärr + kort "godkänd passage" så senare listeners inte frågar igen.
+*/
+
+var tt128ConfirmActive=false;
+var tt128AllowLeaveUntil=0;
+
+function tt128HasUnsaved(){
+  try{
+    if(Date.now()<tt128AllowLeaveUntil)return false;
+    if(typeof hasUnsavedTaktikChangesV23==="function")return hasUnsavedTaktikChangesV23();
+    if(typeof hasUnsavedTaktikChangesV21==="function")return hasUnsavedTaktikChangesV21();
+    return !!(typeof taktikDirtyV17!=="undefined" && taktikDirtyV17);
+  }catch(e){
+    return false;
+  }
+}
+
+function tt128UnifiedConfirm(){
+  if(!tt128HasUnsaved())return true;
+
+  // Om en äldre listener redan startat confirm i samma klickkedja: släpp igenom.
+  if(tt128ConfirmActive)return true;
+
+  tt128ConfirmActive=true;
+  var ok=false;
+  try{
+    ok=window.confirm("Du har osparade ändringar i taktiken. Vill du lämna utan att spara?");
+  }finally{
+    setTimeout(function(){tt128ConfirmActive=false;},350);
+  }
+
+  if(ok){
+    // Låt övriga gamla handlers i samma klickkedja passera utan fler dialoger.
+    tt128AllowLeaveUntil=Date.now()+1200;
+    try{taktikDirtyV17=false;}catch(e){}
+    try{savedTaktikSnapshotV21=null;}catch(e){}
+  }
+
+  return ok;
+}
+
+// Tvinga de befintliga confirm-funktionerna att använda spärren.
+try{confirmUnsavedUnifiedV23=tt128UnifiedConfirm;}catch(e){}
+try{confirmUnsavedV21=tt128UnifiedConfirm;}catch(e){}
+try{confirmUnsavedV19=tt128UnifiedConfirm;}catch(e){}
+try{confirmUnsavedTaktikV18=tt128UnifiedConfirm;}catch(e){}
+try{confirmDiscardUnsavedV17=tt128UnifiedConfirm;}catch(e){}
+
+// Fånga huvudfliksbyte tidigt och, om användaren godkänner, gör filmen ren direkt.
+// Då ska de äldre listeners som också körs inte kunna visa fler dialoger.
+document.addEventListener("click",function(e){
+  try{
+    var tab=e.target.closest&&e.target.closest(".tab[data-panel]");
+    if(!tab)return;
+    var target=tab.getAttribute("data-panel");
+    if(!target || target==="taktik")return;
+
+    var inFilm=(typeof editingTaktikIdx!=="undefined"&&editingTaktikIdx!==null) ||
+               (typeof isEditingTaktik!=="undefined"&&isEditingTaktik) ||
+               (typeof playback!=="undefined"&&playback);
+
+    if(!inFilm)return;
+
+    if(!tt128UnifiedConfirm()){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return false;
+    }
+
+    tt128AllowLeaveUntil=Date.now()+1200;
+    try{taktikDirtyV17=false;}catch(err){}
+    try{savedTaktikSnapshotV21=null;}catch(err){}
+  }catch(err){}
+},true);
+
+/* === slut v128-single-unsaved-confirm === */
