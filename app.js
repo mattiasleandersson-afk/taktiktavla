@@ -11449,3 +11449,178 @@ setTimeout(function(){
 },1500);
 
 /* === slut v88-exit-white-accurate-dirty === */
+
+
+/* === v89-modern-meta-on-save: nya sparningar ska inte hamna som "Äldre" ===
+   Orsak: vissa sparvägar via övre disketten kan spara filmen utan komplett _meta.
+   Då klassas den som legacy/äldre i listan. Här normaliseras metadata före save.
+*/
+
+function tt89GetProfile(){
+  try{
+    if(typeof getProfileSafeV10==="function")return getProfileSafeV10();
+  }catch(e){}
+  try{
+    if(typeof getUserProfile==="function")return getUserProfile();
+  }catch(e){}
+  try{
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){}
+  return null;
+}
+
+function tt89EnsureModernMeta(tk){
+  if(!tk || typeof tk!=="object")return tk;
+
+  try{
+    if(typeof addMetaToData==="function"){
+      tk=addMetaToData(tk) || tk;
+    }
+  }catch(e){}
+
+  var p=tt89GetProfile();
+
+  if(!tk._meta || typeof tk._meta!=="object")tk._meta={};
+
+  // Om äldre meta ligger på data.meta flytta över viktiga fält.
+  try{
+    if(tk.meta && typeof tk.meta==="object"){
+      Object.keys(tk.meta).forEach(function(k){
+        if(typeof tk._meta[k]==="undefined")tk._meta[k]=tk.meta[k];
+      });
+    }
+  }catch(e){}
+
+  if(p){
+    tk._meta.ownerId = tk._meta.ownerId || p.ownerId || p.id || p.userId || "local-owner";
+    tk._meta.ownerName = tk._meta.ownerName || p.ownerName || p.name || "Tränare";
+    tk._meta.teamId = tk._meta.teamId || p.teamId || p.teamCode || "default-team";
+    tk._meta.teamCode = tk._meta.teamCode || p.teamCode || p.teamId || "LAG";
+    tk._meta.teamName = tk._meta.teamName || p.teamName || p.teamCode || tk._meta.teamCode;
+  }else{
+    tk._meta.ownerId = tk._meta.ownerId || "local-owner";
+    tk._meta.ownerName = tk._meta.ownerName || "Tränare";
+    tk._meta.teamId = tk._meta.teamId || "default-team";
+    tk._meta.teamCode = tk._meta.teamCode || "LAG";
+    tk._meta.teamName = tk._meta.teamName || tk._meta.teamCode;
+  }
+
+  if(typeof tk._meta.sharedWithTeam==="undefined")tk._meta.sharedWithTeam=false;
+  if(typeof tk._meta.teamCanEdit==="undefined")tk._meta.teamCanEdit=false;
+  tk._meta.updatedAt = new Date().toISOString();
+
+  // Markör som gör att listan inte ska tolka den som legacy.
+  tk._meta.schemaVersion = tk._meta.schemaVersion || 2;
+  tk._meta.kind = tk._meta.kind || "taktikfilm";
+
+  return tk;
+}
+
+function tt89CurrentFilm(){
+  try{
+    if(editingTaktikIdx===null || typeof editingTaktikIdx==="undefined")return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+
+function tt89EnsureCurrentBeforeSave(){
+  var tk=tt89CurrentFilm();
+  if(tk)tt89EnsureModernMeta(tk);
+  return tk;
+}
+
+// Wrap cloudSaveTaktik så alla taktikfilmer får _meta innan databas-save.
+if(typeof cloudSaveTaktik==="function" && !cloudSaveTaktik._tt89Wrapped){
+  var _tt89_cloudSaveTaktik=cloudSaveTaktik;
+  cloudSaveTaktik=function(tk){
+    tk = tk || tt89EnsureCurrentBeforeSave();
+    if(tk)tt89EnsureModernMeta(tk);
+    return _tt89_cloudSaveTaktik.apply(this,arguments);
+  };
+  cloudSaveTaktik._tt89Wrapped=true;
+}
+
+// Wrap kända sparfunktioner.
+["saveFilmV74","saveFilmV73","saveFilmV71","saveFilmV70","saveWholeFilmV69","saveCurrentTaktikFileV67","saveCurrentTaktikFileV20","saveCurrentTaktikFileV21","saveCurrentTaktikFileV23","tt76SaveFilm"].forEach(function(fn){
+  try{
+    if(typeof window!=="undefined" && typeof window[fn]==="function" && !window[fn]._tt89Wrapped){
+      var old=window[fn];
+      window[fn]=function(){
+        tt89EnsureCurrentBeforeSave();
+        return old.apply(this,arguments);
+      };
+      window[fn]._tt89Wrapped=true;
+    }
+  }catch(e){}
+});
+
+// Extra skydd: om den övre sparknappen klickas, lägg meta precis innan äldre handler kör.
+function tt89BindSaveMetaGuard(){
+  var candidates=["btn-edit-taktik-save-top","btn-save-film","btn-save-taktik","btn-save-current-taktik","btn-top-save","btn-save-as-topbar"];
+  candidates.forEach(function(id){
+    var b=document.getElementById(id);
+    if(b && b.dataset.tt89MetaGuard!=="1"){
+      b.dataset.tt89MetaGuard="1";
+      b.addEventListener("click",function(){
+        tt89EnsureCurrentBeforeSave();
+      },true);
+    }
+  });
+
+  var tb=document.getElementById("taktikbar");
+  if(tb){
+    Array.prototype.slice.call(tb.querySelectorAll("button")).forEach(function(b){
+      var txt=String(b.textContent||"");
+      var title=String(b.title||"");
+      var aria=String(b.getAttribute("aria-label")||"");
+      var isSave=txt.indexOf("💾")>=0 ||
+                 txt.toLowerCase().indexOf("spara")>=0 ||
+                 title.toLowerCase().indexOf("spara")>=0 ||
+                 aria.toLowerCase().indexOf("spara")>=0;
+      if(isSave && b.dataset.tt89MetaGuard!=="1"){
+        b.dataset.tt89MetaGuard="1";
+        b.addEventListener("click",function(){
+          tt89EnsureCurrentBeforeSave();
+        },true);
+      }
+    });
+  }
+}
+
+// Om listan redan innehåller nya filmer utan meta från tidigare test,
+// reparera dem i minnet när listan renderas. Nästa sparning gör dem permanenta.
+function tt89RepairLoadedTaktikList(){
+  try{
+    (taktikFilmer||[]).forEach(function(tk){
+      if(!tk)return;
+      var m=tk._meta || tk.meta;
+      var missing=!m || !m.ownerId || !m.teamId;
+      if(missing)tt89EnsureModernMeta(tk);
+    });
+  }catch(e){}
+}
+
+if(typeof renderTaktikList==="function" && !renderTaktikList._tt89Wrapped){
+  var _renderTaktikList_v89=renderTaktikList;
+  renderTaktikList=function(){
+    tt89RepairLoadedTaktikList();
+    var r=_renderTaktikList_v89.apply(this,arguments);
+    setTimeout(function(){
+      tt89BindSaveMetaGuard();
+      try{if(typeof tt88BindExitButton==="function")tt88BindExitButton();}catch(e){}
+      try{if(typeof tt88StyleExitButton==="function")tt88StyleExitButton();}catch(e){}
+      try{if(typeof tt78PatchReadonlyEyeIcons==="function")tt78PatchReadonlyEyeIcons();}catch(e){}
+      try{if(typeof tt79RebindCopyButtons==="function")tt79RebindCopyButtons();}catch(e){}
+    },0);
+    return r;
+  };
+  renderTaktikList._tt89Wrapped=true;
+}
+
+tt89BindSaveMetaGuard();
+tt89RepairLoadedTaktikList();
+setTimeout(tt89BindSaveMetaGuard,500);
+setTimeout(tt89BindSaveMetaGuard,1500);
+
+/* === slut v89-modern-meta-on-save === */
