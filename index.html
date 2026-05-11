@@ -583,13 +583,43 @@
   }
 </style>
 
+
+<style id="v84-close-taktikbar-library-css">
+  /* När taktikbiblioteket är aktivt får ingen gammal film-/stegmeny ligga kvar och hålla planen öppen. */
+  body.tt-v84-library #pitch-wrapper,
+  body.tt-v84-library #taktikbar,
+  body.tt-v84-library #edit-taktik-ui,
+  body.tt-v84-library #rec-ui,
+  body.tt-v84-library #fs-portrait-nav,
+  body.tt-v84-library #landscape-ui,
+  body.tt-v84-library #ls-controls,
+  body.tt-v84-library #fs-top-tools {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  body.tt-v84-library #bottompanel {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  body.tt-v84-library #panel-taktik.on,
+  body.tt-v84-library #no-rec-ui,
+  body.tt-v84-library #taktik-list {
+    display: block !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.7 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.8 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
