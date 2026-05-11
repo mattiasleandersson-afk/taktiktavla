@@ -14839,3 +14839,180 @@ setTimeout(function(){
 },900);
 
 /* === slut v111-lag-home-simple === */
+
+
+/* === v112-lag-home-hide-pitch: dölj plan på Lag-start + robust Avsluta === */
+
+function tt112SetLagHomeMode(on){
+  try{document.body.classList.toggle("tt112-lag-home",!!on);}catch(e){}
+  try{document.body.classList.toggle("tt111-lag-home",!!on);}catch(e){}
+
+  var pitch=document.getElementById("pitch-wrapper");
+  var bench=document.getElementById("bench-bar");
+  var goal=document.getElementById("goal-overlay");
+
+  if(on){
+    if(pitch){
+      pitch.style.display="none";
+      pitch.style.visibility="hidden";
+    }
+    if(bench){
+      bench.classList.remove("active");
+      bench.style.display="none";
+      bench.style.visibility="hidden";
+    }
+    if(goal){
+      goal.style.display="none";
+      goal.style.visibility="hidden";
+    }
+  }else{
+    if(pitch){
+      pitch.style.display="";
+      pitch.style.visibility="";
+    }
+    if((matchRoster||[]).length && bench){
+      bench.classList.add("active");
+      bench.style.display="flex";
+      bench.style.visibility="visible";
+      bench.style.opacity="1";
+    }
+    if((matchRoster||[]).length && goal){
+      goal.style.display="flex";
+      goal.style.visibility="visible";
+      goal.style.opacity="1";
+    }
+  }
+}
+
+function tt112ShowLagHome(){
+  try{
+    document.querySelectorAll(".tab").forEach(function(t){
+      t.classList.toggle("on",t.getAttribute("data-panel")==="lag");
+    });
+    document.querySelectorAll(".panel").forEach(function(p){
+      p.classList.toggle("on",p.id==="panel-lag");
+      p.style.display=p.id==="panel-lag"?"":"none";
+    });
+  }catch(e){}
+
+  try{
+    if(typeof tt111ShowLagSubpanel==="function"){
+      tt111ShowLagSubpanel("sparade");
+    }
+  }catch(e){}
+
+  var truppEl=document.getElementById("lag-trupp");
+  var matchEl=document.getElementById("lag-match");
+  var statEl=document.getElementById("lag-statistik");
+  var savedEl=document.getElementById("lag-sparade");
+
+  if(truppEl)truppEl.style.display="none";
+  if(matchEl)matchEl.style.display="none";
+  if(statEl)statEl.style.display="none";
+  if(savedEl)savedEl.style.display="";
+
+  try{
+    document.querySelectorAll("[data-lag]").forEach(function(b){
+      b.classList.toggle("on",b.getAttribute("data-lag")==="sparade");
+    });
+  }catch(e){}
+
+  tt112SetLagHomeMode(true);
+
+  try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
+  setTimeout(function(){
+    try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
+    tt112SetLagHomeMode(true);
+    var list=document.getElementById("sparade-match-list");
+    if(list){
+      list.style.display="";
+      list.style.visibility="visible";
+      list.style.height=window.innerWidth>760?"calc(100vh - 175px)":"calc(100vh - 165px)";
+      list.style.maxHeight=list.style.height;
+      list.style.overflowY="auto";
+    }
+  },120);
+}
+
+function tt112EnterLineup(){
+  tt112SetLagHomeMode(false);
+
+  try{
+    document.querySelectorAll(".tab").forEach(function(t){
+      t.classList.toggle("on",t.getAttribute("data-panel")==="formations");
+    });
+    document.querySelectorAll(".panel").forEach(function(p){
+      p.classList.toggle("on",p.id==="panel-formations");
+      p.style.display=p.id==="panel-formations"?"":"none";
+    });
+  }catch(e){}
+
+  setTimeout(function(){
+    tt112SetLagHomeMode(false);
+    try{if(typeof renderBench==="function")renderBench();}catch(e){}
+  },80);
+}
+
+function tt112Install(){
+  document.addEventListener("click",function(e){
+    try{
+      var mainLag=e.target.closest && e.target.closest('.tab[data-panel="lag"]');
+      if(mainLag){
+        setTimeout(tt112ShowLagHome,50);
+        setTimeout(tt112ShowLagHome,180);
+        return;
+      }
+
+      var lagBtn=e.target.closest && e.target.closest("[data-lag]");
+      if(lagBtn){
+        var key=lagBtn.getAttribute("data-lag");
+        if(key==="sparade"){
+          e.preventDefault();
+          e.stopPropagation();
+          if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+          tt112ShowLagHome();
+          return false;
+        }
+        if(key==="trupp" || key==="statistik" || key==="match"){
+          tt112SetLagHomeMode(true);
+          setTimeout(function(){tt112SetLagHomeMode(true);},80);
+        }
+      }
+
+      var txt=String(e.target&&e.target.textContent||"");
+      if(txt.indexOf("Ladda uppst")>=0 || e.target.id==="btn-match-to-taktik"){
+        setTimeout(tt112EnterLineup,100);
+        setTimeout(tt112EnterLineup,360);
+      }
+    }catch(err){}
+  },true);
+
+  var exit=document.getElementById("bench-exit-btn");
+  if(exit && !exit.dataset.tt112ExitHome){
+    exit.dataset.tt112ExitHome="1";
+    exit.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt112ShowLagHome();
+      return false;
+    },true);
+  }
+}
+
+// Överskriv de äldre funktionerna om de anropas av gamla lyssnare.
+try{tt111ShowLagHome=tt112ShowLagHome;}catch(e){}
+try{tt111EnterLineup=tt112EnterLineup;}catch(e){}
+
+tt112Install();
+setTimeout(tt112Install,500);
+
+setTimeout(function(){
+  try{
+    if(document.querySelector('.tab.on[data-panel="lag"]')){
+      tt112ShowLagHome();
+    }
+  }catch(e){}
+},850);
+
+/* === slut v112-lag-home-hide-pitch === */
