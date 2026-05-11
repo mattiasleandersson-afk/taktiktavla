@@ -965,13 +965,47 @@
   }
 </style>
 
+
+<style id="v109-lag-startpage-css">
+  /* v109: Lag-startsida = sparade matcher. Plan/bänk visas först i laguppställning. */
+  body.tt109-lag-home-active #pitch-wrap,
+  body.tt109-lag-home-active #pitch-wrapper,
+  body.tt109-lag-home-active #pitch-area,
+  body.tt109-lag-home-active #pitch-svg {
+    display: none !important;
+  }
+
+  body.tt109-lag-home-active #bench-bar,
+  body.tt109-lag-home-active #goal-overlay {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  body.tt109-lineup-active #pitch-svg {
+    display: block;
+  }
+
+  #panel-lag.tt109-home {
+    min-height: calc(100vh - 90px);
+  }
+
+  #panel-lag.tt109-home #lag-sparade {
+    display: block !important;
+  }
+
+  #panel-lag.tt109-home #sparade-match-list {
+    max-height: calc(100vh - 160px) !important;
+    overflow-y: auto !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.32 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.33 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
