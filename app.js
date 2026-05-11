@@ -14691,3 +14691,189 @@ setInterval(function(){
 },900);
 
 /* === slut v108-desktop-bench-visibility-fix === */
+
+
+/* === v109-lag-startpage: Lag startsida = sparade matcher, avsluta uppställning går dit === */
+
+function tt109SetPitchHidden(hidden){
+  try{document.body.classList.toggle("tt109-lag-home-active",!!hidden);}catch(e){}
+  try{document.body.classList.toggle("tt109-lineup-active",!hidden);}catch(e){}
+
+  var bench=document.getElementById("bench-bar");
+  var goal=document.getElementById("goal-overlay");
+
+  if(hidden){
+    if(bench){
+      bench.classList.remove("active");
+      bench.style.display="none";
+      bench.style.visibility="hidden";
+    }
+    if(goal){
+      goal.style.display="none";
+      goal.style.visibility="hidden";
+    }
+  }else{
+    if((matchRoster||[]).length && bench){
+      bench.classList.add("active");
+      bench.style.display="flex";
+      bench.style.visibility="visible";
+      bench.style.opacity="1";
+    }
+    if((matchRoster||[]).length && goal){
+      goal.style.display="flex";
+      goal.style.visibility="visible";
+      goal.style.opacity="1";
+    }
+  }
+}
+
+function tt109ShowLagHome(){
+  try{document.body.classList.remove("tt101-match-editor-active");}catch(e){}
+  try{document.body.classList.remove("tt108-desktop-match-lineup");}catch(e){}
+
+  var panel=document.getElementById("panel-lag");
+  if(panel)panel.classList.add("tt109-home");
+
+  var truppEl=document.getElementById("lag-trupp");
+  var matchEl=document.getElementById("lag-match");
+  var statEl=document.getElementById("lag-statistik");
+  var savedEl=document.getElementById("lag-sparade");
+
+  if(truppEl)truppEl.style.display="none";
+  if(matchEl)matchEl.style.display="none";
+  if(statEl)statEl.style.display="none";
+  if(savedEl)savedEl.style.display="";
+
+  try{
+    document.querySelectorAll("[data-lag]").forEach(function(b){
+      b.classList.toggle("on",b.getAttribute("data-lag")==="sparade");
+    });
+  }catch(e){}
+
+  tt109SetPitchHidden(true);
+
+  try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
+  setTimeout(function(){
+    try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
+    if(savedEl)savedEl.style.display="";
+  },150);
+}
+
+function tt109EnterLagLineup(){
+  var panel=document.getElementById("panel-lag");
+  if(panel)panel.classList.remove("tt109-home");
+  try{document.body.classList.remove("tt109-lag-home-active");}catch(e){}
+  try{document.body.classList.add("tt109-lineup-active");}catch(e){}
+
+  tt109SetPitchHidden(false);
+
+  try{
+    document.querySelectorAll(".tab").forEach(function(t){
+      t.classList.toggle("on",t.getAttribute("data-panel")==="formations");
+    });
+    document.querySelectorAll(".panel").forEach(function(p){
+      p.classList.toggle("on",p.id==="panel-formations");
+      p.style.display=p.id==="panel-formations"?"":"none";
+    });
+  }catch(e){}
+
+  setTimeout(function(){
+    tt109SetPitchHidden(false);
+    try{if(typeof renderBench==="function")renderBench();}catch(e){}
+    try{if(typeof tt106TagBenchPlayers==="function")tt106TagBenchPlayers();}catch(e){}
+  },80);
+}
+
+function tt109IsLagTabClickTarget(e){
+  try{
+    var tab=e.target.closest && e.target.closest('.tab[data-panel="lag"]');
+    return !!tab;
+  }catch(err){return false;}
+}
+
+function tt109InstallLagStart(){
+  document.addEventListener("click",function(e){
+    try{
+      var tab=e.target.closest && e.target.closest('.tab[data-panel]');
+      if(tab && tab.getAttribute("data-panel")==="lag"){
+        setTimeout(tt109ShowLagHome,60);
+        return;
+      }
+
+      var lagBtn=e.target.closest && e.target.closest("[data-lag]");
+      if(lagBtn){
+        var key=lagBtn.getAttribute("data-lag");
+        if(key==="sparade"){
+          setTimeout(tt109ShowLagHome,20);
+        }else{
+          var panel=document.getElementById("panel-lag");
+          if(panel)panel.classList.remove("tt109-home");
+          tt109SetPitchHidden(true);
+        }
+      }
+    }catch(err){}
+  },true);
+
+  var benchExit=document.getElementById("bench-exit-btn");
+  if(benchExit && !benchExit.dataset.tt109ExitHome){
+    benchExit.dataset.tt109ExitHome="1";
+    benchExit.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt109ShowLagHome();
+      return false;
+    },true);
+  }
+
+  var btnLineup=document.getElementById("btn-match-to-taktik");
+  if(btnLineup && !btnLineup.dataset.tt109LineupEnter){
+    btnLineup.dataset.tt109LineupEnter="1";
+    btnLineup.addEventListener("click",function(){
+      setTimeout(tt109EnterLagLineup,80);
+      setTimeout(tt109EnterLagLineup,350);
+    },true);
+  }
+}
+
+// När sparad match laddas med "Ladda uppst." ska planen visas.
+document.addEventListener("click",function(e){
+  try{
+    var txt=String(e.target&&e.target.textContent||"");
+    if(txt.indexOf("Ladda uppst")>=0){
+      setTimeout(tt109EnterLagLineup,80);
+      setTimeout(tt109EnterLagLineup,350);
+    }
+  }catch(err){}
+},true);
+
+// Om panelbyte sker via kod, håll Lag-panelens startläge ren.
+if(typeof switchWorkspacePanel==="function" && !switchWorkspacePanel._tt109Wrapped){
+  var _switchWorkspacePanel_tt109=switchWorkspacePanel;
+  switchWorkspacePanel=function(nextPanel){
+    var r=_switchWorkspacePanel_tt109.apply(this,arguments);
+    setTimeout(function(){
+      try{
+        if(nextPanel==="lag" || document.querySelector('.tab.on[data-panel="lag"]')){
+          tt109ShowLagHome();
+        }else{
+          document.body.classList.remove("tt109-lag-home-active");
+          var panel=document.getElementById("panel-lag");
+          if(panel)panel.classList.remove("tt109-home");
+        }
+      }catch(e){}
+    },80);
+    return r;
+  };
+  switchWorkspacePanel._tt109Wrapped=true;
+}
+
+tt109InstallLagStart();
+setTimeout(tt109InstallLagStart,500);
+setTimeout(function(){
+  try{
+    if(document.querySelector('.tab.on[data-panel="lag"]'))tt109ShowLagHome();
+  }catch(e){}
+},900);
+
+/* === slut v109-lag-startpage === */
