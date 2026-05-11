@@ -966,114 +966,76 @@
 </style>
 
 
-<style id="v111-lag-home-simple-css">
-  body.tt111-lag-home #bench-bar,
-  body.tt111-lag-home #goal-overlay {
+<style id="v113-lag-home-safe-css">
+  /* v113: Lag-starten får egen yta, men bara när body uttryckligen säger Lag-hem. */
+  body.tt113-lag-home #pitch-wrapper,
+  body.tt113-lag-home #bench-bar,
+  body.tt113-lag-home #goal-overlay {
     display: none !important;
     visibility: hidden !important;
   }
 
-  #panel-lag #sparade-match-list,
-  #panel-lag #trupp-list,
-  #panel-lag #match-trupp-list,
-  #panel-lag #stat-list,
-  #panel-lag #statistik-list,
-  #panel-lag #statistik-content {
-    max-height: calc(100vh - 185px) !important;
-    min-height: 330px !important;
-    overflow-y: auto !important;
-    box-sizing: border-box !important;
-  }
-
-  @media (max-width: 760px) {
-    #panel-lag #sparade-match-list,
-    #panel-lag #trupp-list,
-    #panel-lag #match-trupp-list,
-    #panel-lag #stat-list,
-    #panel-lag #statistik-list,
-    #panel-lag #statistik-content {
-      max-height: calc(100vh - 175px) !important;
-      min-height: 280px !important;
-    }
-  }
-</style>
-
-
-<style id="v112-lag-home-hide-pitch-css">
-  /* v112: i Lag-startläge ska planen inte ta plats */
-  body.tt112-lag-home #pitch-wrapper,
-  body.tt112-lag-home #bench-bar,
-  body.tt112-lag-home #goal-overlay,
-  body.tt112-lag-home #mode-badge,
-  body.tt112-lag-home #arrow-options,
-  body.tt112-lag-home #zone-options,
-  body.tt112-lag-home #freehand-options {
-    display: none !important;
-    visibility: hidden !important;
-  }
-
-  body.tt112-lag-home #bottompanel {
+  body.tt113-lag-home #bottompanel {
     flex: 1 1 auto !important;
     width: 100% !important;
     max-width: none !important;
-    min-height: calc(100vh - 76px) !important;
-    height: calc(100vh - 76px) !important;
+    min-height: calc(100vh - 82px) !important;
+    height: calc(100vh - 82px) !important;
     overflow: hidden !important;
   }
 
-  body.tt112-lag-home #panel-lag.on,
-  body.tt112-lag-home #panel-lag {
+  body.tt113-lag-home #panel-lag.on {
     display: block !important;
     width: 100% !important;
     max-width: none !important;
-    min-height: calc(100vh - 86px) !important;
-    height: calc(100vh - 86px) !important;
+    min-height: calc(100vh - 92px) !important;
+    height: calc(100vh - 92px) !important;
     box-sizing: border-box !important;
   }
 
-  body.tt112-lag-home #panel-lag > div {
+  body.tt113-lag-home #panel-lag.on > div {
     height: 100% !important;
     min-height: 0 !important;
     display: flex !important;
     flex-direction: column !important;
   }
 
-  body.tt112-lag-home #lag-sparade,
-  body.tt112-lag-home #lag-trupp,
-  body.tt112-lag-home #lag-statistik,
-  body.tt112-lag-home #lag-match {
+  body.tt113-lag-home #lag-sparade,
+  body.tt113-lag-home #lag-trupp,
+  body.tt113-lag-home #lag-statistik,
+  body.tt113-lag-home #lag-match {
     flex: 1 1 auto !important;
     min-height: 0 !important;
   }
 
-  body.tt112-lag-home #sparade-match-list,
-  body.tt112-lag-home #trupp-list,
-  body.tt112-lag-home #match-trupp-list,
-  body.tt112-lag-home #stat-list,
-  body.tt112-lag-home #statistik-list,
-  body.tt112-lag-home #statistik-content {
-    height: calc(100vh - 175px) !important;
-    max-height: calc(100vh - 175px) !important;
-    min-height: 360px !important;
+  body.tt113-lag-home #sparade-match-list,
+  body.tt113-lag-home #trupp-list,
+  body.tt113-lag-home #match-trupp-list,
+  body.tt113-lag-home #stat-list,
+  body.tt113-lag-home #statistik-list,
+  body.tt113-lag-home #statistik-content {
+    height: calc(100vh - 185px) !important;
+    max-height: calc(100vh - 185px) !important;
+    min-height: 340px !important;
     overflow-y: auto !important;
     box-sizing: border-box !important;
   }
 
   @media (max-width: 760px) {
-    body.tt112-lag-home #bottompanel {
-      min-height: calc(100vh - 72px) !important;
-      height: calc(100vh - 72px) !important;
+    body.tt113-lag-home #bottompanel {
+      min-height: calc(100vh - 76px) !important;
+      height: calc(100vh - 76px) !important;
     }
 
-    body.tt112-lag-home #sparade-match-list,
-    body.tt112-lag-home #trupp-list,
-    body.tt112-lag-home #match-trupp-list,
-    body.tt112-lag-home #stat-list,
-    body.tt112-lag-home #statistik-list,
-    body.tt112-lag-home #statistik-content {
-      height: calc(100vh - 165px) !important;
-      max-height: calc(100vh - 165px) !important;
-      min-height: 300px !important;
+    body.tt113-lag-home #sparade-match-list,
+    body.tt113-lag-home #trupp-list,
+    body.tt113-lag-home #match-trupp-list,
+    body.tt113-lag-home #stat-list,
+    body.tt113-lag-home #statistik-list,
+    body.tt113-lag-home #statistik-content {
+      height: calc(100vh - 172px) !important;
+      max-height: calc(100vh - 172px) !important;
+      min-height: 290px !important;
     }
   }
 </style>
@@ -1084,7 +1046,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.36 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.37 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
