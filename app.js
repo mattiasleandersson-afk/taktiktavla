@@ -13622,3 +13622,232 @@ if(typeof renderSparadeMatcherList==="function" && !renderSparadeMatcherList._tt
 setTimeout(tt101HideSavedMatchesInEditor,800);
 
 /* === slut v101-match-save-editor-fix === */
+
+
+/* === v102-match-list-user-button-fix: sparade matcher visas igen + kompakt användarknapp === */
+
+function tt102ShowSavedMatches(){
+  try{document.body.classList.remove("tt101-match-editor-active");}catch(e){}
+  var saved=document.getElementById("lag-sparade");
+  var match=document.getElementById("lag-match");
+  var truppEl=document.getElementById("lag-trupp");
+  var stat=document.getElementById("lag-statistik");
+
+  if(saved)saved.style.display="";
+  if(match)match.style.display="none";
+  if(truppEl)truppEl.style.display="none";
+  if(stat)stat.style.display="none";
+
+  try{
+    document.querySelectorAll("[data-lag]").forEach(function(b){
+      b.classList.toggle("on",b.getAttribute("data-lag")==="sparade");
+    });
+  }catch(e){}
+
+  setTimeout(function(){
+    try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
+    try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
+    var list=document.getElementById("sparade-match-list");
+    if(list){
+      list.style.display="";
+      list.style.visibility="visible";
+      list.style.maxHeight="240px";
+      list.style.overflowY="auto";
+    }
+    if(saved)saved.style.display="";
+  },120);
+}
+
+document.addEventListener("click",function(e){
+  try{
+    var b=e.target.closest && e.target.closest("[data-lag]");
+    if(!b)return;
+    if(b.getAttribute("data-lag")==="sparade"){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt102ShowSavedMatches();
+      return false;
+    }
+  }catch(err){}
+},true);
+
+if(typeof renderSparadeMatcherList==="function" && !renderSparadeMatcherList._tt102Wrapped){
+  var _renderSparadeMatcherList_tt102=renderSparadeMatcherList;
+  renderSparadeMatcherList=function(){
+    var r=_renderSparadeMatcherList_tt102.apply(this,arguments);
+    setTimeout(function(){
+      var active=false;
+      try{
+        active=Array.prototype.slice.call(document.querySelectorAll("[data-lag]")).some(function(b){
+          return b.getAttribute("data-lag")==="sparade" && b.classList.contains("on");
+        });
+      }catch(e){}
+      if(active){
+        document.body.classList.remove("tt101-match-editor-active");
+        var saved=document.getElementById("lag-sparade");
+        if(saved)saved.style.display="";
+      }
+    },0);
+    return r;
+  };
+  renderSparadeMatcherList._tt102Wrapped=true;
+}
+
+if(typeof tt101SaveMatchPreserveUI==="function" && !tt101SaveMatchPreserveUI._tt102Wrapped){
+  var _tt101SaveMatchPreserveUI_v102=tt101SaveMatchPreserveUI;
+  tt101SaveMatchPreserveUI=function(){
+    var r=_tt101SaveMatchPreserveUI_v102.apply(this,arguments);
+    setTimeout(function(){try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}},700);
+    return r;
+  };
+  tt101SaveMatchPreserveUI._tt102Wrapped=true;
+}
+
+function tt102GetProfile(){
+  try{if(typeof getUserProfile==="function"){var p=getUserProfile(); if(p)return p;}}catch(e){}
+  try{if(typeof getProfileSafeV10==="function"){var p2=getProfileSafeV10(); if(p2)return p2;}}catch(e){}
+  try{var raw=localStorage.getItem("tt_profile_v1"); return raw?JSON.parse(raw):null;}catch(e){}
+  return null;
+}
+
+function tt102SaveProfile(name,team){
+  name=String(name||"").trim()||"Tränare";
+  team=String(team||"").trim()||"MITT-LAG";
+  try{
+    if(typeof saveUserProfile==="function"){
+      return saveUserProfile(name,team);
+    }
+  }catch(e){}
+  var old=tt102GetProfile()||{};
+  var code=team.toUpperCase().replace(/\s+/g,"-");
+  var p={
+    ownerId:old.ownerId || ("user_"+Math.random().toString(36).slice(2,10)),
+    ownerName:name,
+    teamId:code,
+    teamCode:code,
+    teamName:code
+  };
+  localStorage.setItem("tt_profile_v1",JSON.stringify(p));
+  return p;
+}
+
+function tt102OpenProfileModal(){
+  var old=document.getElementById("tt102-profile-modal");
+  if(old)old.remove();
+
+  var p=tt102GetProfile()||{};
+  var modal=document.createElement("div");
+  modal.id="tt102-profile-modal";
+
+  var box=document.createElement("div");
+  box.className="tt102-box";
+
+  var h=document.createElement("h2");
+  h.textContent="Profil och lag";
+  box.appendChild(h);
+
+  var lab1=document.createElement("label");
+  lab1.textContent="Tränarnamn";
+  var name=document.createElement("input");
+  name.value=p.ownerName||"";
+
+  var lab2=document.createElement("label");
+  lab2.textContent="Lagkod / lagnamn";
+  var team=document.createElement("input");
+  team.value=p.teamCode||p.teamId||"";
+
+  box.appendChild(lab1);box.appendChild(name);
+  box.appendChild(lab2);box.appendChild(team);
+
+  var info=document.createElement("div");
+  info.style.cssText="font-size:.72rem;color:#7aaa88;line-height:1.3;margin-top:8px";
+  info.textContent="Samma lagkod används för att dela taktik, utgångslägen och matcher mellan tränare.";
+  box.appendChild(info);
+
+  var actions=document.createElement("div");
+  actions.className="tt102-actions";
+
+  var cancel=document.createElement("button");
+  cancel.className="btn";
+  cancel.textContent="Stäng";
+  cancel.addEventListener("click",function(){modal.remove();});
+
+  var save=document.createElement("button");
+  save.className="btn on";
+  save.textContent="Spara";
+  save.addEventListener("click",function(){
+    tt102SaveProfile(name.value,team.value);
+    modal.remove();
+    tt102CompactUserButton();
+    try{if(typeof cloudLoadSaves==="function")cloudLoadSaves();}catch(e){}
+    try{if(typeof cloudLoadTaktik==="function")cloudLoadTaktik();}catch(e){}
+    try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
+    showToast("Profil sparad");
+  });
+
+  actions.appendChild(cancel);
+  actions.appendChild(save);
+  box.appendChild(actions);
+  modal.appendChild(box);
+  modal.addEventListener("click",function(e){if(e.target===modal)modal.remove();});
+  document.body.appendChild(modal);
+  setTimeout(function(){name.focus();},80);
+}
+
+function tt102LooksLikeProfileButton(b){
+  if(!b)return false;
+  var id=String(b.id||"").toLowerCase();
+  var title=String(b.title||"").toLowerCase();
+  var txt=String(b.textContent||"").trim();
+  if(id.indexOf("profile")>=0 || id.indexOf("profil")>=0 || id.indexOf("user")>=0 || id.indexOf("konto")>=0)return true;
+  if(title.indexOf("profil")>=0 || title.indexOf("använd")>=0 || title.indexOf("user")>=0 || title.indexOf("konto")>=0)return true;
+  var p=tt102GetProfile();
+  if(p && p.ownerName && txt.indexOf(p.ownerName)>=0)return true;
+  if(p && p.teamCode && txt.indexOf(p.teamCode)>=0)return true;
+  return false;
+}
+
+function tt102CompactUserButton(){
+  var top=document.getElementById("topbar") || document.querySelector(".topbar");
+  if(!top)return;
+  var candidates=[];
+  try{
+    Array.prototype.slice.call(top.querySelectorAll("button")).forEach(function(b){
+      if(tt102LooksLikeProfileButton(b))candidates.push(b);
+    });
+  }catch(e){}
+
+  if(!candidates.length){
+    var b=document.createElement("button");
+    b.className="btn tt102-profile-btn";
+    b.id="tt102-profile-btn";
+    b.title="Profil och lag";
+    b.textContent="👤";
+    top.appendChild(b);
+    candidates.push(b);
+  }
+
+  candidates.forEach(function(b){
+    b.classList.add("tt102-profile-btn");
+    if(window.innerWidth<=760)b.classList.add("tt102-user-icon-only");
+    else b.classList.remove("tt102-user-icon-only");
+    b.title="Profil och lag";
+    if(!b.dataset.tt102ProfileBound){
+      b.dataset.tt102ProfileBound="1";
+      b.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+        tt102OpenProfileModal();
+        return false;
+      },true);
+    }
+  });
+}
+
+window.addEventListener("resize",function(){setTimeout(tt102CompactUserButton,80);});
+setTimeout(tt102CompactUserButton,500);
+setTimeout(tt102CompactUserButton,1600);
+
+/* === slut v102-match-list-user-button-fix === */
