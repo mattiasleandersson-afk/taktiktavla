@@ -14883,73 +14883,6 @@ function tt114InstallLagSafe(){
    Om äldre filter råkar gömma egna filer i Mina-läget, rendera om utifrån owner/team-meta.
    Detta kör bara när huvudfliken Taktik är aktiv.
 */
-function tt114NormalizeOwner(v){
-  if(v==null)return "";
-  return String(v).trim().toLowerCase();
-}
-
-function tt114IsMineTaktik(tk){
-  try{
-    var p=(typeof getUserProfile==="function")?getUserProfile():null;
-    var oid=p&&p.ownerId;
-    var oname=p&&p.ownerName;
-    var meta=tk&&tk._meta?tk._meta:(tk&&tk.data&&tk.data._meta?tk.data._meta:null);
-
-    if(meta){
-      if(oid && meta.ownerId && String(meta.ownerId)===String(oid))return true;
-      if(oname && meta.ownerName && tt114NormalizeOwner(meta.ownerName)===tt114NormalizeOwner(oname))return true;
-    }
-
-    if(tk){
-      if(oid && tk.ownerId && String(tk.ownerId)===String(oid))return true;
-      if(oname && tk.ownerName && tt114NormalizeOwner(tk.ownerName)===tt114NormalizeOwner(oname))return true;
-    }
-
-    // Äldre lokala egna filer saknar ibland meta. Är den inte markerad som delad/read-only ska den räknas som Mina.
-    if(!meta && tk && !tk.sharedWithTeam && !tk.readonly && !tk.readOnly)return true;
-    if(meta && meta.sharedWithTeam!==true && !tk.readonly && !tk.readOnly)return true;
-  }catch(e){}
-  return false;
-}
-
-function tt114RepairMineTaktikList(){
-  try{
-    if(tt114MainPanelName()!=="taktik")return;
-    var mineBtn=document.querySelector("[data-taktik-filter='mine'].on, .taktik-filter.on[data-filter='mine'], #btn-taktik-mine.on, [data-scope='mine'].on");
-    var list=document.getElementById("taktik-list") || document.getElementById("taktik-filmer-list");
-    if(!list)return;
-
-    // Om listan redan har innehåll, stör inte.
-    if(String(list.textContent||"").trim().length>8 && !/inga|saknas|tom/i.test(String(list.textContent||"")))return;
-
-    var arr=(window.taktikFilmer||taktikFilmer||[]).filter(tt114IsMineTaktik);
-    if(!arr.length)return;
-
-    list.innerHTML="";
-    arr.forEach(function(tk,idx){
-      var row=document.createElement("div");
-      row.className="list-row tt114-mine-taktik-row";
-      row.style.cssText="display:flex;align-items:center;gap:6px;padding:7px 8px;border-bottom:1px solid #1a3020;cursor:pointer";
-      var name=document.createElement("div");
-      name.style.cssText="flex:1;font-size:0.82rem;color:#edf5ee;font-weight:700";
-      name.textContent=tk.namn||tk.name||tk.title||("Taktikfilm "+(idx+1));
-      var sub=document.createElement("div");
-      sub.style.cssText="font-size:0.68rem;color:#7aaa88";
-      sub.textContent="Mina";
-      row.appendChild(name);
-      row.appendChild(sub);
-      row.addEventListener("click",function(){
-        try{
-          if(typeof openTaktikFilm==="function")openTaktikFilm(tk);
-          else if(typeof loadTaktik==="function")loadTaktik(tk);
-          else if(typeof startEditTaktik==="function")startEditTaktik(tk);
-        }catch(e){}
-      });
-      list.appendChild(row);
-    });
-  }catch(e){}
-}
-
 document.addEventListener("click",function(e){
   try{
     var tab=e.target.closest && e.target.closest(".tab[data-panel]");
@@ -14975,3 +14908,6 @@ setTimeout(function(){
 },900);
 
 /* === slut v114-safe-lag-taktik === */
+
+
+/* v116: bygger på v114 men utan den extra Taktik/Mina-filterfixen. */
