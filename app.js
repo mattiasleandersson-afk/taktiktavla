@@ -14973,3 +14973,113 @@ setTimeout(function(){
 
 
 /* v123 rollback: tillbaka till v120. v121/v122 är borttagna. */
+
+
+/* === v124-iphone-film-menu-fix: håll Avsluta synlig i taktikfilm på iPhone ===
+   Bas: v123/v120.
+   Rör bara visningen av mobilmenyn när taktikfilm/uppspelning/redigering är aktiv.
+*/
+
+function tt124IsSmallScreen(){
+  try{
+    return window.innerWidth <= 760 || (window.matchMedia && window.matchMedia("(max-width: 760px)").matches);
+  }catch(e){
+    return false;
+  }
+}
+
+function tt124IsTaktikFilmActive(){
+  try{
+    if(typeof playback !== "undefined" && playback)return true;
+    if(typeof isEditingTaktik !== "undefined" && isEditingTaktik)return true;
+    if(typeof editingTaktikIdx !== "undefined" && editingTaktikIdx !== null)return true;
+    var rec=document.getElementById("rec-ui");
+    var edit=document.getElementById("edit-taktik-ui");
+    if(rec && rec.style.display && rec.style.display!=="none")return true;
+    if(edit && edit.style.display && edit.style.display!=="none")return true;
+  }catch(e){}
+  return false;
+}
+
+function tt124FindExitButtons(){
+  var out=[];
+  try{
+    var candidates=document.querySelectorAll("button");
+    candidates.forEach(function(b){
+      var txt=String(b.textContent||"").trim().toLowerCase();
+      var title=String(b.title||"").trim().toLowerCase();
+      var id=String(b.id||"").toLowerCase();
+      if(
+        txt==="avsluta" ||
+        txt.indexOf("avsluta")>=0 ||
+        title.indexOf("avsluta")>=0 ||
+        id.indexOf("exit")>=0 ||
+        id.indexOf("close")>=0
+      ){
+        // Undvik fel knappar i modal om de är dolda.
+        var r=b.getBoundingClientRect();
+        if(r.width>0 && r.height>0)out.push(b);
+      }
+    });
+  }catch(e){}
+  return out;
+}
+
+function tt124ApplyFilmMenuFix(){
+  var active=tt124IsSmallScreen() && tt124IsTaktikFilmActive();
+  document.body.classList.toggle("tt124-taktik-film-active",active);
+
+  try{
+    tt124FindExitButtons().forEach(function(b){
+      if(active)b.classList.add("tt124-exit-visible");
+      else b.classList.remove("tt124-exit-visible");
+    });
+  }catch(e){}
+
+  if(active){
+    // Försök rulla raden så Avsluta syns direkt.
+    setTimeout(function(){
+      try{
+        var btns=tt124FindExitButtons();
+        if(btns.length){
+          btns[0].scrollIntoView({block:"nearest",inline:"nearest"});
+        }
+      }catch(e){}
+    },80);
+  }
+}
+
+// Kör när man går in/ut ur taktikfilm och när UI renderas.
+["click","touchend","resize","orientationchange"].forEach(function(evt){
+  window.addEventListener(evt,function(){
+    setTimeout(tt124ApplyFilmMenuFix,80);
+    setTimeout(tt124ApplyFilmMenuFix,300);
+  },true);
+});
+
+if(typeof startPlayback==="function" && !startPlayback._tt124Wrapped){
+  var _startPlayback_tt124=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt124.apply(this,arguments);
+    setTimeout(tt124ApplyFilmMenuFix,80);
+    setTimeout(tt124ApplyFilmMenuFix,300);
+    return r;
+  };
+  startPlayback._tt124Wrapped=true;
+}
+
+if(typeof openEditTaktik==="function" && !openEditTaktik._tt124Wrapped){
+  var _openEditTaktik_tt124=openEditTaktik;
+  openEditTaktik=function(){
+    var r=_openEditTaktik_tt124.apply(this,arguments);
+    setTimeout(tt124ApplyFilmMenuFix,80);
+    setTimeout(tt124ApplyFilmMenuFix,300);
+    return r;
+  };
+  openEditTaktik._tt124Wrapped=true;
+}
+
+setTimeout(tt124ApplyFilmMenuFix,500);
+setTimeout(tt124ApplyFilmMenuFix,1200);
+
+/* === slut v124-iphone-film-menu-fix === */
