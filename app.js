@@ -13851,3 +13851,234 @@ setTimeout(tt102CompactUserButton,500);
 setTimeout(tt102CompactUserButton,1600);
 
 /* === slut v102-match-list-user-button-fix === */
+
+
+/* === v103-desktop-player-drag-fix: spelare prioriteras framför boll på desktop ===
+   Problem: på dator kan bollens SVG-lager hamna ovanpå en spelare, så musdrag flyttar bollen.
+   Fix: fånga mousedown tidigt. Om klickpunkten ligger på/vid en spelare startas spelardrag,
+   även om det översta SVG-objektet råkar vara bollen.
+*/
+
+function tt103Dist2(a,b,c,d){
+  var dx=a-c,dy=b-d;
+  return dx*dx+dy*dy;
+}
+
+function tt103NearestPlayerAt(pt,radius){
+  radius=radius||22;
+  var best=null,bestD=radius*radius;
+  try{
+    (players||[]).forEach(function(p){
+      var d=tt103Dist2(pt.x,pt.y,p.x,p.y);
+      if(d<=bestD){
+        best=p;
+        bestD=d;
+      }
+    });
+  }catch(e){}
+  return best;
+}
+
+function tt103IsBallTarget(target){
+  try{
+    return !!(target && target.closest && target.closest(".ball-token"));
+  }catch(e){return false;}
+}
+
+function tt103IsPlayerTarget(target){
+  try{
+    return !!(target && target.closest && target.closest(".player-token"));
+  }catch(e){return false;}
+}
+
+function tt103FindNearestHomePitchPlayerFromClient(cx,cy,exceptId){
+  try{
+    var pt=svgPt(cx,cy);
+    var best=null,bestD=50*50;
+    (players||[]).forEach(function(p){
+      if(p.team!=="home")return;
+      if(exceptId && p.id===exceptId)return;
+      var d=tt103Dist2(pt.x,pt.y,p.x,p.y);
+      if(d<bestD){
+        best=p.id;
+        bestD=d;
+      }
+    });
+    return best;
+  }catch(e){return null;}
+}
+
+function tt103SwapAssignments(srcPid,targetPid){
+  if(!srcPid || !targetPid || srcPid===targetPid)return false;
+  try{
+    var srcTid=matchAssignments[srcPid]||null;
+    var tgtTid=matchAssignments[targetPid]||null;
+
+    if(srcTid)matchAssignments[targetPid]=srcTid;
+    else delete matchAssignments[targetPid];
+
+    if(tgtTid)matchAssignments[srcPid]=tgtTid;
+    else delete matchAssignments[srcPid];
+
+    var srcSp=srcTid?matchRoster.find(function(x){return x.id===srcTid;}):null;
+    var tgtSp=tgtTid?matchRoster.find(function(x){return x.id===tgtTid;}):null;
+    var srcP=players.find(function(x){return x.id===srcPid;});
+    var tgtP=players.find(function(x){return x.id===targetPid;});
+
+    if(srcP){srcP.number=tgtSp?tgtSp.nr:0;srcP.name=tgtSp?tgtSp.namn:"";}
+    if(tgtP){tgtP.number=srcSp?srcSp.nr:0;tgtP.name=srcSp?srcSp.namn:"";}
+
+    if(typeof render==="function")render();
+    if(typeof renderBench==="function")renderBench();
+    showToast("Spelare bytte plats!");
+    return true;
+  }catch(e){return false;}
+}
+
+function tt103ReturnAssignedPlayerToBench(pid){
+  try{
+    if(!pid || !matchAssignments[pid])return false;
+    delete matchAssignments[pid];
+    var p=players.find(function(x){return x.id===pid;});
+    if(p){p.number=0;p.name="";}
+    if(typeof render==="function")render();
+    if(typeof renderBench==="function")renderBench();
+    showToast("Spelare återlagd till avbytare!");
+    return true;
+  }catch(e){return false;}
+}
+
+function tt103StartDesktopPlayerDrag(ev,p){
+  if(!p || mode!=="move")return false;
+
+  ev.preventDefault();
+  ev.stopPropagation();
+  if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
+
+  try{if(typeof saveUndo==="function")saveUndo();}catch(e){}
+  selectedId=p.id;
+
+  var startX=ev.clientX,startY=ev.clientY;
+  var moved=false;
+
+  // I matchläge med placerade hemmaspelare: desktop ska kunna byta plats/åter till bänk som touch gör.
+  if((matchRoster||[]).length && p.team==="home"){
+    var ghost=null;
+
+    function makeGhost(){
+      if(ghost || !matchAssignments[p.id])return;
+      var sp=matchRoster.find(function(x){return x.id===matchAssignments[p.id];});
+      if(!sp)return;
+      ghost=document.createElement("div");
+      ghost.style.cssText="position:fixed;z-index:9999;pointer-events:none;background:#4ae87a;color:#0a1a0d;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.8rem;transform:translate(-50%,-50%)";
+      ghost.textContent="#"+sp.nr;
+      document.body.appendChild(ghost);
+    }
+
+    function mm(e2){
+      var dx=e2.clientX-startX,dy=e2.clientY-startY;
+      if(!moved && dx*dx+dy*dy>64){
+        moved=true;
+        makeGhost();
+      }
+      if(moved && ghost){
+        ghost.style.left=e2.clientX+"px";
+        ghost.style.top=e2.clientY+"px";
+      }
+      try{if(typeof highlightNearestPlayer==="function")highlightNearestPlayer(e2.clientX,e2.clientY);}catch(e){}
+    }
+
+    function mu(e2){
+      window.removeEventListener("mousemove",mm,true);
+      window.removeEventListener("mouseup",mu,true);
+      if(ghost){ghost.remove();ghost=null;}
+      try{if(typeof clearPlayerHighlights==="function")clearPlayerHighlights();}catch(e){}
+
+      if(!moved){
+        // Klick utan drag: behåll normal logik så man kan välja spelare via modal.
+        try{if(typeof openPlayerPicker==="function")openPlayerPicker(p.id);}catch(e){}
+        return;
+      }
+
+      var benchBar=document.getElementById("bench-bar");
+      var br=benchBar?benchBar.getBoundingClientRect():null;
+      var droppedOnBench=br && e2.clientX>=br.left && e2.clientX<=br.right && e2.clientY>=br.top && e2.clientY<=br.bottom;
+      if(droppedOnBench){
+        tt103ReturnAssignedPlayerToBench(p.id);
+        return;
+      }
+
+      var targetPid=null;
+      try{
+        if(typeof findNearestHomePitchPlayer==="function")targetPid=findNearestHomePitchPlayer(e2.clientX,e2.clientY,50);
+      }catch(e){}
+      if(!targetPid)targetPid=tt103FindNearestHomePitchPlayerFromClient(e2.clientX,e2.clientY,p.id);
+
+      if(targetPid && targetPid!==p.id){
+        tt103SwapAssignments(p.id,targetPid);
+      }
+    }
+
+    window.addEventListener("mousemove",mm,true);
+    window.addEventListener("mouseup",mu,true);
+    return true;
+  }
+
+  // Vanligt utgångsläge/taktik: flytta själva spelartoken.
+  var pt=svgPt(ev.clientX,ev.clientY);
+  dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};
+
+  function mm2(e2){onMM(e2);}
+  function mu2(e2){
+    window.removeEventListener("mousemove",mm2,true);
+    window.removeEventListener("mouseup",mu2,true);
+    onMU(e2);
+  }
+
+  window.addEventListener("mousemove",mm2,true);
+  window.addEventListener("mouseup",mu2,true);
+  return true;
+}
+
+function tt103InstallDesktopPlayerPriority(){
+  var s=document.getElementById("pitch-svg");
+  if(!s || s.dataset.tt103DesktopDrag)return;
+  s.dataset.tt103DesktopDrag="1";
+
+  s.addEventListener("mousedown",function(ev){
+    try{
+      if(ev.button!==0)return;
+      if(mode!=="move")return;
+
+      var pt=svgPt(ev.clientX,ev.clientY);
+      var p=null;
+
+      // Om klicket redan är på spelare: använd den.
+      var pg=ev.target && ev.target.closest ? ev.target.closest(".player-token") : null;
+      if(pg){
+        var id=pg.getAttribute("data-id");
+        p=(players||[]).find(function(x){return x.id===id;})||null;
+      }
+
+      // Om klicket är på bollen men en spelare ligger under/nära: välj spelaren i stället.
+      if(!p && tt103IsBallTarget(ev.target)){
+        p=tt103NearestPlayerAt(pt,24);
+      }
+
+      // Extra tolerans: om man klickar väldigt nära spelare, prioritera spelaren framför plan/boll.
+      if(!p && !tt103IsPlayerTarget(ev.target)){
+        p=tt103NearestPlayerAt(pt,18);
+      }
+
+      if(p){
+        tt103StartDesktopPlayerDrag(ev,p);
+      }
+    }catch(err){}
+  },true);
+}
+
+tt103InstallDesktopPlayerPriority();
+setTimeout(tt103InstallDesktopPlayerPriority,800);
+setTimeout(tt103InstallDesktopPlayerPriority,1800);
+
+/* === slut v103-desktop-player-drag-fix === */
