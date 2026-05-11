@@ -14691,3 +14691,140 @@ setInterval(function(){
 },900);
 
 /* === slut v108-desktop-bench-visibility-fix === */
+
+
+/* === v119-taktik-owner-fallback: hitta egna taktikfiler även om ownerId bytts ===
+   Bas: v118/v108.
+   Orsak: filer kan ha skapats med ett äldre lokalt ownerId. Då ska Mina även känna igen
+   ägare via ägarnamn + lagkod/team, och äldre filer utan metadata ska räknas som Mina.
+*/
+
+function tt119Norm(v){
+  return String(v||"").trim().toLowerCase();
+}
+
+function tt119Meta(obj){
+  try{
+    if(typeof fileMetaV10==="function")return fileMetaV10(obj)||{};
+  }catch(e){}
+  if(!obj)return {};
+  if(obj._meta)return obj._meta;
+  if(obj.meta)return obj.meta;
+  if(obj.data&&obj.data._meta)return obj.data._meta;
+  if(obj.state&&obj.state._meta)return obj.state._meta;
+  return {};
+}
+
+function tt119Profile(){
+  try{
+    if(typeof getUserProfile==="function"){
+      var p=getUserProfile();
+      if(p)return p;
+    }
+  }catch(e){}
+  try{
+    var raw=localStorage.getItem("tt_profile_v1");
+    return raw?JSON.parse(raw):null;
+  }catch(e){}
+  return null;
+}
+
+function tt119SameTeam(p,m){
+  if(!p||!m)return false;
+  var pt=tt119Norm(p.teamId||p.teamCode||p.teamName);
+  var mt=tt119Norm(m.teamId||m.teamCode||m.teamName);
+  return !!(pt&&mt&&pt===mt);
+}
+
+function tt119SameOwnerName(p,m){
+  if(!p||!m)return false;
+  return !!(tt119Norm(p.ownerName)&&tt119Norm(m.ownerName)&&tt119Norm(p.ownerName)===tt119Norm(m.ownerName));
+}
+
+function tt119IsMine(obj){
+  var p=tt119Profile();
+  var m=tt119Meta(obj);
+
+  // Legacy: metadata saknas helt. Behandla som Mina, annars försvinner äldre filer.
+  if(!m || (!m.ownerId && !m.ownerName && !m.teamId && !m.teamCode))return true;
+
+  // Stark match: samma lokala ownerId.
+  if(p && p.ownerId && m.ownerId && String(p.ownerId)===String(m.ownerId))return true;
+
+  // Fallback: samma tränarnamn + samma lagkod/team.
+  if(p && tt119SameOwnerName(p,m) && tt119SameTeam(p,m))return true;
+
+  // Extra fallback: samma namn och filen är inte uttryckligen delad från någon annan.
+  if(p && tt119SameOwnerName(p,m) && m.sharedWithTeam!==true)return true;
+
+  return false;
+}
+
+function tt119IsTeamShared(obj){
+  var p=tt119Profile();
+  var m=tt119Meta(obj);
+  if(!p||!m)return false;
+  return tt119SameTeam(p,m) && !!m.sharedWithTeam && !tt119IsMine(obj);
+}
+
+// Överskriv v10:s ägarfilter. renderTaktikList använder dessa dynamiskt.
+try{
+  isMineV10 = tt119IsMine;
+}catch(e){}
+
+try{
+  isSameTeamSharedV10 = tt119IsTeamShared;
+}catch(e){}
+
+try{
+  isFileVisibleInScopeV10 = function(obj,scope){
+    return scope==="team" ? tt119IsTeamShared(obj) : tt119IsMine(obj);
+  };
+}catch(e){}
+
+try{
+  isReadOnlyFileV10 = function(obj){
+    var m=tt119Meta(obj);
+    return !tt119IsMine(obj) && !m.teamCanEdit;
+  };
+}catch(e){}
+
+// Om mappfiltret står på en mapp där inget visas, återgå till Alla.
+// Det här gör att filer inte "försvinner" bara för att man råkat vara i fel mappfilter.
+function tt119EnsureValidTaktikFolder(){
+  try{
+    if(typeof taktikFilmer==="undefined")return;
+    var scope=(typeof taktikScope!=="undefined")?taktikScope:"mine";
+    var visible=(taktikFilmer||[]).filter(function(tk){
+      return scope==="team" ? tt119IsTeamShared(tk) : tt119IsMine(tk);
+    });
+    if(currentTaktikFolder==="Alla")return;
+
+    var hasInCurrent=visible.some(function(tk){
+      return (tk.folder||"Taktik")===currentTaktikFolder;
+    });
+
+    if(!hasInCurrent)currentTaktikFolder="Alla";
+  }catch(e){}
+}
+
+if(typeof renderTaktikList==="function" && !renderTaktikList._tt119Wrapped){
+  var _renderTaktikList_tt119=renderTaktikList;
+  renderTaktikList=function(){
+    tt119EnsureValidTaktikFolder();
+    return _renderTaktikList_tt119.apply(this,arguments);
+  };
+  renderTaktikList._tt119Wrapped=true;
+}
+
+setTimeout(function(){
+  try{tt119EnsureValidTaktikFolder();}catch(e){}
+  try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+},300);
+
+setTimeout(function(){
+  try{tt119EnsureValidTaktikFolder();}catch(e){}
+  try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+},1200);
+
+/* === slut v119-taktik-owner-fallback === */
