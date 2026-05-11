@@ -13374,3 +13374,251 @@ setTimeout(ui99TopAlign,700);
 setTimeout(ui99TopAlign,1600);
 
 /* === slut v99-formation-top-align-icons === */
+
+
+/* === v101-match-save-editor-fix: bevara startmarkeringar efter spara + dölj matchlistan vid redigering === */
+
+function tt101Clone(obj){
+  try{return JSON.parse(JSON.stringify(obj||{}));}catch(e){return obj;}
+}
+
+function tt101CurrentMatchSelections(){
+  var out={};
+  try{
+    Object.keys(matchSelections||{}).forEach(function(id){
+      if(matchSelections[id])out[id]=matchSelections[id];
+    });
+  }catch(e){}
+  return out;
+}
+
+function tt101RestoreSelections(sel){
+  try{
+    matchSelections=tt101Clone(sel||{});
+    if(typeof renderMatchTruppList==="function")renderMatchTruppList();
+  }catch(e){}
+}
+
+function tt101SetMatchEditorActive(active){
+  try{
+    document.body.classList.toggle("tt101-match-editor-active",!!active);
+  }catch(e){}
+
+  var saved=document.getElementById("lag-sparade");
+  if(saved && active){
+    saved.style.display="none";
+  }
+}
+
+function tt101HideSavedMatchesInEditor(){
+  try{
+    var lm=document.getElementById("lag-match");
+    var isMatchVisible=lm && lm.style.display!=="none";
+    if(isMatchVisible || window._editingMatchId){
+      tt101SetMatchEditorActive(true);
+    }
+  }catch(e){}
+}
+
+function tt101ShowSavedMatchesList(){
+  try{document.body.classList.remove("tt101-match-editor-active");}catch(e){}
+  var saved=document.getElementById("lag-sparade");
+  if(saved)saved.style.display="";
+}
+
+function tt101SyncMatchCounter(){
+  try{
+    var n=Object.keys(matchSelections||{}).filter(function(id){return matchSelections[id];}).length;
+    var el=document.getElementById("match-counter");
+    if(el)el.textContent=n+" vald"+(n===1?"":"a");
+  }catch(e){}
+}
+
+function tt101BuildMatchFromCurrentUI(){
+  var datum=document.getElementById("match-datum").value;
+  var motstand=document.getElementById("match-motstand").value.trim();
+  if(!datum){
+    showToast("Välj datum!");
+    return null;
+  }
+
+  var startade=trupp.filter(function(sp){return matchSelections[sp.id]==="start";}).map(function(sp){return sp.id;});
+  var avbytare=trupp.filter(function(sp){return matchSelections[sp.id]==="avbytare";}).map(function(sp){return sp.id;});
+
+  // Spara aktuell laguppställningsvariant innan matchen byggs.
+  try{
+    if(matchVariants.length>0 && typeof saveCurrentVariant==="function")saveCurrentVariant();
+    else if(Object.keys(matchAssignments||{}).length>0){
+      matchVariants=[{
+        namn:"Uppst. 1",
+        assignments:tt101Clone(matchAssignments),
+        playerStates:players.filter(function(p){return p.team==="home";}).map(function(p){
+          return {id:p.id,number:p.number,name:p.name,x:p.x,y:p.y};
+        })
+      }];
+      activeVariantIdx=0;
+    }
+  }catch(e){}
+
+  return {
+    datum:datum,
+    motstand:motstand||"Okänd",
+    startade:startade,
+    avbytare:avbytare,
+    uppstallningar:tt101Clone(matchVariants||[]),
+    mal_hemma:matchGoals&&typeof matchGoals.home!=="undefined"?matchGoals.home:0,
+    mal_borta:matchGoals&&typeof matchGoals.away!=="undefined"?matchGoals.away:0
+  };
+}
+
+function tt101SaveMatchPreserveUI(){
+  var beforeSel=tt101CurrentMatchSelections();
+  var match=tt101BuildMatchFromCurrentUI();
+  if(!match)return;
+
+  var editId=window._editingMatchId||null;
+  var payloadData=(typeof addMetaToData==="function"?addMetaToData(match):match);
+
+  function afterSaved(dbId,label){
+    match.dbId=dbId;
+    window._editingMatchId=dbId;
+
+    var savedMatch=Object.assign({},match,{dbId:dbId});
+    var idx=matcher.findIndex(function(x){return String(x.dbId)===String(dbId);});
+    if(idx>=0)matcher[idx]=savedMatch;
+    else matcher.push(savedMatch);
+
+    // Viktigt: återställ markeringarna direkt efter save.
+    matchSelections=beforeSel;
+    tt101SyncMatchCounter();
+    if(typeof renderMatchTruppList==="function")renderMatchTruppList();
+    tt101RestoreSelections(beforeSel);
+
+    if(typeof renderStatistik==="function")renderStatistik();
+    if(typeof renderMatchHistory==="function")renderMatchHistory();
+    if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();
+
+    tt101SetMatchEditorActive(true);
+    showToast(label);
+  }
+
+  if(editId){
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+editId,{
+      method:"PATCH",
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+      body:JSON.stringify({
+        name:match.datum+" "+match.motstand,
+        data:payloadData,
+        type:"match",
+        folder:"Allmänt"
+      })
+    })
+    .then(function(r){return r.json();})
+    .then(function(){afterSaved(editId,"Match uppdaterad!");})
+    .catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+      showToast("Kunde inte uppdatera match",false);
+      tt101RestoreSelections(beforeSel);
+    });
+  }else{
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{
+      method:"POST",
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+      body:JSON.stringify({
+        name:match.datum+" "+match.motstand,
+        data:payloadData,
+        type:"match",
+        folder:"Allmänt"
+      })
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!data || !data[0] || !data[0].id){
+        var errMsg=(data&&data.message)?data.message:"Matchen kunde inte sparas";
+        showToast(errMsg,false);
+        cloudStatus("❌ "+errMsg,"#e84a4a");
+        tt101RestoreSelections(beforeSel);
+        return;
+      }
+      afterSaved(data[0].id,"Match sparad: "+match.datum+" vs "+match.motstand);
+    })
+    .catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+      showToast("Kunde inte spara match",false);
+      tt101RestoreSelections(beforeSel);
+    });
+  }
+}
+
+// Stoppa gamla spara-lyssnaren som nollställde matchSelections efter save.
+(function(){
+  var btn=document.getElementById("btn-spara-match");
+  if(btn && !btn.dataset.tt101SaveBound){
+    btn.dataset.tt101SaveBound="1";
+    btn.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt101SaveMatchPreserveUI();
+      return false;
+    },true);
+  }
+})();
+
+// När match öppnas från sparade matcher: dölj själva listan.
+if(typeof openEditMatch==="function" && !openEditMatch._tt101Wrapped){
+  var _openEditMatch_tt101=openEditMatch;
+  openEditMatch=function(m){
+    var r=_openEditMatch_tt101.apply(this,arguments);
+    setTimeout(function(){
+      tt101SetMatchEditorActive(true);
+      var saved=document.getElementById("lag-sparade");
+      if(saved)saved.style.display="none";
+    },0);
+    return r;
+  };
+  openEditMatch._tt101Wrapped=true;
+}
+
+// När man trycker Laguppställning för match: dölj sparade matchlistan också.
+(function(){
+  var b=document.getElementById("btn-match-to-taktik");
+  if(b && !b.dataset.tt101HideSavedBound){
+    b.dataset.tt101HideSavedBound="1";
+    b.addEventListener("click",function(){
+      setTimeout(function(){tt101SetMatchEditorActive(true);},0);
+    },true);
+  }
+})();
+
+// När Sparade matcher-fliken väljs ska listan visas igen.
+document.addEventListener("click",function(e){
+  try{
+    var btn=e.target.closest && e.target.closest("[data-lag]");
+    if(!btn)return;
+    var target=btn.getAttribute("data-lag");
+    if(target==="sparade"){
+      window._editingMatchId=window._editingMatchId||null;
+      setTimeout(function(){
+        tt101ShowSavedMatchesList();
+        if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();
+      },0);
+    }else if(target==="match"){
+      setTimeout(tt101HideSavedMatchesInEditor,0);
+    }
+  }catch(err){}
+},true);
+
+if(typeof renderSparadeMatcherList==="function" && !renderSparadeMatcherList._tt101Wrapped){
+  var _renderSparadeMatcherList_tt101=renderSparadeMatcherList;
+  renderSparadeMatcherList=function(){
+    var r=_renderSparadeMatcherList_tt101.apply(this,arguments);
+    setTimeout(tt101HideSavedMatchesInEditor,0);
+    return r;
+  };
+  renderSparadeMatcherList._tt101Wrapped=true;
+}
+
+setTimeout(tt101HideSavedMatchesInEditor,800);
+
+/* === slut v101-match-save-editor-fix === */
