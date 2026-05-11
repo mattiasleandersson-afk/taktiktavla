@@ -950,13 +950,28 @@
   }
 </style>
 
+
+<style id="v108-desktop-bench-visibility-css">
+  /* v108: endast desktop – visa avbytare/bänk i matchuppställning */
+  body.tt108-desktop-match-lineup #bench-bar.active {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  body.tt108-desktop-match-lineup #bench-players {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.30 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.32 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
