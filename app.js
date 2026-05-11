@@ -14877,3 +14877,161 @@ setTimeout(function(){
 },900);
 
 /* === slut v109-lag-startpage === */
+
+
+/* === v110-lag-lists-start: sparade matcher öppnas direkt + maximerade listor === */
+
+function tt110LagPanel(){
+  return document.getElementById("panel-lag");
+}
+
+function tt110SetLagListMode(on){
+  var p=tt110LagPanel();
+  if(p)p.classList.toggle("tt110-list-mode",!!on);
+}
+
+function tt110HideLineupChrome(){
+  var bench=document.getElementById("bench-bar");
+  var goal=document.getElementById("goal-overlay");
+  if(bench){
+    bench.classList.remove("active");
+    bench.style.display="none";
+    bench.style.visibility="hidden";
+  }
+  if(goal){
+    goal.style.display="none";
+    goal.style.visibility="hidden";
+  }
+  try{document.body.classList.remove("tt108-desktop-match-lineup");}catch(e){}
+  try{document.body.classList.add("tt109-lag-home-active");}catch(e){}
+}
+
+function tt110ShowLagSection(key){
+  key=key||"sparade";
+
+  var ids={
+    trupp:"lag-trupp",
+    statistik:"lag-statistik",
+    match:"lag-match",
+    sparade:"lag-sparade"
+  };
+
+  Object.keys(ids).forEach(function(k){
+    var el=document.getElementById(ids[k]);
+    if(el)el.style.display=(k===key)?"":"none";
+  });
+
+  try{
+    document.querySelectorAll("[data-lag]").forEach(function(b){
+      b.classList.toggle("on",b.getAttribute("data-lag")===key);
+    });
+  }catch(e){}
+
+  tt110SetLagListMode(true);
+
+  if(key==="sparade"){
+    try{document.body.classList.remove("tt101-match-editor-active");}catch(e){}
+    tt110HideLineupChrome();
+    try{if(typeof loadMatcher==="function")loadMatcher();}catch(e){}
+    setTimeout(function(){
+      try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
+      var el=document.getElementById("lag-sparade");
+      if(el)el.style.display="";
+      var list=document.getElementById("sparade-match-list");
+      if(list){
+        list.style.display="";
+        list.style.visibility="visible";
+        list.style.maxHeight="none";
+        list.style.height=window.innerWidth>760?"calc(100vh - 185px)":"";
+        list.style.overflowY="auto";
+      }
+    },80);
+  }else{
+    tt110HideLineupChrome();
+    if(key==="trupp"){
+      try{if(typeof renderTruppList==="function")renderTruppList();}catch(e){}
+    }
+    if(key==="statistik"){
+      try{if(typeof renderStatistik==="function")renderStatistik();}catch(e){}
+      try{if(typeof renderMatchHistory==="function")renderMatchHistory();}catch(e){}
+    }
+    if(key==="match"){
+      try{if(typeof renderMatchTruppList==="function")renderMatchTruppList();}catch(e){}
+    }
+  }
+}
+
+function tt110ShowLagHome(){
+  tt110ShowLagSection("sparade");
+}
+
+function tt110EnterLineupMode(){
+  tt110SetLagListMode(false);
+  try{document.body.classList.remove("tt109-lag-home-active");}catch(e){}
+  try{document.body.classList.add("tt109-lineup-active");}catch(e){}
+  var p=tt110LagPanel();
+  if(p)p.classList.remove("tt109-home");
+}
+
+function tt110Install(){
+  // Lag-fliken ska alltid öppna startsidan = Sparade matcher.
+  document.addEventListener("click",function(e){
+    try{
+      var mainTab=e.target.closest && e.target.closest('.tab[data-panel="lag"]');
+      if(mainTab){
+        setTimeout(tt110ShowLagHome,30);
+        setTimeout(tt110ShowLagHome,180);
+        return;
+      }
+
+      var lagTab=e.target.closest && e.target.closest("[data-lag]");
+      if(lagTab){
+        var key=lagTab.getAttribute("data-lag");
+        if(key==="sparade" || key==="trupp" || key==="statistik" || key==="match"){
+          e.preventDefault();
+          e.stopPropagation();
+          if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+          tt110ShowLagSection(key);
+          return false;
+        }
+      }
+
+      var txt=String(e.target&&e.target.textContent||"");
+      if(txt.indexOf("Ladda uppst")>=0 || e.target.id==="btn-match-to-taktik"){
+        setTimeout(tt110EnterLineupMode,50);
+        setTimeout(tt110EnterLineupMode,250);
+      }
+    }catch(err){}
+  },true);
+
+  var exit=document.getElementById("bench-exit-btn");
+  if(exit && !exit.dataset.tt110ExitHome){
+    exit.dataset.tt110ExitHome="1";
+    exit.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt110ShowLagHome();
+      return false;
+    },true);
+  }
+}
+
+// Överskriv v109:s startsidefunktion så andra gamla anrop också får rätt beteende.
+try{
+  tt109ShowLagHome = tt110ShowLagHome;
+}catch(e){}
+
+tt110Install();
+setTimeout(tt110Install,400);
+
+// Om Lag råkar vara aktiv vid start/efter panelbyte: visa Sparade matcher direkt.
+setTimeout(function(){
+  try{
+    if(document.querySelector('.tab.on[data-panel="lag"]')){
+      tt110ShowLagHome();
+    }
+  }catch(e){}
+},700);
+
+/* === slut v110-lag-lists-start === */
