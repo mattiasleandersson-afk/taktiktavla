@@ -11102,64 +11102,155 @@ setTimeout(tt86BindExitButton,1500);
 /* === slut v86-exit-button-save-state === */
 
 
-/* === v87-exit-white-no-false-warning: vit Avsluta + robust sparad-status === */
+/* === v88-exit-white-accurate-dirty: vit Avsluta + varna bara vid ändring efter sparning === */
 
-var tt87SavedGraceUntil = 0;
+var tt88SavedSnapshot = "";
+var tt88DirtyAfterSave = false;
+var tt88SavingNow = false;
 
-function tt87Now(){return Date.now ? Date.now() : new Date().getTime();}
+function tt88Clone(o){
+  try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}
+}
 
-function tt87MarkRecentlySaved(ms){
-  tt87SavedGraceUntil = tt87Now() + (ms || 60000);
+function tt88CurrentFilm(){
+  try{
+    if(editingTaktikIdx===null || typeof editingTaktikIdx==="undefined")return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+
+function tt88SafeSaveCurrentStep(){
+  try{
+    if(typeof tt76SaveCurrentStep==="function"){
+      tt76SaveCurrentStep({allowAutoCreate:false});
+      return;
+    }
+  }catch(e){}
+  try{
+    if(typeof saveCurrentStepV75==="function"){
+      saveCurrentStepV75({allowAutoCreate:false});
+      return;
+    }
+  }catch(e){}
+}
+
+function tt88NormalizeFilm(tk){
+  try{
+    var c=tt88Clone(tk||{});
+    if(typeof tt76NormalizeFilm==="function")tt76NormalizeFilm(c);
+
+    // Saker som inte ska räknas som innehållsändring.
+    delete c.dbId;
+    delete c.id;
+    delete c._readOnly;
+    delete c._isDraft;
+    delete c._saving;
+    delete c._dirty;
+    delete c.meta;
+
+    // updatedAt/ägarmeta kan ändras vid save utan att själva filmen ändrats.
+    delete c._meta;
+
+    return JSON.stringify(c);
+  }catch(e){
+    return "";
+  }
+}
+
+function tt88CaptureSavedSnapshot(){
+  var tk=tt88CurrentFilm();
+  if(!tk)return;
+  tt88SafeSaveCurrentStep();
+  tt88SavedSnapshot=tt88NormalizeFilm(tk);
+  tt88DirtyAfterSave=false;
+
   try{taktikDirtyV17=false;}catch(e){}
   try{window.taktikDirtyV17=false;}catch(e){}
   try{
-    if(typeof tt86MarkCleanNow==="function")tt86MarkCleanNow();
-    else if(typeof tt76ForceClean==="function")tt76ForceClean();
+    if(typeof tt76ForceClean==="function")tt76ForceClean(tk);
+  }catch(e){}
+  try{
+    if(typeof tt86MarkCleanNow==="function")tt86MarkCleanNow(tk);
   }catch(e){}
 }
 
-function tt87WasRecentlySaved(){
-  if(tt87Now() < tt87SavedGraceUntil)return true;
+function tt88MarkDirty(reason){
+  if(tt88SavingNow)return;
+  if(!tt88CurrentFilm())return;
+  tt88DirtyAfterSave=true;
+}
+
+function tt88HasUnsaved(){
+  var tk=tt88CurrentFilm();
+  if(!tk)return false;
+
   try{
-    if(ttV76 && ttV76.lastSaveAt && tt87Now()-ttV76.lastSaveAt < 60000)return true;
+    if(typeof tt76IsReadOnly==="function" && tt76IsReadOnly(tk))return false;
   }catch(e){}
+
+  tt88SafeSaveCurrentStep();
+
+  var now=tt88NormalizeFilm(tk);
+
+  if(!tt88SavedSnapshot){
+    tt88SavedSnapshot=now;
+    tt88DirtyAfterSave=false;
+    return false;
+  }
+
+  if(now!==tt88SavedSnapshot)return true;
+  if(tt88DirtyAfterSave)return true;
   return false;
 }
 
-// Hooka alla sannolika sparvägar och ge användaren ett tidsfönster där Avsluta inte varnar.
-// Detta är avsiktligt lite generöst: efter att man tryckt Spara ska Avsluta inte tjata.
-if(typeof cloudSaveTaktik==="function" && !cloudSaveTaktik._tt87Wrapped){
-  var _tt87_cloudSaveTaktik = cloudSaveTaktik;
-  cloudSaveTaktik = function(){
-    tt87MarkRecentlySaved(60000);
-    var r = _tt87_cloudSaveTaktik.apply(this,arguments);
-    setTimeout(function(){tt87MarkRecentlySaved(60000);},300);
-    setTimeout(function(){tt87MarkRecentlySaved(60000);},1200);
-    setTimeout(function(){tt87MarkRecentlySaved(60000);},2500);
+confirmUnsavedV21=function(){
+  if(!tt88HasUnsaved())return true;
+  return confirm("Du har osparade ändringar i taktiken. Vill du lämna utan att spara?");
+};
+confirmUnsavedV19=confirmUnsavedV21;
+confirmUnsavedTaktikV18=confirmUnsavedV21;
+confirmDiscardUnsavedV17=confirmUnsavedV21;
+confirmUnsavedUnifiedV23=confirmUnsavedV21;
+hasUnsavedTaktikChangesV21=tt88HasUnsaved;
+
+function tt88AfterSave(){
+  tt88SavingNow=true;
+  [100,500,1200,2200].forEach(function(ms){
+    setTimeout(function(){
+      tt88CaptureSavedSnapshot();
+      if(ms===2200)tt88SavingNow=false;
+    },ms);
+  });
+}
+
+// Hooka spara-flöden utan långt frikort.
+// När save är klar uppdateras bara snapshoten.
+if(typeof cloudSaveTaktik==="function" && !cloudSaveTaktik._tt88Wrapped){
+  var _tt88_cloudSaveTaktik=cloudSaveTaktik;
+  cloudSaveTaktik=function(){
+    var r=_tt88_cloudSaveTaktik.apply(this,arguments);
+    tt88AfterSave();
     return r;
   };
-  cloudSaveTaktik._tt87Wrapped=true;
+  cloudSaveTaktik._tt88Wrapped=true;
 }
 
 ["saveFilmV74","saveFilmV73","saveFilmV71","saveFilmV70","saveWholeFilmV69","saveCurrentTaktikFileV67","saveCurrentTaktikFileV20","saveCurrentTaktikFileV21","saveCurrentTaktikFileV23"].forEach(function(fn){
   try{
-    if(typeof window!=="undefined" && typeof window[fn]==="function" && !window[fn]._tt87Wrapped){
+    if(typeof window!=="undefined" && typeof window[fn]==="function" && !window[fn]._tt88Wrapped){
       var old=window[fn];
       window[fn]=function(){
-        tt87MarkRecentlySaved(60000);
         var r=old.apply(this,arguments);
-        setTimeout(function(){tt87MarkRecentlySaved(60000);},500);
-        setTimeout(function(){tt87MarkRecentlySaved(60000);},1500);
+        tt88AfterSave();
         return r;
       };
-      window[fn]._tt87Wrapped=true;
+      window[fn]._tt88Wrapped=true;
     }
   }catch(e){}
 });
 
-// Extra: bind alla disketter/spara-knappar som kan finnas i taktikbaren.
-function tt87BindSaveButtons(){
-  var ids=[
+function tt88BindSaveButtons(){
+  var possible=[
     "btn-edit-taktik-save-top",
     "btn-save-film",
     "btn-edit-taktik-save",
@@ -11168,130 +11259,193 @@ function tt87BindSaveButtons(){
     "btn-top-save",
     "btn-save-as-topbar"
   ];
-  ids.forEach(function(id){
+
+  possible.forEach(function(id){
     var b=document.getElementById(id);
-    if(b && b.dataset.tt87SaveSeen!=="1"){
-      b.dataset.tt87SaveSeen="1";
+    if(b && b.dataset.tt88SaveBound!=="1"){
+      b.dataset.tt88SaveBound="1";
       b.addEventListener("click",function(){
-        tt87MarkRecentlySaved(60000);
-        setTimeout(function(){tt87MarkRecentlySaved(60000);},800);
-        setTimeout(function(){tt87MarkRecentlySaved(60000);},1800);
+        tt88AfterSave();
       },true);
     }
   });
 
-  // Fallback: hitta knappar med diskett-ikon i taktikbaren.
   var tb=document.getElementById("taktikbar");
   if(tb){
     Array.prototype.slice.call(tb.querySelectorAll("button")).forEach(function(b){
       var txt=String(b.textContent||"");
       var title=String(b.title||"");
-      if((txt.indexOf("💾")>=0 || txt.indexOf("💾")>=0 || txt.indexOf("Spara")>=0 || title.toLowerCase().indexOf("spara")>=0) && b.dataset.tt87SaveSeen!=="1"){
-        b.dataset.tt87SaveSeen="1";
-        b.addEventListener("click",function(){
-          tt87MarkRecentlySaved(60000);
-          setTimeout(function(){tt87MarkRecentlySaved(60000);},800);
-          setTimeout(function(){tt87MarkRecentlySaved(60000);},1800);
-        },true);
+      var aria=String(b.getAttribute("aria-label")||"");
+      var isSave=txt.indexOf("💾")>=0 || txt.indexOf("💾")>=0 ||
+                 txt.toLowerCase().indexOf("spara")>=0 ||
+                 title.toLowerCase().indexOf("spara")>=0 ||
+                 aria.toLowerCase().indexOf("spara")>=0;
+      if(isSave && b.dataset.tt88SaveBound!=="1"){
+        b.dataset.tt88SaveBound="1";
+        b.addEventListener("click",function(){tt88AfterSave();},true);
       }
     });
   }
 }
 
-function tt87HasUnsaved(){
-  if(tt87WasRecentlySaved())return false;
-  try{
-    if(typeof tt86HasUnsaved==="function")return tt86HasUnsaved();
-  }catch(e){}
-  try{
-    if(typeof hasUnsavedTaktikChangesV21==="function")return hasUnsavedTaktikChangesV21();
-  }catch(e){}
-  return false;
+function tt88BindDirtySignals(){
+  if(document.body.dataset.tt88DirtyBound==="1")return;
+  document.body.dataset.tt88DirtyBound="1";
+
+  var pitch=document.getElementById("pitch-svg") || document.getElementById("pitch-wrapper") || document;
+  ["pointerdown","mousedown","touchstart"].forEach(function(ev){
+    pitch.addEventListener(ev,function(){
+      // Pitch-interaktioner är potentiella ändringar.
+      tt88MarkDirty(ev);
+    },true);
+  });
+
+  document.addEventListener("input",function(e){
+    try{
+      if(e.target && e.target.closest && e.target.closest("#edit-taktik-ui,#taktikbar")){
+        tt88MarkDirty("input");
+      }
+    }catch(err){}
+  },true);
+
+  document.addEventListener("change",function(e){
+    try{
+      if(e.target && e.target.closest && e.target.closest("#edit-taktik-ui,#taktikbar")){
+        tt88MarkDirty("change");
+      }
+    }catch(err){}
+  },true);
+
+  document.addEventListener("click",function(e){
+    try{
+      var t=e.target;
+      if(!t || !t.closest)return;
+      if(t.closest("#btn-add-step,#btn-delete-step,#btn-edit-step-prev,#btn-edit-step-next,#btn-movement,#btn-arrow,#btn-freehand,#btn-zone,#btn-text")){
+        tt88MarkDirty("button");
+      }
+    }catch(err){}
+  },true);
 }
 
-confirmUnsavedV21=function(){
-  if(tt87WasRecentlySaved())return true;
-  if(!tt87HasUnsaved())return true;
-  return confirm("Du har osparade ändringar i taktiken. Vill du lämna utan att spara?");
-};
-confirmUnsavedV19=confirmUnsavedV21;
-confirmUnsavedTaktikV18=confirmUnsavedV21;
-confirmDiscardUnsavedV17=confirmUnsavedV21;
-confirmUnsavedUnifiedV23=confirmUnsavedV21;
-hasUnsavedTaktikChangesV21=tt87HasUnsaved;
-
-function tt87StyleExitButton(){
+function tt88StyleExitButton(){
   var b=document.getElementById("btn-stop-play");
   if(!b)return;
   b.textContent="Avsluta";
   b.title="Avsluta filmen";
   b.setAttribute("aria-label","Avsluta filmen");
   b.classList.add("tt-v86-exit-btn");
-  b.classList.add("tt-v87-exit-btn");
+  b.classList.add("tt-v88-exit-btn");
   b.style.color="#edf5ee";
   b.style.borderColor="#edf5ee";
 }
 
-function tt87BindExitButton(){
-  var old=document.getElementById("btn-stop-play");
-  if(!old)return;
-  tt87StyleExitButton();
-  if(old.dataset.tt87ExitBound==="1")return;
+function tt88ExitToLibrary(){
+  if(!confirmUnsavedV21())return;
 
-  var neu=old.cloneNode(true);
-  neu.dataset.tt87ExitBound="1";
-  old.parentNode.replaceChild(neu,old);
-  neu.addEventListener("click",function(e){
-    e.preventDefault();
-    e.stopPropagation();
-    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-
-    // Om den nyss sparats: hoppa över varningen helt.
-    if(!tt87WasRecentlySaved()){
-      if(!confirmUnsavedV21())return false;
+  try{
+    if(typeof tt85CloseViaTopCross==="function"){
+      tt85CloseViaTopCross();
+    }else if(typeof tt82ReturnToTaktikMenu==="function"){
+      tt82ReturnToTaktikMenu();
     }
+  }catch(e){}
 
-    try{
-      if(typeof tt85CloseViaTopCross==="function")tt85CloseViaTopCross();
-      else if(typeof tt82ReturnToTaktikMenu==="function")tt82ReturnToTaktikMenu();
-    }catch(err){}
-
+  [0,80,250].forEach(function(ms){
     setTimeout(function(){
+      try{playback=null;}catch(e){}
+      try{editingTaktikIdx=null;}catch(e){}
+      try{editingStepIdx=0;}catch(e){}
+      try{isEditingTaktik=false;}catch(e){}
       try{document.body.classList.add("tt-v82-taktik-library");}catch(e){}
       var p=document.getElementById("pitch-wrapper");if(p)p.style.display="none";
       var tb=document.getElementById("taktikbar");if(tb)tb.style.display="none";
       var no=document.getElementById("no-rec-ui");if(no)no.style.display="block";
       try{renderTaktikList();}catch(e){}
-    },80);
-
-    return false;
-  },true);
-  tt87StyleExitButton();
+    },ms);
+  });
 }
 
-if(typeof renderTaktikList==="function" && !renderTaktikList._tt87Wrapped){
-  var _renderTaktikList_v87=renderTaktikList;
-  renderTaktikList=function(){
-    var r=_renderTaktikList_v87.apply(this,arguments);
+function tt88BindExitButton(){
+  var old=document.getElementById("btn-stop-play");
+  if(!old)return;
+
+  tt88StyleExitButton();
+  if(old.dataset.tt88ExitBound==="1")return;
+
+  var neu=old.cloneNode(true);
+  neu.dataset.tt88ExitBound="1";
+  old.parentNode.replaceChild(neu,old);
+
+  neu.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    tt88ExitToLibrary();
+    return false;
+  },true);
+
+  tt88StyleExitButton();
+}
+
+if(typeof startPlayback==="function" && !startPlayback._tt88Wrapped){
+  var _tt88_startPlayback=startPlayback;
+  startPlayback=function(){
+    var r=_tt88_startPlayback.apply(this,arguments);
     setTimeout(function(){
-      tt87BindSaveButtons();
-      tt87BindExitButton();
-      tt87StyleExitButton();
+      tt88CaptureSavedSnapshot();
+      tt88BindSaveButtons();
+      tt88BindExitButton();
+      tt88StyleExitButton();
+    },300);
+    return r;
+  };
+  startPlayback._tt88Wrapped=true;
+}
+
+if(typeof openEditTaktik==="function" && !openEditTaktik._tt88Wrapped){
+  var _tt88_openEditTaktik=openEditTaktik;
+  openEditTaktik=function(){
+    var r=_tt88_openEditTaktik.apply(this,arguments);
+    setTimeout(function(){
+      tt88CaptureSavedSnapshot();
+      tt88BindSaveButtons();
+      tt88BindExitButton();
+      tt88StyleExitButton();
+    },300);
+    return r;
+  };
+  openEditTaktik._tt88Wrapped=true;
+}
+
+if(typeof renderTaktikList==="function" && !renderTaktikList._tt88Wrapped){
+  var _renderTaktikList_v88=renderTaktikList;
+  renderTaktikList=function(){
+    var r=_renderTaktikList_v88.apply(this,arguments);
+    setTimeout(function(){
+      tt88BindSaveButtons();
+      tt88BindExitButton();
+      tt88StyleExitButton();
       try{if(typeof tt78PatchReadonlyEyeIcons==="function")tt78PatchReadonlyEyeIcons();}catch(e){}
       try{if(typeof tt79RebindCopyButtons==="function")tt79RebindCopyButtons();}catch(e){}
     },0);
     return r;
   };
-  renderTaktikList._tt87Wrapped=true;
+  renderTaktikList._tt88Wrapped=true;
 }
 
-tt87BindSaveButtons();
-tt87BindExitButton();
-tt87StyleExitButton();
-setTimeout(tt87BindSaveButtons,500);
-setTimeout(tt87BindExitButton,500);
-setTimeout(tt87StyleExitButton,500);
-setTimeout(tt87BindSaveButtons,1500);
-setTimeout(tt87BindExitButton,1500);
+tt88BindDirtySignals();
+tt88BindSaveButtons();
+tt88BindExitButton();
+tt88StyleExitButton();
+setTimeout(function(){
+  tt88BindSaveButtons();
+  tt88BindExitButton();
+  tt88StyleExitButton();
+},500);
+setTimeout(function(){
+  tt88BindSaveButtons();
+  tt88BindExitButton();
+  tt88StyleExitButton();
+},1500);
 
-/* === slut v87-exit-white-no-false-warning === */
+/* === slut v88-exit-white-accurate-dirty === */
