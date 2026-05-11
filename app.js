@@ -15586,3 +15586,302 @@ setTimeout(tt129RebindFormationShareButtons,300);
 setTimeout(tt129RebindFormationShareButtons,1000);
 
 /* === slut v129-final-formation-share-surgical === */
+
+
+/* === v130-formation-share-type-and-visibility: reparera Utgångsläge-delning ===
+   Bas: v129.
+   Huvudfel: v129 PATCH:ade type:"formation", medan cloudLoadSaves laddade type:"uppstallning".
+   Resultat: filen försvann efter delning.
+   Fix:
+   - PATCH:a alltid Utgångsläge som type:"uppstallning".
+   - Ladda tillbaka både uppstallning och formation, så redan feltypade filer räddas.
+   - Mina visar egna filer även om de är delade.
+   - Lagets visar delade filer i samma lag, även ägarens egna delade filer.
+   - Taktik lämnas till v120/tt120.
+*/
+
+function tt130Norm(v){return String(v||"").trim().toLowerCase();}
+function tt130Team(v){return String(v||"").trim().toUpperCase().replace(/\s+/g,"-");}
+
+function tt130Profile(){
+  try{if(typeof getUserProfile==="function"){var p=getUserProfile();if(p)return p;}}catch(e){}
+  try{var raw=localStorage.getItem("tt_profile_v1");return raw?JSON.parse(raw):null;}catch(e){}
+  return null;
+}
+
+function tt130State(s){
+  if(!s)return {};
+  return s.state || s.data || s || {};
+}
+
+function tt130Meta(s){
+  var st=tt130State(s);
+  if(st&&st._meta)return st._meta;
+  if(s&&s._meta)return s._meta;
+  if(s&&s.meta)return s.meta;
+  return {};
+}
+
+function tt130IsFormationObj(obj){
+  if(!obj || obj.steps)return false;
+  var st=tt130State(obj);
+  return !!(obj.state || obj.data || (st && (st.players || st.ball || st.arrows || st.labels || st.zones)));
+}
+
+function tt130SameTeam(s){
+  var p=tt130Profile();
+  var m=tt130Meta(s);
+  if(!p||!m)return false;
+  var pt=tt130Team(p.teamId||p.teamCode||p.teamName);
+  var mt=tt130Team(m.teamId||m.teamCode||m.teamName);
+  return !!(pt&&mt&&pt===mt);
+}
+
+function tt130IsMineFormation(s){
+  var p=tt130Profile();
+  var m=tt130Meta(s);
+
+  if(!m || (!m.ownerId && !m.ownerName && !m.teamId && !m.teamCode))return true;
+  if(!p)return true;
+
+  if(m.ownerId && p.ownerId && String(m.ownerId)===String(p.ownerId))return true;
+
+  var sameName=!!(m.ownerName&&p.ownerName&&tt130Norm(m.ownerName)===tt130Norm(p.ownerName));
+  if(sameName && tt130SameTeam(s))return true;
+
+  // Viktig räddning för äldre filer: om filen redan finns i Mina-listan lokalt,
+  // tillåt att den räknas som min så metadata kan repareras.
+  try{
+    if(typeof saveScope!=="undefined" && saveScope==="mine" && Array.isArray(savedFormations)){
+      return savedFormations.some(function(x){return String(x.id)===String(s.id);});
+    }
+  }catch(e){}
+
+  return false;
+}
+
+function tt130SharedToMyTeamFormation(s){
+  var m=tt130Meta(s);
+  return !!(m && m.sharedWithTeam && tt130SameTeam(s));
+}
+
+function tt130FormationVisible(s,scope){
+  return scope==="team" ? tt130SharedToMyTeamFormation(s) : tt130IsMineFormation(s);
+}
+
+function tt130BuildState(s,share){
+  var base={};
+  try{base=JSON.parse(JSON.stringify(tt130State(s)||{}));}catch(e){base=tt130State(s)||{};}
+  base._meta=base._meta||{};
+  var p=tt130Profile();
+
+  if(p){
+    base._meta.ownerId=p.ownerId;
+    base._meta.ownerName=p.ownerName;
+    base._meta.teamId=p.teamId||p.teamCode||p.teamName||"MITT-LAG";
+    base._meta.teamCode=p.teamCode||p.teamId||p.teamName||"MITT-LAG";
+    base._meta.teamName=p.teamName||p.teamCode||p.teamId||"MITT-LAG";
+  }
+
+  base._meta.sharedWithTeam=!!share;
+  base._meta.teamCanEdit=false;
+  base._meta.updatedAt=new Date().toISOString();
+  base._meta.schemaVersion=base._meta.schemaVersion||2;
+  base._meta.kind=base._meta.kind||"uppstallning";
+
+  return base;
+}
+
+function tt130NormalizeLoadedFormation(row){
+  var s={id:row.id,name:row.name||(row.data&&row.data.name)||"Namnlöst utgångsläge",state:row.data||{},folder:row.folder||(row.data&&row.data.folder)||"Allmänt"};
+  if(s.state&&s.state._meta)s._meta=s.state._meta;
+  return s;
+}
+
+function tt130Dedupe(list){
+  if(typeof ff93DedupeSaves==="function")return ff93DedupeSaves(list);
+  var by={};
+  (list||[]).forEach(function(s){if(!s)return;by[s.id?"id:"+s.id:String(s.name||"")]=s;});
+  return Object.keys(by).map(function(k){return by[k];});
+}
+
+function tt130RebuildFolders(){
+  try{
+    if(typeof ff93RebuildFolders==="function"){ff93RebuildFolders();return;}
+    var seen={};folders=["Allmänt"];seen["Allmänt"]=true;
+    (savedFormations||[]).forEach(function(s){var f=s.folder||"Allmänt";if(f&&!seen[f]){seen[f]=true;folders.push(f);}});
+    if(typeof updateFolderSelect==="function")updateFolderSelect();
+  }catch(e){}
+}
+
+function tt130PatchFormationShare(s,share){
+  if(!s||!s.id){
+    showToast("Spara utgångsläget innan du delar det",false);
+    return;
+  }
+
+  if(typeof saveScope!=="undefined" && saveScope==="team"){
+    showToast("Delning ändras från Mina, inte från Lagets",false);
+    return;
+  }
+
+  if(!tt130IsMineFormation(s)){
+    showToast("Du kan inte ändra delning på någon annans fil",false);
+    return;
+  }
+
+  var newState=tt130BuildState(s,share);
+
+  s.state=newState;
+  s._meta=newState._meta;
+  s.folder=s.folder||"Allmänt";
+  s.name=s.name||"Utgångsläge";
+
+  try{
+    var idx=(savedFormations||[]).findIndex(function(x){return String(x.id)===String(s.id);});
+    if(idx>=0){
+      savedFormations[idx].state=newState;
+      savedFormations[idx]._meta=newState._meta;
+      savedFormations[idx].folder=savedFormations[idx].folder||s.folder||"Allmänt";
+      savedFormations[idx].name=savedFormations[idx].name||s.name||"Utgångsläge";
+    }
+  }catch(e){}
+
+  try{saveScope="mine";currentFolder="Alla";}catch(e){}
+  try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
+
+  cloudStatus(share?"Delar utgångsläge med laget...":"Tar bort delning...","#7aaa88");
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({
+      data:newState,
+      name:s.name||"Utgångsläge",
+      type:"uppstallning",
+      folder:s.folder||"Allmänt"
+    })
+  }).then(function(r){
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json();
+  }).then(function(){
+    showToast(share?"Delad med laget":"Inte längre delad");
+    cloudStatus(share?"✅ Delat med laget":"✅ Delning borttagen","#4ae87a");
+    try{saveScope="mine";currentFolder="Alla";}catch(e){}
+    setTimeout(function(){try{cloudLoadSaves();}catch(e){}},350);
+  }).catch(function(err){
+    showToast("Kunde inte ändra delning",false);
+    try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e){}
+  });
+}
+
+// Viktigt: ladda både korrekt typ och filer som v129 råkade typa som "formation".
+cloudLoadSaves=function(){
+  cloudStatus("Laddar...","#7aaa88");
+  return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?order=id.desc",{headers:supaHeaders()})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(!Array.isArray(data)){
+        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        return;
+      }
+
+      var loaded=[];
+      data.forEach(function(row){
+        if(row.type!=="uppstallning" && row.type!=="formation")return;
+        if(!row.name && !(row.data && row.data.players))return;
+
+        var s=tt130NormalizeLoadedFormation(row);
+
+        if(tt130IsMineFormation(s) || tt130SharedToMyTeamFormation(s)){
+          loaded.push(s);
+        }
+      });
+
+      savedFormations=tt130Dedupe(loaded);
+      tt130RebuildFolders();
+
+      try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
+      cloudStatus(savedFormations.length+" utgångslägen laddade ✅","#4ae87a");
+    })
+    .catch(function(err){
+      cloudStatus("❌ Fel: "+err.message,"#e84a4a");
+    });
+};
+
+// Globala helpers, men taktikfilmer lämnas till v120 om objektet har steps.
+try{
+  isMineV10=function(obj){
+    if(obj&&obj.steps&&typeof tt120IsMine==="function")return tt120IsMine(obj);
+    return tt130IsMineFormation(obj);
+  };
+  isSameTeamSharedV10=function(obj){
+    if(obj&&obj.steps&&typeof tt120IsTeamShared==="function")return tt120IsTeamShared(obj);
+    return tt130SharedToMyTeamFormation(obj);
+  };
+  isFileVisibleInScopeV10=function(obj,scope){
+    if(obj&&obj.steps&&typeof tt120IsMine==="function"){
+      return scope==="team" ? tt120IsTeamShared(obj) : tt120IsMine(obj);
+    }
+    return tt130FormationVisible(obj,scope);
+  };
+  isReadOnlyFileV10=function(obj){
+    if(obj&&obj.steps&&typeof tt120IsMine==="function")return !tt120IsMine(obj);
+    var m=tt130Meta(obj);
+    return !tt130IsMineFormation(obj) && !m.teamCanEdit;
+  };
+}catch(e){}
+
+// Sist: delningsfunktionen och gamla alias ska peka på v130.
+patchFormationShareV10=tt130PatchFormationShare;
+try{patchFormationShareV26=tt130PatchFormationShare;}catch(e){}
+try{patchFormationShareV68=tt130PatchFormationShare;}catch(e){}
+
+// Rebind Dela/Dölj efter varje render.
+function tt130RebindFormationShareButtons(){
+  try{
+    var list=document.getElementById("saves-list");
+    if(!list)return;
+    var rows=Array.prototype.slice.call(list.querySelectorAll(".row"));
+    var visible=(savedFormations||[]).filter(function(s){
+      if(!tt130FormationVisible(s,typeof saveScope==="undefined"?"mine":saveScope))return false;
+      if(typeof currentFolder!=="undefined" && currentFolder!=="Alla" && (s.folder||"Allmänt")!==currentFolder)return false;
+      if(typeof searchQuery!=="undefined" && searchQuery && String(s.name||"").toLowerCase().indexOf(String(searchQuery).toLowerCase())<0)return false;
+      return true;
+    }).sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""),"sv");});
+
+    rows.forEach(function(row,i){
+      var s=visible[i]; if(!s)return;
+      Array.prototype.slice.call(row.querySelectorAll("button")).forEach(function(btn){
+        var txt=String(btn.textContent||"").trim();
+        var title=String(btn.title||"").toLowerCase();
+        if(txt==="Dela"||txt==="Dölj"||title.indexOf("dela med laget")>=0||title.indexOf("sluta dela")>=0){
+          if(btn.dataset.tt130ShareBound==="1")return;
+          var clone=btn.cloneNode(true);
+          clone.dataset.tt130ShareBound="1";
+          btn.parentNode.replaceChild(clone,btn);
+          clone.addEventListener("click",function(e){
+            e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+            tt130PatchFormationShare(s,!tt130Meta(s).sharedWithTeam);
+            return false;
+          },true);
+        }
+      });
+    });
+  }catch(e){}
+}
+
+if(typeof renderSavesList==="function" && !renderSavesList._tt130Wrapped){
+  var _renderSavesList_tt130=renderSavesList;
+  renderSavesList=function(){
+    var r=_renderSavesList_tt130.apply(this,arguments);
+    setTimeout(tt130RebindFormationShareButtons,0);
+    setTimeout(tt130RebindFormationShareButtons,120);
+    return r;
+  };
+  renderSavesList._tt130Wrapped=true;
+}
+
+setTimeout(function(){try{cloudLoadSaves();}catch(e){}},500);
+
+/* === slut v130-formation-share-type-and-visibility === */
