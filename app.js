@@ -17977,3 +17977,130 @@ setTimeout(tt152RebindTaktikListButtons,500);
 setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === slut v152-taktik-share-surgical === */
+
+
+/* === v153-user-profile-single-prompt: stoppa dubbla namn/lag-prompts ===
+   Bas: v152.
+   Rör bara användarprofil-prompts.
+*/
+
+var tt153PromptLock=false;
+var tt153LastPromptAt=0;
+var tt153OriginalPrompt=window.prompt;
+
+window.prompt=function(message,defaultValue){
+  var msg=String(message||"").toLowerCase();
+  var isProfilePrompt=
+    msg.indexOf("namn")>=0 ||
+    msg.indexOf("tränare")>=0 ||
+    msg.indexOf("tranare")>=0 ||
+    msg.indexOf("lag")>=0 ||
+    msg.indexOf("team")>=0;
+
+  if(isProfilePrompt){
+    var now=Date.now();
+
+    // Om samma användarflöde råkar triggas dubbelt samtidigt:
+    // returnera standardvärdet i den andra prompten så användaren slipper se den.
+    if(tt153PromptLock || (now-tt153LastPromptAt<250)){
+      if(defaultValue!==undefined && defaultValue!==null)return defaultValue;
+      return "";
+    }
+
+    tt153PromptLock=true;
+    tt153LastPromptAt=now;
+    try{
+      return tt153OriginalPrompt.call(window,message,defaultValue);
+    }finally{
+      setTimeout(function(){tt153PromptLock=false;},300);
+    }
+  }
+
+  return tt153OriginalPrompt.call(window,message,defaultValue);
+};
+
+function tt153ProfileButtonIds(){
+  return [
+    "btn-profile",
+    "btn-users",
+    "btn-user",
+    "btn-user-profile",
+    "btn-profile-open",
+    "btn-edit-profile",
+    "btn-change-user",
+    "user-btn",
+    "profile-btn"
+  ];
+}
+
+// Om det finns kända användarknappar med flera äldre listeners,
+// klona dem en gång så bara senaste handler-kedjan efter v153 får leva.
+function tt153DedupeProfileButtons(){
+  tt153ProfileButtonIds().forEach(function(id){
+    var old=document.getElementById(id);
+    if(!old || old.dataset.tt153Bound==="1")return;
+    var neu=old.cloneNode(true);
+    neu.id=id;
+    neu.dataset.tt153Bound="1";
+    old.parentNode.replaceChild(neu,old);
+
+    neu.addEventListener("click",function(e){
+      // Släpp igenom normal logik om specifik profilfunktion finns,
+      // men skydda mot dubbelklick/dubbla handlers via prompt-locken ovan.
+      if(neu.dataset.tt153ClickLock==="1"){
+        e.preventDefault();
+        e.stopPropagation();
+        if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+        return false;
+      }
+      neu.dataset.tt153ClickLock="1";
+      setTimeout(function(){try{delete neu.dataset.tt153ClickLock;}catch(err){neu.dataset.tt153ClickLock="0";}},500);
+
+      try{
+        if(typeof openUserProfile==="function"){
+          e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+          openUserProfile();
+          return false;
+        }
+        if(typeof showUserProfile==="function"){
+          e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+          showUserProfile();
+          return false;
+        }
+        if(typeof editUserProfile==="function"){
+          e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+          editUserProfile();
+          return false;
+        }
+      }catch(err){}
+    },true);
+  });
+}
+
+if(typeof renderUsers==="function" && !renderUsers._tt153Wrapped){
+  var _renderUsers_tt153=renderUsers;
+  renderUsers=function(){
+    var r=_renderUsers_tt153.apply(this,arguments);
+    setTimeout(tt153DedupeProfileButtons,0);
+    return r;
+  };
+  renderUsers._tt153Wrapped=true;
+}
+if(typeof renderUserProfile==="function" && !renderUserProfile._tt153Wrapped){
+  var _renderUserProfile_tt153=renderUserProfile;
+  renderUserProfile=function(){
+    var r=_renderUserProfile_tt153.apply(this,arguments);
+    setTimeout(tt153DedupeProfileButtons,0);
+    return r;
+  };
+  renderUserProfile._tt153Wrapped=true;
+}
+
+["click","touchend"].forEach(function(evt){
+  try{window.addEventListener(evt,function(){setTimeout(tt153DedupeProfileButtons,80);},false);}catch(e){}
+});
+
+setTimeout(tt153DedupeProfileButtons,400);
+setTimeout(tt153DedupeProfileButtons,1400);
+
+/* === slut v153-user-profile-single-prompt === */
