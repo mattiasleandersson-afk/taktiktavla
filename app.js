@@ -16868,3 +16868,306 @@ setTimeout(tt145BindControls,500);
 setTimeout(tt145BindControls,1500);
 
 /* === slut v145-clean-tactic-engine === */
+
+
+/* === v146-animation-only-fix: låst mjuk framåtanimation ===
+   Bas: v145.
+   Rör bara animation/stegframåt, inte sparning/propagering.
+*/
+
+function tt146Clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+function tt146CurrentTk(){
+  try{if(typeof tt145CurrentTk==="function")return tt145CurrentTk();}catch(e){}
+  try{if(typeof tt76Current==="function")return tt76Current();}catch(e){}
+  try{
+    if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+function tt146SafeStep(s,idx){
+  try{if(typeof tt145SafeStep==="function")return tt145SafeStep(s,idx);}catch(e){}
+  try{if(typeof tt76SafeStep==="function")return tt76SafeStep(s,idx);}catch(e){}
+  s=s||{};
+  s.players=Array.isArray(s.players)?s.players:[];
+  s.movementPaths=Array.isArray(s.movementPaths)?s.movementPaths:[];
+  return s;
+}
+function tt146GetPos(step,id){
+  try{if(typeof tt145GetPos==="function")return tt145GetPos(step,id);}catch(e){}
+  step=tt146SafeStep(step,0);
+  if(String(id)==="ball")return step.ball?{x:step.ball.x,y:step.ball.y}:null;
+  var p=(step.players||[]).find(function(x){return String(x.id)===String(id);});
+  return p?{x:p.x,y:p.y}:null;
+}
+function tt146SetVisual(id,pos){
+  if(!pos)return;
+  if(String(id)==="ball"){
+    try{ball.x=pos.x;ball.y=pos.y;}catch(e){}
+    return;
+  }
+  try{
+    var p=(players||[]).find(function(x){return String(x.id)===String(id);});
+    if(p){p.x=pos.x;p.y=pos.y;}
+  }catch(e){}
+}
+function tt146SetStepPos(step,id,pos){
+  try{if(typeof tt145SetPos==="function")return tt145SetPos(step,id,pos);}catch(e){}
+  if(!step||!pos)return;
+  if(String(id)==="ball"){
+    step.ball=step.ball||{x:pos.x,y:pos.y};
+    step.ball.x=pos.x;step.ball.y=pos.y;
+    return;
+  }
+  var p=(step.players||[]).find(function(x){return String(x.id)===String(id);});
+  if(p){p.x=pos.x;p.y=pos.y;}
+}
+function tt146ApplyMovementEndpoints(step){
+  try{if(typeof tt145ApplyMovementEndpoints==="function")return tt145ApplyMovementEndpoints(step);}catch(e){}
+  return step;
+}
+function tt146AllIds(a,b){
+  var ids={};
+  a=tt146SafeStep(a,0);b=tt146SafeStep(b,0);
+  (a.players||[]).forEach(function(p){ids[String(p.id)]=p.id;});
+  (b.players||[]).forEach(function(p){ids[String(p.id)]=p.id;});
+  if(a.ball||b.ball)ids.ball="ball";
+  return Object.keys(ids).map(function(k){return ids[k];});
+}
+function tt146Dist(a,b){
+  if(!a||!b)return 0;
+  var dx=(a.x||0)-(b.x||0),dy=(a.y||0)-(b.y||0);
+  return Math.sqrt(dx*dx+dy*dy);
+}
+function tt146PathLen(pts){
+  var l=0;
+  for(var i=1;i<(pts||[]).length;i++){
+    l+=tt146Dist(pts[i-1],pts[i]);
+  }
+  return l;
+}
+function tt146MovementMap(step){
+  var m={};
+  step=tt146SafeStep(step,0);
+  (step.movementPaths||[]).forEach(function(mp){
+    if(!mp||mp.playerId===undefined||mp.playerId===null||!mp.pts||mp.pts.length<2)return;
+    m[String(mp.playerId)]={playerId:String(mp.playerId),pts:mp.pts.map(function(p){return{x:p.x,y:p.y};})};
+  });
+  return m;
+}
+function tt146PathPos(pts,t){
+  pts=pts||[];
+  if(pts.length===0)return null;
+  if(pts.length===1)return {x:pts[0].x,y:pts[0].y};
+  var total=tt146PathLen(pts);
+  if(total<=0)return {x:pts[pts.length-1].x,y:pts[pts.length-1].y};
+  var wanted=Math.max(0,Math.min(1,t))*total;
+  var acc=0;
+  for(var i=1;i<pts.length;i++){
+    var a=pts[i-1],b=pts[i];
+    var seg=tt146Dist(a,b);
+    if(acc+seg>=wanted){
+      var f=seg>0?(wanted-acc)/seg:0;
+      return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f};
+    }
+    acc+=seg;
+  }
+  return {x:pts[pts.length-1].x,y:pts[pts.length-1].y};
+}
+function tt146Ease(t){
+  return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+}
+function tt146Duration(distance){
+  var pxPerSecond=155;
+  return Math.max(450,Math.min(3600,Math.round(((distance||0)/pxPerSecond)*1000)));
+}
+
+// Lås UI-uppdateringar medan animationen kör.
+var tt146Animating=false;
+var _tt146_updateEditStepUI=typeof updateEditStepUI==="function"?updateEditStepUI:null;
+var _tt146_updateEditStepUI_silent=typeof updateEditStepUI_silent==="function"?updateEditStepUI_silent:null;
+
+updateEditStepUI=function(){
+  if(tt146Animating){
+    try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+    return;
+  }
+  if(_tt146_updateEditStepUI)return _tt146_updateEditStepUI.apply(this,arguments);
+};
+updateEditStepUI_silent=function(){
+  if(tt146Animating){
+    try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+    return;
+  }
+  if(_tt146_updateEditStepUI_silent)return _tt146_updateEditStepUI_silent.apply(this,arguments);
+};
+
+function tt146AnimateForward(fromIdx,targetIdx){
+  var tk=tt146CurrentTk();
+  if(!tk||!tk.steps)return;
+
+  fromIdx=Math.max(0,Math.min(fromIdx,tk.steps.length-1));
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+
+  var fromStep=tt146SafeStep(tt146Clone(tk.steps[fromIdx]||{}),fromIdx);
+  var target=tt146ApplyMovementEndpoints(tt146SafeStep(tt146Clone(tk.steps[targetIdx]||{}),targetIdx));
+  var moveMap=tt146MovementMap(target);
+
+  if(animFrame)try{cancelAnimationFrame(animFrame);}catch(e){}
+
+  tt146Animating=true;
+  try{tt145Animating=true;}catch(e){}
+
+  if(typeof playback==="undefined" || !playback)playback={tk:tk,stepIndex:fromIdx,animating:false};
+  playback.tk=tk;
+  playback.stepIndex=fromIdx;
+  playback.animating=true;
+
+  // Viktigt: editingStepIdx hålls kvar på frånsteget under animationen.
+  editingStepIdx=fromIdx;
+
+  // Lägg ut startbilden och bygg sedan varje frame själv.
+  try{restoreSnap(fromStep);render();}catch(e){}
+
+  var maxDist=0;
+  tt146AllIds(fromStep,target).forEach(function(id){
+    var mv=moveMap[String(id)];
+    if(mv)maxDist=Math.max(maxDist,tt146PathLen(mv.pts));
+    else maxDist=Math.max(maxDist,tt146Dist(tt146GetPos(fromStep,id),tt146GetPos(target,id)));
+  });
+
+  var dur=tt146Duration(maxDist);
+  var start=performance.now();
+
+  function drawAt(t){
+    var eased=tt146Ease(t);
+    tt146AllIds(fromStep,target).forEach(function(id){
+      var mv=moveMap[String(id)];
+      if(mv){
+        tt146SetVisual(id,tt146PathPos(mv.pts,eased));
+      }else{
+        var a=tt146GetPos(fromStep,id);
+        var b=tt146GetPos(target,id);
+        if(a&&b){
+          tt146SetVisual(id,{x:a.x+(b.x-a.x)*eased,y:a.y+(b.y-a.y)*eased});
+        }
+      }
+    });
+    try{render();}catch(e){}
+  }
+
+  function frame(now){
+    var raw=Math.min(1,(now-start)/dur);
+    drawAt(raw);
+
+    if(raw<1){
+      animFrame=requestAnimationFrame(frame);
+    }else{
+      tt146Animating=false;
+      try{tt145Animating=false;}catch(e){}
+      playback.animating=false;
+      playback.stepIndex=targetIdx;
+      editingStepIdx=targetIdx;
+      try{restoreSnap(target);render();}catch(e){}
+      try{if(typeof updatePlaybar==="function")updatePlaybar();}catch(e){}
+      try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+      try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+    }
+  }
+
+  animFrame=requestAnimationFrame(frame);
+}
+
+animateToStep=function(targetIdx){
+  var fromIdx=(typeof editingStepIdx==="number")?editingStepIdx:0;
+  tt146AnimateForward(fromIdx,targetIdx);
+};
+
+function tt146GoToStep(idx,animate){
+  var tk=tt146CurrentTk();
+  if(!tk||!tk.steps)return;
+
+  idx=Math.max(0,Math.min(idx,tk.steps.length-1));
+  var oldIdx=(typeof editingStepIdx==="number")?editingStepIdx:idx;
+  var forward=idx>oldIdx;
+
+  if(idx!==oldIdx){
+    try{if(typeof tt145SaveCurrentStep==="function")tt145SaveCurrentStep({allowAutoCreate:false});}
+    catch(e){try{if(typeof tt76SaveCurrentStep==="function")tt76SaveCurrentStep({allowAutoCreate:false});}catch(e2){}}
+    tk=tt146CurrentTk();
+  }
+
+  if(animate && forward && idx!==oldIdx){
+    tt146AnimateForward(oldIdx,idx);
+    return;
+  }
+
+  if(animFrame)try{cancelAnimationFrame(animFrame);}catch(e){}
+  tt146Animating=false;
+  try{tt145Animating=false;}catch(e){}
+  editingStepIdx=idx;
+  if(typeof playback!=="undefined" && playback){
+    playback.tk=tk;
+    playback.stepIndex=idx;
+    playback.animating=false;
+  }
+
+  try{restoreSnap(tt146SafeStep(tk.steps[idx],idx));render();}catch(e){}
+  try{if(typeof updateEditStepUI_silent==="function")updateEditStepUI_silent();}catch(e){}
+  try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+  try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+}
+
+try{tt145GoToStep=tt146GoToStep;}catch(e){}
+try{goToStepV75=function(idx,opts){tt146GoToStep(idx,!(opts&&opts.animate===false));};}catch(e){}
+try{goToStepV74=goToStepV75;goToStepV73=goToStepV75;goToStepV72=goToStepV75;goToStepV71=goToStepV75;goToStepV70=goToStepV75;}catch(e){}
+
+function tt146BindControls(){
+  function bind(id,fn){
+    var old=document.getElementById(id);
+    if(!old)return;
+    var neu=old.cloneNode(true);
+    neu.id=id;
+    neu.dataset.tt146Bound="1";
+    old.parentNode.replaceChild(neu,old);
+    neu.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      fn();return false;
+    },true);
+  }
+  bind("btn-edit-step-prev",function(){tt146GoToStep((editingStepIdx||0)-1,true);});
+  bind("btn-edit-step-next",function(){tt146GoToStep((editingStepIdx||0)+1,true);});
+  bind("btn-prev",function(){tt146GoToStep((editingStepIdx||0)-1,true);});
+  bind("btn-next",function(){tt146GoToStep((editingStepIdx||0)+1,true);});
+  bind("btn-first",function(){tt146GoToStep(0,false);});
+  bind("fs-prev-btn",function(){tt146GoToStep((editingStepIdx||0)-1,true);});
+  bind("fs-next-btn",function(){tt146GoToStep((editingStepIdx||0)+1,true);});
+  bind("fs-first-btn",function(){tt146GoToStep(0,false);});
+  bind("ls-prev-btn",function(){tt146GoToStep((editingStepIdx||0)-1,true);});
+  bind("ls-next-btn",function(){tt146GoToStep((editingStepIdx||0)+1,true);});
+  bind("ls-first-btn",function(){tt146GoToStep(0,false);});
+}
+
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt146Wrapped){
+  var _renderEditSteps_tt146=renderEditSteps;
+  renderEditSteps=function(){
+    var r=_renderEditSteps_tt146.apply(this,arguments);
+    setTimeout(tt146BindControls,0);
+    return r;
+  };
+  renderEditSteps._tt146Wrapped=true;
+}
+if(typeof startPlayback==="function" && !startPlayback._tt146Wrapped){
+  var _startPlayback_tt146=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt146.apply(this,arguments);
+    setTimeout(tt146BindControls,80);
+    setTimeout(tt146BindControls,400);
+    return r;
+  };
+  startPlayback._tt146Wrapped=true;
+}
+
+setTimeout(tt146BindControls,500);
+setTimeout(tt146BindControls,1500);
+
+/* === slut v146-animation-only-fix === */
