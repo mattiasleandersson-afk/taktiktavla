@@ -16194,3 +16194,253 @@ if(typeof renderSavesList==="function" && !renderSavesList._tt131Wrapped){
 setTimeout(function(){try{cloudLoadSaves();}catch(e){}},500);
 
 /* === slut v131-formation-mine-scope-strict === */
+
+
+/* === v132-step-copy-paste-stable: stabil kopiera/klistra in steg + flytta knappar ===
+   Bas: v131.
+   Problem: gamla Kopiera/Klistra in steg gick utanför den nya tt76-steglogiken.
+   Fix:
+   - Kopiera sparar först aktuellt steg internt via tt76SaveCurrentStep.
+   - Klistra in infogar ett riktigt steg i tk.steps och markerar filmen osparad.
+   - Knapparna flyttas till raden före Info.
+*/
+
+var tt132CopiedStep=null;
+
+function tt132Clone(o){
+  try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}
+}
+
+function tt132CurrentTk(){
+  try{
+    if(typeof tt76Current==="function")return tt76Current();
+  }catch(e){}
+  try{
+    if(editingTaktikIdx===null || typeof editingTaktikIdx==="undefined")return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+
+function tt132IsReadOnly(tk){
+  try{if(typeof tt76IsReadOnly==="function")return tt76IsReadOnly(tk);}catch(e){}
+  return !!(tk && (tk._readOnly || tk._openedFromTeam));
+}
+
+function tt132SafeStep(step,idx){
+  try{
+    if(typeof tt76SafeStep==="function")return tt76SafeStep(step,idx);
+  }catch(e){}
+  step=step||{};
+  step.players=Array.isArray(step.players)?step.players:[];
+  step.arrows=Array.isArray(step.arrows)?step.arrows:[];
+  step.labels=Array.isArray(step.labels)?step.labels:[];
+  step.freehandPaths=Array.isArray(step.freehandPaths)?step.freehandPaths:[];
+  step.zones=Array.isArray(step.zones)?step.zones:[];
+  step.movementPaths=Array.isArray(step.movementPaths)?step.movementPaths:[];
+  return step;
+}
+
+function tt132Label(idx){
+  try{if(typeof tt76Label==="function")return tt76Label(idx);}catch(e){}
+  return idx===0?"Startläge":"Steg "+idx;
+}
+
+function tt132IsAutoLabel(v){
+  try{if(typeof tt76IsAutoLabel==="function")return tt76IsAutoLabel(v);}catch(e){}
+  var s=String(v||"").trim();
+  return !s || s==="Start" || s==="Startläge" || /^Steg\s+\d+$/i.test(s);
+}
+
+function tt132SaveCurrent(){
+  try{
+    if(typeof tt76SaveCurrentStep==="function"){
+      tt76SaveCurrentStep({allowAutoCreate:false});
+      return;
+    }
+  }catch(e){}
+  try{
+    if(typeof autoSaveCurrentStepLocalV16==="function")autoSaveCurrentStepLocalV16();
+  }catch(e){}
+}
+
+function tt132Normalize(tk){
+  try{if(typeof tt76NormalizeFilm==="function")return tt76NormalizeFilm(tk);}catch(e){}
+  if(tk&&!Array.isArray(tk.steps))tk.steps=[];
+  return tk;
+}
+
+function tt132MarkDirty(){
+  try{if(typeof tt76MarkDirty==="function"){tt76MarkDirty();return;}}catch(e){}
+  try{taktikDirtyV17=true;}catch(e){}
+}
+
+function tt132RefreshStepUi(){
+  try{
+    var tk=tt132Normalize(tt132CurrentTk());
+    if(typeof tt76LoadStep==="function"){
+      tt76LoadStep(editingStepIdx,{animate:false,skipSave:true});
+      return;
+    }
+    if(typeof updateEditStepUI==="function")updateEditStepUI();
+    else if(typeof render==="function")render();
+    if(tk && typeof renderEditSteps==="function")renderEditSteps(tk);
+  }catch(e){}
+}
+
+function tt132CopyStep(){
+  var tk=tt132Normalize(tt132CurrentTk());
+  if(!tk||!tk.steps||editingStepIdx===null||typeof editingStepIdx==="undefined")return;
+  if(tt132IsReadOnly(tk)){
+    showToast("Filen är skrivskyddad. Kopiera den först.",false);
+    return;
+  }
+
+  tt132SaveCurrent();
+  tk=tt132Normalize(tt132CurrentTk());
+  var idx=Math.max(0,Math.min(editingStepIdx,tk.steps.length-1));
+  var step=tt132SafeStep(tt132Clone(tk.steps[idx]),idx);
+  tt132CopiedStep=tt132Clone(step);
+
+  // Behåll även äldre global, så inget annat bryts.
+  try{copiedStep=tt132Clone(step);}catch(e){}
+
+  var p=document.getElementById("btn-paste-step");
+  if(p){p.style.opacity="1";p.disabled=false;}
+  showToast("Steg kopierat");
+}
+
+function tt132PasteStep(){
+  var tk=tt132Normalize(tt132CurrentTk());
+  if(!tk||!tk.steps||editingStepIdx===null||typeof editingStepIdx==="undefined")return;
+  if(tt132IsReadOnly(tk)){
+    showToast("Filen är skrivskyddad. Kopiera den först.",false);
+    return;
+  }
+
+  var src=tt132CopiedStep;
+  try{if(!src && typeof copiedStep!=="undefined")src=copiedStep;}catch(e){}
+  if(!src){
+    showToast("Inget steg kopierat",false);
+    return;
+  }
+
+  tt132SaveCurrent();
+  tk=tt132Normalize(tt132CurrentTk());
+
+  var insertIdx=Math.max(0,Math.min((editingStepIdx||0)+1,tk.steps.length));
+  var paste=tt132SafeStep(tt132Clone(src),insertIdx);
+
+  // Om namnet är automatiskt, numrera om så kopian känns som ett riktigt nytt steg.
+  if(tt132IsAutoLabel(paste.label))paste.label=tt132Label(insertIdx);
+  else paste.label=String(paste.label||"").trim();
+
+  try{if(typeof saveTaktikUndo==="function")saveTaktikUndo();}catch(e){}
+
+  tk.steps.splice(insertIdx,0,paste);
+  editingStepIdx=insertIdx;
+
+  tt132Normalize(tk);
+  if(typeof playback!=="undefined" && playback)playback.tk=tk;
+
+  // Ladda det inklistrade steget utan att först skriva över det.
+  tt132RefreshStepUi();
+  tt132MarkDirty();
+
+  showToast("Steg inklistrat");
+}
+
+function tt132BindStepButtons(){
+  var copy=document.getElementById("btn-copy-step");
+  var paste=document.getElementById("btn-paste-step");
+
+  if(copy && copy.dataset.tt132Bound!=="1"){
+    var c=copy.cloneNode(true);
+    c.id="btn-copy-step";
+    c.dataset.tt132Bound="1";
+    c.classList.add("tt132-step-btn");
+    c.textContent="Kopiera";
+    c.title="Kopiera aktuellt steg";
+    copy.parentNode.replaceChild(c,copy);
+    c.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt132CopyStep();
+      return false;
+    },true);
+  }
+
+  paste=document.getElementById("btn-paste-step");
+  if(paste && paste.dataset.tt132Bound!=="1"){
+    var p=paste.cloneNode(true);
+    p.id="btn-paste-step";
+    p.dataset.tt132Bound="1";
+    p.classList.add("tt132-step-btn");
+    p.textContent="Klistra";
+    p.title="Klistra in kopierat steg efter aktuellt steg";
+    p.style.opacity=tt132CopiedStep?"1":"0.3";
+    paste.parentNode.replaceChild(p,paste);
+    p.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt132PasteStep();
+      return false;
+    },true);
+  }
+}
+
+function tt132MoveStepButtonsNearInfo(){
+  try{
+    tt132BindStepButtons();
+
+    var info=document.getElementById("btn-edit-taktik-meta");
+    var copy=document.getElementById("btn-copy-step");
+    var paste=document.getElementById("btn-paste-step");
+    if(!info||!copy||!paste)return;
+
+    var wrap=document.getElementById("tt132-step-actions");
+    if(!wrap){
+      wrap=document.createElement("div");
+      wrap.id="tt132-step-actions";
+      info.parentNode.insertBefore(wrap,info);
+    }
+
+    if(copy.parentNode!==wrap)wrap.appendChild(copy);
+    if(paste.parentNode!==wrap)wrap.appendChild(paste);
+
+    var draw=document.getElementById("btn-copy-drawings");
+    if(draw){
+      draw.title="Kopiera bara ritningar till nästa steg (pilar, text, frihand och zoner)";
+      draw.setAttribute("aria-label","Kopiera ritningar till nästa steg");
+    }
+  }catch(e){}
+}
+
+if(typeof startPlayback==="function" && !startPlayback._tt132Wrapped){
+  var _startPlayback_tt132=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt132.apply(this,arguments);
+    setTimeout(tt132MoveStepButtonsNearInfo,80);
+    setTimeout(tt132MoveStepButtonsNearInfo,400);
+    return r;
+  };
+  startPlayback._tt132Wrapped=true;
+}
+
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt132Wrapped){
+  var _renderEditSteps_tt132=renderEditSteps;
+  renderEditSteps=function(){
+    var r=_renderEditSteps_tt132.apply(this,arguments);
+    setTimeout(tt132MoveStepButtonsNearInfo,0);
+    return r;
+  };
+  renderEditSteps._tt132Wrapped=true;
+}
+
+["click","touchend","resize","orientationchange"].forEach(function(evt){
+  window.addEventListener(evt,function(){
+    setTimeout(tt132MoveStepButtonsNearInfo,80);
+  },true);
+});
+
+setTimeout(tt132MoveStepButtonsNearInfo,500);
+setTimeout(tt132MoveStepButtonsNearInfo,1500);
+
+/* === slut v132-step-copy-paste-stable === */
