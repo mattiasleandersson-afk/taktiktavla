@@ -17383,3 +17383,191 @@ setTimeout(tt147BindControls,500);
 setTimeout(tt147BindControls,1500);
 
 /* === slut v147-individual-speed-animation === */
+
+
+/* === v148-fullscreen-uses-clean-animation: fullscreen använder samma motor som redigering ===
+   Bas: v147.
+   Rör bara fullscreen/presentationskoppling.
+   - Fullscreen-knappar tvingas använda tt147GoToStep.
+   - Bakåt i fullscreen animeras inte.
+   - Framåt i fullscreen använder samma individuella hastighetsanimation.
+   - När fullscreen lämnas rensas animationsflaggan så redigeringsläge inte ärver fel läge.
+*/
+
+function tt148CurrentTk(){
+  try{if(typeof tt146CurrentTk==="function")return tt146CurrentTk();}catch(e){}
+  try{if(typeof tt145CurrentTk==="function")return tt145CurrentTk();}catch(e){}
+  try{if(typeof tt76Current==="function")return tt76Current();}catch(e){}
+  try{
+    if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+function tt148SafeStep(s,idx){
+  try{if(typeof tt146SafeStep==="function")return tt146SafeStep(s,idx);}catch(e){}
+  try{if(typeof tt145SafeStep==="function")return tt145SafeStep(s,idx);}catch(e){}
+  return s||{};
+}
+function tt148CleanAnimationState(){
+  try{if(animFrame)cancelAnimationFrame(animFrame);}catch(e){}
+  try{tt146Animating=false;}catch(e){}
+  try{tt145Animating=false;}catch(e){}
+  try{tt145Animating=false;}catch(e){}
+  try{if(typeof tt147Animating!=="undefined")tt147Animating=false;}catch(e){}
+  try{
+    if(typeof playback!=="undefined" && playback){
+      playback.animating=false;
+      var tk=tt148CurrentTk();
+      if(tk)playback.tk=tk;
+      if(typeof editingStepIdx==="number")playback.stepIndex=editingStepIdx;
+    }
+  }catch(e){}
+}
+function tt148Go(idx,animate){
+  var tk=tt148CurrentTk();
+  if(!tk||!tk.steps)return;
+  idx=Math.max(0,Math.min(idx,tk.steps.length-1));
+  try{
+    if(typeof tt147GoToStep==="function")return tt147GoToStep(idx,animate);
+  }catch(e){}
+  try{
+    if(typeof tt146GoToStep==="function")return tt146GoToStep(idx,animate);
+  }catch(e){}
+}
+function tt148CurrentIdx(){
+  try{
+    if(typeof editingStepIdx==="number")return editingStepIdx;
+  }catch(e){}
+  try{
+    if(playback && typeof playback.stepIndex==="number")return playback.stepIndex;
+  }catch(e){}
+  return 0;
+}
+function tt148BindFullscreenControls(){
+  function bind(id,fn){
+    var old=document.getElementById(id);
+    if(!old)return;
+    var neu=old.cloneNode(true);
+    neu.id=id;
+    neu.dataset.tt148Bound="1";
+    old.parentNode.replaceChild(neu,old);
+    neu.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      fn();
+      return false;
+    },true);
+  }
+
+  // Fullscreen / landscape / vanliga playbar-knappar.
+  bind("fs-next-btn",function(){tt148Go(tt148CurrentIdx()+1,true);});
+  bind("fs-prev-btn",function(){tt148Go(tt148CurrentIdx()-1,false);});
+  bind("fs-first-btn",function(){tt148Go(0,false);});
+
+  bind("ls-next-btn",function(){tt148Go(tt148CurrentIdx()+1,true);});
+  bind("ls-prev-btn",function(){tt148Go(tt148CurrentIdx()-1,false);});
+  bind("ls-first-btn",function(){tt148Go(0,false);});
+
+  bind("btn-next",function(){tt148Go(tt148CurrentIdx()+1,true);});
+  bind("btn-prev",function(){tt148Go(tt148CurrentIdx()-1,false);});
+  bind("btn-first",function(){tt148Go(0,false);});
+}
+
+// Fånga även eventuella äldre delegerade click-handlers före de hinner köra.
+if(!window.__tt148FullscreenCapture){
+  window.__tt148FullscreenCapture=true;
+  document.addEventListener("click",function(e){
+    var b=e.target && e.target.closest ? e.target.closest("#fs-next-btn,#fs-prev-btn,#fs-first-btn,#ls-next-btn,#ls-prev-btn,#ls-first-btn,#btn-next,#btn-prev,#btn-first") : null;
+    if(!b)return;
+    if(!b.id)return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+
+    if(b.id.indexOf("next")>=0)tt148Go(tt148CurrentIdx()+1,true);
+    else if(b.id.indexOf("prev")>=0)tt148Go(tt148CurrentIdx()-1,false);
+    else tt148Go(0,false);
+    return false;
+  },true);
+}
+
+// När fullscreen startas: bind om knapparna efter att fullscreen-UI har skapats.
+["openFullscreen","enterFullscreen","startFullscreen","showFullscreen","openTaktikFullscreen","enterTaktikFullscreen"].forEach(function(name){
+  try{
+    if(typeof window[name]==="function" && !window[name]._tt148Wrapped){
+      var orig=window[name];
+      window[name]=function(){
+        var r=orig.apply(this,arguments);
+        setTimeout(tt148BindFullscreenControls,50);
+        setTimeout(tt148BindFullscreenControls,300);
+        return r;
+      };
+      window[name]._tt148Wrapped=true;
+    }
+  }catch(e){}
+});
+
+// När fullscreen lämnas: rensa gamla animationstillstånd.
+["closeFullscreen","exitFullscreen","leaveFullscreen","closeTaktikFullscreen","exitTaktikFullscreen"].forEach(function(name){
+  try{
+    if(typeof window[name]==="function" && !window[name]._tt148Wrapped){
+      var orig=window[name];
+      window[name]=function(){
+        tt148CleanAnimationState();
+        var r=orig.apply(this,arguments);
+        setTimeout(function(){
+          tt148CleanAnimationState();
+          try{if(typeof tt147BindControls==="function")tt147BindControls();}catch(e){}
+          try{if(typeof tt146BindControls==="function")tt146BindControls();}catch(e){}
+          try{if(typeof tt145BindControls==="function")tt145BindControls();}catch(e){}
+          try{render();}catch(e){}
+        },80);
+        return r;
+      };
+      window[name]._tt148Wrapped=true;
+    }
+  }catch(e){}
+});
+
+// Fullscreenchange gäller både Escape, iOS, browserknappar.
+if(!window.__tt148FullscreenChange){
+  window.__tt148FullscreenChange=true;
+  document.addEventListener("fullscreenchange",function(){
+    setTimeout(function(){
+      tt148CleanAnimationState();
+      tt148BindFullscreenControls();
+    },80);
+  });
+  document.addEventListener("webkitfullscreenchange",function(){
+    setTimeout(function(){
+      tt148CleanAnimationState();
+      tt148BindFullscreenControls();
+    },80);
+  });
+}
+
+if(typeof startPlayback==="function" && !startPlayback._tt148Wrapped){
+  var _startPlayback_tt148=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt148.apply(this,arguments);
+    setTimeout(tt148BindFullscreenControls,80);
+    setTimeout(tt148BindFullscreenControls,400);
+    return r;
+  };
+  startPlayback._tt148Wrapped=true;
+}
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt148Wrapped){
+  var _renderEditSteps_tt148=renderEditSteps;
+  renderEditSteps=function(){
+    var r=_renderEditSteps_tt148.apply(this,arguments);
+    setTimeout(tt148BindFullscreenControls,0);
+    return r;
+  };
+  renderEditSteps._tt148Wrapped=true;
+}
+
+setTimeout(tt148BindFullscreenControls,500);
+setTimeout(tt148BindFullscreenControls,1600);
+
+/* === slut v148-fullscreen-uses-clean-animation === */
