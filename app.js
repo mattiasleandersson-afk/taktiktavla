@@ -17573,101 +17573,100 @@ setTimeout(tt148BindFullscreenControls,1600);
 /* === slut v148-fullscreen-uses-clean-animation === */
 
 
-/* === v149-iphone-tactic-menu-icons: dörr på Avsluta + pil på Utgångsläge i taktikrad ===
-   Bas: v148.
-   Rör bara UI i taktikfilmens kontrollrad.
-   Huvudmenyns Utgångsläge ska inte ändras.
+/* === v150-iphone-exact-tactic-icons: exakt knappfix från v148 ===
+   Rör bara kända taktikknappar.
+   Ingen textsökning. Huvudmenyns Utgångsläge påverkas inte.
 */
 
-function tt149IsSmallScreen(){
+function tt150IsIphoneWidth(){
   try{return window.matchMedia && window.matchMedia("(max-width: 760px)").matches;}catch(e){}
   return window.innerWidth<=760;
 }
-function tt149Text(el){
-  return String((el && (el.textContent||el.innerText)) || "").trim().toLowerCase();
-}
-function tt149LooksLikeTacticControlArea(el){
-  if(!el)return false;
-  var txt=tt149Text(el);
-  // Kontrollraden brukar innehålla loop/steg/pilar eller flera playback-knappar.
-  if(txt.indexOf("loop")>=0)return true;
-  if(txt.indexOf("steg")>=0)return true;
-  if(txt.indexOf("1/")>=0 || txt.indexOf("2/")>=0 || txt.indexOf("3/")>=0)return true;
-  try{
-    if(el.querySelector("#btn-prev,#btn-next,#fs-prev-btn,#fs-next-btn,#ls-prev-btn,#ls-next-btn"))return true;
-  }catch(e){}
-  return false;
-}
-function tt149ClosestControlArea(btn){
-  var n=btn;
-  for(var i=0;i<7 && n;i++,n=n.parentElement){
-    if(tt149LooksLikeTacticControlArea(n))return n;
-  }
-  return null;
-}
-function tt149IsMainMenuArea(btn){
-  var n=btn;
-  for(var i=0;i<6 && n;i++,n=n.parentElement){
-    var id=String(n.id||"").toLowerCase();
-    var cls=String(n.className||"").toLowerCase();
-    if(id.indexOf("main")>=0 || id.indexOf("home")>=0 || cls.indexOf("main")>=0 || cls.indexOf("home")>=0)return true;
-  }
-  return false;
-}
-function tt149PatchTacticMenuIcons(){
-  if(!tt149IsSmallScreen())return;
 
-  var buttons=Array.prototype.slice.call(document.querySelectorAll("button,a"));
-  buttons.forEach(function(btn){
-    var text=tt149Text(btn);
-    if(!text)return;
+function tt150PatchExactTacticIcons(){
+  var small=tt150IsIphoneWidth();
 
-    var area=tt149ClosestControlArea(btn);
-    if(!area)return;
-
-    // Avsluta i taktikfilm/playback-rad: gör till röd dörr.
-    if(text==="avsluta" || text.indexOf("avsluta")>=0){
-      btn.classList.add("tt149-exit-door");
-      try{btn.setAttribute("aria-label","Avsluta");btn.setAttribute("title","Avsluta");}catch(e){}
-      return;
+  // Detta är knappen som skapas i taktikbarens rad nära pilar/Loop:
+  // "⇩ Utgångsläge" -> endast pil.
+  var exportBtn=document.getElementById("btn-export-step-formation");
+  if(exportBtn){
+    if(small){
+      exportBtn.textContent="⇩";
+      exportBtn.title="Spara aktuellt steg som utgångsläge";
+      exportBtn.setAttribute("aria-label","Spara som utgångsläge");
+      exportBtn.classList.add("tt150-start-arrow-only");
+    }else{
+      exportBtn.textContent="⇩ Utgångsläge";
+      exportBtn.classList.remove("tt150-start-arrow-only");
     }
+  }
 
-    // Utgångsläge får bara ändras i taktik-raden, aldrig i huvudmenyn.
-    if(text==="utgångsläge" || text==="utgangslage"){
-      if(tt149IsMainMenuArea(btn))return;
-      btn.classList.add("tt149-start-arrow");
-      try{btn.setAttribute("aria-label","Utgångsläge");btn.setAttribute("title","Utgångsläge");}catch(e){}
-      return;
+  // Avsluta i taktikbarens kontrollrad: X -> endast dörr.
+  var stopBtn=document.getElementById("btn-stop-play");
+  if(stopBtn){
+    if(small){
+      stopBtn.textContent="🚪";
+      stopBtn.title="Avsluta";
+      stopBtn.setAttribute("aria-label","Avsluta");
+      stopBtn.classList.add("tt150-exit-door-only");
+    }else{
+      stopBtn.textContent="✕";
+      stopBtn.classList.remove("tt150-exit-door-only");
     }
-  });
+  }
+
+  // Avsluta i redigeringspanelen på iPhone: "Avsluta" -> endast dörr.
+  var editExit=document.getElementById("btn-edit-taktik-exit");
+  if(editExit){
+    if(small){
+      editExit.textContent="🚪";
+      editExit.title="Avsluta";
+      editExit.setAttribute("aria-label","Avsluta");
+      editExit.classList.add("tt150-exit-door-only");
+    }else{
+      editExit.textContent="Avsluta";
+      editExit.classList.remove("tt150-exit-door-only");
+    }
+  }
 }
 
-if(typeof renderEditSteps==="function" && !renderEditSteps._tt149Wrapped){
-  var _renderEditSteps_tt149=renderEditSteps;
+if(typeof ensureExportStepAsFormationButton==="function" && !ensureExportStepAsFormationButton._tt150Wrapped){
+  var _ensureExportStepAsFormationButton_tt150=ensureExportStepAsFormationButton;
+  ensureExportStepAsFormationButton=function(){
+    var r=_ensureExportStepAsFormationButton_tt150.apply(this,arguments);
+    setTimeout(tt150PatchExactTacticIcons,0);
+    return r;
+  };
+  ensureExportStepAsFormationButton._tt150Wrapped=true;
+}
+
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt150Wrapped){
+  var _renderEditSteps_tt150=renderEditSteps;
   renderEditSteps=function(){
-    var r=_renderEditSteps_tt149.apply(this,arguments);
-    setTimeout(tt149PatchTacticMenuIcons,0);
-    setTimeout(tt149PatchTacticMenuIcons,250);
+    var r=_renderEditSteps_tt150.apply(this,arguments);
+    setTimeout(tt150PatchExactTacticIcons,0);
+    setTimeout(tt150PatchExactTacticIcons,200);
     return r;
   };
-  renderEditSteps._tt149Wrapped=true;
+  renderEditSteps._tt150Wrapped=true;
 }
-if(typeof startPlayback==="function" && !startPlayback._tt149Wrapped){
-  var _startPlayback_tt149=startPlayback;
+
+if(typeof startPlayback==="function" && !startPlayback._tt150Wrapped){
+  var _startPlayback_tt150=startPlayback;
   startPlayback=function(){
-    var r=_startPlayback_tt149.apply(this,arguments);
-    setTimeout(tt149PatchTacticMenuIcons,60);
-    setTimeout(tt149PatchTacticMenuIcons,350);
+    var r=_startPlayback_tt150.apply(this,arguments);
+    setTimeout(tt150PatchExactTacticIcons,60);
+    setTimeout(tt150PatchExactTacticIcons,300);
     return r;
   };
-  startPlayback._tt149Wrapped=true;
+  startPlayback._tt150Wrapped=true;
 }
 
 ["click","touchend","resize","orientationchange"].forEach(function(evt){
-  try{window.addEventListener(evt,function(){setTimeout(tt149PatchTacticMenuIcons,120);},false);}catch(e){}
+  try{window.addEventListener(evt,function(){setTimeout(tt150PatchExactTacticIcons,100);},false);}catch(e){}
 });
 
-setTimeout(tt149PatchTacticMenuIcons,500);
-setTimeout(tt149PatchTacticMenuIcons,1600);
+setTimeout(tt150PatchExactTacticIcons,300);
+setTimeout(tt150PatchExactTacticIcons,1200);
 
-/* === slut v149-iphone-tactic-menu-icons === */
+/* === slut v150-iphone-exact-tactic-icons === */
