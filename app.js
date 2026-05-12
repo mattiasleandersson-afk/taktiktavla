@@ -17670,3 +17670,98 @@ setTimeout(tt150PatchExactTacticIcons,300);
 setTimeout(tt150PatchExactTacticIcons,1200);
 
 /* === slut v150-iphone-exact-tactic-icons === */
+
+
+/* === v151-iphone-tactic-menu-scroll: gör taktikraden horisontellt scrollbar igen ===
+   Bas: v150.
+   Rör bara iPhone-layout för taktik/playback-raden.
+*/
+
+function tt151IsSmall(){
+  try{return window.matchMedia && window.matchMedia("(max-width: 760px)").matches;}catch(e){}
+  return window.innerWidth<=760;
+}
+function tt151MarkScrollableRowFromButton(btn){
+  if(!btn)return;
+  var n=btn.parentElement;
+  for(var i=0;i<6 && n;i++,n=n.parentElement){
+    var txt=String(n.textContent||"").toLowerCase();
+    var hasControls=false;
+    try{
+      hasControls=!!n.querySelector("#btn-prev,#btn-next,#btn-first,#btn-stop-play,#btn-export-step-formation,#fs-prev-btn,#fs-next-btn,#ls-prev-btn,#ls-next-btn");
+    }catch(e){}
+    if(hasControls || txt.indexOf("loop")>=0){
+      n.classList.add("tt151-scroll-row");
+      return n;
+    }
+  }
+}
+function tt151PatchScroll(){
+  if(!tt151IsSmall())return;
+  [
+    "btn-export-step-formation",
+    "btn-stop-play",
+    "btn-prev",
+    "btn-next",
+    "btn-first",
+    "fs-prev-btn",
+    "fs-next-btn",
+    "fs-first-btn",
+    "ls-prev-btn",
+    "ls-next-btn",
+    "ls-first-btn"
+  ].forEach(function(id){
+    tt151MarkScrollableRowFromButton(document.getElementById(id));
+  });
+
+  // Om raden ligger i en wrapper direkt ovanför: tillåt även wrappern att inte klippa.
+  Array.prototype.slice.call(document.querySelectorAll(".tt151-scroll-row")).forEach(function(row){
+    var p=row.parentElement;
+    if(p){
+      p.style.overflowX="visible";
+      p.style.maxWidth="100vw";
+      p.style.minWidth="0";
+    }
+  });
+}
+
+if(typeof tt150PatchExactTacticIcons==="function" && !tt150PatchExactTacticIcons._tt151Wrapped){
+  var _tt150PatchExactTacticIcons_tt151=tt150PatchExactTacticIcons;
+  tt150PatchExactTacticIcons=function(){
+    var r=_tt150PatchExactTacticIcons_tt151.apply(this,arguments);
+    setTimeout(tt151PatchScroll,0);
+    return r;
+  };
+  tt150PatchExactTacticIcons._tt151Wrapped=true;
+}
+
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt151Wrapped){
+  var _renderEditSteps_tt151=renderEditSteps;
+  renderEditSteps=function(){
+    var r=_renderEditSteps_tt151.apply(this,arguments);
+    setTimeout(tt151PatchScroll,0);
+    setTimeout(tt151PatchScroll,250);
+    return r;
+  };
+  renderEditSteps._tt151Wrapped=true;
+}
+
+if(typeof startPlayback==="function" && !startPlayback._tt151Wrapped){
+  var _startPlayback_tt151=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt151.apply(this,arguments);
+    setTimeout(tt151PatchScroll,80);
+    setTimeout(tt151PatchScroll,400);
+    return r;
+  };
+  startPlayback._tt151Wrapped=true;
+}
+
+["click","touchend","resize","orientationchange"].forEach(function(evt){
+  try{window.addEventListener(evt,function(){setTimeout(tt151PatchScroll,120);},false);}catch(e){}
+});
+
+setTimeout(tt151PatchScroll,400);
+setTimeout(tt151PatchScroll,1400);
+
+/* === slut v151-iphone-tactic-menu-scroll === */
