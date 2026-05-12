@@ -18289,9 +18289,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v159-desktop-movement-safe === */
 
 
-/* === v164-taktik-save-meta-only: sätt korrekt metadata vid SPARA taktikfilm ===
+/* === v165-direct-taktik-save-only: ersätt bara SPARA taktikfilm ===
    Bas: v159.
-   Rör endast cloudSaveTaktik före den gamla sparfunktionen körs.
+   Rör endast cloudSaveTaktik.
    Rör INTE:
    - cloudLoadTaktik
    - renderTaktikList
@@ -18301,104 +18301,162 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 
 (function(){
-  if(window.__tt164TaktikSaveMetaOnly)return;
-  window.__tt164TaktikSaveMetaOnly=true;
+  if(window.__tt165DirectTaktikSaveOnly)return;
+  window.__tt165DirectTaktikSaveOnly=true;
 
-  function tt164Clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
-  function tt164Profile(){
-    try{
-      if(typeof getUserProfile==="function"){
-        var p=getUserProfile();
-        if(p)return p;
-      }
-    }catch(e){}
-    try{
-      var raw=localStorage.getItem("tt_profile_v1");
-      if(raw)return JSON.parse(raw);
-    }catch(e){}
+  function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+  function profile(){
+    try{if(typeof getUserProfile==="function"){var p=getUserProfile();if(p)return p;}}catch(e){}
+    try{var raw=localStorage.getItem("tt_profile_v1");if(raw)return JSON.parse(raw);}catch(e){}
     return null;
   }
-  function tt164Meta(obj){
-    if(!obj)return {};
-    if(obj._meta)return obj._meta;
-    if(obj.data&&obj.data._meta)return obj.data._meta;
-    if(obj.state&&obj.state._meta)return obj.state._meta;
-    return {};
-  }
-  function tt164EnsureTaktikMeta(tk){
-    if(!tk || !Array.isArray(tk.steps))return tk;
-
-    var p=tt164Profile();
-    if(!p)return tk;
-
-    var existing=tt164Meta(tk)||{};
-    var m=tt164Clone(existing)||{};
-
-    // Sätt alltid ägare till aktuell användare vid SPARA.
-    // Detta gäller bara taktikfilm, inte Utgångsläge.
-    m.kind="taktikfilm";
-    m.schemaVersion=3;
-    m.ownerId=p.ownerId;
-    m.ownerName=p.ownerName||"Tränare";
-    m.teamId=p.teamId||p.teamCode||p.teamName||"MITT-LAG";
-    m.teamCode=p.teamCode||p.teamId||p.teamName||"MITT-LAG";
-    m.teamName=p.teamName||p.teamCode||p.teamId||"MITT-LAG";
-
-    // Viktigt: behåll delningsläge om det redan finns.
-    m.sharedWithTeam=!!existing.sharedWithTeam;
-    m.teamCanEdit=!!existing.teamCanEdit;
-    m.updatedAt=new Date().toISOString();
-    if(!m.createdAt)m.createdAt=new Date().toISOString();
-
-    tk._meta=m;
-    tk.type="taktikfilm";
-    tk.folder=tk.folder||"Taktik";
-    tk.name=tk.name||"Taktikfilm";
-
-    return tk;
-  }
-  function tt164CurrentTaktik(){
+  function currentTaktik(){
     try{
       if(typeof editingTaktikIdx==="number" && editingTaktikIdx>=0 && taktikFilmer && taktikFilmer[editingTaktikIdx]){
         return taktikFilmer[editingTaktikIdx];
       }
     }catch(e){}
-    try{
-      if(playback && playback.tk && Array.isArray(playback.tk.steps))return playback.tk;
-    }catch(e){}
+    try{if(playback&&playback.tk&&Array.isArray(playback.tk.steps))return playback.tk;}catch(e){}
     return null;
   }
+  function existingMeta(tk){
+    if(!tk)return {};
+    return tk._meta || (tk.data&&tk.data._meta) || {};
+  }
+  function cleanForSave(tk){
+    var p=profile();
+    var x=clone(tk||{});
+    var old=existingMeta(tk)||{};
+    var m=clone(old)||{};
 
-  if(typeof cloudSaveTaktik==="function" && !cloudSaveTaktik._tt164Wrapped){
-    var _cloudSaveTaktik_tt164=cloudSaveTaktik;
-    cloudSaveTaktik=function(tk){
-      var target=tk || tt164CurrentTaktik();
+    if(!Array.isArray(x.steps))x.steps=[];
 
-      // Om aktuellt steg inte hunnit in i filmen än, låt befintlig steglogik spara först.
-      // Detta ska inte skapa nya steg eftersom v145+ har stoppat auto-create.
-      try{
-        if(target && typeof tt145SaveCurrentStep==="function"){
-          tt145SaveCurrentStep({allowAutoCreate:false});
-        }
-      }catch(e){}
+    m.kind="taktikfilm";
+    m.schemaVersion=4;
 
-      target=tk || tt164CurrentTaktik() || target;
-      tt164EnsureTaktikMeta(target);
+    if(p){
+      m.ownerId=p.ownerId;
+      m.ownerName=p.ownerName||"Tränare";
+      m.teamId=p.teamId||p.teamCode||p.teamName||"MITT-LAG";
+      m.teamCode=p.teamCode||p.teamId||p.teamName||"MITT-LAG";
+      m.teamName=p.teamName||p.teamCode||p.teamId||"MITT-LAG";
+    }
 
-      // Om samma film också ligger i playback, håll den synkad.
-      try{
-        if(playback && playback.tk && target && (playback.tk===target || playback.tk.name===target.name)){
-          tt164EnsureTaktikMeta(playback.tk);
-        }
-      }catch(e){}
+    // Behåll befintligt delningsläge, men default false för nya filer.
+    m.sharedWithTeam=!!old.sharedWithTeam;
+    m.teamCanEdit=!!old.teamCanEdit;
+    m.updatedAt=new Date().toISOString();
+    if(!m.createdAt)m.createdAt=new Date().toISOString();
 
-      return _cloudSaveTaktik_tt164.call(this,target);
-    };
-    cloudSaveTaktik._tt164Wrapped=true;
+    x._meta=m;
+    x.name=x.name||"Taktikfilm";
+    x.folder=x.folder||"Taktik";
+    x.type="taktikfilm";
+
+    // Saker som inte ska styra ägarskap efter save.
+    delete x._readOnly;
+    delete x._openedFromTeam;
+    delete x._isDraft;
+
+    return x;
+  }
+  function applyBack(target,saved){
+    if(!target||!saved)return saved;
+    Object.keys(target).forEach(function(k){delete target[k];});
+    Object.keys(saved).forEach(function(k){target[k]=saved[k];});
+    return target;
+  }
+  function markClean(tk){
+    try{if(typeof markTaktikSavedCleanV67==="function")markTaktikSavedCleanV67(tk);}catch(e){}
+    try{taktikDirtyV17=false;}catch(e){}
+    try{window.taktikDirtyV17=false;}catch(e){}
   }
 
-  // Exponera för felsökning utan att påverka appen.
-  window.tt164EnsureTaktikMeta=tt164EnsureTaktikMeta;
+  cloudSaveTaktik=function(tk){
+    var target=tk || currentTaktik();
+    if(!target){
+      showToast("Ingen taktikfilm att spara",false);
+      return;
+    }
+
+    try{
+      if(typeof tt145SaveCurrentStep==="function"){
+        tt145SaveCurrentStep({allowAutoCreate:false});
+      }
+    }catch(e){}
+
+    target=tk || currentTaktik() || target;
+
+    if(!target.steps || target.steps.length<2){
+      showToast("Lägg till minst ett steg innan du sparar filmen",false);
+      cloudStatus("⚠️ Minst ett steg krävs för att spara taktikfilm","#e8c84a");
+      return;
+    }
+
+    var clean=cleanForSave(target);
+    var rowBody={
+      name:clean.name,
+      data:clean,
+      type:"taktikfilm",
+      folder:clean.folder||"Taktik"
+    };
+
+    var id=clean.dbId || clean.id || target.dbId || target.id;
+    var method=id?"PATCH":"POST";
+    var url=id
+      ? SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+id
+      : SUPA_URL+"/rest/v1/"+SUPA_TABLE;
+
+    cloudStatus("Sparar taktik...","#7aaa88");
+
+    return fetch(url,{
+      method:method,
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+      body:JSON.stringify(rowBody)
+    })
+    .then(function(r){
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      return r.json();
+    })
+    .then(function(rows){
+      if(rows&&rows[0]&&rows[0].id){
+        clean.dbId=rows[0].id;
+        clean.id=rows[0].id;
+      }else if(id){
+        clean.dbId=id;
+        clean.id=id;
+      }
+
+      applyBack(target,clean);
+
+      try{
+        var found=(taktikFilmer||[]).find(function(x){
+          return (x===target) || (x.dbId&&clean.dbId&&String(x.dbId)===String(clean.dbId));
+        });
+        if(found && found!==target)applyBack(found,clean);
+        if(!found)taktikFilmer.unshift(target);
+      }catch(e){}
+
+      try{if(playback&&playback.tk)playback.tk=target;}catch(e){}
+      try{taktikScope="mine";}catch(e){}
+      try{currentTaktikFolder="Alla";}catch(e){}
+      try{renderTaktikList();}catch(e){}
+      markClean(target);
+
+      cloudStatus("✅ Film sparad: "+clean.name,"#4ae87a");
+      showToast("Film sparad!");
+
+      // Medvetet ingen cloudLoadTaktik här.
+      // Testet ska avgöra vad som händer först efter riktig refresh.
+      return target;
+    })
+    .catch(function(err){
+      cloudStatus("❌ Kunde inte spara taktik: "+err.message,"#e84a4a");
+      showToast("Kunde inte spara taktik",false);
+      try{taktikDirtyV17=true;}catch(e){}
+      throw err;
+    });
+  };
 })();
 
-/* === slut v164-taktik-save-meta-only === */
+/* === slut v165-direct-taktik-save-only === */
