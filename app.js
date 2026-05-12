@@ -16820,3 +16820,374 @@ setTimeout(tt139BindStepControls,500);
 setTimeout(tt139BindStepControls,1200);
 
 /* === slut v139-hard-target-step-model === */
+
+
+/* === v140-target-step-animation: animering in i målsteget + rörelsepil i målsteget ===
+   Bas: v139.
+   - Auto-steg är fortsatt avstängt.
+   - Rörelsepilar i målsteget används som väg från föregående steg in i målsteget.
+   - Rörelsepilens slutpunkt blir spelarens slutposition i målsteget.
+   - Stegknapparna animerar mellan bilderna i stället för att hoppa.
+*/
+
+function tt140Clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+function tt140CurrentTk(){
+  try{if(typeof tt139CurrentTk==="function")return tt139CurrentTk();}catch(e){}
+  try{if(typeof tt76Current==="function")return tt76Current();}catch(e){}
+  try{
+    if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+function tt140Normalize(tk){
+  try{if(typeof tt139Normalize==="function")return tt139Normalize(tk);}catch(e){}
+  try{if(typeof tt76NormalizeFilm==="function")return tt76NormalizeFilm(tk);}catch(e){}
+  return tk;
+}
+function tt140SafeStep(s,idx){
+  try{if(typeof tt139SafeStep==="function")return tt139SafeStep(s,idx);}catch(e){}
+  try{if(typeof tt76SafeStep==="function")return tt76SafeStep(s,idx);}catch(e){}
+  s=s||{};
+  s.players=Array.isArray(s.players)?s.players:[];
+  s.movementPaths=Array.isArray(s.movementPaths)?s.movementPaths:[];
+  return s;
+}
+function tt140Label(idx){
+  try{if(typeof tt139Label==="function")return tt139Label(idx);}catch(e){}
+  try{if(typeof tt76Label==="function")return tt76Label(idx);}catch(e){}
+  return idx===0?"Startläge":"Steg "+idx;
+}
+function tt140SetPos(step,id,pos){
+  if(!step||!pos)return;
+  if(id==="ball"){
+    step.ball=step.ball||{x:pos.x,y:pos.y};
+    step.ball.x=pos.x;step.ball.y=pos.y;
+    return;
+  }
+  var p=(step.players||[]).find(function(x){return String(x.id)===String(id);});
+  if(p){p.x=pos.x;p.y=pos.y;}
+}
+function tt140ApplyMovementEndpointsToSameStep(step){
+  step=tt140SafeStep(step,0);
+  (step.movementPaths||[]).forEach(function(mp){
+    if(!mp||!mp.pts||mp.pts.length<2)return;
+    var ep=mp.pts[mp.pts.length-1];
+    tt140SetPos(step,mp.playerId,ep);
+  });
+  return step;
+}
+function tt140Snapshot(){
+  var snap=null;
+  try{if(typeof tt139Snapshot==="function")snap=tt139Snapshot();}catch(e){}
+  if(!snap){try{if(typeof tt76Snapshot==="function")snap=tt76Snapshot();}catch(e){}}
+  if(!snap){try{if(typeof currentSnap==="function")snap=currentSnap();}catch(e){}}
+  snap=tt140SafeStep(snap||{},editingStepIdx||0);
+  try{
+    snap.movementPaths=(movementPaths||[]).map(function(m){
+      return {
+        id:m.id,
+        playerId:m.playerId,
+        pts:(m.pts||[]).map(function(p){return {x:p.x,y:p.y};})
+      };
+    });
+  }catch(e){}
+  try{
+    var inp=document.getElementById("edit-step-name-inp");
+    if(inp && inp.value.trim())snap.label=inp.value.trim();
+  }catch(e){}
+  if(!snap.label)snap.label=tt140Label(editingStepIdx||0);
+
+  // Ny målbildsregel: rörelsepilens slutpunkt är slutpositionen i detta steg.
+  return tt140ApplyMovementEndpointsToSameStep(snap);
+}
+function tt140SaveCurrentStep(opts){
+  opts=opts||{};
+  var tk=tt140Normalize(tt140CurrentTk());
+  if(!tk||!Array.isArray(tk.steps))return {created:false};
+  if(typeof editingStepIdx==="undefined" || editingStepIdx===null)return {created:false};
+  try{if(typeof tt76IsPresentation==="function" && tt76IsPresentation())return {created:false};}catch(e){}
+  try{if(typeof tt76IsReadOnly==="function" && tt76IsReadOnly(tk))return {created:false};}catch(e){}
+
+  if(editingStepIdx<0)editingStepIdx=0;
+  if(editingStepIdx>=tk.steps.length)editingStepIdx=tk.steps.length-1;
+
+  tk.steps[editingStepIdx]=tt140Snapshot();
+
+  try{if(typeof ttV76!=="undefined" && ttV76){ttV76.pointerArmed=false;ttV76.lastEditAt=0;}}catch(e){}
+  try{if(typeof v74CanvasEditArmed!=="undefined")v74CanvasEditArmed=false;}catch(e){}
+  try{if(typeof v75CanvasArmed!=="undefined")v75CanvasArmed=false;}catch(e){}
+
+  tt140Normalize(tk);
+  if(typeof playback!=="undefined" && playback){
+    playback.tk=tk;
+    playback.stepIndex=editingStepIdx;
+  }
+  try{if(typeof tt76MarkDirty==="function")tt76MarkDirty();else taktikDirtyV17=true;}catch(e){}
+  return {created:false};
+}
+
+tt76SaveCurrentStep=tt140SaveCurrentStep;
+saveCurrentStepV75=tt140SaveCurrentStep;
+saveCurrentStepV74=tt140SaveCurrentStep;
+saveCurrentStepV73=tt140SaveCurrentStep;
+saveCurrentStepV70=tt140SaveCurrentStep;
+try{autoSaveCurrentStepLocalV16=tt140SaveCurrentStep;}catch(e){}
+try{tt139SaveCurrentStep=tt140SaveCurrentStep;}catch(e){}
+
+try{maybeAutoCreateAfterEditV70=function(){return false;};}catch(e){}
+try{applyMovementEndpointV75=function(){return false;};}catch(e){}
+try{applyMovementEndpointsV74=function(){return false;};}catch(e){}
+try{tt76ApplyMovementEndpoints=function(){return false;};}catch(e){}
+try{propagateManualStepPositionsV14=function(){return false;};}catch(e){}
+
+function tt140PathLen(pts){
+  var l=0;
+  for(var i=1;i<(pts||[]).length;i++){
+    var dx=pts[i].x-pts[i-1].x,dy=pts[i].y-pts[i-1].y;
+    l+=Math.sqrt(dx*dx+dy*dy);
+  }
+  return l;
+}
+function tt140PathPos(pts,t){
+  pts=pts||[];
+  if(pts.length===0)return null;
+  if(pts.length===1)return {x:pts[0].x,y:pts[0].y};
+  var total=tt140PathLen(pts);
+  if(total<=0)return {x:pts[pts.length-1].x,y:pts[pts.length-1].y};
+  var wanted=Math.max(0,Math.min(1,t))*total;
+  var acc=0;
+  for(var i=1;i<pts.length;i++){
+    var a=pts[i-1],b=pts[i];
+    var seg=Math.sqrt(Math.pow(b.x-a.x,2)+Math.pow(b.y-a.y,2));
+    if(acc+seg>=wanted){
+      var f=seg>0?(wanted-acc)/seg:0;
+      return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f};
+    }
+    acc+=seg;
+  }
+  return {x:pts[pts.length-1].x,y:pts[pts.length-1].y};
+}
+function tt140FindPlayer(step,id){
+  return ((step&&step.players)||[]).find(function(p){return String(p.id)===String(id);});
+}
+function tt140StepPos(step,id){
+  step=tt140SafeStep(step,0);
+  if(id==="ball")return step.ball?{x:step.ball.x,y:step.ball.y}:null;
+  var p=tt140FindPlayer(step,id);
+  return p?{x:p.x,y:p.y}:null;
+}
+function tt140DrawToken(id,pos){
+  if(!pos)return;
+  if(id==="ball"){
+    ball.x=pos.x;ball.y=pos.y;
+    return;
+  }
+  var p=(players||[]).find(function(x){return String(x.id)===String(id);});
+  if(p){p.x=pos.x;p.y=pos.y;}
+}
+function tt140RenderAnimationFrame(){
+  try{render();}catch(e){}
+}
+
+animateToStep=function(targetIdx){
+  if(typeof playback==="undefined" || !playback || !playback.tk || !playback.tk.steps)return;
+  var tk=playback.tk;
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+  var fromIdx=(typeof editingStepIdx==="number")?editingStepIdx:(playback.stepIndex||0);
+  fromIdx=Math.max(0,Math.min(fromIdx,tk.steps.length-1));
+
+  var fromStep=tt140SafeStep(tt140Clone(tk.steps[fromIdx]),fromIdx);
+  var target=tt140SafeStep(tt140Clone(tk.steps[targetIdx]),targetIdx);
+  target=tt140ApplyMovementEndpointsToSameStep(target);
+
+  if(animFrame)try{cancelAnimationFrame(animFrame);}catch(e){}
+  playback.animating=true;
+  playback.stepIndex=targetIdx;
+  try{if(typeof updatePlaybar==="function")updatePlaybar();}catch(e){}
+
+  // Säkerställ att bilden verkligen startar från föregående/nuvarande bild.
+  try{restoreSnap(fromStep);}catch(e){}
+
+  var movePaths=(target.movementPaths||[]).filter(function(mp){return mp&&mp.pts&&mp.pts.length>1;});
+  var maxLen=0;
+
+  movePaths.forEach(function(mp){maxLen=Math.max(maxLen,tt140PathLen(mp.pts));});
+
+  (target.players||[]).forEach(function(tp){
+    var fp=tt140StepPos(fromStep,tp.id);
+    if(fp){
+      var d=Math.sqrt(Math.pow(tp.x-fp.x,2)+Math.pow(tp.y-fp.y,2));
+      maxLen=Math.max(maxLen,d);
+    }
+  });
+  if(target.ball&&fromStep.ball){
+    maxLen=Math.max(maxLen,Math.sqrt(Math.pow(target.ball.x-fromStep.ball.x,2)+Math.pow(target.ball.y-fromStep.ball.y,2)));
+  }
+
+  var dur=maxLen>5?Math.round((maxLen/150)*animSpeed):Math.round(animSpeed*0.3);
+  dur=Math.max(180,dur||300);
+  var start=performance.now();
+
+  function frame(now){
+    var raw=Math.min(1,(now-start)/dur);
+    var ease=raw<0.5?2*raw*raw:1-Math.pow(-2*raw+2,2)/2;
+
+    (target.players||[]).forEach(function(tp){
+      var mp=movePaths.find(function(x){return String(x.playerId)===String(tp.id);});
+      if(mp){
+        var pos=tt140PathPos(mp.pts,ease);
+        tt140DrawToken(tp.id,pos);
+      }else{
+        var fp=tt140StepPos(fromStep,tp.id);
+        if(fp)tt140DrawToken(tp.id,{x:fp.x+(tp.x-fp.x)*ease,y:fp.y+(tp.y-fp.y)*ease});
+      }
+    });
+
+    if(target.ball){
+      var bmp=movePaths.find(function(x){return x.playerId==="ball";});
+      if(bmp){
+        tt140DrawToken("ball",tt140PathPos(bmp.pts,ease));
+      }else if(fromStep.ball){
+        tt140DrawToken("ball",{x:fromStep.ball.x+(target.ball.x-fromStep.ball.x)*ease,y:fromStep.ball.y+(target.ball.y-fromStep.ball.y)*ease});
+      }
+    }
+
+    tt140RenderAnimationFrame();
+
+    if(raw<1){
+      animFrame=requestAnimationFrame(frame);
+    }else{
+      try{restoreSnap(target);}catch(e){}
+      try{render();}catch(e){}
+      editingStepIdx=targetIdx;
+      playback.stepIndex=targetIdx;
+      playback.animating=false;
+      try{if(typeof updatePlaybar==="function")updatePlaybar();}catch(e){}
+      try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+      try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+
+      try{
+        var loopOn=document.getElementById("play-loop") && document.getElementById("play-loop").checked;
+        if(loopOn && targetIdx>=tk.steps.length-1){
+          setTimeout(function(){
+            if(!playback)return;
+            restoreSnap(tk.steps[0]);
+            render();
+            editingStepIdx=0;
+            playback.stepIndex=0;
+            updatePlaybar();
+            setTimeout(function(){if(playback)animateToStep(1);},600);
+          },800);
+        }
+      }catch(e){}
+    }
+  }
+
+  animFrame=requestAnimationFrame(frame);
+};
+
+function tt140GoToStep(idx,animate){
+  var tk=tt140Normalize(tt140CurrentTk());
+  if(!tk||!tk.steps)return;
+  idx=Math.max(0,Math.min(idx,tk.steps.length-1));
+  var oldIdx=(typeof editingStepIdx==="number")?editingStepIdx:idx;
+
+  if(idx!==oldIdx){
+    tt140SaveCurrentStep({allowAutoCreate:false});
+    tk=tt140Normalize(tt140CurrentTk());
+  }
+
+  if(animate && typeof playback!=="undefined" && playback && idx!==oldIdx){
+    playback.tk=tk;
+    animateToStep(idx);
+    return;
+  }
+
+  editingStepIdx=idx;
+  if(typeof playback!=="undefined" && playback){
+    playback.tk=tk;
+    playback.stepIndex=idx;
+  }
+  try{restoreSnap(tt140SafeStep(tk.steps[idx],idx));}catch(e){}
+  try{render();}catch(e){}
+  try{if(typeof updateEditStepUI_silent==="function")updateEditStepUI_silent();}catch(e){}
+  try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+  try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+}
+
+try{tt139RestoreTarget=tt140GoToStep;}catch(e){}
+try{goToStepV75=function(idx,opts){tt140GoToStep(idx,!(opts&&opts.animate===false));};}catch(e){}
+try{goToStepV74=goToStepV75;goToStepV73=goToStepV75;goToStepV72=goToStepV75;goToStepV71=goToStepV75;goToStepV70=goToStepV75;}catch(e){}
+
+function tt140AddStep(){
+  var tk=tt140Normalize(tt140CurrentTk());
+  if(!tk||!tk.steps)return;
+  tt140SaveCurrentStep({allowAutoCreate:false});
+  tk=tt140Normalize(tt140CurrentTk());
+
+  var oldIdx=(typeof editingStepIdx==="number")?editingStepIdx:0;
+  var base=tt140SafeStep(tt140Clone(tk.steps[oldIdx]||tt140Snapshot()),oldIdx+1);
+  base.movementPaths=[];
+  base.label=tt140Label(oldIdx+1);
+
+  try{if(typeof saveTaktikUndo==="function")saveTaktikUndo();}catch(e){}
+  tk.steps.splice(oldIdx+1,0,base);
+  tt140Normalize(tk);
+  editingStepIdx=oldIdx+1;
+  tt140GoToStep(editingStepIdx,false);
+  try{if(typeof tt76MarkDirty==="function")tt76MarkDirty();else taktikDirtyV17=true;}catch(e){}
+}
+
+function tt140BindStepControls(){
+  function bind(id,fn){
+    var old=document.getElementById(id);
+    if(!old)return;
+    var neu=old.cloneNode(true);
+    neu.id=id;
+    neu.dataset.tt140Bound="1";
+    old.parentNode.replaceChild(neu,old);
+    neu.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      fn();
+      return false;
+    },true);
+  }
+  bind("btn-edit-add-step",tt140AddStep);
+  bind("btn-edit-step-prev",function(){tt140GoToStep((editingStepIdx||0)-1,true);});
+  bind("btn-edit-step-next",function(){tt140GoToStep((editingStepIdx||0)+1,true);});
+  bind("btn-prev",function(){tt140GoToStep((editingStepIdx||0)-1,true);});
+  bind("btn-next",function(){tt140GoToStep((editingStepIdx||0)+1,true);});
+  bind("btn-first",function(){tt140GoToStep(0,true);});
+  bind("fs-prev-btn",function(){tt140GoToStep((editingStepIdx||0)-1,true);});
+  bind("fs-next-btn",function(){tt140GoToStep((editingStepIdx||0)+1,true);});
+  bind("fs-first-btn",function(){tt140GoToStep(0,true);});
+  bind("ls-prev-btn",function(){tt140GoToStep((editingStepIdx||0)-1,true);});
+  bind("ls-next-btn",function(){tt140GoToStep((editingStepIdx||0)+1,true);});
+  bind("ls-first-btn",function(){tt140GoToStep(0,true);});
+}
+
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt140Wrapped){
+  var _renderEditSteps_tt140=renderEditSteps;
+  renderEditSteps=function(){
+    var r=_renderEditSteps_tt140.apply(this,arguments);
+    setTimeout(tt140BindStepControls,0);
+    return r;
+  };
+  renderEditSteps._tt140Wrapped=true;
+}
+
+if(typeof startPlayback==="function" && !startPlayback._tt140Wrapped){
+  var _startPlayback_tt140=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt140.apply(this,arguments);
+    setTimeout(tt140BindStepControls,80);
+    setTimeout(tt140BindStepControls,400);
+    return r;
+  };
+  startPlayback._tt140Wrapped=true;
+}
+
+setTimeout(tt140BindStepControls,400);
+setTimeout(tt140BindStepControls,1200);
+
+/* === slut v140-target-step-animation === */
