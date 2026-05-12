@@ -18113,3 +18113,151 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v155-user-profile-flow-lock === */
+
+
+/* === v156-desktop-movement-arrows: rörelsepilar med mus på dator ===
+   Bas: v155.
+   Rör bara desktop/mus-start för rörelsepil.
+   Touch/iPhone-logiken lämnas orörd.
+*/
+
+(function(){
+  if(window.__tt156DesktopMovementArrows)return;
+  window.__tt156DesktopMovementArrows=true;
+
+  function tt156CanDrawMovement(){
+    try{
+      if(typeof mode==="undefined" || mode!=="movement")return false;
+      if(typeof editingTaktikIdx!=="undefined" && editingTaktikIdx!==null){
+        var tk=(typeof tt145CurrentTk==="function")?tt145CurrentTk():((taktikFilmer||[])[editingTaktikIdx]);
+        try{if(typeof tt76IsReadOnly==="function" && tt76IsReadOnly(tk))return false;}catch(e){}
+      }
+      return true;
+    }catch(e){return false;}
+  }
+
+  function tt156Dist(a,b){
+    if(!a||!b)return 999999;
+    var dx=(a.x||0)-(b.x||0),dy=(a.y||0)-(b.y||0);
+    return Math.sqrt(dx*dx+dy*dy);
+  }
+
+  function tt156NearestToken(pt){
+    var best=null;
+    try{
+      (players||[]).forEach(function(p){
+        var d=tt156Dist(pt,p);
+        if(d<=24 && (!best || d<best.d)){
+          best={type:"player",id:p.id,x:p.x,y:p.y,d:d};
+        }
+      });
+    }catch(e){}
+
+    try{
+      var bd=tt156Dist(pt,ball);
+      if(bd<=24 && (!best || bd<best.d)){
+        best={type:"ball",id:"ball",x:ball.x,y:ball.y,d:bd};
+      }
+    }catch(e){}
+
+    return best;
+  }
+
+  function tt156IsMovementPathTarget(target){
+    try{
+      if(!target || !target.closest)return false;
+      if(target.closest(".mv-path-g"))return true;
+      if(target.classList && (target.classList.contains("del-circ") || target.classList.contains("del-txt")))return true;
+    }catch(e){}
+    return false;
+  }
+
+  function tt156StartDesktopMovement(ev){
+    if(!tt156CanDrawMovement())return;
+    if(ev.button!==undefined && ev.button!==0)return;
+
+    var svg=document.getElementById("pitch-svg");
+    if(!svg)return;
+
+    if(!svg.contains(ev.target))return;
+    if(tt156IsMovementPathTarget(ev.target))return;
+
+    var pt=svgPt(ev.clientX,ev.clientY);
+    var token=tt156NearestToken(pt);
+    if(!token)return;
+
+    ev.preventDefault();
+    ev.stopPropagation();
+    if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
+
+    try{saveUndo();}catch(e){}
+
+    movementCurrent={
+      id:"mv"+(idCounter++),
+      playerId:token.id,
+      pts:[{x:token.x,y:token.y}]
+    };
+
+    function onMove(e2){
+      e2.preventDefault();
+      if(!movementCurrent)return;
+      movementCurrent.pts.push(svgPt(e2.clientX,e2.clientY));
+      try{renderMovementPreview();}catch(e){}
+    }
+
+    function onUp(e2){
+      window.removeEventListener("mousemove",onMove,true);
+      window.removeEventListener("mouseup",onUp,true);
+
+      if(movementCurrent && movementCurrent.pts && movementCurrent.pts.length>3){
+        try{movementCurrent.pts=resamplePath(movementCurrent.pts,30);}catch(e){}
+        movementPaths.push(movementCurrent);
+      }
+
+      movementCurrent=null;
+
+      try{render();}catch(e){}
+
+      // Samma sparflöde som touch/mobil får via senare mouseup/touchend-lyssnare,
+      // men här gör vi det direkt för att desktop inte ska missa rörelsebanan.
+      setTimeout(function(){
+        try{
+          if(typeof tt145SaveCurrentStep==="function")tt145SaveCurrentStep({allowAutoCreate:false});
+          else if(typeof tt76SaveCurrentStep==="function")tt76SaveCurrentStep({allowAutoCreate:false});
+        }catch(e){}
+      },60);
+    }
+
+    window.addEventListener("mousemove",onMove,true);
+    window.addEventListener("mouseup",onUp,true);
+  }
+
+  var pitch=document.getElementById("pitch-svg");
+  if(pitch){
+    pitch.addEventListener("mousedown",tt156StartDesktopMovement,true);
+  }
+
+  // Om SVG:t renderas om eller initieras sent, bind igen försiktigt.
+  function tt156Bind(){
+    var p=document.getElementById("pitch-svg");
+    if(p && p.dataset.tt156MovementMouse!=="1"){
+      p.dataset.tt156MovementMouse="1";
+      p.addEventListener("mousedown",tt156StartDesktopMovement,true);
+    }
+  }
+
+  if(typeof render==="function" && !render._tt156Wrapped){
+    var _render_tt156=render;
+    render=function(){
+      var r=_render_tt156.apply(this,arguments);
+      setTimeout(tt156Bind,0);
+      return r;
+    };
+    render._tt156Wrapped=true;
+  }
+
+  setTimeout(tt156Bind,300);
+  setTimeout(tt156Bind,1200);
+})();
+
+/* === slut v156-desktop-movement-arrows === */
