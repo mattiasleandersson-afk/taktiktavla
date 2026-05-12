@@ -17191,3 +17191,435 @@ setTimeout(tt140BindStepControls,400);
 setTimeout(tt140BindStepControls,1200);
 
 /* === slut v140-target-step-animation === */
+
+
+/* === v141-animation-propagation-cleanup: mjuk animation + ärv position framåt ===
+   Bas: v140.
+   - UI får inte återställa slutbilden medan animationen kör.
+   - Rörelsepil går lugnare.
+   - Manuell flytt/rörelsepil i ett steg ärvs framåt till kommande steg om spelaren där ännu står på den gamla positionen.
+   - Om en rörelsepil tas bort flyttas spelaren tillbaka till pilens startpunkt i aktuellt steg.
+*/
+
+var tt141Animating=false;
+
+function tt141Clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+function tt141CurrentTk(){
+  try{if(typeof tt140CurrentTk==="function")return tt140CurrentTk();}catch(e){}
+  try{if(typeof tt139CurrentTk==="function")return tt139CurrentTk();}catch(e){}
+  try{if(typeof tt76Current==="function")return tt76Current();}catch(e){}
+  try{
+    if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+function tt141Normalize(tk){
+  try{if(typeof tt140Normalize==="function")return tt140Normalize(tk);}catch(e){}
+  try{if(typeof tt76NormalizeFilm==="function")return tt76NormalizeFilm(tk);}catch(e){}
+  return tk;
+}
+function tt141SafeStep(s,idx){
+  try{if(typeof tt140SafeStep==="function")return tt140SafeStep(s,idx);}catch(e){}
+  try{if(typeof tt139SafeStep==="function")return tt139SafeStep(s,idx);}catch(e){}
+  return s||{};
+}
+function tt141Label(idx){
+  try{if(typeof tt140Label==="function")return tt140Label(idx);}catch(e){}
+  try{if(typeof tt76Label==="function")return tt76Label(idx);}catch(e){}
+  return idx===0?"Startläge":"Steg "+idx;
+}
+function tt141Dist(a,b){
+  if(!a||!b)return 999999;
+  var dx=(a.x||0)-(b.x||0),dy=(a.y||0)-(b.y||0);
+  return Math.sqrt(dx*dx+dy*dy);
+}
+function tt141SamePos(a,b){return tt141Dist(a,b)<1.5;}
+function tt141GetPos(step,id){
+  step=tt141SafeStep(step,0);
+  if(id==="ball")return step.ball?{x:step.ball.x,y:step.ball.y}:null;
+  var p=(step.players||[]).find(function(x){return String(x.id)===String(id);});
+  return p?{x:p.x,y:p.y}:null;
+}
+function tt141SetPos(step,id,pos){
+  if(!step||!pos)return;
+  if(id==="ball"){
+    step.ball=step.ball||{x:pos.x,y:pos.y};
+    step.ball.x=pos.x;step.ball.y=pos.y;
+    return;
+  }
+  var p=(step.players||[]).find(function(x){return String(x.id)===String(id);});
+  if(p){p.x=pos.x;p.y=pos.y;}
+}
+function tt141MoveIds(oldStep,newStep){
+  var ids={};
+  oldStep=tt141SafeStep(oldStep,0);
+  newStep=tt141SafeStep(newStep,0);
+
+  (oldStep.players||[]).forEach(function(p){ids[p.id]=true;});
+  (newStep.players||[]).forEach(function(p){ids[p.id]=true;});
+  if(oldStep.ball||newStep.ball)ids.ball=true;
+
+  return Object.keys(ids).filter(function(id){
+    return !tt141SamePos(tt141GetPos(oldStep,id),tt141GetPos(newStep,id));
+  });
+}
+function tt141MovementMap(step){
+  var m={};
+  step=tt141SafeStep(step,0);
+  (step.movementPaths||[]).forEach(function(mp){
+    if(!mp||!mp.playerId||!mp.pts||mp.pts.length<2)return;
+    m[String(mp.playerId)]={start:mp.pts[0],end:mp.pts[mp.pts.length-1],mp:mp};
+  });
+  return m;
+}
+function tt141FutureHasMovement(step,id){
+  step=tt141SafeStep(step,0);
+  return !!((step.movementPaths||[]).find(function(mp){return String(mp.playerId)===String(id);}));
+}
+function tt141ApplyMovementEndpoints(step){
+  step=tt141SafeStep(step,0);
+  (step.movementPaths||[]).forEach(function(mp){
+    if(!mp||!mp.pts||mp.pts.length<2)return;
+    tt141SetPos(step,mp.playerId,mp.pts[mp.pts.length-1]);
+  });
+  return step;
+}
+function tt141SnapshotWithRemovedArrowHandling(oldStep){
+  var snap=null;
+  try{if(typeof tt140Snapshot==="function")snap=tt140Snapshot();}catch(e){}
+  if(!snap){try{if(typeof tt139Snapshot==="function")snap=tt139Snapshot();}catch(e){}}
+  if(!snap){try{if(typeof tt76Snapshot==="function")snap=tt76Snapshot();}catch(e){}}
+  if(!snap){try{snap=currentSnap();}catch(e){}}
+
+  snap=tt141SafeStep(snap||{},editingStepIdx||0);
+
+  try{
+    snap.movementPaths=(movementPaths||[]).map(function(m){
+      return {
+        id:m.id,
+        playerId:m.playerId,
+        pts:(m.pts||[]).map(function(p){return {x:p.x,y:p.y};})
+      };
+    });
+  }catch(e){}
+
+  try{
+    var inp=document.getElementById("edit-step-name-inp");
+    if(inp && inp.value.trim())snap.label=inp.value.trim();
+  }catch(e){}
+  if(!snap.label)snap.label=tt141Label(editingStepIdx||0);
+
+  oldStep=tt141SafeStep(oldStep||{},editingStepIdx||0);
+  var oldMov=tt141MovementMap(oldStep);
+  var newMov=tt141MovementMap(snap);
+
+  // Om en rörelsepil tas bort: flytta tillbaka spelaren till pilens startpunkt.
+  Object.keys(oldMov).forEach(function(id){
+    if(newMov[id])return;
+    tt141SetPos(snap,id,oldMov[id].start);
+    try{
+      if(id==="ball"){ball.x=oldMov[id].start.x;ball.y=oldMov[id].start.y;}
+      else{
+        var p=(players||[]).find(function(x){return String(x.id)===String(id);});
+        if(p){p.x=oldMov[id].start.x;p.y=oldMov[id].start.y;}
+      }
+    }catch(e){}
+  });
+
+  // Om en rörelsepil finns: pilens slutpunkt är spelarens slutposition i steget.
+  tt141ApplyMovementEndpoints(snap);
+  return snap;
+}
+function tt141PropagateChangedPositions(tk,idx,oldStep,newStep){
+  if(!tk||!tk.steps)return;
+  oldStep=tt141SafeStep(oldStep,idx);
+  newStep=tt141SafeStep(newStep,idx);
+
+  var changed={};
+  tt141MoveIds(oldStep,newStep).forEach(function(id){changed[id]={oldPos:tt141GetPos(oldStep,id),newPos:tt141GetPos(newStep,id)};});
+
+  var oldMov=tt141MovementMap(oldStep);
+  var newMov=tt141MovementMap(newStep);
+
+  // Borttagen pil räknas som ändring från gammal endpoint till gammal start.
+  Object.keys(oldMov).forEach(function(id){
+    if(newMov[id])return;
+    changed[id]={oldPos:oldMov[id].end,newPos:oldMov[id].start};
+  });
+
+  // Ny/ändrad pil räknas som ändring till ny endpoint.
+  Object.keys(newMov).forEach(function(id){
+    changed[id]={oldPos:tt141GetPos(oldStep,id)||newMov[id].start,newPos:newMov[id].end};
+  });
+
+  Object.keys(changed).forEach(function(id){
+    var ch=changed[id];
+    if(!ch.newPos)return;
+
+    for(var si=idx+1;si<tk.steps.length;si++){
+      var fs=tt141SafeStep(tk.steps[si],si);
+
+      // Om ett senare steg har egen rörelsepil för samma spelare, låt det steget äga sin rörelse.
+      if(tt141FutureHasMovement(fs,id))break;
+
+      var cur=tt141GetPos(fs,id);
+
+      // Skriv bara över steg som fortfarande ligger kvar på den gamla positionen,
+      // eller där tidigare v140 redan hade lagt in exakt den nya positionen.
+      if(cur && (tt141SamePos(cur,ch.oldPos) || tt141SamePos(cur,ch.newPos))){
+        tt141SetPos(fs,id,ch.newPos);
+        tk.steps[si]=fs;
+      }else{
+        // Om positionen är annan har användaren sannolikt redan planerat ett senare läge.
+        break;
+      }
+    }
+  });
+}
+function tt141SaveCurrentStep(opts){
+  opts=opts||{};
+  var tk=tt141Normalize(tt141CurrentTk());
+  if(!tk||!Array.isArray(tk.steps))return {created:false};
+  if(typeof editingStepIdx==="undefined" || editingStepIdx===null)return {created:false};
+  try{if(typeof tt76IsPresentation==="function" && tt76IsPresentation())return {created:false};}catch(e){}
+  try{if(typeof tt76IsReadOnly==="function" && tt76IsReadOnly(tk))return {created:false};}catch(e){}
+
+  if(editingStepIdx<0)editingStepIdx=0;
+  if(editingStepIdx>=tk.steps.length)editingStepIdx=tk.steps.length-1;
+
+  var oldStep=tt141Clone(tk.steps[editingStepIdx]||{});
+  var snap=tt141SnapshotWithRemovedArrowHandling(oldStep);
+
+  tk.steps[editingStepIdx]=snap;
+  tt141PropagateChangedPositions(tk,editingStepIdx,oldStep,snap);
+
+  try{if(typeof ttV76!=="undefined" && ttV76){ttV76.pointerArmed=false;ttV76.lastEditAt=0;}}catch(e){}
+  try{if(typeof v74CanvasEditArmed!=="undefined")v74CanvasEditArmed=false;}catch(e){}
+  try{if(typeof v75CanvasArmed!=="undefined")v75CanvasArmed=false;}catch(e){}
+
+  tt141Normalize(tk);
+  if(typeof playback!=="undefined" && playback){
+    playback.tk=tk;
+    playback.stepIndex=editingStepIdx;
+  }
+  try{if(typeof tt76MarkDirty==="function")tt76MarkDirty();else taktikDirtyV17=true;}catch(e){}
+  return {created:false};
+}
+
+tt76SaveCurrentStep=tt141SaveCurrentStep;
+saveCurrentStepV75=tt141SaveCurrentStep;
+saveCurrentStepV74=tt141SaveCurrentStep;
+saveCurrentStepV73=tt141SaveCurrentStep;
+saveCurrentStepV70=tt141SaveCurrentStep;
+try{tt140SaveCurrentStep=tt141SaveCurrentStep;}catch(e){}
+try{tt139SaveCurrentStep=tt141SaveCurrentStep;}catch(e){}
+try{autoSaveCurrentStepLocalV16=tt141SaveCurrentStep;}catch(e){}
+
+function tt141PathLen(pts){
+  var l=0;
+  for(var i=1;i<(pts||[]).length;i++){
+    var dx=pts[i].x-pts[i-1].x,dy=pts[i].y-pts[i-1].y;
+    l+=Math.sqrt(dx*dx+dy*dy);
+  }
+  return l;
+}
+function tt141PathPos(pts,t){
+  pts=pts||[];
+  if(pts.length===0)return null;
+  if(pts.length===1)return {x:pts[0].x,y:pts[0].y};
+  var total=tt141PathLen(pts);
+  if(total<=0)return {x:pts[pts.length-1].x,y:pts[pts.length-1].y};
+  var wanted=Math.max(0,Math.min(1,t))*total;
+  var acc=0;
+  for(var i=1;i<pts.length;i++){
+    var a=pts[i-1],b=pts[i];
+    var seg=Math.sqrt(Math.pow(b.x-a.x,2)+Math.pow(b.y-a.y,2));
+    if(acc+seg>=wanted){
+      var f=seg>0?(wanted-acc)/seg:0;
+      return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f};
+    }
+    acc+=seg;
+  }
+  return {x:pts[pts.length-1].x,y:pts[pts.length-1].y};
+}
+function tt141DrawToken(id,pos){
+  if(!pos)return;
+  if(id==="ball"){ball.x=pos.x;ball.y=pos.y;return;}
+  var p=(players||[]).find(function(x){return String(x.id)===String(id);});
+  if(p){p.x=pos.x;p.y=pos.y;}
+}
+function tt141AllIds(a,b){
+  var ids={};
+  (a.players||[]).forEach(function(p){ids[p.id]=true;});
+  (b.players||[]).forEach(function(p){ids[p.id]=true;});
+  if(a.ball||b.ball)ids.ball=true;
+  return Object.keys(ids);
+}
+
+animateToStep=function(targetIdx){
+  if(typeof playback==="undefined" || !playback || !playback.tk || !playback.tk.steps)return;
+  var tk=playback.tk;
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+
+  var fromIdx=(typeof editingStepIdx==="number")?editingStepIdx:(playback.stepIndex||0);
+  fromIdx=Math.max(0,Math.min(fromIdx,tk.steps.length-1));
+
+  var fromStep=tt141SafeStep(tt141Clone(tk.steps[fromIdx]),fromIdx);
+  var target=tt141ApplyMovementEndpoints(tt141SafeStep(tt141Clone(tk.steps[targetIdx]),targetIdx));
+  var moveMap=tt141MovementMap(target);
+
+  if(animFrame)try{cancelAnimationFrame(animFrame);}catch(e){}
+  tt141Animating=true;
+  playback.animating=true;
+  playback.stepIndex=targetIdx;
+
+  try{restoreSnap(fromStep);}catch(e){}
+  try{render();}catch(e){}
+
+  var maxLen=0;
+  tt141AllIds(fromStep,target).forEach(function(id){
+    if(moveMap[String(id)]){
+      maxLen=Math.max(maxLen,tt141PathLen(moveMap[String(id)].mp.pts));
+    }else{
+      maxLen=Math.max(maxLen,tt141Dist(tt141GetPos(fromStep,id),tt141GetPos(target,id)));
+    }
+  });
+
+  // Lugnare tempo än v140, särskilt för rörelsepilar.
+  var dur=Math.round((maxLen/120)*animSpeed);
+  if(Object.keys(moveMap).length)dur=Math.max(dur,Math.round(animSpeed*1.15));
+  dur=Math.max(650,Math.min(2600,dur||900));
+
+  var start=performance.now();
+
+  function frame(now){
+    var raw=Math.min(1,(now-start)/dur);
+    var ease=raw<0.5?2*raw*raw:1-Math.pow(-2*raw+2,2)/2;
+
+    tt141AllIds(fromStep,target).forEach(function(id){
+      var key=String(id);
+      if(moveMap[key]){
+        tt141DrawToken(id,tt141PathPos(moveMap[key].mp.pts,ease));
+      }else{
+        var a=tt141GetPos(fromStep,id),b=tt141GetPos(target,id);
+        if(a&&b)tt141DrawToken(id,{x:a.x+(b.x-a.x)*ease,y:a.y+(b.y-a.y)*ease});
+      }
+    });
+
+    try{render();}catch(e){}
+
+    if(raw<1){
+      animFrame=requestAnimationFrame(frame);
+    }else{
+      tt141Animating=false;
+      playback.animating=false;
+      editingStepIdx=targetIdx;
+      playback.stepIndex=targetIdx;
+      try{restoreSnap(target);}catch(e){}
+      try{render();}catch(e){}
+      try{if(typeof updatePlaybar==="function")updatePlaybar();}catch(e){}
+      try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+      try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+    }
+  }
+
+  animFrame=requestAnimationFrame(frame);
+};
+
+var _tt141_updateEditStepUI=typeof updateEditStepUI==="function"?updateEditStepUI:null;
+var _tt141_updateEditStepUI_silent=typeof updateEditStepUI_silent==="function"?updateEditStepUI_silent:null;
+
+updateEditStepUI=function(){
+  if(tt141Animating){
+    try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+    return;
+  }
+  if(_tt141_updateEditStepUI)return _tt141_updateEditStepUI.apply(this,arguments);
+};
+updateEditStepUI_silent=function(){
+  if(tt141Animating){
+    try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+    return;
+  }
+  if(_tt141_updateEditStepUI_silent)return _tt141_updateEditStepUI_silent.apply(this,arguments);
+};
+
+function tt141GoToStep(idx,animate){
+  var tk=tt141Normalize(tt141CurrentTk());
+  if(!tk||!tk.steps)return;
+  idx=Math.max(0,Math.min(idx,tk.steps.length-1));
+  var oldIdx=(typeof editingStepIdx==="number")?editingStepIdx:idx;
+
+  if(idx!==oldIdx){
+    tt141SaveCurrentStep({allowAutoCreate:false});
+    tk=tt141Normalize(tt141CurrentTk());
+  }
+
+  if(animate && typeof playback!=="undefined" && playback && idx!==oldIdx){
+    playback.tk=tk;
+    animateToStep(idx);
+    return;
+  }
+
+  editingStepIdx=idx;
+  if(typeof playback!=="undefined" && playback){playback.tk=tk;playback.stepIndex=idx;}
+  try{restoreSnap(tt141SafeStep(tk.steps[idx],idx));}catch(e){}
+  try{render();}catch(e){}
+  try{updateEditStepUI_silent();}catch(e){}
+  try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+  try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+}
+
+try{tt140GoToStep=tt141GoToStep;}catch(e){}
+try{tt139RestoreTarget=tt141GoToStep;}catch(e){}
+try{goToStepV75=function(idx,opts){tt141GoToStep(idx,!(opts&&opts.animate===false));};}catch(e){}
+try{goToStepV74=goToStepV75;goToStepV73=goToStepV75;goToStepV72=goToStepV75;goToStepV71=goToStepV75;goToStepV70=goToStepV75;}catch(e){}
+
+function tt141BindStepControls(){
+  function bind(id,fn){
+    var old=document.getElementById(id);
+    if(!old)return;
+    var neu=old.cloneNode(true);
+    neu.id=id;
+    neu.dataset.tt141Bound="1";
+    old.parentNode.replaceChild(neu,old);
+    neu.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      fn();
+      return false;
+    },true);
+  }
+  bind("btn-edit-step-prev",function(){tt141GoToStep((editingStepIdx||0)-1,true);});
+  bind("btn-edit-step-next",function(){tt141GoToStep((editingStepIdx||0)+1,true);});
+  bind("btn-prev",function(){tt141GoToStep((editingStepIdx||0)-1,true);});
+  bind("btn-next",function(){tt141GoToStep((editingStepIdx||0)+1,true);});
+  bind("fs-prev-btn",function(){tt141GoToStep((editingStepIdx||0)-1,true);});
+  bind("fs-next-btn",function(){tt141GoToStep((editingStepIdx||0)+1,true);});
+  bind("ls-prev-btn",function(){tt141GoToStep((editingStepIdx||0)-1,true);});
+  bind("ls-next-btn",function(){tt141GoToStep((editingStepIdx||0)+1,true);});
+}
+
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt141Wrapped){
+  var _renderEditSteps_tt141=renderEditSteps;
+  renderEditSteps=function(){
+    var r=_renderEditSteps_tt141.apply(this,arguments);
+    setTimeout(tt141BindStepControls,0);
+    return r;
+  };
+  renderEditSteps._tt141Wrapped=true;
+}
+if(typeof startPlayback==="function" && !startPlayback._tt141Wrapped){
+  var _startPlayback_tt141=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt141.apply(this,arguments);
+    setTimeout(tt141BindStepControls,80);
+    setTimeout(tt141BindStepControls,400);
+    return r;
+  };
+  startPlayback._tt141Wrapped=true;
+}
+
+setTimeout(tt141BindStepControls,500);
+setTimeout(tt141BindStepControls,1300);
+
+/* === slut v141-animation-propagation-cleanup === */
