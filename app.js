@@ -17979,48 +17979,56 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v152-taktik-share-surgical === */
 
 
-/* === v153-user-profile-single-prompt: stoppa dubbla namn/lag-prompts ===
+/* === v154-user-profile-precise-prompt: stoppa bara identiska dubbletter ===
    Bas: v152.
-   Rör bara användarprofil-prompts.
+   Ersätter inte användarflödet, utan skyddar bara mot samma prompt två gånger.
+   Namn följt av lag ska fortfarande visas.
 */
 
-var tt153PromptLock=false;
-var tt153LastPromptAt=0;
-var tt153OriginalPrompt=window.prompt;
+(function(){
+  if(window.__tt154PromptPatch)return;
+  window.__tt154PromptPatch=true;
 
-window.prompt=function(message,defaultValue){
-  var msg=String(message||"").toLowerCase();
-  var isProfilePrompt=
-    msg.indexOf("namn")>=0 ||
-    msg.indexOf("tränare")>=0 ||
-    msg.indexOf("tranare")>=0 ||
-    msg.indexOf("lag")>=0 ||
-    msg.indexOf("team")>=0;
+  var originalPrompt=window.prompt;
+  var lastKey="";
+  var lastAt=0;
+  var lastResultByKey={};
 
-  if(isProfilePrompt){
+  function keyForPrompt(message){
+    var msg=String(message||"").trim().toLowerCase();
+
+    // Gruppera namn och lag som olika frågor.
+    if(msg.indexOf("lag")>=0 || msg.indexOf("team")>=0)return "team:"+msg;
+    if(msg.indexOf("namn")>=0 || msg.indexOf("tränare")>=0 || msg.indexOf("tranare")>=0)return "name:"+msg;
+
+    return "other:"+msg;
+  }
+
+  window.prompt=function(message,defaultValue){
+    var key=keyForPrompt(message);
     var now=Date.now();
 
-    // Om samma användarflöde råkar triggas dubbelt samtidigt:
-    // returnera standardvärdet i den andra prompten så användaren slipper se den.
-    if(tt153PromptLock || (now-tt153LastPromptAt<250)){
+    // Stoppa bara om exakt samma typ/text kommer direkt igen.
+    // Namn -> Lag får alltså passera, eftersom nyckeln skiljer sig.
+    if(key===lastKey && (now-lastAt)<350){
+      if(Object.prototype.hasOwnProperty.call(lastResultByKey,key)){
+        return lastResultByKey[key];
+      }
       if(defaultValue!==undefined && defaultValue!==null)return defaultValue;
       return "";
     }
 
-    tt153PromptLock=true;
-    tt153LastPromptAt=now;
-    try{
-      return tt153OriginalPrompt.call(window,message,defaultValue);
-    }finally{
-      setTimeout(function(){tt153PromptLock=false;},300);
-    }
-  }
+    lastKey=key;
+    lastAt=now;
 
-  return tt153OriginalPrompt.call(window,message,defaultValue);
-};
+    var result=originalPrompt.call(window,message,defaultValue);
+    lastResultByKey[key]=result;
+    return result;
+  };
+})();
 
-function tt153ProfileButtonIds(){
-  return [
+function tt154DedupeRapidUserClicks(){
+  var ids=[
     "btn-profile",
     "btn-users",
     "btn-user",
@@ -18031,76 +18039,50 @@ function tt153ProfileButtonIds(){
     "user-btn",
     "profile-btn"
   ];
-}
 
-// Om det finns kända användarknappar med flera äldre listeners,
-// klona dem en gång så bara senaste handler-kedjan efter v153 får leva.
-function tt153DedupeProfileButtons(){
-  tt153ProfileButtonIds().forEach(function(id){
-    var old=document.getElementById(id);
-    if(!old || old.dataset.tt153Bound==="1")return;
-    var neu=old.cloneNode(true);
-    neu.id=id;
-    neu.dataset.tt153Bound="1";
-    old.parentNode.replaceChild(neu,old);
+  ids.forEach(function(id){
+    var btn=document.getElementById(id);
+    if(!btn || btn.dataset.tt154ClickGuard==="1")return;
+    btn.dataset.tt154ClickGuard="1";
 
-    neu.addEventListener("click",function(e){
-      // Släpp igenom normal logik om specifik profilfunktion finns,
-      // men skydda mot dubbelklick/dubbla handlers via prompt-locken ovan.
-      if(neu.dataset.tt153ClickLock==="1"){
+    btn.addEventListener("click",function(e){
+      var now=Date.now();
+      var last=Number(btn.dataset.tt154LastClick||0);
+      if(now-last<400){
         e.preventDefault();
         e.stopPropagation();
         if(e.stopImmediatePropagation)e.stopImmediatePropagation();
         return false;
       }
-      neu.dataset.tt153ClickLock="1";
-      setTimeout(function(){try{delete neu.dataset.tt153ClickLock;}catch(err){neu.dataset.tt153ClickLock="0";}},500);
-
-      try{
-        if(typeof openUserProfile==="function"){
-          e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-          openUserProfile();
-          return false;
-        }
-        if(typeof showUserProfile==="function"){
-          e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-          showUserProfile();
-          return false;
-        }
-        if(typeof editUserProfile==="function"){
-          e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-          editUserProfile();
-          return false;
-        }
-      }catch(err){}
+      btn.dataset.tt154LastClick=String(now);
     },true);
   });
 }
 
-if(typeof renderUsers==="function" && !renderUsers._tt153Wrapped){
-  var _renderUsers_tt153=renderUsers;
+if(typeof renderUsers==="function" && !renderUsers._tt154Wrapped){
+  var _renderUsers_tt154=renderUsers;
   renderUsers=function(){
-    var r=_renderUsers_tt153.apply(this,arguments);
-    setTimeout(tt153DedupeProfileButtons,0);
+    var r=_renderUsers_tt154.apply(this,arguments);
+    setTimeout(tt154DedupeRapidUserClicks,0);
     return r;
   };
-  renderUsers._tt153Wrapped=true;
+  renderUsers._tt154Wrapped=true;
 }
-if(typeof renderUserProfile==="function" && !renderUserProfile._tt153Wrapped){
-  var _renderUserProfile_tt153=renderUserProfile;
+if(typeof renderUserProfile==="function" && !renderUserProfile._tt154Wrapped){
+  var _renderUserProfile_tt154=renderUserProfile;
   renderUserProfile=function(){
-    var r=_renderUserProfile_tt153.apply(this,arguments);
-    setTimeout(tt153DedupeProfileButtons,0);
+    var r=_renderUserProfile_tt154.apply(this,arguments);
+    setTimeout(tt154DedupeRapidUserClicks,0);
     return r;
   };
-  renderUserProfile._tt153Wrapped=true;
+  renderUserProfile._tt154Wrapped=true;
 }
 
 ["click","touchend"].forEach(function(evt){
-  try{window.addEventListener(evt,function(){setTimeout(tt153DedupeProfileButtons,80);},false);}catch(e){}
+  try{window.addEventListener(evt,function(){setTimeout(tt154DedupeRapidUserClicks,80);},false);}catch(e){}
 });
 
-setTimeout(tt153DedupeProfileButtons,400);
-setTimeout(tt153DedupeProfileButtons,1400);
+setTimeout(tt154DedupeRapidUserClicks,400);
+setTimeout(tt154DedupeRapidUserClicks,1400);
 
-/* === slut v153-user-profile-single-prompt === */
+/* === slut v154-user-profile-precise-prompt === */
