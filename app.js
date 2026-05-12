@@ -16444,3 +16444,144 @@ setTimeout(tt132MoveStepButtonsNearInfo,500);
 setTimeout(tt132MoveStepButtonsNearInfo,1500);
 
 /* === slut v132-step-copy-paste-stable === */
+
+
+/* === v133-stay-step-hide-copy-drawings: stanna kvar efter auto-steg + dölj kopiera ritningar ===
+   Bas: v132.
+   - När flytt på sista steg skapar nytt mål-steg ska redigeringen stanna på källsteget.
+   - Kopiera ritningar-knappen tas bort från UI eftersom Kopiera/Klistra steg ersätter den.
+*/
+
+function tt133Clone(o){
+  try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}
+}
+
+function tt133CurrentTk(){
+  try{if(typeof tt76Current==="function")return tt76Current();}catch(e){}
+  try{
+    if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+
+function tt133Normalize(tk){
+  try{if(typeof tt76NormalizeFilm==="function")return tt76NormalizeFilm(tk);}catch(e){}
+  return tk;
+}
+
+function tt133RestoreStep(idx){
+  try{
+    var tk=tt133Normalize(tt133CurrentTk());
+    if(!tk||!tk.steps||!tk.steps[idx])return;
+
+    editingStepIdx=idx;
+    if(typeof playback!=="undefined" && playback){
+      playback.tk=tk;
+      playback.stepIndex=idx;
+    }
+
+    if(typeof restoreSnap==="function"){
+      var step=tk.steps[idx];
+      try{
+        if(typeof tt76SafeStep==="function")step=tt76SafeStep(step,idx);
+      }catch(e){}
+      restoreSnap(tt133Clone(step));
+    }
+
+    try{movementPaths=[];}catch(e){}
+    try{selectedId=null;}catch(e){}
+    try{if(typeof render==="function")render();}catch(e){}
+    try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+    try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+    try{if(typeof tt76UpdateReadOnlyUi==="function")tt76UpdateReadOnlyUi();}catch(e){}
+    try{
+      var inp=document.getElementById("edit-step-name-inp");
+      if(inp){
+        var lbl=(tk.steps[idx]&&tk.steps[idx].label) || (typeof tt76Label==="function"?tt76Label(idx):("Steg "+idx));
+        inp.value=lbl;
+      }
+    }catch(e){}
+  }catch(e){}
+}
+
+if(typeof tt76SaveCurrentStep==="function" && !tt76SaveCurrentStep._tt133StayWrapped){
+  var _tt76SaveCurrentStep_tt133=tt76SaveCurrentStep;
+  tt76SaveCurrentStep=function(opts){
+    opts=opts||{};
+    var oldIdx=(typeof editingStepIdx==="number")?editingStepIdx:null;
+    var tkBefore=tt133CurrentTk();
+    var lenBefore=(tkBefore&&tkBefore.steps)?tkBefore.steps.length:0;
+
+    var res=_tt76SaveCurrentStep_tt133.apply(this,arguments);
+
+    try{
+      var tk=tt133Normalize(tt133CurrentTk());
+      var created=!!(res&&res.created);
+      var autoCreate=!!opts.allowAutoCreate;
+
+      // Bara när systemet automatiskt skapar nytt steg från sista steget.
+      // Manuell + Nytt steg och Klistra in ska fortfarande gå till det nya steget.
+      if(created && autoCreate && oldIdx!==null && lenBefore>0 && oldIdx===lenBefore-1 && tk && tk.steps && tk.steps.length>lenBefore){
+        tt133RestoreStep(oldIdx);
+      }
+    }catch(e){}
+
+    return res;
+  };
+  tt76SaveCurrentStep._tt133StayWrapped=true;
+}
+
+function tt133HideCopyDrawingsButtons(){
+  try{
+    document.querySelectorAll("button").forEach(function(b){
+      var txt=String(b.textContent||"").trim().toLowerCase();
+      var title=String(b.title||"").trim().toLowerCase();
+      var id=String(b.id||"").trim().toLowerCase();
+      var aria=String(b.getAttribute("aria-label")||"").trim().toLowerCase();
+
+      if(
+        id.indexOf("copy-draw")>=0 ||
+        txt.indexOf("kopiera ritningar")>=0 ||
+        title.indexOf("kopiera ritningar")>=0 ||
+        aria.indexOf("kopiera ritningar")>=0 ||
+        txt.indexOf("ritningar")>=0 && txt.indexOf("kopiera")>=0
+      ){
+        b.classList.add("tt133-hide-copy-drawings");
+        b.style.display="none";
+      }
+    });
+  }catch(e){}
+}
+
+if(typeof startPlayback==="function" && !startPlayback._tt133Wrapped){
+  var _startPlayback_tt133=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt133.apply(this,arguments);
+    setTimeout(tt133HideCopyDrawingsButtons,80);
+    setTimeout(tt133HideCopyDrawingsButtons,400);
+    return r;
+  };
+  startPlayback._tt133Wrapped=true;
+}
+
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt133Wrapped){
+  var _renderEditSteps_tt133=renderEditSteps;
+  renderEditSteps=function(){
+    var r=_renderEditSteps_tt133.apply(this,arguments);
+    setTimeout(tt133HideCopyDrawingsButtons,0);
+    return r;
+  };
+  renderEditSteps._tt133Wrapped=true;
+}
+
+["click","touchend","resize","orientationchange"].forEach(function(evt){
+  window.addEventListener(evt,function(){
+    setTimeout(tt133HideCopyDrawingsButtons,60);
+    setTimeout(tt133HideCopyDrawingsButtons,250);
+  },true);
+});
+
+setTimeout(tt133HideCopyDrawingsButtons,400);
+setTimeout(tt133HideCopyDrawingsButtons,1200);
+
+/* === slut v133-stay-step-hide-copy-drawings === */
