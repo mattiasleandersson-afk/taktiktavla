@@ -1137,15 +1137,27 @@
 </style>
 
 
-<style id="v134-stay-step-tight-iphone-css">
+
+
+
+<style id="v135-fix-step-stay-correct-button-css">
   @media (max-width:760px){
-    button.tt134-formation-arrow-only,
-    .tab.tt134-formation-arrow-only {
+    .tab.tt134-formation-arrow-only[data-panel],
+    button.tt134-formation-arrow-only[data-panel] {
+      min-width:auto !important;
+      width:auto !important;
+      max-width:none !important;
+      padding-left:6px !important;
+      padding-right:6px !important;
+      font-size:0.72rem !important;
+    }
+
+    button.tt135-film-formation-arrow {
       color:#e8c84a !important;
       border-color:#e8c84a !important;
-      min-width:34px !important;
-      width:34px !important;
-      max-width:34px !important;
+      min-width:32px !important;
+      width:32px !important;
+      max-width:32px !important;
       padding-left:0 !important;
       padding-right:0 !important;
       text-align:center !important;
@@ -1163,7 +1175,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.58 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.59 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
