@@ -17979,110 +17979,137 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v152-taktik-share-surgical === */
 
 
-/* === v154-user-profile-precise-prompt: stoppa bara identiska dubbletter ===
+/* === v155-user-profile-flow-lock: stoppa hela dubbla profilflödet ===
    Bas: v152.
-   Ersätter inte användarflödet, utan skyddar bara mot samma prompt två gånger.
-   Namn följt av lag ska fortfarande visas.
+   Problem: flera gamla handlers kör Namn -> Lag två gånger.
+   Fix: lås hela ensureUserProfile(true)-flödet en kort stund efter att det körts.
+   Namn och Lag ska båda visas, men bara en gång vardera.
 */
 
 (function(){
-  if(window.__tt154PromptPatch)return;
-  window.__tt154PromptPatch=true;
+  if(window.__tt155UserProfileFlowLock)return;
+  window.__tt155UserProfileFlowLock=true;
 
-  var originalPrompt=window.prompt;
-  var lastKey="";
-  var lastAt=0;
-  var lastResultByKey={};
+  var originalEnsure = (typeof ensureUserProfile==="function") ? ensureUserProfile : null;
+  var running=false;
+  var lastCompletedAt=0;
+  var lastProfile=null;
 
-  function keyForPrompt(message){
-    var msg=String(message||"").trim().toLowerCase();
-
-    // Gruppera namn och lag som olika frågor.
-    if(msg.indexOf("lag")>=0 || msg.indexOf("team")>=0)return "team:"+msg;
-    if(msg.indexOf("namn")>=0 || msg.indexOf("tränare")>=0 || msg.indexOf("tranare")>=0)return "name:"+msg;
-
-    return "other:"+msg;
+  function readProfile(){
+    try{
+      if(typeof getUserProfile==="function"){
+        var p=getUserProfile();
+        if(p)return p;
+      }
+    }catch(e){}
+    try{
+      var raw=localStorage.getItem("tt_profile_v1");
+      return raw?JSON.parse(raw):null;
+    }catch(e){}
+    return null;
   }
 
-  window.prompt=function(message,defaultValue){
-    var key=keyForPrompt(message);
+  function saveProfileDirect(name,team){
+    try{
+      if(typeof saveUserProfile==="function")return saveUserProfile(name,team);
+    }catch(e){}
+    name=String(name||"").trim()||"Tränare";
+    team=String(team||"").trim().toUpperCase().replace(/\s+/g,"-")||"MITT-LAG";
+    var old=readProfile()||{};
+    var p={
+      ownerId:old.ownerId||("user_"+Math.random().toString(36).slice(2)+Date.now().toString(36)),
+      ownerName:name,
+      teamId:team,
+      teamCode:team,
+      teamName:team
+    };
+    localStorage.setItem("tt_profile_v1",JSON.stringify(p));
+    return p;
+  }
+
+  function updateAllProfileButtons(p){
+    if(!p)return;
+    ["btn-profile-team","btn-profile-v59","btn-profile-v61","tt102-profile-btn"].forEach(function(id){
+      var b=document.getElementById(id);
+      if(b)b.textContent="👤 "+p.ownerName+" · "+p.teamCode;
+    });
+    try{if(typeof updateProfileButtonV59==="function")updateProfileButtonV59(p);}catch(e){}
+    try{if(typeof updateProfileButtonV61==="function")updateProfileButtonV61(p);}catch(e){}
+    try{if(typeof tt102CompactUserButton==="function")tt102CompactUserButton();}catch(e){}
+  }
+
+  ensureUserProfile=function(showDialog){
     var now=Date.now();
 
-    // Stoppa bara om exakt samma typ/text kommer direkt igen.
-    // Namn -> Lag får alltså passera, eftersom nyckeln skiljer sig.
-    if(key===lastKey && (now-lastAt)<350){
-      if(Object.prototype.hasOwnProperty.call(lastResultByKey,key)){
-        return lastResultByKey[key];
+    if(!showDialog){
+      if(originalEnsure){
+        try{return originalEnsure(false);}catch(e){}
       }
-      if(defaultValue!==undefined && defaultValue!==null)return defaultValue;
-      return "";
+      return readProfile();
     }
 
-    lastKey=key;
-    lastAt=now;
+    // Om en andra handler försöker starta samma Namn->Lag-flöde direkt efter första:
+    // returnera bara den profil som nyss sparades.
+    if(running || (now-lastCompletedAt<1800)){
+      return lastProfile || readProfile();
+    }
 
-    var result=originalPrompt.call(window,message,defaultValue);
-    lastResultByKey[key]=result;
-    return result;
+    running=true;
+    try{
+      var current=readProfile();
+
+      // Kör egen enkel version, så vi kontrollerar exakt att det bara blir Namn sedan Lag.
+      var name=window.prompt("Ditt namn",current&&current.ownerName?current.ownerName:"");
+      if(name===null && current){
+        lastProfile=current;
+        return current;
+      }
+
+      var team=window.prompt("Lagkod / lagnamn",current&&current.teamCode?current.teamCode:"");
+      if(team===null && current){
+        lastProfile=current;
+        return current;
+      }
+
+      lastProfile=saveProfileDirect(name,team);
+      updateAllProfileButtons(lastProfile);
+      return lastProfile;
+    }finally{
+      running=false;
+      lastCompletedAt=Date.now();
+      setTimeout(function(){lastCompletedAt=0;},2200);
+    }
   };
+
+  // Se till att äldre versionsfunktioner också använder samma låsta flöde.
+  try{ensureProfileV59=function(showDialog){return ensureUserProfile(!!showDialog);};}catch(e){}
+  try{ensureProfileV61=function(showDialog){return ensureUserProfile(!!showDialog);};}catch(e){}
+
+  // Dämpa dubbelklick på profilknappar, utan att stoppa själva första klicket.
+  function bindClickGuards(){
+    ["btn-profile-team","btn-profile-v59","btn-profile-v61","tt102-profile-btn"].forEach(function(id){
+      var b=document.getElementById(id);
+      if(!b || b.dataset.tt155ClickGuard==="1")return;
+      b.dataset.tt155ClickGuard="1";
+      b.addEventListener("click",function(e){
+        var now=Date.now();
+        var last=Number(b.dataset.tt155LastClick||0);
+        if(now-last<1200){
+          e.preventDefault();
+          e.stopPropagation();
+          if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+          return false;
+        }
+        b.dataset.tt155LastClick=String(now);
+      },true);
+    });
+  }
+
+  setTimeout(bindClickGuards,300);
+  setTimeout(bindClickGuards,1200);
+  ["click","touchend"].forEach(function(evt){
+    try{window.addEventListener(evt,function(){setTimeout(bindClickGuards,80);},false);}catch(e){}
+  });
 })();
 
-function tt154DedupeRapidUserClicks(){
-  var ids=[
-    "btn-profile",
-    "btn-users",
-    "btn-user",
-    "btn-user-profile",
-    "btn-profile-open",
-    "btn-edit-profile",
-    "btn-change-user",
-    "user-btn",
-    "profile-btn"
-  ];
-
-  ids.forEach(function(id){
-    var btn=document.getElementById(id);
-    if(!btn || btn.dataset.tt154ClickGuard==="1")return;
-    btn.dataset.tt154ClickGuard="1";
-
-    btn.addEventListener("click",function(e){
-      var now=Date.now();
-      var last=Number(btn.dataset.tt154LastClick||0);
-      if(now-last<400){
-        e.preventDefault();
-        e.stopPropagation();
-        if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-        return false;
-      }
-      btn.dataset.tt154LastClick=String(now);
-    },true);
-  });
-}
-
-if(typeof renderUsers==="function" && !renderUsers._tt154Wrapped){
-  var _renderUsers_tt154=renderUsers;
-  renderUsers=function(){
-    var r=_renderUsers_tt154.apply(this,arguments);
-    setTimeout(tt154DedupeRapidUserClicks,0);
-    return r;
-  };
-  renderUsers._tt154Wrapped=true;
-}
-if(typeof renderUserProfile==="function" && !renderUserProfile._tt154Wrapped){
-  var _renderUserProfile_tt154=renderUserProfile;
-  renderUserProfile=function(){
-    var r=_renderUserProfile_tt154.apply(this,arguments);
-    setTimeout(tt154DedupeRapidUserClicks,0);
-    return r;
-  };
-  renderUserProfile._tt154Wrapped=true;
-}
-
-["click","touchend"].forEach(function(evt){
-  try{window.addEventListener(evt,function(){setTimeout(tt154DedupeRapidUserClicks,80);},false);}catch(e){}
-});
-
-setTimeout(tt154DedupeRapidUserClicks,400);
-setTimeout(tt154DedupeRapidUserClicks,1400);
-
-/* === slut v154-user-profile-precise-prompt === */
+/* === slut v155-user-profile-flow-lock === */
