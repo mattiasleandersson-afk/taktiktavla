@@ -10237,14 +10237,16 @@ function tt76BindControls(){
     tt76BindButton("btn-edit-add-step",function(){
       var tk=tt76NormalizeFilm(tt76Current());
       if(!tk||tt76IsReadOnly(tk))return;
+      var oldIdx=editingStepIdx||0;
       tt76SaveCurrentStep({allowAutoCreate:false});
+      tk=tt76NormalizeFilm(tt76Current());
       var snap=tt76Snapshot();
       snap.movementPaths=[];
-      snap.label=tt76Label((editingStepIdx||0)+1);
-      tk.steps.splice((editingStepIdx||0)+1,0,snap);
-      editingStepIdx++;
+      snap.label=tt76Label(oldIdx+1);
+      tk.steps.splice(oldIdx+1,0,snap);
+      editingStepIdx=oldIdx;
       tt76NormalizeFilm(tk);
-      tt76LoadStep(editingStepIdx,{animate:false,skipSave:true});
+      tt76LoadStep(oldIdx,{animate:false,skipSave:true});
       tt76MarkDirty();
     });
 
@@ -16814,3 +16816,211 @@ setTimeout(tt135PatchFilmFormationButton,1200);
 setTimeout(tt135PatchFilmFormationButton,2200);
 
 /* === slut v135-fix-step-stay-correct-button === */
+
+
+/* === v136-step-stay-and-iphone-tight: stå kvar vid nytt steg + tajtare filmmeny ===
+   Bas: v135.
+   - Både auto-skapat och manuellt nytt steg ska skapas efter aktuellt steg, men editorn stannar kvar.
+   - iPhone: Avsluta blir mindre röd/vit exit-symbol. Stegpilar tajtas. Filmens Utgångsläge-knapp vid Loop blir gul pil.
+*/
+
+function tt136Small(){
+  try{return window.innerWidth<=760 || (window.matchMedia&&window.matchMedia("(max-width: 760px)").matches);}
+  catch(e){return false;}
+}
+
+function tt136Clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+function tt136CurrentTk(){
+  try{if(typeof tt76Current==="function")return tt76Current();}catch(e){}
+  try{
+    if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+function tt136Normalize(tk){try{if(typeof tt76NormalizeFilm==="function")return tt76NormalizeFilm(tk);}catch(e){}return tk;}
+
+function tt136RestoreStep(idx){
+  try{
+    var tk=tt136Normalize(tt136CurrentTk());
+    if(!tk||!tk.steps||!tk.steps[idx])return;
+    editingStepIdx=idx;
+    if(typeof playback!=="undefined" && playback){
+      playback.tk=tk;
+      playback.stepIndex=idx;
+    }
+    var step=tk.steps[idx];
+    try{if(typeof tt76SafeStep==="function")step=tt76SafeStep(step,idx);}catch(e){}
+    try{if(typeof restoreSnap==="function")restoreSnap(tt136Clone(step));}catch(e){}
+    try{movementPaths=[];}catch(e){}
+    try{selectedId=null;}catch(e){}
+    try{if(typeof render==="function")render();}catch(e){}
+    try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+    try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+    try{if(typeof tt76UpdateReadOnlyUi==="function")tt76UpdateReadOnlyUi();}catch(e){}
+    try{
+      var inp=document.getElementById("edit-step-name-inp");
+      if(inp){
+        var lbl=(tk.steps[idx]&&tk.steps[idx].label) || (typeof tt76Label==="function"?tt76Label(idx):("Steg "+idx));
+        inp.value=lbl;
+      }
+    }catch(e){}
+  }catch(e){}
+}
+
+// Sista skyddet: om något efter mus/touch-end ändå hoppar till nyskapat sista steg,
+// återställ till det steg man stod på före händelsen.
+var tt136PointerStartIdx=null;
+var tt136PointerStartLen=null;
+
+function tt136ArmPointerSnapshot(){
+  try{
+    var tk=tt136CurrentTk();
+    if(!tk||!tk.steps)return;
+    tt136PointerStartIdx=(typeof editingStepIdx==="number")?editingStepIdx:null;
+    tt136PointerStartLen=tk.steps.length;
+  }catch(e){}
+}
+
+function tt136CheckStayAfterPointer(){
+  try{
+    var tk=tt136Normalize(tt136CurrentTk());
+    if(!tk||!tk.steps||tt136PointerStartIdx===null||tt136PointerStartLen===null)return;
+    if(tt136PointerStartIdx===tt136PointerStartLen-1 && tk.steps.length>tt136PointerStartLen && editingStepIdx===tk.steps.length-1){
+      tt136RestoreStep(tt136PointerStartIdx);
+      setTimeout(function(){tt136RestoreStep(tt136PointerStartIdx);},80);
+    }
+  }catch(e){}
+  setTimeout(function(){tt136PointerStartIdx=null;tt136PointerStartLen=null;},300);
+}
+
+["mousedown","touchstart","pointerdown"].forEach(function(evt){
+  window.addEventListener(evt,function(){tt136ArmPointerSnapshot();},true);
+});
+["mouseup","touchend","pointerup"].forEach(function(evt){
+  window.addEventListener(evt,function(){
+    setTimeout(tt136CheckStayAfterPointer,0);
+    setTimeout(tt136CheckStayAfterPointer,120);
+  },true);
+});
+
+// Om den manuella + Nytt steg-knappen fortfarande har äldre handler i någon klon, skriv över den sist.
+function tt136BindAddStepStay(){
+  try{
+    var b=document.getElementById("btn-edit-add-step");
+    if(!b || b.dataset.tt136AddBound==="1")return;
+    var clone=b.cloneNode(true);
+    clone.id="btn-edit-add-step";
+    clone.dataset.tt136AddBound="1";
+    b.parentNode.replaceChild(clone,b);
+    clone.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+
+      var tk=tt136Normalize(tt136CurrentTk());
+      if(!tk||!tk.steps)return;
+      try{if(typeof tt76IsReadOnly==="function" && tt76IsReadOnly(tk))return;}catch(err){}
+
+      var oldIdx=(typeof editingStepIdx==="number")?editingStepIdx:0;
+      try{if(typeof tt76SaveCurrentStep==="function")tt76SaveCurrentStep({allowAutoCreate:false});}catch(err){}
+      tk=tt136Normalize(tt136CurrentTk());
+
+      var snap;
+      try{snap=tt76Snapshot();}catch(err){snap=tt136Clone(tk.steps[oldIdx]||{});}
+      snap=tt136Clone(snap||{});
+      snap.movementPaths=[];
+      try{snap.label=tt76Label(oldIdx+1);}catch(err){snap.label="Steg "+(oldIdx+1);}
+
+      try{if(typeof saveTaktikUndo==="function")saveTaktikUndo();}catch(err){}
+      tk.steps.splice(oldIdx+1,0,snap);
+      editingStepIdx=oldIdx;
+      tt136Normalize(tk);
+      tt136RestoreStep(oldIdx);
+      try{if(typeof tt76MarkDirty==="function")tt76MarkDirty();}catch(err){try{taktikDirtyV17=true;}catch(e2){}}
+      return false;
+    },true);
+  }catch(e){}
+}
+
+function tt136TightenFilmMenu(){
+  try{
+    if(!tt136Small())return;
+
+    // Återställ huvudmenyn om v134 hann korta den.
+    document.querySelectorAll(".tab.tt134-formation-arrow-only[data-panel],button.tt134-formation-arrow-only[data-panel]").forEach(function(b){
+      var panel=String(b.getAttribute("data-panel")||"").toLowerCase();
+      if(panel==="saves" || panel==="uppstallning" || panel==="start"){
+        b.classList.remove("tt134-formation-arrow-only");
+        b.textContent=b.dataset.tt134OriginalText || "Utgångsläge";
+      }
+    });
+
+    document.querySelectorAll("button").forEach(function(b){
+      var txt=String(b.textContent||"").trim().toLowerCase();
+      var title=String(b.title||"").trim().toLowerCase();
+      var id=String(b.id||"").trim().toLowerCase();
+
+      if(txt.indexOf("avsluta")>=0 || title.indexOf("avsluta")>=0 || id.indexOf("exit")>=0 || id.indexOf("stop")>=0){
+        // Bara film-/taktikmenyknappar, inte generella modaler.
+        var p=b.parentElement, ctx=p?String(p.id+" "+p.className+" "+p.textContent).toLowerCase():"";
+        if(ctx.indexOf("loop")>=0 || ctx.indexOf("taktik")>=0 || id.indexOf("taktik")>=0 || id.indexOf("play")>=0){
+          b.dataset.tt136OriginalText=b.dataset.tt136OriginalText||String(b.textContent||"");
+          b.textContent="🚪";
+          b.title="Avsluta";
+          b.classList.add("tt136-exit-icon");
+        }
+      }
+
+      if((txt.indexOf("utgångsläge")>=0 || title.indexOf("utgångsläge")>=0) && !b.matches(".tab,[data-panel]")){
+        var parent=b.parentElement;
+        var nearLoop=false;
+        if(parent){
+          var ptxt=String(parent.textContent||"").toLowerCase();
+          if(ptxt.indexOf("loop")>=0)nearLoop=true;
+          if(parent.querySelector && parent.querySelector("#play-loop,#ls-loop,input[type='checkbox']"))nearLoop=true;
+        }
+        if(nearLoop){
+          b.dataset.tt136OriginalText=b.dataset.tt136OriginalText||String(b.textContent||"");
+          b.textContent="➜";
+          b.title="Utgångsläge";
+          b.classList.add("tt136-film-formation-arrow");
+        }
+      }
+    });
+  }catch(e){}
+}
+
+if(typeof startPlayback==="function" && !startPlayback._tt136Wrapped){
+  var _startPlayback_tt136=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt136.apply(this,arguments);
+    setTimeout(tt136BindAddStepStay,80);
+    setTimeout(tt136TightenFilmMenu,80);
+    setTimeout(tt136TightenFilmMenu,400);
+    return r;
+  };
+  startPlayback._tt136Wrapped=true;
+}
+
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt136Wrapped){
+  var _renderEditSteps_tt136=renderEditSteps;
+  renderEditSteps=function(){
+    var r=_renderEditSteps_tt136.apply(this,arguments);
+    setTimeout(tt136BindAddStepStay,0);
+    setTimeout(tt136TightenFilmMenu,0);
+    return r;
+  };
+  renderEditSteps._tt136Wrapped=true;
+}
+
+["DOMContentLoaded","click","touchend","resize","orientationchange"].forEach(function(evt){
+  window.addEventListener(evt,function(){
+    setTimeout(tt136BindAddStepStay,40);
+    setTimeout(tt136TightenFilmMenu,60);
+    setTimeout(tt136TightenFilmMenu,250);
+  },true);
+});
+
+setTimeout(tt136BindAddStepStay,500);
+setTimeout(tt136TightenFilmMenu,500);
+setTimeout(tt136TightenFilmMenu,1400);
+
+/* === slut v136-step-stay-and-iphone-tight === */
