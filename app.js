@@ -17171,3 +17171,215 @@ setTimeout(tt146BindControls,500);
 setTimeout(tt146BindControls,1500);
 
 /* === slut v146-animation-only-fix === */
+
+
+/* === v147-individual-speed-animation: varje spelare får egen tid efter sträcka ===
+   Bas: v146.
+   Rör bara animationstiden:
+   - Kort rörelse blir klar tidigare.
+   - Lång rörelse tar längre tid.
+   - Alla håller ungefär samma hastighet.
+   - Steget avslutas när längsta rörelsen är klar.
+*/
+
+function tt147Duration(distance){
+  var pxPerSecond=155;
+  return Math.max(350,Math.min(3600,Math.round(((distance||0)/pxPerSecond)*1000)));
+}
+
+function tt147BuildMotion(fromStep,target,moveMap,id){
+  var key=String(id);
+  var mv=moveMap[key];
+
+  if(mv){
+    var dist=tt146PathLen(mv.pts);
+    return {
+      id:id,
+      type:"path",
+      pts:mv.pts,
+      distance:dist,
+      duration:tt147Duration(dist)
+    };
+  }
+
+  var a=tt146GetPos(fromStep,id);
+  var b=tt146GetPos(target,id);
+  var dist2=tt146Dist(a,b);
+
+  return {
+    id:id,
+    type:"line",
+    from:a,
+    to:b,
+    distance:dist2,
+    duration:tt147Duration(dist2)
+  };
+}
+
+function tt147AnimateForward(fromIdx,targetIdx){
+  var tk=tt146CurrentTk();
+  if(!tk||!tk.steps)return;
+
+  fromIdx=Math.max(0,Math.min(fromIdx,tk.steps.length-1));
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+
+  var fromStep=tt146SafeStep(tt146Clone(tk.steps[fromIdx]||{}),fromIdx);
+  var target=tt146ApplyMovementEndpoints(tt146SafeStep(tt146Clone(tk.steps[targetIdx]||{}),targetIdx));
+  var moveMap=tt146MovementMap(target);
+
+  if(animFrame)try{cancelAnimationFrame(animFrame);}catch(e){}
+
+  tt146Animating=true;
+  try{tt145Animating=true;}catch(e){}
+
+  if(typeof playback==="undefined" || !playback)playback={tk:tk,stepIndex:fromIdx,animating:false};
+  playback.tk=tk;
+  playback.stepIndex=fromIdx;
+  playback.animating=true;
+
+  editingStepIdx=fromIdx;
+
+  try{restoreSnap(fromStep);render();}catch(e){}
+
+  var motions=tt146AllIds(fromStep,target).map(function(id){
+    return tt147BuildMotion(fromStep,target,moveMap,id);
+  }).filter(function(m){
+    return m && m.duration && m.distance>0.5;
+  });
+
+  var totalDur=motions.reduce(function(max,m){return Math.max(max,m.duration);},350);
+  var start=performance.now();
+
+  function frame(now){
+    var elapsed=now-start;
+
+    motions.forEach(function(m){
+      var localRaw=Math.min(1,elapsed/m.duration);
+      var t=tt146Ease(localRaw);
+
+      if(m.type==="path"){
+        tt146SetVisual(m.id,tt146PathPos(m.pts,t));
+      }else if(m.from&&m.to){
+        tt146SetVisual(m.id,{
+          x:m.from.x+(m.to.x-m.from.x)*t,
+          y:m.from.y+(m.to.y-m.from.y)*t
+        });
+      }
+    });
+
+    try{render();}catch(e){}
+
+    if(elapsed<totalDur){
+      animFrame=requestAnimationFrame(frame);
+    }else{
+      tt146Animating=false;
+      try{tt145Animating=false;}catch(e){}
+      playback.animating=false;
+      playback.stepIndex=targetIdx;
+      editingStepIdx=targetIdx;
+      try{restoreSnap(target);render();}catch(e){}
+      try{if(typeof updatePlaybar==="function")updatePlaybar();}catch(e){}
+      try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+      try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+    }
+  }
+
+  animFrame=requestAnimationFrame(frame);
+}
+
+animateToStep=function(targetIdx){
+  var fromIdx=(typeof editingStepIdx==="number")?editingStepIdx:0;
+  tt147AnimateForward(fromIdx,targetIdx);
+};
+
+function tt147GoToStep(idx,animate){
+  var tk=tt146CurrentTk();
+  if(!tk||!tk.steps)return;
+
+  idx=Math.max(0,Math.min(idx,tk.steps.length-1));
+  var oldIdx=(typeof editingStepIdx==="number")?editingStepIdx:idx;
+  var forward=idx>oldIdx;
+
+  if(idx!==oldIdx){
+    try{if(typeof tt145SaveCurrentStep==="function")tt145SaveCurrentStep({allowAutoCreate:false});}
+    catch(e){try{if(typeof tt76SaveCurrentStep==="function")tt76SaveCurrentStep({allowAutoCreate:false});}catch(e2){}}
+    tk=tt146CurrentTk();
+  }
+
+  if(animate && forward && idx!==oldIdx){
+    tt147AnimateForward(oldIdx,idx);
+    return;
+  }
+
+  if(animFrame)try{cancelAnimationFrame(animFrame);}catch(e){}
+  tt146Animating=false;
+  try{tt145Animating=false;}catch(e){}
+  editingStepIdx=idx;
+  if(typeof playback!=="undefined" && playback){
+    playback.tk=tk;
+    playback.stepIndex=idx;
+    playback.animating=false;
+  }
+
+  try{restoreSnap(tt146SafeStep(tk.steps[idx],idx));render();}catch(e){}
+  try{if(typeof updateEditStepUI_silent==="function")updateEditStepUI_silent();}catch(e){}
+  try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+  try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+}
+
+try{tt146GoToStep=tt147GoToStep;}catch(e){}
+try{tt145GoToStep=tt147GoToStep;}catch(e){}
+try{goToStepV75=function(idx,opts){tt147GoToStep(idx,!(opts&&opts.animate===false));};}catch(e){}
+try{goToStepV74=goToStepV75;goToStepV73=goToStepV75;goToStepV72=goToStepV75;goToStepV71=goToStepV75;goToStepV70=goToStepV75;}catch(e){}
+
+function tt147BindControls(){
+  function bind(id,fn){
+    var old=document.getElementById(id);
+    if(!old)return;
+    var neu=old.cloneNode(true);
+    neu.id=id;
+    neu.dataset.tt147Bound="1";
+    old.parentNode.replaceChild(neu,old);
+    neu.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      fn();return false;
+    },true);
+  }
+
+  bind("btn-edit-step-prev",function(){tt147GoToStep((editingStepIdx||0)-1,true);});
+  bind("btn-edit-step-next",function(){tt147GoToStep((editingStepIdx||0)+1,true);});
+  bind("btn-prev",function(){tt147GoToStep((editingStepIdx||0)-1,true);});
+  bind("btn-next",function(){tt147GoToStep((editingStepIdx||0)+1,true);});
+  bind("btn-first",function(){tt147GoToStep(0,false);});
+  bind("fs-prev-btn",function(){tt147GoToStep((editingStepIdx||0)-1,true);});
+  bind("fs-next-btn",function(){tt147GoToStep((editingStepIdx||0)+1,true);});
+  bind("fs-first-btn",function(){tt147GoToStep(0,false);});
+  bind("ls-prev-btn",function(){tt147GoToStep((editingStepIdx||0)-1,true);});
+  bind("ls-next-btn",function(){tt147GoToStep((editingStepIdx||0)+1,true);});
+  bind("ls-first-btn",function(){tt147GoToStep(0,false);});
+}
+
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt147Wrapped){
+  var _renderEditSteps_tt147=renderEditSteps;
+  renderEditSteps=function(){
+    var r=_renderEditSteps_tt147.apply(this,arguments);
+    setTimeout(tt147BindControls,0);
+    return r;
+  };
+  renderEditSteps._tt147Wrapped=true;
+}
+if(typeof startPlayback==="function" && !startPlayback._tt147Wrapped){
+  var _startPlayback_tt147=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt147.apply(this,arguments);
+    setTimeout(tt147BindControls,80);
+    setTimeout(tt147BindControls,400);
+    return r;
+  };
+  startPlayback._tt147Wrapped=true;
+}
+
+setTimeout(tt147BindControls,500);
+setTimeout(tt147BindControls,1500);
+
+/* === slut v147-individual-speed-animation === */
