@@ -18923,3 +18923,259 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v169-editor-claim-readonly-fix === */
+
+
+/* === v170-force-mine-editor-editable: öppnat från Mina ska vara redigerbart ===
+   Bas: v169.
+   Problem kvar: filen hittas men blir skrivskyddad inne i editorn.
+   Fix:
+   - När en taktikfilm öppnas från Mina claimas dess dbId direkt före editorn startar.
+   - Alla kända readonly-checkar för taktikfilm respekterar claimat dbId.
+   - Efter öppning rensas readonly-klasser/flaggar och stegreglagen låses upp.
+*/
+
+(function(){
+  if(window.__tt170ForceMineEditorEditable)return;
+  window.__tt170ForceMineEditorEditable=true;
+
+  var CLAIM_KEY="tt_taktik_owned_ids_v1";
+  var openingMineId="";
+
+  function claims(){
+    try{
+      var raw=localStorage.getItem(CLAIM_KEY);
+      var obj=raw?JSON.parse(raw):{};
+      return obj&&typeof obj==="object"?obj:{};
+    }catch(e){return {};}
+  }
+  function saveClaims(obj){
+    try{localStorage.setItem(CLAIM_KEY,JSON.stringify(obj||{}));}catch(e){}
+  }
+  function idOf(tk){
+    return String((tk&&(tk.dbId||tk.id))||"").trim();
+  }
+  function claim(tkOrId){
+    var id=typeof tkOrId==="string" ? tkOrId : idOf(tkOrId);
+    id=String(id||"").trim();
+    if(!id)return false;
+    var c=claims();
+    c[id]=true;
+    saveClaims(c);
+    return true;
+  }
+  function claimed(tk){
+    var id=idOf(tk);
+    if(!id)return false;
+    return !!claims()[id] || (!!openingMineId && String(openingMineId)===String(id));
+  }
+  function isTaktik(tk){
+    return !!(tk && Array.isArray(tk.steps));
+  }
+  function openedFromMine(){
+    try{return typeof taktikScope!=="undefined" && taktikScope==="mine";}catch(e){}
+    return false;
+  }
+  function currentTk(){
+    try{if(typeof tt76Current==="function"){var t=tt76Current();if(t)return t;}}catch(e){}
+    try{
+      if(typeof editingTaktikIdx!=="undefined" && editingTaktikIdx!==null && taktikFilmer && taktikFilmer[editingTaktikIdx]){
+        return taktikFilmer[editingTaktikIdx];
+      }
+    }catch(e){}
+    try{if(playback&&playback.tk)return playback.tk;}catch(e){}
+    return null;
+  }
+  function makeEditable(tk){
+    if(!isTaktik(tk))return tk;
+    if(!claimed(tk))return tk;
+
+    delete tk._readOnly;
+    delete tk._openedFromTeam;
+    delete tk.readOnly;
+    delete tk.readonly;
+    delete tk._readonly;
+    tk._forceEditableV170=true;
+
+    try{
+      if(playback && playback.tk && idOf(playback.tk) && idOf(playback.tk)===idOf(tk)){
+        delete playback.tk._readOnly;
+        delete playback.tk._openedFromTeam;
+        delete playback.tk.readOnly;
+        delete playback.tk.readonly;
+        playback.tk._forceEditableV170=true;
+      }
+    }catch(e){}
+
+    try{document.body.classList.remove("tt-v76-readonly");}catch(e){}
+    try{document.body.classList.remove("v74-readonly-taktik");}catch(e){}
+    try{document.body.classList.remove("readonly");}catch(e){}
+
+    try{
+      ["btn-edit-add-step","btn-edit-del-step","btn-edit-update-step","btn-edit-update-step2","btn-copy-step","btn-paste-step","btn-edit-taktik-save"].forEach(function(id){
+        var el=document.getElementById(id);
+        if(!el)return;
+        el.disabled=false;
+        el.style.pointerEvents="";
+        el.style.opacity="";
+        if(id==="btn-edit-add-step")el.style.display="";
+      });
+    }catch(e){}
+
+    try{
+      var inp=document.getElementById("edit-step-name-inp");
+      if(inp)inp.disabled=false;
+    }catch(e){}
+
+    return tk;
+  }
+  function repair(){
+    var tk=currentTk();
+    if(!isTaktik(tk))return;
+    if(claimed(tk)){
+      makeEditable(tk);
+
+      // Kör UI-uppdatering efter att readonly-checkarna har patchats.
+      try{if(typeof tt76UpdateReadOnlyUi==="function")tt76UpdateReadOnlyUi();}catch(e){}
+      try{document.body.classList.remove("tt-v76-readonly");}catch(e){}
+      try{document.body.classList.remove("v74-readonly-taktik");}catch(e){}
+      makeEditable(tk);
+
+      try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);}catch(e){}
+      try{if(typeof updateEditStepUI==="function")updateEditStepUI();}catch(e){}
+    }
+  }
+
+  // 1) Öppning från Mina: claim före den gamla editorn får räkna readonly.
+  function preOpen(idx){
+    try{
+      var tk=taktikFilmer&&taktikFilmer[idx];
+      if(isTaktik(tk) && openedFromMine()){
+        claim(tk);
+        openingMineId=idOf(tk);
+        makeEditable(tk);
+      }
+    }catch(e){}
+  }
+
+  if(typeof startPlayback==="function" && !startPlayback._tt170Wrapped){
+    var oldStart=startPlayback;
+    startPlayback=function(idx){
+      preOpen(idx);
+      var r=oldStart.apply(this,arguments);
+      setTimeout(repair,0);
+      setTimeout(repair,80);
+      setTimeout(repair,250);
+      setTimeout(repair,700);
+      return r;
+    };
+    startPlayback._tt170Wrapped=true;
+  }
+
+  if(typeof openEditTaktik==="function" && !openEditTaktik._tt170Wrapped){
+    var oldOpen=openEditTaktik;
+    openEditTaktik=function(idx){
+      preOpen(idx);
+      var r=oldOpen.apply(this,arguments);
+      setTimeout(repair,0);
+      setTimeout(repair,80);
+      setTimeout(repair,250);
+      setTimeout(repair,700);
+      return r;
+    };
+    openEditTaktik._tt170Wrapped=true;
+  }
+
+  // 2) Patcha de olika readonly-checkarna som finns i flera lager.
+  if(typeof isReadOnlyFileV10==="function" && !isReadOnlyFileV10._tt170Wrapped){
+    var oldRO=isReadOnlyFileV10;
+    isReadOnlyFileV10=function(obj){
+      if(isTaktik(obj) && claimed(obj)){
+        makeEditable(obj);
+        return false;
+      }
+      return oldRO.apply(this,arguments);
+    };
+    isReadOnlyFileV10._tt170Wrapped=true;
+  }
+
+  if(typeof tt76IsReadOnly==="function" && !tt76IsReadOnly._tt170Wrapped){
+    var old76=tt76IsReadOnly;
+    tt76IsReadOnly=function(tk){
+      tk=tk||currentTk();
+      if(isTaktik(tk) && claimed(tk)){
+        makeEditable(tk);
+        return false;
+      }
+      return old76.apply(this,arguments);
+    };
+    tt76IsReadOnly._tt170Wrapped=true;
+  }
+
+  if(typeof isReadOnlyTaktikV74==="function" && !isReadOnlyTaktikV74._tt170Wrapped){
+    var old74=isReadOnlyTaktikV74;
+    isReadOnlyTaktikV74=function(tk){
+      tk=tk||currentTk();
+      if(isTaktik(tk) && claimed(tk)){
+        makeEditable(tk);
+        return false;
+      }
+      return old74.apply(this,arguments);
+    };
+    isReadOnlyTaktikV74._tt170Wrapped=true;
+  }
+
+  if(typeof tt132IsReadOnly==="function" && !tt132IsReadOnly._tt170Wrapped){
+    var old132=tt132IsReadOnly;
+    tt132IsReadOnly=function(tk){
+      tk=tk||currentTk();
+      if(isTaktik(tk) && claimed(tk)){
+        makeEditable(tk);
+        return false;
+      }
+      return old132.apply(this,arguments);
+    };
+    tt132IsReadOnly._tt170Wrapped=true;
+  }
+
+  if(typeof tt78IsReadonly==="function" && !tt78IsReadonly._tt170Wrapped){
+    var old78=tt78IsReadonly;
+    tt78IsReadonly=function(tk){
+      if(isTaktik(tk) && claimed(tk)){
+        makeEditable(tk);
+        return false;
+      }
+      return old78.apply(this,arguments);
+    };
+    tt78IsReadonly._tt170Wrapped=true;
+  }
+
+  // 3) Om rendern sätter _readOnly på listobjekt efter load, rensa claimade objekt direkt.
+  if(typeof renderTaktikList==="function" && !renderTaktikList._tt170Wrapped){
+    var oldRender=renderTaktikList;
+    renderTaktikList=function(){
+      try{(taktikFilmer||[]).forEach(function(tk){if(claimed(tk))makeEditable(tk);});}catch(e){}
+      var r=oldRender.apply(this,arguments);
+      setTimeout(function(){
+        try{(taktikFilmer||[]).forEach(function(tk){if(claimed(tk))makeEditable(tk);});}catch(e){}
+      },0);
+      return r;
+    };
+    renderTaktikList._tt170Wrapped=true;
+  }
+
+  // 4) Nödhake: om användaren är i editorn och filen är claimad, håll den redigerbar.
+  setInterval(function(){
+    try{
+      var tk=currentTk();
+      if(isTaktik(tk) && claimed(tk))makeEditable(tk);
+    }catch(e){}
+  },600);
+
+  window.tt170RepairEditable=repair;
+  window.tt170ClaimCurrentTaktik=function(){
+    var tk=currentTk();
+    if(tk){claim(tk);makeEditable(tk);repair();}
+  };
+})();
+
+/* === slut v170-force-mine-editor-editable === */
