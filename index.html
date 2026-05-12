@@ -1092,13 +1092,45 @@
   }
 </style>
 
+
+<style id="v132-step-copy-paste-css">
+  #tt132-step-actions {
+    display:flex;
+    gap:4px;
+    align-items:center;
+    flex:0 0 auto;
+  }
+  #tt132-step-actions .btn {
+    padding:3px 7px !important;
+    font-size:0.68rem !important;
+    white-space:nowrap !important;
+  }
+  #btn-copy-step.tt132-step-btn,
+  #btn-paste-step.tt132-step-btn {
+    color:#4ae8e8 !important;
+    border-color:#4ae8e8 !important;
+  }
+  @media (max-width:760px){
+    #tt132-step-actions .btn {
+      padding:3px 6px !important;
+      font-size:0.64rem !important;
+    }
+    #btn-copy-step.tt132-step-btn,
+    #btn-paste-step.tt132-step-btn {
+      max-width:82px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.55 clean</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">v3.10.56 clean</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
