@@ -17623,3 +17623,291 @@ setTimeout(tt141BindStepControls,500);
 setTimeout(tt141BindStepControls,1300);
 
 /* === slut v141-animation-propagation-cleanup === */
+
+
+/* === v142-constant-speed-animation: mjuk flytt + konstant hastighet ===
+   Bas: v141.
+   - Vanlig spelarflytt animeras från aktuell visuell position till målposition.
+   - Rörelsepil och vanlig flytt får tid efter distans: längre sträcka = längre tid.
+   - Hastigheten blir ungefär konstant i stället för att tiden är konstant.
+*/
+
+function tt142Clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+function tt142CurrentTk(){
+  try{if(typeof tt141CurrentTk==="function")return tt141CurrentTk();}catch(e){}
+  try{if(typeof tt140CurrentTk==="function")return tt140CurrentTk();}catch(e){}
+  try{if(typeof tt76Current==="function")return tt76Current();}catch(e){}
+  try{
+    if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return null;
+    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+  }catch(e){return null;}
+}
+function tt142SafeStep(s,idx){
+  try{if(typeof tt141SafeStep==="function")return tt141SafeStep(s,idx);}catch(e){}
+  try{if(typeof tt76SafeStep==="function")return tt76SafeStep(s,idx);}catch(e){}
+  s=s||{};
+  s.players=Array.isArray(s.players)?s.players:[];
+  s.movementPaths=Array.isArray(s.movementPaths)?s.movementPaths:[];
+  return s;
+}
+function tt142ApplyMovementEndpoints(step){
+  try{if(typeof tt141ApplyMovementEndpoints==="function")return tt141ApplyMovementEndpoints(step);}catch(e){}
+  step=tt142SafeStep(step,0);
+  (step.movementPaths||[]).forEach(function(mp){
+    if(!mp||!mp.pts||mp.pts.length<2)return;
+    var ep=mp.pts[mp.pts.length-1];
+    if(mp.playerId==="ball"){
+      step.ball=step.ball||{x:ep.x,y:ep.y};
+      step.ball.x=ep.x;step.ball.y=ep.y;
+    }else{
+      var p=(step.players||[]).find(function(x){return String(x.id)===String(mp.playerId);});
+      if(p){p.x=ep.x;p.y=ep.y;}
+    }
+  });
+  return step;
+}
+function tt142CurrentVisualStep(){
+  var snap=null;
+  try{snap=currentSnap();}catch(e){}
+  snap=tt142SafeStep(snap||{},typeof editingStepIdx==="number"?editingStepIdx:0);
+  try{
+    snap.movementPaths=(movementPaths||[]).map(function(m){
+      return {
+        id:m.id,
+        playerId:m.playerId,
+        pts:(m.pts||[]).map(function(p){return {x:p.x,y:p.y};})
+      };
+    });
+  }catch(e){}
+  return snap;
+}
+function tt142GetPos(step,id){
+  step=tt142SafeStep(step,0);
+  if(id==="ball")return step.ball?{x:step.ball.x,y:step.ball.y}:null;
+  var p=(step.players||[]).find(function(x){return String(x.id)===String(id);});
+  return p?{x:p.x,y:p.y}:null;
+}
+function tt142SetVisualPos(id,pos){
+  if(!pos)return;
+  if(id==="ball"){
+    try{ball.x=pos.x;ball.y=pos.y;}catch(e){}
+    return;
+  }
+  try{
+    var p=(players||[]).find(function(x){return String(x.id)===String(id);});
+    if(p){p.x=pos.x;p.y=pos.y;}
+  }catch(e){}
+}
+function tt142Dist(a,b){
+  if(!a||!b)return 0;
+  var dx=(a.x||0)-(b.x||0),dy=(a.y||0)-(b.y||0);
+  return Math.sqrt(dx*dx+dy*dy);
+}
+function tt142AllIds(a,b){
+  var ids={};
+  (a.players||[]).forEach(function(p){ids[String(p.id)]=p.id;});
+  (b.players||[]).forEach(function(p){ids[String(p.id)]=p.id;});
+  if(a.ball||b.ball)ids.ball="ball";
+  return Object.keys(ids).map(function(k){return ids[k];});
+}
+function tt142MovementMap(step){
+  var m={};
+  step=tt142SafeStep(step,0);
+  (step.movementPaths||[]).forEach(function(mp){
+    if(!mp||!mp.playerId||!mp.pts||mp.pts.length<2)return;
+    m[String(mp.playerId)]=mp;
+  });
+  return m;
+}
+function tt142PathLen(pts){
+  var l=0;
+  for(var i=1;i<(pts||[]).length;i++){
+    var dx=pts[i].x-pts[i-1].x,dy=pts[i].y-pts[i-1].y;
+    l+=Math.sqrt(dx*dx+dy*dy);
+  }
+  return l;
+}
+function tt142PathPos(pts,t){
+  pts=pts||[];
+  if(pts.length===0)return null;
+  if(pts.length===1)return {x:pts[0].x,y:pts[0].y};
+  var total=tt142PathLen(pts);
+  if(total<=0)return {x:pts[pts.length-1].x,y:pts[pts.length-1].y};
+  var wanted=Math.max(0,Math.min(1,t))*total;
+  var acc=0;
+  for(var i=1;i<pts.length;i++){
+    var a=pts[i-1],b=pts[i];
+    var seg=Math.sqrt(Math.pow(b.x-a.x,2)+Math.pow(b.y-a.y,2));
+    if(acc+seg>=wanted){
+      var f=seg>0?(wanted-acc)/seg:0;
+      return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f};
+    }
+    acc+=seg;
+  }
+  return {x:pts[pts.length-1].x,y:pts[pts.length-1].y};
+}
+function tt142Ease(t){
+  // Lätt mjuk start/slut, men fortfarande tidsmässigt proportionell mot distans.
+  return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+}
+function tt142DurationForDistance(distance){
+  // Pixel per sekund på taktiktavlan. Justerad för att likna tempot du gillade på rörelsepilen.
+  var pxPerSecond=155;
+  var sec=(distance||0)/pxPerSecond;
+  return Math.max(350,Math.min(3500,Math.round(sec*1000)));
+}
+
+animateToStep=function(targetIdx){
+  var tk=tt142CurrentTk();
+  if(!tk||!tk.steps)return;
+  if(typeof playback==="undefined" || !playback){
+    playback={tk:tk,stepIndex:(typeof editingStepIdx==="number"?editingStepIdx:0),animating:false};
+  }
+
+  targetIdx=Math.max(0,Math.min(targetIdx,tk.steps.length-1));
+
+  // Viktigt: starta från det som faktiskt syns på planen just nu.
+  // Det gör att en vanlig flytt inte kan råka hoppa förbi sin interpolation.
+  var visualStart=tt142CurrentVisualStep();
+  var target=tt142ApplyMovementEndpoints(tt142SafeStep(tt142Clone(tk.steps[targetIdx]),targetIdx));
+  var moveMap=tt142MovementMap(target);
+
+  if(animFrame)try{cancelAnimationFrame(animFrame);}catch(e){}
+  try{tt141Animating=true;}catch(e){}
+  playback.animating=true;
+  playback.tk=tk;
+  playback.stepIndex=targetIdx;
+
+  var maxDistance=0;
+  tt142AllIds(visualStart,target).forEach(function(id){
+    var key=String(id);
+    if(moveMap[key]){
+      maxDistance=Math.max(maxDistance,tt142PathLen(moveMap[key].pts));
+    }else{
+      maxDistance=Math.max(maxDistance,tt142Dist(tt142GetPos(visualStart,id),tt142GetPos(target,id)));
+    }
+  });
+
+  var dur=tt142DurationForDistance(maxDistance);
+  var start=performance.now();
+
+  function frame(now){
+    var raw=Math.min(1,(now-start)/dur);
+    var t=tt142Ease(raw);
+
+    tt142AllIds(visualStart,target).forEach(function(id){
+      var key=String(id);
+      if(moveMap[key]){
+        tt142SetVisualPos(id,tt142PathPos(moveMap[key].pts,t));
+      }else{
+        var a=tt142GetPos(visualStart,id);
+        var b=tt142GetPos(target,id);
+        if(a&&b){
+          tt142SetVisualPos(id,{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
+        }
+      }
+    });
+
+    try{render();}catch(e){}
+
+    if(raw<1){
+      animFrame=requestAnimationFrame(frame);
+    }else{
+      try{tt141Animating=false;}catch(e){}
+      playback.animating=false;
+      editingStepIdx=targetIdx;
+      playback.stepIndex=targetIdx;
+      try{restoreSnap(target);}catch(e){}
+      try{render();}catch(e){}
+      try{if(typeof updatePlaybar==="function")updatePlaybar();}catch(e){}
+      try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+      try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+    }
+  }
+
+  animFrame=requestAnimationFrame(frame);
+};
+
+function tt142GoToStep(idx,animate){
+  var tk=tt142CurrentTk();
+  if(!tk||!tk.steps)return;
+  idx=Math.max(0,Math.min(idx,tk.steps.length-1));
+  var oldIdx=(typeof editingStepIdx==="number")?editingStepIdx:idx;
+
+  if(idx!==oldIdx){
+    try{if(typeof tt141SaveCurrentStep==="function")tt141SaveCurrentStep({allowAutoCreate:false});}
+    catch(e){try{if(typeof tt76SaveCurrentStep==="function")tt76SaveCurrentStep({allowAutoCreate:false});}catch(e2){}}
+    tk=tt142CurrentTk();
+  }
+
+  if(animate && idx!==oldIdx){
+    if(typeof playback==="undefined" || !playback)playback={tk:tk,stepIndex:oldIdx,animating:false};
+    playback.tk=tk;
+    animateToStep(idx);
+    return;
+  }
+
+  editingStepIdx=idx;
+  if(typeof playback!=="undefined" && playback){playback.tk=tk;playback.stepIndex=idx;}
+  try{restoreSnap(tt142SafeStep(tk.steps[idx],idx));}catch(e){}
+  try{render();}catch(e){}
+  try{if(typeof updateEditStepUI_silent==="function")updateEditStepUI_silent();}catch(e){}
+  try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
+  try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
+}
+
+try{tt141GoToStep=tt142GoToStep;}catch(e){}
+try{tt140GoToStep=tt142GoToStep;}catch(e){}
+try{tt139RestoreTarget=tt142GoToStep;}catch(e){}
+try{goToStepV75=function(idx,opts){tt142GoToStep(idx,!(opts&&opts.animate===false));};}catch(e){}
+try{goToStepV74=goToStepV75;goToStepV73=goToStepV75;goToStepV72=goToStepV75;goToStepV71=goToStepV75;goToStepV70=goToStepV75;}catch(e){}
+
+function tt142BindStepControls(){
+  function bind(id,fn){
+    var old=document.getElementById(id);
+    if(!old)return;
+    var neu=old.cloneNode(true);
+    neu.id=id;
+    neu.dataset.tt142Bound="1";
+    old.parentNode.replaceChild(neu,old);
+    neu.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      fn();
+      return false;
+    },true);
+  }
+  bind("btn-edit-step-prev",function(){tt142GoToStep((editingStepIdx||0)-1,true);});
+  bind("btn-edit-step-next",function(){tt142GoToStep((editingStepIdx||0)+1,true);});
+  bind("btn-prev",function(){tt142GoToStep((editingStepIdx||0)-1,true);});
+  bind("btn-next",function(){tt142GoToStep((editingStepIdx||0)+1,true);});
+  bind("fs-prev-btn",function(){tt142GoToStep((editingStepIdx||0)-1,true);});
+  bind("fs-next-btn",function(){tt142GoToStep((editingStepIdx||0)+1,true);});
+  bind("ls-prev-btn",function(){tt142GoToStep((editingStepIdx||0)-1,true);});
+  bind("ls-next-btn",function(){tt142GoToStep((editingStepIdx||0)+1,true);});
+}
+
+if(typeof renderEditSteps==="function" && !renderEditSteps._tt142Wrapped){
+  var _renderEditSteps_tt142=renderEditSteps;
+  renderEditSteps=function(){
+    var r=_renderEditSteps_tt142.apply(this,arguments);
+    setTimeout(tt142BindStepControls,0);
+    return r;
+  };
+  renderEditSteps._tt142Wrapped=true;
+}
+
+if(typeof startPlayback==="function" && !startPlayback._tt142Wrapped){
+  var _startPlayback_tt142=startPlayback;
+  startPlayback=function(){
+    var r=_startPlayback_tt142.apply(this,arguments);
+    setTimeout(tt142BindStepControls,80);
+    setTimeout(tt142BindStepControls,400);
+    return r;
+  };
+  startPlayback._tt142Wrapped=true;
+}
+
+setTimeout(tt142BindStepControls,500);
+setTimeout(tt142BindStepControls,1400);
+
+/* === slut v142-constant-speed-animation === */
