@@ -16595,145 +16595,6 @@ setTimeout(tt133HideCopyDrawingsButtons,1200);
 /* === slut v133-stay-step-hide-copy-drawings === */
 
 
-/* === v134-hard-stay-step-iphone-button: hårdare stanna-kvar + kompakt Utgångsläge-knapp ===
-   Bas: v133.
-   - Hindrar direkthopp till nyskapat mål-steg efter auto-skapande från sista steg.
-   - Ändrar endast knappens utseende/text på iPhone: "Utgångsläge" -> gul pil.
-*/
-
-var tt134Stay=null;
-
-function tt134Clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
-function tt134CurrentTk(){
-  try{if(typeof tt76Current==="function")return tt76Current();}catch(e){}
-  try{
-    if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return null;
-    return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
-  }catch(e){return null;}
-}
-function tt134Normalize(tk){try{if(typeof tt76NormalizeFilm==="function")return tt76NormalizeFilm(tk);}catch(e){} return tk;}
-
-function tt134RestoreStep(idx){
-  try{
-    var tk=tt134Normalize(tt134CurrentTk());
-    if(!tk||!tk.steps||!tk.steps[idx])return;
-    editingStepIdx=idx;
-    if(typeof playback!=="undefined" && playback){
-      playback.tk=tk;
-      playback.stepIndex=idx;
-    }
-    var step=tk.steps[idx];
-    try{if(typeof tt76SafeStep==="function")step=tt76SafeStep(step,idx);}catch(e){}
-    try{if(typeof restoreSnap==="function")restoreSnap(tt134Clone(step));}catch(e){}
-    try{movementPaths=[];}catch(e){}
-    try{selectedId=null;}catch(e){}
-    try{if(typeof render==="function")render();}catch(e){}
-    try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);else if(typeof renderEditSteps==="function")renderEditSteps(tk);}catch(e){}
-    try{if(typeof tt76UpdateCounters==="function")tt76UpdateCounters();}catch(e){}
-    try{if(typeof tt76UpdateReadOnlyUi==="function")tt76UpdateReadOnlyUi();}catch(e){}
-    try{
-      var inp=document.getElementById("edit-step-name-inp");
-      if(inp){
-        var lbl=(tk.steps[idx]&&tk.steps[idx].label) || (typeof tt76Label==="function"?tt76Label(idx):("Steg "+idx));
-        inp.value=lbl;
-      }
-    }catch(e){}
-  }catch(e){}
-}
-
-function tt134ArmStay(oldIdx,newIdx){
-  tt134Stay={oldIdx:oldIdx,newIdx:newIdx,until:Date.now()+1400};
-  setTimeout(function(){try{tt134RestoreStep(oldIdx);}catch(e){}},0);
-  setTimeout(function(){try{tt134RestoreStep(oldIdx);}catch(e){}},80);
-  setTimeout(function(){try{tt134RestoreStep(oldIdx);}catch(e){}},220);
-  setTimeout(function(){
-    try{
-      if(tt134Stay && tt134Stay.oldIdx===oldIdx)tt134Stay=null;
-    }catch(e){}
-  },1500);
-}
-
-if(typeof tt76SaveCurrentStep==="function" && !tt76SaveCurrentStep._tt134StayWrapped){
-  var _tt76SaveCurrentStep_tt134=tt76SaveCurrentStep;
-  tt76SaveCurrentStep=function(opts){
-    opts=opts||{};
-    var oldIdx=(typeof editingStepIdx==="number")?editingStepIdx:null;
-    var tkBefore=tt134CurrentTk();
-    var lenBefore=(tkBefore&&tkBefore.steps)?tkBefore.steps.length:0;
-
-    var res=_tt76SaveCurrentStep_tt134.apply(this,arguments);
-
-    try{
-      var tk=tt134Normalize(tt134CurrentTk());
-      var created=!!(res&&res.created);
-      var autoCreate=!!opts.allowAutoCreate;
-      if(created && autoCreate && oldIdx!==null && lenBefore>0 && oldIdx===lenBefore-1 && tk && tk.steps && tk.steps.length>lenBefore){
-        tt134ArmStay(oldIdx,oldIdx+1);
-      }
-    }catch(e){}
-
-    return res;
-  };
-  tt76SaveCurrentStep._tt134StayWrapped=true;
-}
-
-if(typeof tt76LoadStep==="function" && !tt76LoadStep._tt134StayWrapped){
-  var _tt76LoadStep_tt134=tt76LoadStep;
-  tt76LoadStep=function(targetIdx,opts){
-    try{
-      if(tt134Stay && Date.now()<tt134Stay.until && Number(targetIdx)===Number(tt134Stay.newIdx)){
-        targetIdx=tt134Stay.oldIdx;
-        opts=Object.assign({},opts||{},{animate:false,skipSave:true});
-      }
-    }catch(e){}
-    return _tt76LoadStep_tt134.call(this,targetIdx,opts);
-  };
-  tt76LoadStep._tt134StayWrapped=true;
-}
-
-function tt134PatchFormationButtonLabel(){
-  try{
-    if(!(window.innerWidth<=760 || (window.matchMedia&&window.matchMedia("(max-width: 760px)").matches)))return;
-
-    document.querySelectorAll("button,.tab").forEach(function(b){
-      var txt=String(b.textContent||"").trim();
-      var title=String(b.title||"").trim();
-      var panel=String(b.getAttribute("data-panel")||"").trim().toLowerCase();
-
-      var isFormation =
-        txt==="Utgångsläge" ||
-        txt==="Utgångslägen" ||
-        title==="Utgångsläge" ||
-        title==="Utgångslägen" ||
-        panel==="saves" ||
-        panel==="uppstallning" ||
-        panel==="start";
-
-      // Rör inte knappar inne i listor som t.ex. Dela/Ladda.
-      if(!isFormation)return;
-
-      b.dataset.tt134OriginalText=b.dataset.tt134OriginalText||txt;
-      b.title=title||"Utgångsläge";
-      b.textContent="➜";
-      b.classList.add("tt134-formation-arrow-only");
-    });
-  }catch(e){}
-}
-
-["DOMContentLoaded","resize","orientationchange","click","touchend"].forEach(function(evt){
-  window.addEventListener(evt,function(){
-    setTimeout(tt134PatchFormationButtonLabel,50);
-    setTimeout(tt134PatchFormationButtonLabel,250);
-  },true);
-});
-
-setTimeout(tt134PatchFormationButtonLabel,300);
-setTimeout(tt134PatchFormationButtonLabel,1000);
-setTimeout(tt134PatchFormationButtonLabel,2000);
-
-/* === slut v134-hard-stay-step-iphone-button === */
-
-
 /* === v135-fix-step-stay-correct-button: återställ huvudmeny + rätt knapp i film ===
    Bas: v134.
    - Själva tt76SaveCurrentStep är nu ändrad ovan: auto-skapat steg hoppar inte fram.
@@ -17024,3 +16885,37 @@ setTimeout(tt136TightenFilmMenu,500);
 setTimeout(tt136TightenFilmMenu,1400);
 
 /* === slut v136-step-stay-and-iphone-tight === */
+
+
+/* === v137-remove-v134-menu-flicker: ta bort blink i huvudmenyn ===
+   Bas: v136.
+   Den felaktiga v134-patchen är borttagen ovan.
+   Den här lilla vakten städar bara eventuell kvarvarande klass/text i redan renderad DOM.
+*/
+
+function tt137RestoreMainMenuFormation(){
+  try{
+    document.querySelectorAll(".tab[data-panel],button[data-panel]").forEach(function(b){
+      var panel=String(b.getAttribute("data-panel")||"").toLowerCase();
+      if(panel==="saves" || panel==="uppstallning" || panel==="start"){
+        b.classList.remove("tt134-formation-arrow-only");
+        if(String(b.textContent||"").trim()==="➜"){
+          b.textContent=b.dataset.tt134OriginalText || "Utgångsläge";
+        }
+      }
+    });
+  }catch(e){}
+}
+
+["DOMContentLoaded","click","touchend","resize","orientationchange"].forEach(function(evt){
+  window.addEventListener(evt,function(){
+    tt137RestoreMainMenuFormation();
+    setTimeout(tt137RestoreMainMenuFormation,0);
+  },true);
+});
+
+tt137RestoreMainMenuFormation();
+setTimeout(tt137RestoreMainMenuFormation,300);
+setTimeout(tt137RestoreMainMenuFormation,1000);
+
+/* === slut v137-remove-v134-menu-flicker === */
