@@ -9920,6 +9920,7 @@ function tt76SaveCurrentStep(opts){
   if(editingStepIdx<0)editingStepIdx=0;
   if(editingStepIdx>=tk.steps.length)editingStepIdx=tk.steps.length-1;
 
+  var oldIdx=editingStepIdx;
   var oldStep=tt76SafeStep(tt76Clone(tk.steps[editingStepIdx]),editingStepIdx);
   var snap=tt76Snapshot();
 
@@ -9932,13 +9933,15 @@ function tt76SaveCurrentStep(opts){
   var created=false;
 
   if(isLast && allowCreate && posChanged && !movChanged){
-    // Flytt på sista steget: gamla steget är start, nytt steg är mål.
+    // v135:
+    // Flytt på sista steget ska skapa ett mål-steg, men redigeringen ska stanna kvar
+    // på ursprungssteget så tränaren kan göra fler ändringar där.
     var newStep=tt76SafeStep(tt76Clone(snap),tk.steps.length);
     newStep.movementPaths=[];
     newStep.label=tt76Label(tk.steps.length);
     tk.steps[editingStepIdx]=oldStep;
     tk.steps.push(newStep);
-    editingStepIdx=tk.steps.length-1;
+    editingStepIdx=oldIdx;
     created=true;
   }else{
     tk.steps[editingStepIdx]=snap;
@@ -9949,7 +9952,10 @@ function tt76SaveCurrentStep(opts){
 
   ttV76.pointerArmed=false;
   tt76NormalizeFilm(tk);
-  if(playback)playback.tk=tk;
+  if(playback){
+    playback.tk=tk;
+    playback.stepIndex=editingStepIdx;
+  }
   tt76MarkDirty();
   return {created:created};
 }
@@ -16724,3 +16730,87 @@ setTimeout(tt134PatchFormationButtonLabel,1000);
 setTimeout(tt134PatchFormationButtonLabel,2000);
 
 /* === slut v134-hard-stay-step-iphone-button === */
+
+
+/* === v135-fix-step-stay-correct-button: återställ huvudmeny + rätt knapp i film ===
+   Bas: v134.
+   - Själva tt76SaveCurrentStep är nu ändrad ovan: auto-skapat steg hoppar inte fram.
+   - Återställer huvudmenyknappen som v134 råkade korta.
+   - Kortar bara knappen inne i taktikfilm, direkt efter Loop, där texten "Utgångsläge" står.
+*/
+
+function tt135Small(){
+  try{return window.innerWidth<=760 || (window.matchMedia&&window.matchMedia("(max-width: 760px)").matches);}
+  catch(e){return false;}
+}
+
+function tt135RestoreMainFormationButton(){
+  try{
+    document.querySelectorAll(".tab.tt134-formation-arrow-only[data-panel],button.tt134-formation-arrow-only[data-panel]").forEach(function(b){
+      var panel=String(b.getAttribute("data-panel")||"").toLowerCase();
+      if(panel==="saves" || panel==="uppstallning" || panel==="start"){
+        b.classList.remove("tt134-formation-arrow-only");
+        b.textContent=b.dataset.tt134OriginalText || "Utgångsläge";
+        b.title=b.title || "Utgångsläge";
+      }
+    });
+  }catch(e){}
+}
+
+function tt135PatchFilmFormationButton(){
+  try{
+    tt135RestoreMainFormationButton();
+    if(!tt135Small())return;
+
+    var buttons=Array.prototype.slice.call(document.querySelectorAll("button"));
+    buttons.forEach(function(b){
+      var txt=String(b.textContent||"").trim().toLowerCase();
+      var title=String(b.title||"").trim().toLowerCase();
+
+      // Endast knappen inne i taktikfilmens kontrollrad, inte huvudmenyn.
+      if(txt.indexOf("utgångsläge")<0 && title.indexOf("utgångsläge")<0)return;
+      if(b.matches(".tab,[data-panel]"))return;
+
+      var nearLoop=false;
+      var parent=b.parentElement;
+      if(parent){
+        var ptxt=String(parent.textContent||"").toLowerCase();
+        if(ptxt.indexOf("loop")>=0)nearLoop=true;
+        if(parent.querySelector && parent.querySelector("#play-loop,#ls-loop,input[type='checkbox']"))nearLoop=true;
+      }
+
+      // Även om den inte har samma parent, acceptera om Loop finns mycket nära i kontrollbaren.
+      if(!nearLoop){
+        var prev=b.previousElementSibling;
+        for(var i=0;i<4 && prev;i++,prev=prev.previousElementSibling){
+          if(String(prev.textContent||"").toLowerCase().indexOf("loop")>=0 || prev.id==="play-loop" || prev.id==="ls-loop"){
+            nearLoop=true;break;
+          }
+          if(prev.querySelector && prev.querySelector("#play-loop,#ls-loop")){nearLoop=true;break;}
+        }
+      }
+
+      if(!nearLoop)return;
+
+      b.dataset.tt135OriginalText=b.dataset.tt135OriginalText||String(b.textContent||"");
+      b.textContent="➜";
+      b.title="Utgångsläge";
+      b.classList.add("tt135-film-formation-arrow");
+    });
+  }catch(e){}
+}
+
+["DOMContentLoaded","resize","orientationchange","click","touchend"].forEach(function(evt){
+  window.addEventListener(evt,function(){
+    setTimeout(tt135RestoreMainFormationButton,20);
+    setTimeout(tt135PatchFilmFormationButton,80);
+    setTimeout(tt135PatchFilmFormationButton,300);
+  },true);
+});
+
+setTimeout(tt135RestoreMainFormationButton,100);
+setTimeout(tt135PatchFilmFormationButton,500);
+setTimeout(tt135PatchFilmFormationButton,1200);
+setTimeout(tt135PatchFilmFormationButton,2200);
+
+/* === slut v135-fix-step-stay-correct-button === */
