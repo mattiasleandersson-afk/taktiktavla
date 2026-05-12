@@ -18462,21 +18462,22 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v165-direct-taktik-save-only === */
 
 
-/* === v166-taktik-load-filter-only: ersätt bara LADDA/FILTER för taktikfilm ===
+/* === v167-taktik-load-owner-fallback: load/filter med ownerId ELLER namn+lag ===
    Bas: v165.
-   Nu är direkt-spara testad men filen försvinner efter refresh.
-   Därför byter vi bara:
-   - cloudLoadTaktik
-   - isMine/isVisible/isReadOnly för objekt med steps = taktikfilm
-   Rör INTE editor/steg/animation/delning/kopiering/list-rendering.
+   Rör bara laddning/filter/readOnly för taktikfilmer.
+   Skillnad från v166:
+   - Mina = ownerId matchar ELLER ownerName + team matchar
+   - minskar risken att egen fil blir skrivskyddad om ownerId bytts
+   - Lagets = samma team + sharedWithTeam
 */
 
 (function(){
-  if(window.__tt166TaktikLoadFilterOnly)return;
-  window.__tt166TaktikLoadFilterOnly=true;
+  if(window.__tt167TaktikLoadOwnerFallback)return;
+  window.__tt167TaktikLoadOwnerFallback=true;
 
   function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
-  function norm(v){return String(v||"").trim().toUpperCase().replace(/\s+/g,"-");}
+  function norm(v){return String(v||"").trim().toLowerCase();}
+  function normTeam(v){return String(v||"").trim().toUpperCase().replace(/\s+/g,"-");}
   function profile(){
     try{if(typeof getUserProfile==="function"){var p=getUserProfile();if(p)return p;}}catch(e){}
     try{var raw=localStorage.getItem("tt_profile_v1");if(raw)return JSON.parse(raw);}catch(e){}
@@ -18489,33 +18490,40 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(obj.state&&obj.state._meta)return obj.state._meta;
     return {};
   }
-  function isTaktik(obj){
-    return !!(obj && Array.isArray(obj.steps));
+  function isTaktik(obj){return !!(obj && Array.isArray(obj.steps));}
+  function sameOwnerId(obj){
+    var p=profile(),m=meta(obj);
+    return !!(p&&m&&p.ownerId&&m.ownerId&&String(p.ownerId)===String(m.ownerId));
   }
-  function sameOwner(obj){
-    var p=profile();
-    var m=meta(obj);
+  function sameNameAndTeam(obj){
+    var p=profile(),m=meta(obj);
     if(!p||!m)return false;
-    if(m.ownerId && p.ownerId && String(m.ownerId)===String(p.ownerId))return true;
-    return false;
+    var pn=norm(p.ownerName);
+    var mn=norm(m.ownerName);
+    var pt=normTeam(p.teamId||p.teamCode||p.teamName);
+    var mt=normTeam(m.teamId||m.teamCode||m.teamName);
+    return !!(pn&&mn&&pn===mn&&pt&&mt&&pt===mt);
   }
   function sameTeam(obj){
-    var p=profile();
-    var m=meta(obj);
+    var p=profile(),m=meta(obj);
     if(!p||!m)return false;
-    var pt=norm(p.teamId||p.teamCode||p.teamName);
-    var mt=norm(m.teamId||m.teamCode||m.teamName);
+    var pt=normTeam(p.teamId||p.teamCode||p.teamName);
+    var mt=normTeam(m.teamId||m.teamCode||m.teamName);
     return !!(pt&&mt&&pt===mt);
+  }
+  function isMine(obj){
+    return sameOwnerId(obj) || sameNameAndTeam(obj);
   }
   function isTeamShared(obj){
     return !!(sameTeam(obj) && meta(obj).sharedWithTeam);
   }
   function visible(obj,scope){
     if(scope==="team")return isTeamShared(obj);
-    return sameOwner(obj);
+    return isMine(obj);
   }
   function readOnly(obj){
-    return !sameOwner(obj) && !meta(obj).teamCanEdit;
+    if(isMine(obj))return false;
+    return !meta(obj).teamCanEdit;
   }
   function fromRow(row){
     var tk=clone(row&&row.data||{});
@@ -18525,7 +18533,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     tk.name=tk.name||row.name||"Taktikfilm";
     tk.folder=tk.folder||row.folder||"Taktik";
     tk.type="taktikfilm";
-    if(!tk._meta && row.data && row.data._meta)tk._meta=clone(row.data._meta);
     return tk;
   }
   function dedupe(list){
@@ -18538,12 +18545,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     });
     return out;
   }
-  function rebuildTaktikFoldersOnly(){
+  function rebuildFolders(){
     try{
-      var base=["Taktik","Träning"];
-      var seen={};
+      var seen={},base=["Taktik","Träning"];
       taktikFolders=[];
-      base.forEach(function(f){if(!seen[f]){seen[f]=true;taktikFolders.push(f);}});
+      base.forEach(function(f){seen[f]=true;taktikFolders.push(f);});
       (taktikFilmer||[]).forEach(function(tk){
         var f=tk.folder||"Taktik";
         if(!seen[f]){seen[f]=true;taktikFolders.push(f);}
@@ -18551,17 +18557,16 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){}
   }
 
-  // Taktik-specifika behörighetsfunktioner.
   var oldIsMine=typeof isMineV10==="function"?isMineV10:null;
   isMineV10=function(obj){
-    if(isTaktik(obj))return sameOwner(obj);
+    if(isTaktik(obj))return isMine(obj);
     return oldIsMine?oldIsMine(obj):true;
   };
 
-  var oldSameTeam=typeof isSameTeamSharedV10==="function"?isSameTeamSharedV10:null;
+  var oldTeam=typeof isSameTeamSharedV10==="function"?isSameTeamSharedV10:null;
   isSameTeamSharedV10=function(obj){
     if(isTaktik(obj))return isTeamShared(obj);
-    return oldSameTeam?oldSameTeam(obj):false;
+    return oldTeam?oldTeam(obj):false;
   };
 
   var oldVisible=typeof isFileVisibleInScopeV10==="function"?isFileVisibleInScopeV10:null;
@@ -18578,50 +18583,35 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   cloudLoadTaktik=function(){
     try{cloudStatus("Laddar taktik...","#7aaa88");}catch(e){}
-
     return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()})
       .then(function(r){
         if(!r.ok)throw new Error("HTTP "+r.status);
         return r.json();
       })
       .then(function(rows){
-        if(!Array.isArray(rows))rows=[];
-
-        var all=rows.map(fromRow).filter(function(tk){
+        var all=(rows||[]).map(fromRow).filter(function(tk){
           return tk.steps && tk.steps.length>=2;
         });
-
-        // Här filtrerar vi konsekvent:
-        // Mina = ownerId matchar
-        // Lagets = samma team och sharedWithTeam
-        var loaded=all.filter(function(tk){
+        taktikFilmer=dedupe(all.filter(function(tk){
           return visible(tk,"mine") || visible(tk,"team");
-        });
-
-        taktikFilmer=dedupe(loaded);
-        rebuildTaktikFoldersOnly();
-
+        }));
+        rebuildFolders();
         try{renderTaktikList();}catch(e){}
+
         try{
-          var p=profile();
           var mineCount=taktikFilmer.filter(function(tk){return visible(tk,"mine");}).length;
           var teamCount=taktikFilmer.filter(function(tk){return visible(tk,"team");}).length;
           cloudStatus("✅ Taktik laddad: Mina "+mineCount+" · Lagets "+teamCount,"#4ae87a");
-        }catch(e){
-          cloudStatus("✅ Taktik laddad","#4ae87a");
-        }
+        }catch(e){cloudStatus("✅ Taktik laddad","#4ae87a");}
       })
       .catch(function(err){
-        console.warn("v166 cloudLoadTaktik failed",err);
+        console.warn("v167 cloudLoadTaktik failed",err);
         try{cloudStatus("❌ Kunde inte ladda taktik: "+err.message,"#e84a4a");}catch(e){}
         try{renderTaktikList();}catch(e){}
       });
   };
 
-  // Kör en omladdning efter att patchen är på plats.
-  setTimeout(function(){
-    try{cloudLoadTaktik();}catch(e){}
-  },800);
+  setTimeout(function(){try{cloudLoadTaktik();}catch(e){}},800);
 })();
 
-/* === slut v166-taktik-load-filter-only === */
+/* === slut v167-taktik-load-owner-fallback === */
