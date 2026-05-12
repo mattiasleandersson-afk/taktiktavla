@@ -18486,3 +18486,392 @@ setTimeout(tt157UpdateShareIcons,400);
 setTimeout(tt157UpdateShareIcons,1400);
 
 /* === slut v157-taktik-share-capture-hardfix === */
+
+
+/* === v158-taktik-list-clean-render: rendera taktiklistan utan gamla handlers ===
+   Bas: v157.
+   Rör bara taktiklistans rendering + delning/kopiering.
+   Syfte:
+   - Dela-knappen i Mina ska gå att trycka på.
+   - Kopia ska inte göra att originalet försvinner.
+   - Gamla handlers på knapparna ska inte kunna köras, eftersom listan byggs om rent.
+*/
+
+function tt158Profile(){
+  try{if(typeof getUserProfile==="function"){var p=getUserProfile();if(p)return p;}}catch(e){}
+  try{var raw=localStorage.getItem("tt_profile_v1");return raw?JSON.parse(raw):null;}catch(e){}
+  return null;
+}
+function tt158Clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+function tt158Meta(obj){
+  if(!obj)return {};
+  if(obj._meta)return obj._meta;
+  if(obj.data&&obj.data._meta)return obj.data._meta;
+  if(obj.state&&obj.state._meta)return obj.state._meta;
+  return {};
+}
+function tt158EnsureMeta(tk){
+  var copy=tt158Clone(tk||{});
+  var p=tt158Profile();
+  var m=copy._meta?tt158Clone(copy._meta):tt158Clone(tt158Meta(copy));
+  if(!m)m={};
+  if(p){
+    m.ownerId=p.ownerId||m.ownerId;
+    m.ownerName=p.ownerName||m.ownerName||"Tränare";
+    m.teamId=p.teamId||p.teamCode||p.teamName||m.teamId;
+    m.teamCode=p.teamCode||p.teamId||p.teamName||m.teamCode;
+    m.teamName=p.teamName||p.teamCode||p.teamId||m.teamName;
+  }
+  m.kind="taktikfilm";
+  m.schemaVersion=m.schemaVersion||2;
+  m.updatedAt=new Date().toISOString();
+  copy._meta=m;
+  return copy;
+}
+function tt158Shared(tk){return !!(tt158Meta(tk)&&tt158Meta(tk).sharedWithTeam);}
+function tt158OwnerName(tk){
+  try{if(typeof ownerNameV10==="function")return ownerNameV10(tk);}catch(e){}
+  var m=tt158Meta(tk);
+  return m.ownerName||"Annan tränare";
+}
+function tt158IsMine(tk){
+  try{if(typeof tt120IsMine==="function")return tt120IsMine(tk);}catch(e){}
+  try{if(typeof isMineV10==="function")return isMineV10(tk);}catch(e){}
+  return true;
+}
+function tt158IsReadOnly(tk){
+  try{if(typeof isReadOnlyFileV10==="function")return isReadOnlyFileV10(tk);}catch(e){}
+  return !tt158IsMine(tk);
+}
+function tt158Visible(tk){
+  try{if(typeof isFileVisibleInScopeV10==="function")return isFileVisibleInScopeV10(tk,taktikScope);}catch(e){}
+  return true;
+}
+function tt158IconBtn(txt,title,color){
+  var b=document.createElement("button");
+  b.className="sa";
+  b.type="button";
+  b.textContent=txt;
+  b.title=title;
+  b.setAttribute("aria-label",title);
+  b.style.cssText="min-width:24px;padding:2px 5px;font-size:0.72rem;line-height:1.1"+(color?";color:"+color+";border-color:"+color:"");
+  return b;
+}
+function tt158PatchShare(tk,share){
+  if(!tk||!tk.dbId){
+    showToast("Spara filmen först",false);
+    return;
+  }
+
+  // Viktigt: om filen visas i Mina men metadata är äldre, adoptera aktuell profil
+  // när användaren delar. Då blir originalet kvar som användarens fil.
+  var newTk=tt158EnsureMeta(tk);
+  newTk._meta.sharedWithTeam=!!share;
+  newTk._meta.teamCanEdit=false;
+  newTk._meta.updatedAt=new Date().toISOString();
+
+  Object.keys(newTk).forEach(function(k){tk[k]=newTk[k];});
+
+  try{cloudStatus(share?"Delar med laget...":"Tar bort delning...","#7aaa88");}catch(e){}
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{
+    method:"PATCH",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({
+      name:newTk.name,
+      data:newTk,
+      type:"taktikfilm",
+      folder:newTk.folder||"Taktik"
+    })
+  })
+  .then(function(r){
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json();
+  })
+  .then(function(){
+    showToast(share?"Film delad med laget":"Film inte längre delad");
+    try{cloudStatus(share?"✅ Delad med laget":"✅ Delning borttagen","#4ae87a");}catch(e){}
+    try{taktikScope="mine";}catch(e){}
+    try{renderTaktikList();}catch(e){}
+  })
+  .catch(function(err){
+    showToast("Kunde inte ändra delning",false);
+    try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e){}
+  });
+}
+function tt158CopyToMine(tk){
+  if(!tk)return;
+  var copy=tt158Clone(tk);
+  delete copy.dbId;
+  delete copy.id;
+  delete copy._readOnly;
+  delete copy._openedFromTeam;
+  delete copy._draftUid;
+
+  copy.name="Kopia av "+(tk.name||"taktikfilm");
+  copy.folder=copy.folder||"Taktik";
+  copy=tt158EnsureMeta(copy);
+  copy._meta.sharedWithTeam=false;
+  copy._meta.teamCanEdit=false;
+  copy._meta.updatedAt=new Date().toISOString();
+
+  // Lägg in kopian lokalt direkt och spara den utan att cloudLoadTaktik
+  // körs direkt och riskerar att filtrera bort originalet.
+  taktikFilmer.unshift(copy);
+  try{taktikScope="mine";}catch(e){}
+  try{renderTaktikList();}catch(e){}
+  showToast("Kopia skapad");
+
+  fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{
+    method:"POST",
+    headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+    body:JSON.stringify({
+      name:copy.name,
+      type:"taktikfilm",
+      folder:copy.folder||"Taktik",
+      data:copy
+    })
+  })
+  .then(function(r){
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json();
+  })
+  .then(function(rows){
+    if(rows&&rows[0]){
+      copy.dbId=rows[0].id;
+      copy.id=rows[0].id;
+      try{renderTaktikList();}catch(e){}
+    }
+  })
+  .catch(function(err){
+    showToast("Kopian sparades inte i molnet",false);
+    try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e){}
+  });
+}
+function tt158DeleteTaktik(tk){
+  if(!tk)return;
+  if(!confirm("Radera taktikfilmen \""+(tk.name||"utan namn")+"\"?"))return;
+  if(tk.dbId){
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+tk.dbId,{
+      method:"DELETE",
+      headers:supaHeaders()
+    }).then(function(){
+      taktikFilmer=taktikFilmer.filter(function(x){return x!==tk;});
+      renderTaktikList();
+      showToast("Taktik raderad!");
+    });
+  }else{
+    taktikFilmer=taktikFilmer.filter(function(x){return x!==tk;});
+    renderTaktikList();
+    showToast("Taktik raderad!");
+  }
+}
+function tt158RenderFolderFilter(visible){
+  var filterDiv=document.getElementById("taktik-folder-filter");
+  if(!filterDiv)return;
+  filterDiv.innerHTML="";
+
+  var tfCounts={"Alla":visible.length};
+  visible.forEach(function(tk){
+    var f=tk.folder||"Taktik";
+    tfCounts[f]=(tfCounts[f]||0)+1;
+  });
+
+  var rootFolders=["Taktik","Träning"];
+  var seen={}, all=["Alla"];
+  rootFolders.forEach(function(f){if(!seen[f]){seen[f]=true;all.push(f);}});
+  (taktikFolders||[]).forEach(function(f){if(!seen[f]){seen[f]=true;all.push(f);}});
+  visible.forEach(function(tk){
+    var f=tk.folder||"Taktik";
+    if(!seen[f]){seen[f]=true;all.push(f);}
+  });
+
+  all.sort(function(a,b){if(a==="Alla")return -1;if(b==="Alla")return 1;return a.localeCompare(b,"sv");});
+
+  all.forEach(function(f){
+    var isRoot=f==="Alla"||rootFolders.indexOf(f)>=0;
+    var depth=f==="Alla"?0:(f.split("/").length-1);
+    var wrap=document.createElement("div");
+    wrap.style.cssText="display:flex;align-items:center;gap:1px;margin-bottom:2px;margin-left:"+(depth*12)+"px";
+
+    var fb=document.createElement("button");
+    fb.className="tab"+(currentTaktikFolder===f?" on":"");
+    fb.textContent=(depth>0?"└ ":"")+f.split("/").pop()+" ("+(tfCounts[f]||0)+")";
+    fb.style.fontSize="0.62rem";
+    fb.style.padding="2px 6px";
+    fb.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();
+      currentTaktikFolder=f;
+      renderTaktikList();
+    });
+    wrap.appendChild(fb);
+
+    if(f!=="Alla" && taktikScope==="mine"){
+      var subBtn=document.createElement("button");
+      subBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#4ae87a;border:1px solid #2d4a35;border-left:none;cursor:pointer";
+      subBtn.textContent="+";
+      subBtn.title="Ny undermapp";
+      subBtn.addEventListener("click",function(e){
+        e.preventDefault();e.stopPropagation();
+        pendingFolderParent=f;
+        pendingFolderTarget="taktik";
+        document.getElementById("new-folder-inp").value="";
+        document.getElementById("modal-new-folder").classList.remove("hidden");
+        setTimeout(function(){document.getElementById("new-folder-inp").focus();},100);
+      });
+      wrap.appendChild(subBtn);
+
+      if(!isRoot){
+        var rnBtn=document.createElement("button");
+        rnBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#7aaa88;border:1px solid #2d4a35;border-left:none;cursor:pointer";
+        rnBtn.textContent="✏";
+        rnBtn.title="Byt namn";
+        rnBtn.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();openRenameTaktikFolder(f);});
+        wrap.appendChild(rnBtn);
+
+        var delBtn=document.createElement("button");
+        delBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#e84a4a;border:1px solid #2d4a35;border-left:none;border-radius:0 4px 4px 0;cursor:pointer";
+        delBtn.textContent="×";
+        delBtn.title="Radera mapp";
+        delBtn.addEventListener("click",function(e){
+          e.preventDefault();e.stopPropagation();
+          var count=tfCounts[f]||0;
+          if(count===0){
+            if(!confirm("Radera mappen \""+f+"\"?"))return;
+            taktikFolders=taktikFolders.filter(function(x){return x!==f;});
+            if(currentTaktikFolder===f)currentTaktikFolder="Alla";
+            renderTaktikList();
+          }else{
+            openDeleteFolderConfirm(f,"taktik");
+          }
+        });
+        wrap.appendChild(delBtn);
+      }
+    }
+
+    filterDiv.appendChild(wrap);
+  });
+}
+function renderTaktikList(){
+  var list=document.getElementById("taktik-list");
+  if(!list)return;
+  list.innerHTML="";
+
+  var q=String(taktikSearch||"").toLowerCase();
+  var favorites_=typeof favorites!=="undefined"?favorites:{};
+
+  var visible=(taktikFilmer||[]).filter(function(tk){return tt158Visible(tk);});
+  tt158RenderFolderFilter(visible);
+
+  visible.sort(function(a,b){
+    var af=a.dbId&&favorites_[a.dbId]?1:0;
+    var bf=b.dbId&&favorites_[b.dbId]?1:0;
+    return bf-af;
+  });
+
+  var filtered=visible.filter(function(tk){
+    var inFolder=currentTaktikFolder==="Alla" || (tk.folder||"Taktik")===currentTaktikFolder;
+    var inSearch=!q || String(tk.name||"").toLowerCase().indexOf(q)>=0;
+    return inFolder && inSearch;
+  });
+
+  if(!filtered.length){
+    list.innerHTML="<span style=\"color:#7aaa88;font-size:0.8rem\">"+(taktikScope==="team"?"Inga delade lagfilmer":(taktikSearch?"Inga träffar":"Inga taktikfilmer sparade"))+"<\/span>";
+    return;
+  }
+
+  filtered.forEach(function(tk){
+    var idx=taktikFilmer.indexOf(tk);
+    var mine=tt158IsMine(tk) || taktikScope==="mine";
+    var readOnly=!mine || tt158IsReadOnly(tk);
+    if(taktikScope==="mine")readOnly=false;
+    tk._readOnly=readOnly;
+
+    var row=document.createElement("div");
+    row.className="row";
+    row.style.gap="3px";
+
+    var nm=document.createElement("span");
+    nm.className="row-name";
+    nm.textContent=tk.name||"Utan namn";
+
+    var fl=document.createElement("span");
+    fl.className="row-sub";
+    fl.textContent=(tk.folder||"Taktik")+" · "+((tk.steps&&tk.steps.length?tk.steps.length-1:0))+" steg"+(mine?"":" · "+tt158OwnerName(tk)+" · skrivskyddad");
+
+    var fav=document.createElement("button");
+    fav.className="star-btn "+(tk.dbId&&favorites_[tk.dbId]?"on":"off");
+    fav.innerHTML="&#9733;";
+    fav.title="Favorit";
+    fav.type="button";
+    fav.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();
+      if(tk.dbId && mine)toggleFavorite(tk.dbId);
+    });
+
+    var openBtn=tt158IconBtn(readOnly?"👁":"✎",readOnly?"Öppna skrivskyddat":"Redigera","#4ae87a");
+    openBtn.className+=" play";
+    openBtn.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();
+      startPlayback(idx);
+      if(readOnly)showToast("Skrivskyddad – kopiera för att redigera");
+    });
+
+    var copyBtn=tt158IconBtn("⧉","Kopiera","#4ae8e8");
+    copyBtn.addEventListener("click",function(e){
+      e.preventDefault();e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      tt158CopyToMine(tk);
+      return false;
+    });
+
+    row.appendChild(nm);
+    row.appendChild(fl);
+
+    if(mine){
+      var shareBtn=tt158IconBtn(tt158Shared(tk)?"🙈":"👥",tt158Shared(tk)?"Sluta dela med laget":"Dela med laget","#4ae8e8");
+      shareBtn.addEventListener("click",function(e){
+        e.preventDefault();e.stopPropagation();
+        if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+        tt158PatchShare(tk,!tt158Shared(tk));
+        return false;
+      });
+
+      var mergeBtn=tt158IconBtn("⋓","Sammanfoga","#a78bfa");
+      mergeBtn.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();openMergeTaktik(idx);});
+
+      var linkBtn=tt158IconBtn("⤴","Dela länk","#7aaa88");
+      linkBtn.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();openShareTaktik(tk);});
+
+      var moveBtn=tt158IconBtn("⇆","Flytta till mapp","#e8c84a");
+      moveBtn.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();openMoveTaktikFolder(tk);});
+
+      var delBtn=tt158IconBtn("×","Radera","#e84a4a");
+      delBtn.className+=" del";
+      delBtn.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();tt158DeleteTaktik(tk);});
+
+      row.appendChild(fav);
+      row.appendChild(openBtn);
+      row.appendChild(copyBtn);
+      row.appendChild(shareBtn);
+      row.appendChild(mergeBtn);
+      row.appendChild(linkBtn);
+      row.appendChild(moveBtn);
+      row.appendChild(delBtn);
+    }else{
+      row.appendChild(openBtn);
+      row.appendChild(copyBtn);
+    }
+
+    list.appendChild(row);
+  });
+
+  try{if(typeof tt150PatchExactTacticIcons==="function")tt150PatchExactTacticIcons();}catch(e){}
+  try{if(typeof tt151PatchScroll==="function")tt151PatchScroll();}catch(e){}
+}
+
+try{patchTaktikShareV10=tt158PatchShare;}catch(e){}
+try{copyTaktikToMineV10=tt158CopyToMine;}catch(e){}
+try{duplicateTaktik=function(idx){tt158CopyToMine((taktikFilmer||[])[idx]);};}catch(e){}
+
+/* === slut v158-taktik-list-clean-render === */
