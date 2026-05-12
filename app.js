@@ -18462,24 +18462,21 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v165-direct-taktik-save-only === */
 
 
-/* === v168-claimed-taktik-ids: lokalt ägarskapsbevis för sparade taktikfilmer ===
+/* === v167-taktik-load-owner-fallback: load/filter med ownerId ELLER namn+lag ===
    Bas: v165.
-   Varför:
-   - Direkt-save fungerar, men efter refresh kan filen öppnas som skrivskyddad.
-   - Då matchar inte appens ägarbedömning stabilt.
-   Lösning:
-   - När en film sparas och får dbId/id, lagra id:t lokalt som "mitt".
-   - Vid load/filter/readOnly räknas claimat id som Mina.
-   Rör inte taktikmotor, steg, animation, kopiering eller delning.
+   Rör bara laddning/filter/readOnly för taktikfilmer.
+   Skillnad från v166:
+   - Mina = ownerId matchar ELLER ownerName + team matchar
+   - minskar risken att egen fil blir skrivskyddad om ownerId bytts
+   - Lagets = samma team + sharedWithTeam
 */
 
 (function(){
-  if(window.__tt168ClaimedTaktikIds)return;
-  window.__tt168ClaimedTaktikIds=true;
-
-  var CLAIM_KEY="tt_taktik_owned_ids_v1";
+  if(window.__tt167TaktikLoadOwnerFallback)return;
+  window.__tt167TaktikLoadOwnerFallback=true;
 
   function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+  function norm(v){return String(v||"").trim().toLowerCase();}
   function normTeam(v){return String(v||"").trim().toUpperCase().replace(/\s+/g,"-");}
   function profile(){
     try{if(typeof getUserProfile==="function"){var p=getUserProfile();if(p)return p;}}catch(e){}
@@ -18493,39 +18490,19 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(obj.state&&obj.state._meta)return obj.state._meta;
     return {};
   }
-  function rowId(obj){
-    if(!obj)return "";
-    return String(obj.dbId||obj.id||"").trim();
-  }
-  function readClaims(){
-    try{
-      var raw=localStorage.getItem(CLAIM_KEY);
-      var m=raw?JSON.parse(raw):{};
-      return m && typeof m==="object" ? m : {};
-    }catch(e){return {};}
-  }
-  function writeClaims(m){
-    try{localStorage.setItem(CLAIM_KEY,JSON.stringify(m||{}));}catch(e){}
-  }
-  function claimId(id){
-    id=String(id||"").trim();
-    if(!id)return;
-    var m=readClaims();
-    m[id]=true;
-    writeClaims(m);
-  }
-  function isClaimed(obj){
-    var id=rowId(obj);
-    if(!id)return false;
-    var m=readClaims();
-    return !!m[id];
-  }
-  function isTaktik(obj){
-    return !!(obj && Array.isArray(obj.steps));
-  }
+  function isTaktik(obj){return !!(obj && Array.isArray(obj.steps));}
   function sameOwnerId(obj){
     var p=profile(),m=meta(obj);
     return !!(p&&m&&p.ownerId&&m.ownerId&&String(p.ownerId)===String(m.ownerId));
+  }
+  function sameNameAndTeam(obj){
+    var p=profile(),m=meta(obj);
+    if(!p||!m)return false;
+    var pn=norm(p.ownerName);
+    var mn=norm(m.ownerName);
+    var pt=normTeam(p.teamId||p.teamCode||p.teamName);
+    var mt=normTeam(m.teamId||m.teamCode||m.teamName);
+    return !!(pn&&mn&&pn===mn&&pt&&mt&&pt===mt);
   }
   function sameTeam(obj){
     var p=profile(),m=meta(obj);
@@ -18535,7 +18512,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return !!(pt&&mt&&pt===mt);
   }
   function isMine(obj){
-    return isClaimed(obj) || sameOwnerId(obj);
+    return sameOwnerId(obj) || sameNameAndTeam(obj);
   }
   function isTeamShared(obj){
     return !!(sameTeam(obj) && meta(obj).sharedWithTeam);
@@ -18545,27 +18522,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return isMine(obj);
   }
   function readOnly(obj){
-    // Viktigt: Lagets-vyn ska fortfarande vara skrivskyddad,
-    // men samma fil i Mina ska vara redigerbar.
-    try{
-      if(typeof taktikScope!=="undefined" && taktikScope==="team" && isTeamShared(obj))return true;
-    }catch(e){}
     if(isMine(obj))return false;
     return !meta(obj).teamCanEdit;
-  }
-  function clearReadonly(obj){
-    if(!obj)return obj;
-    if(isMine(obj)){
-      delete obj._readOnly;
-      delete obj._openedFromTeam;
-      try{document.body.classList.remove("v74-readonly-taktik");}catch(e){}
-      try{document.body.classList.remove("tt-v76-readonly");}catch(e){}
-      try{
-        var inp=document.getElementById("edit-step-name-inp");
-        if(inp)inp.disabled=false;
-      }catch(e){}
-    }
-    return obj;
   }
   function fromRow(row){
     var tk=clone(row&&row.data||{});
@@ -18575,7 +18533,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     tk.name=tk.name||row.name||"Taktikfilm";
     tk.folder=tk.folder||row.folder||"Taktik";
     tk.type="taktikfilm";
-    if(isMine(tk))clearReadonly(tk);
     return tk;
   }
   function dedupe(list){
@@ -18600,35 +18557,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){}
   }
 
-  // 1) Lägg claim runt v165:s direktsparning.
-  if(typeof cloudSaveTaktik==="function" && !cloudSaveTaktik._tt168ClaimWrapped){
-    var oldSave=cloudSaveTaktik;
-    cloudSaveTaktik=function(tk){
-      var ret=oldSave.apply(this,arguments);
-      try{
-        if(ret && typeof ret.then==="function"){
-          return ret.then(function(saved){
-            var id=rowId(saved)||rowId(tk);
-            if(id)claimId(id);
-            clearReadonly(saved||tk);
-            try{if(tk)clearReadonly(tk);}catch(e){}
-            try{renderTaktikList();}catch(e){}
-            return saved;
-          });
-        }else{
-          var id=rowId(tk);
-          if(id)claimId(id);
-          clearReadonly(tk);
-          return ret;
-        }
-      }catch(e){
-        return ret;
-      }
-    };
-    cloudSaveTaktik._tt168ClaimWrapped=true;
-  }
-
-  // 2) Byt bara taktikfilmens behörighetsbedömning.
   var oldIsMine=typeof isMineV10==="function"?isMineV10:null;
   isMineV10=function(obj){
     if(isTaktik(obj))return isMine(obj);
@@ -18653,7 +18581,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return oldReadOnly?oldReadOnly(obj):false;
   };
 
-  // 3) Load/filter med claim-stöd.
   cloudLoadTaktik=function(){
     try{cloudStatus("Laddar taktik...","#7aaa88");}catch(e){}
     return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.taktikfilm&order=id.desc",{headers:supaHeaders()})
@@ -18668,9 +18595,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         taktikFilmer=dedupe(all.filter(function(tk){
           return visible(tk,"mine") || visible(tk,"team");
         }));
-        taktikFilmer.forEach(clearReadonly);
         rebuildFolders();
         try{renderTaktikList();}catch(e){}
+
         try{
           var mineCount=taktikFilmer.filter(function(tk){return visible(tk,"mine");}).length;
           var teamCount=taktikFilmer.filter(function(tk){return visible(tk,"team");}).length;
@@ -18678,302 +18605,41 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         }catch(e){cloudStatus("✅ Taktik laddad","#4ae87a");}
       })
       .catch(function(err){
-        console.warn("v168 cloudLoadTaktik failed",err);
+        console.warn("v167 cloudLoadTaktik failed",err);
         try{cloudStatus("❌ Kunde inte ladda taktik: "+err.message,"#e84a4a");}catch(e){}
         try{renderTaktikList();}catch(e){}
       });
   };
 
-  // 4) Precis innan/efter öppning: om filens id är claimat, rensa skrivskydd.
-  if(typeof startPlayback==="function" && !startPlayback._tt168ClaimWrapped){
-    var oldStart=startPlayback;
-    startPlayback=function(idx){
-      try{
-        var tk=(taktikFilmer||[])[idx];
-        if(tk && isMine(tk))clearReadonly(tk);
-      }catch(e){}
-      var r=oldStart.apply(this,arguments);
-      try{
-        var tk2=(taktikFilmer||[])[idx];
-        if(tk2 && isMine(tk2)){
-          clearReadonly(tk2);
-          try{if(playback&&playback.tk)clearReadonly(playback.tk);}catch(e){}
-        }
-      }catch(e){}
-      return r;
-    };
-    startPlayback._tt168ClaimWrapped=true;
-  }
-
-  // 5) Verktyg för felsökning vid behov.
-  window.tt168ClaimTaktikId=claimId;
-  window.tt168TaktikIsMine=isMine;
-
   setTimeout(function(){try{cloudLoadTaktik();}catch(e){}},800);
 })();
 
-/* === slut v168-claimed-taktik-ids === */
+/* === slut v167-taktik-load-owner-fallback === */
 
 
-/* === v169-editor-claim-readonly-fix: gör claimade taktikfilmer redigerbara i editorn ===
-   Bas: v168.
-   Rör inte save/load ytterligare.
-   Fixar bara att editorns egna readonly-lager (tt76) känner igen lokalt claimade dbId.
-*/
-
-(function(){
-  if(window.__tt169EditorClaimReadonlyFix)return;
-  window.__tt169EditorClaimReadonlyFix=true;
-
-  var CLAIM_KEY="tt_taktik_owned_ids_v1";
-
-  function readClaims(){
-    try{
-      var raw=localStorage.getItem(CLAIM_KEY);
-      var m=raw?JSON.parse(raw):{};
-      return m&&typeof m==="object"?m:{};
-    }catch(e){return {};}
-  }
-  function rowId(tk){
-    return String((tk&&(tk.dbId||tk.id))||"").trim();
-  }
-  function isClaimed(tk){
-    var id=rowId(tk);
-    if(!id)return false;
-    return !!readClaims()[id];
-  }
-  function meta(tk){
-    if(!tk)return {};
-    return tk._meta || tk.meta || (tk.data&&tk.data._meta) || {};
-  }
-  function profile(){
-    try{if(typeof getUserProfile==="function"){var p=getUserProfile();if(p)return p;}}catch(e){}
-    try{var raw=localStorage.getItem("tt_profile_v1");return raw?JSON.parse(raw):null;}catch(e){}
-    return null;
-  }
-  function sameOwner(tk){
-    var p=profile(),m=meta(tk);
-    return !!(p&&m&&p.ownerId&&m.ownerId&&String(p.ownerId)===String(m.ownerId));
-  }
-  function mine(tk){
-    return !!(tk && Array.isArray(tk.steps) && (isClaimed(tk) || sameOwner(tk)));
-  }
-  function clearReadonly(tk){
-    if(!mine(tk))return tk;
-
-    delete tk._readOnly;
-    delete tk._openedFromTeam;
-    delete tk.readOnly;
-    delete tk.readonly;
-
-    try{
-      if(playback && playback.tk && rowId(playback.tk) && rowId(playback.tk)===rowId(tk)){
-        delete playback.tk._readOnly;
-        delete playback.tk._openedFromTeam;
-        delete playback.tk.readOnly;
-        delete playback.tk.readonly;
-      }
-    }catch(e){}
-
-    try{document.body.classList.remove("tt-v76-readonly");}catch(e){}
-    try{document.body.classList.remove("v74-readonly-taktik");}catch(e){}
-    try{document.body.classList.remove("readonly");}catch(e){}
-
-    try{
-      var inp=document.getElementById("edit-step-name-inp");
-      if(inp)inp.disabled=false;
-    }catch(e){}
-
-    // Visa/redigera-knappar som v76 kan ha gömt.
-    try{
-      ["btn-edit-add-step","btn-edit-update-step","btn-edit-update-step2","btn-edit-del-step","btn-copy-step","btn-paste-step"].forEach(function(id){
-        var el=document.getElementById(id);
-        if(el){
-          el.disabled=false;
-          el.style.pointerEvents="";
-          el.style.opacity=id==="btn-edit-del-step" ? el.style.opacity : "1";
-          if(id==="btn-edit-add-step")el.style.display="";
-        }
-      });
-    }catch(e){}
-
-    return tk;
-  }
-
-  // Viktigt: även de gamla tt120-funktionerna kan anropas av senare lager.
-  try{
-    if(typeof tt120IsMine==="function" && !tt120IsMine._tt169Wrapped){
-      var old120=tt120IsMine;
-      tt120IsMine=function(obj){
-        if(obj&&Array.isArray(obj.steps)&&isClaimed(obj))return true;
-        return old120.apply(this,arguments);
-      };
-      tt120IsMine._tt169Wrapped=true;
-    }
-  }catch(e){}
-
-  // Globala helpers.
-  try{
-    if(typeof isMineV10==="function" && !isMineV10._tt169Wrapped){
-      var oldMine=isMineV10;
-      isMineV10=function(obj){
-        if(obj&&Array.isArray(obj.steps)&&mine(obj))return true;
-        return oldMine.apply(this,arguments);
-      };
-      isMineV10._tt169Wrapped=true;
-    }
-  }catch(e){}
-
-  try{
-    if(typeof isReadOnlyFileV10==="function" && !isReadOnlyFileV10._tt169Wrapped){
-      var oldRO=isReadOnlyFileV10;
-      isReadOnlyFileV10=function(obj){
-        if(obj&&Array.isArray(obj.steps)&&mine(obj))return false;
-        return oldRO.apply(this,arguments);
-      };
-      isReadOnlyFileV10._tt169Wrapped=true;
-    }
-  }catch(e){}
-
-  // Editorns egen readonly-check.
-  try{
-    if(typeof tt76IsReadOnly==="function" && !tt76IsReadOnly._tt169Wrapped){
-      var old76=tt76IsReadOnly;
-      tt76IsReadOnly=function(tk){
-        tk=tk||((typeof tt76Current==="function")?tt76Current():null);
-        if(tk&&mine(tk)){
-          clearReadonly(tk);
-          return false;
-        }
-        return old76.apply(this,arguments);
-      };
-      tt76IsReadOnly._tt169Wrapped=true;
-    }
-  }catch(e){}
-
-  function repairOpenEditor(){
-    try{
-      var tk=null;
-      if(typeof tt76Current==="function")tk=tt76Current();
-      if(!tk && typeof editingTaktikIdx!=="undefined" && editingTaktikIdx!==null && taktikFilmer)tk=taktikFilmer[editingTaktikIdx];
-      if(!tk)return;
-      if(!mine(tk))return;
-
-      clearReadonly(tk);
-
-      try{if(typeof tt76UpdateReadOnlyUi==="function")tt76UpdateReadOnlyUi();}catch(e){}
-      try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);}catch(e){}
-      try{if(typeof tt76BindControls==="function")tt76BindControls();}catch(e){}
-      try{if(typeof updateEditStepUI==="function")updateEditStepUI();}catch(e){}
-    }catch(e){}
-  }
-
-  if(typeof startPlayback==="function" && !startPlayback._tt169Wrapped){
-    var oldStart=startPlayback;
-    startPlayback=function(idx){
-      try{
-        var tk=taktikFilmer&&taktikFilmer[idx];
-        if(tk&&mine(tk))clearReadonly(tk);
-      }catch(e){}
-      var r=oldStart.apply(this,arguments);
-      setTimeout(repairOpenEditor,0);
-      setTimeout(repairOpenEditor,120);
-      setTimeout(repairOpenEditor,400);
-      return r;
-    };
-    startPlayback._tt169Wrapped=true;
-  }
-
-  if(typeof openEditTaktik==="function" && !openEditTaktik._tt169Wrapped){
-    var oldOpen=openEditTaktik;
-    openEditTaktik=function(idx){
-      try{
-        var tk=taktikFilmer&&taktikFilmer[idx];
-        if(tk&&mine(tk))clearReadonly(tk);
-      }catch(e){}
-      var r=oldOpen.apply(this,arguments);
-      setTimeout(repairOpenEditor,0);
-      setTimeout(repairOpenEditor,120);
-      setTimeout(repairOpenEditor,400);
-      return r;
-    };
-    openEditTaktik._tt169Wrapped=true;
-  }
-
-  // Om listan renderas efter load ska claimade objekt inte få ligga kvar med _readOnly=true.
-  if(typeof renderTaktikList==="function" && !renderTaktikList._tt169Wrapped){
-    var oldRender=renderTaktikList;
-    renderTaktikList=function(){
-      try{
-        (taktikFilmer||[]).forEach(function(tk){if(mine(tk))clearReadonly(tk);});
-      }catch(e){}
-      var r=oldRender.apply(this,arguments);
-      setTimeout(function(){
-        try{(taktikFilmer||[]).forEach(function(tk){if(mine(tk))clearReadonly(tk);});}catch(e){}
-      },0);
-      return r;
-    };
-    renderTaktikList._tt169Wrapped=true;
-  }
-
-  window.tt169IsClaimedTaktik=function(tk){return isClaimed(tk);};
-  window.tt169RepairOpenEditor=repairOpenEditor;
-
-  setTimeout(repairOpenEditor,600);
-})();
-
-/* === slut v169-editor-claim-readonly-fix === */
-
-
-/* === v170-force-mine-editor-editable: öppnat från Mina ska vara redigerbart ===
-   Bas: v169.
-   Problem kvar: filen hittas men blir skrivskyddad inne i editorn.
+/* === v171-mine-editor-readonly-override: Mina -> editorn ska alltid vara redigerbar ===
+   Bas: v167.
+   Problem:
+   - Filen finns i Mina efter refresh men editorn sätter den ändå som skrivskyddad.
+   Orsak:
+   - tt76/startPlayback sätter tk._readOnly baserat på egna readonly-checkar inne i editorn.
    Fix:
-   - När en taktikfilm öppnas från Mina claimas dess dbId direkt före editorn startar.
-   - Alla kända readonly-checkar för taktikfilm respekterar claimat dbId.
-   - Efter öppning rensas readonly-klasser/flaggar och stegreglagen låses upp.
+   - När en taktikfilm öppnas från Mina markeras just den öppningen som redigerbar.
+   - Alla readonly-checkar för den öppnade filmen returnerar false.
+   - När samma fil öppnas från Lagets förblir den skrivskyddad.
 */
 
 (function(){
-  if(window.__tt170ForceMineEditorEditable)return;
-  window.__tt170ForceMineEditorEditable=true;
+  if(window.__tt171MineEditorReadonlyOverride)return;
+  window.__tt171MineEditorReadonlyOverride=true;
 
-  var CLAIM_KEY="tt_taktik_owned_ids_v1";
-  var openingMineId="";
+  var editableOpenIds={};
 
-  function claims(){
-    try{
-      var raw=localStorage.getItem(CLAIM_KEY);
-      var obj=raw?JSON.parse(raw):{};
-      return obj&&typeof obj==="object"?obj:{};
-    }catch(e){return {};}
-  }
-  function saveClaims(obj){
-    try{localStorage.setItem(CLAIM_KEY,JSON.stringify(obj||{}));}catch(e){}
-  }
-  function idOf(tk){
-    return String((tk&&(tk.dbId||tk.id))||"").trim();
-  }
-  function claim(tkOrId){
-    var id=typeof tkOrId==="string" ? tkOrId : idOf(tkOrId);
-    id=String(id||"").trim();
-    if(!id)return false;
-    var c=claims();
-    c[id]=true;
-    saveClaims(c);
-    return true;
-  }
-  function claimed(tk){
-    var id=idOf(tk);
-    if(!id)return false;
-    return !!claims()[id] || (!!openingMineId && String(openingMineId)===String(id));
-  }
   function isTaktik(tk){
     return !!(tk && Array.isArray(tk.steps));
   }
-  function openedFromMine(){
-    try{return typeof taktikScope!=="undefined" && taktikScope==="mine";}catch(e){}
-    return false;
+  function idOf(tk){
+    return String((tk && (tk.dbId || tk.id)) || "").trim();
   }
   function currentTk(){
     try{if(typeof tt76Current==="function"){var t=tt76Current();if(t)return t;}}catch(e){}
@@ -18982,27 +18648,57 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         return taktikFilmer[editingTaktikIdx];
       }
     }catch(e){}
-    try{if(playback&&playback.tk)return playback.tk;}catch(e){}
+    try{if(playback && playback.tk)return playback.tk;}catch(e){}
     return null;
   }
-  function makeEditable(tk){
+  function scopeIsTeam(){
+    try{return typeof taktikScope!=="undefined" && taktikScope==="team";}catch(e){}
+    return false;
+  }
+  function scopeIsMine(){
+    try{return typeof taktikScope==="undefined" || taktikScope!=="team";}catch(e){}
+    return true;
+  }
+  function markEditableOpen(tk){
+    if(!isTaktik(tk))return;
+    var id=idOf(tk);
+    if(id)editableOpenIds[id]=true;
+    tk._openedFromMineV171=true;
+    tk._forceEditableV171=true;
+    clearReadonly(tk);
+  }
+  function markTeamOpen(tk){
+    if(!isTaktik(tk))return;
+    var id=idOf(tk);
+    if(id)delete editableOpenIds[id];
+  }
+  function isEditableOpen(tk){
+    if(!isTaktik(tk))return false;
+    if(tk._forceEditableV171 || tk._openedFromMineV171)return true;
+    var id=idOf(tk);
+    return !!(id && editableOpenIds[id]);
+  }
+  function clearReadonly(tk){
     if(!isTaktik(tk))return tk;
-    if(!claimed(tk))return tk;
 
     delete tk._readOnly;
     delete tk._openedFromTeam;
     delete tk.readOnly;
     delete tk.readonly;
     delete tk._readonly;
-    tk._forceEditableV170=true;
 
     try{
-      if(playback && playback.tk && idOf(playback.tk) && idOf(playback.tk)===idOf(tk)){
-        delete playback.tk._readOnly;
-        delete playback.tk._openedFromTeam;
-        delete playback.tk.readOnly;
-        delete playback.tk.readonly;
-        playback.tk._forceEditableV170=true;
+      if(playback && playback.tk){
+        var a=idOf(playback.tk), b=idOf(tk);
+        if((a && b && a===b) || playback.tk===tk){
+          delete playback.tk._readOnly;
+          delete playback.tk._openedFromTeam;
+          delete playback.tk.readOnly;
+          delete playback.tk.readonly;
+          delete playback.tk._readonly;
+          playback.tk._forceEditableV171=true;
+          playback.tk._openedFromMineV171=true;
+        }
       }
     }catch(e){}
 
@@ -19010,8 +18706,19 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{document.body.classList.remove("v74-readonly-taktik");}catch(e){}
     try{document.body.classList.remove("readonly");}catch(e){}
 
+    return tk;
+  }
+  function unlockEditorButtons(){
     try{
-      ["btn-edit-add-step","btn-edit-del-step","btn-edit-update-step","btn-edit-update-step2","btn-copy-step","btn-paste-step","btn-edit-taktik-save"].forEach(function(id){
+      [
+        "btn-edit-add-step",
+        "btn-edit-del-step",
+        "btn-edit-update-step",
+        "btn-edit-update-step2",
+        "btn-copy-step",
+        "btn-paste-step",
+        "btn-edit-taktik-save"
+      ].forEach(function(id){
         var el=document.getElementById(id);
         if(!el)return;
         el.disabled=false;
@@ -19025,157 +18732,176 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var inp=document.getElementById("edit-step-name-inp");
       if(inp)inp.disabled=false;
     }catch(e){}
-
-    return tk;
   }
-  function repair(){
+  function repairEditor(){
     var tk=currentTk();
     if(!isTaktik(tk))return;
-    if(claimed(tk)){
-      makeEditable(tk);
+    if(!isEditableOpen(tk))return;
 
-      // Kör UI-uppdatering efter att readonly-checkarna har patchats.
-      try{if(typeof tt76UpdateReadOnlyUi==="function")tt76UpdateReadOnlyUi();}catch(e){}
-      try{document.body.classList.remove("tt-v76-readonly");}catch(e){}
-      try{document.body.classList.remove("v74-readonly-taktik");}catch(e){}
-      makeEditable(tk);
+    clearReadonly(tk);
+    unlockEditorButtons();
 
-      try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);}catch(e){}
-      try{if(typeof updateEditStepUI==="function")updateEditStepUI();}catch(e){}
-    }
+    // Viktigt: vissa gamla UI-uppdateringar sätter klassen igen.
+    // Kör dem först om de finns, rensa sedan igen.
+    try{if(typeof tt76UpdateReadOnlyUi==="function")tt76UpdateReadOnlyUi();}catch(e){}
+    clearReadonly(tk);
+    unlockEditorButtons();
+
+    try{if(typeof tt76RenderStepList==="function")tt76RenderStepList(tk);}catch(e){}
+    try{if(typeof updateEditStepUI==="function")updateEditStepUI();}catch(e){}
+    clearReadonly(tk);
+    unlockEditorButtons();
   }
 
-  // 1) Öppning från Mina: claim före den gamla editorn får räkna readonly.
-  function preOpen(idx){
-    try{
-      var tk=taktikFilmer&&taktikFilmer[idx];
-      if(isTaktik(tk) && openedFromMine()){
-        claim(tk);
-        openingMineId=idOf(tk);
-        makeEditable(tk);
-      }
-    }catch(e){}
-  }
-
-  if(typeof startPlayback==="function" && !startPlayback._tt170Wrapped){
-    var oldStart=startPlayback;
-    startPlayback=function(idx){
-      preOpen(idx);
-      var r=oldStart.apply(this,arguments);
-      setTimeout(repair,0);
-      setTimeout(repair,80);
-      setTimeout(repair,250);
-      setTimeout(repair,700);
-      return r;
-    };
-    startPlayback._tt170Wrapped=true;
-  }
-
-  if(typeof openEditTaktik==="function" && !openEditTaktik._tt170Wrapped){
-    var oldOpen=openEditTaktik;
-    openEditTaktik=function(idx){
-      preOpen(idx);
-      var r=oldOpen.apply(this,arguments);
-      setTimeout(repair,0);
-      setTimeout(repair,80);
-      setTimeout(repair,250);
-      setTimeout(repair,700);
-      return r;
-    };
-    openEditTaktik._tt170Wrapped=true;
-  }
-
-  // 2) Patcha de olika readonly-checkarna som finns i flera lager.
-  if(typeof isReadOnlyFileV10==="function" && !isReadOnlyFileV10._tt170Wrapped){
+  // Läsbarhet i listan: i Mina ska taktikfilm inte visas med öga/skrivskydd.
+  if(typeof isReadOnlyFileV10==="function" && !isReadOnlyFileV10._tt171HardOverride){
     var oldRO=isReadOnlyFileV10;
     isReadOnlyFileV10=function(obj){
-      if(isTaktik(obj) && claimed(obj)){
-        makeEditable(obj);
-        return false;
+      if(isTaktik(obj)){
+        if(scopeIsMine())return false;
+        if(isEditableOpen(obj))return false;
       }
       return oldRO.apply(this,arguments);
     };
-    isReadOnlyFileV10._tt170Wrapped=true;
+    isReadOnlyFileV10._tt171HardOverride=true;
   }
 
-  if(typeof tt76IsReadOnly==="function" && !tt76IsReadOnly._tt170Wrapped){
+  // Editorns kärncheck. Detta är den viktigaste.
+  if(typeof tt76IsReadOnly==="function" && !tt76IsReadOnly._tt171HardOverride){
     var old76=tt76IsReadOnly;
     tt76IsReadOnly=function(tk){
-      tk=tk||currentTk();
-      if(isTaktik(tk) && claimed(tk)){
-        makeEditable(tk);
+      tk=tk || currentTk();
+      if(isTaktik(tk) && isEditableOpen(tk)){
+        clearReadonly(tk);
         return false;
       }
       return old76.apply(this,arguments);
     };
-    tt76IsReadOnly._tt170Wrapped=true;
+    tt76IsReadOnly._tt171HardOverride=true;
   }
 
-  if(typeof isReadOnlyTaktikV74==="function" && !isReadOnlyTaktikV74._tt170Wrapped){
+  // Äldre skrivskyddslager.
+  if(typeof isReadOnlyTaktikV74==="function" && !isReadOnlyTaktikV74._tt171HardOverride){
     var old74=isReadOnlyTaktikV74;
     isReadOnlyTaktikV74=function(tk){
-      tk=tk||currentTk();
-      if(isTaktik(tk) && claimed(tk)){
-        makeEditable(tk);
+      tk=tk || currentTk();
+      if(isTaktik(tk) && isEditableOpen(tk)){
+        clearReadonly(tk);
         return false;
       }
       return old74.apply(this,arguments);
     };
-    isReadOnlyTaktikV74._tt170Wrapped=true;
+    isReadOnlyTaktikV74._tt171HardOverride=true;
   }
 
-  if(typeof tt132IsReadOnly==="function" && !tt132IsReadOnly._tt170Wrapped){
+  if(typeof tt132IsReadOnly==="function" && !tt132IsReadOnly._tt171HardOverride){
     var old132=tt132IsReadOnly;
     tt132IsReadOnly=function(tk){
-      tk=tk||currentTk();
-      if(isTaktik(tk) && claimed(tk)){
-        makeEditable(tk);
+      tk=tk || currentTk();
+      if(isTaktik(tk) && isEditableOpen(tk)){
+        clearReadonly(tk);
         return false;
       }
       return old132.apply(this,arguments);
     };
-    tt132IsReadOnly._tt170Wrapped=true;
+    tt132IsReadOnly._tt171HardOverride=true;
   }
 
-  if(typeof tt78IsReadonly==="function" && !tt78IsReadonly._tt170Wrapped){
+  if(typeof tt78IsReadonly==="function" && !tt78IsReadonly._tt171HardOverride){
     var old78=tt78IsReadonly;
     tt78IsReadonly=function(tk){
-      if(isTaktik(tk) && claimed(tk)){
-        makeEditable(tk);
+      tk=tk || currentTk();
+      if(isTaktik(tk) && isEditableOpen(tk)){
+        clearReadonly(tk);
         return false;
       }
       return old78.apply(this,arguments);
     };
-    tt78IsReadonly._tt170Wrapped=true;
+    tt78IsReadonly._tt171HardOverride=true;
   }
 
-  // 3) Om rendern sätter _readOnly på listobjekt efter load, rensa claimade objekt direkt.
-  if(typeof renderTaktikList==="function" && !renderTaktikList._tt170Wrapped){
-    var oldRender=renderTaktikList;
-    renderTaktikList=function(){
-      try{(taktikFilmer||[]).forEach(function(tk){if(claimed(tk))makeEditable(tk);});}catch(e){}
-      var r=oldRender.apply(this,arguments);
-      setTimeout(function(){
-        try{(taktikFilmer||[]).forEach(function(tk){if(claimed(tk))makeEditable(tk);});}catch(e){}
-      },0);
+  // När man öppnar från Mina: markera innan gamla startPlayback/tt76 hinner sätta _readOnly.
+  if(typeof startPlayback==="function" && !startPlayback._tt171HardOverride){
+    var oldStart=startPlayback;
+    startPlayback=function(idx){
+      try{
+        var tk=taktikFilmer && taktikFilmer[idx];
+        if(isTaktik(tk)){
+          if(scopeIsTeam()){
+            markTeamOpen(tk);
+          }else{
+            markEditableOpen(tk);
+          }
+        }
+      }catch(e){}
+
+      var r=oldStart.apply(this,arguments);
+
+      setTimeout(repairEditor,0);
+      setTimeout(repairEditor,80);
+      setTimeout(repairEditor,250);
+      setTimeout(repairEditor,700);
       return r;
     };
-    renderTaktikList._tt170Wrapped=true;
+    startPlayback._tt171HardOverride=true;
   }
 
-  // 4) Nödhake: om användaren är i editorn och filen är claimad, håll den redigerbar.
-  setInterval(function(){
-    try{
-      var tk=currentTk();
-      if(isTaktik(tk) && claimed(tk))makeEditable(tk);
-    }catch(e){}
-  },600);
+  // Om det finns separat editöppning.
+  if(typeof openEditTaktik==="function" && !openEditTaktik._tt171HardOverride){
+    var oldOpen=openEditTaktik;
+    openEditTaktik=function(idx){
+      try{
+        var tk=taktikFilmer && taktikFilmer[idx];
+        if(isTaktik(tk)){
+          if(scopeIsTeam())markTeamOpen(tk);
+          else markEditableOpen(tk);
+        }
+      }catch(e){}
 
-  window.tt170RepairEditable=repair;
-  window.tt170ClaimCurrentTaktik=function(){
-    var tk=currentTk();
-    if(tk){claim(tk);makeEditable(tk);repair();}
-  };
+      var r=oldOpen.apply(this,arguments);
+
+      setTimeout(repairEditor,0);
+      setTimeout(repairEditor,80);
+      setTimeout(repairEditor,250);
+      setTimeout(repairEditor,700);
+      return r;
+    };
+    openEditTaktik._tt171HardOverride=true;
+  }
+
+  // Om listan renderas om i Mina, rensa readonly på synliga egna arbetsobjekt.
+  if(typeof renderTaktikList==="function" && !renderTaktikList._tt171HardOverride){
+    var oldRender=renderTaktikList;
+    renderTaktikList=function(){
+      try{
+        if(scopeIsMine()){
+          (taktikFilmer||[]).forEach(function(tk){
+            if(isTaktik(tk))clearReadonly(tk);
+          });
+        }
+      }catch(e){}
+
+      var r=oldRender.apply(this,arguments);
+
+      try{
+        if(scopeIsMine()){
+          (taktikFilmer||[]).forEach(function(tk){
+            if(isTaktik(tk))clearReadonly(tk);
+          });
+        }
+      }catch(e){}
+
+      return r;
+    };
+    renderTaktikList._tt171HardOverride=true;
+  }
+
+  // Sista säkerhet: medan editorn är öppen, håll öppningen redigerbar.
+  setInterval(function(){
+    try{repairEditor();}catch(e){}
+  },500);
+
+  window.tt171RepairEditor=repairEditor;
 })();
 
-/* === slut v170-force-mine-editor-editable === */
+/* === slut v171-mine-editor-readonly-override === */
