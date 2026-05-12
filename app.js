@@ -19134,3 +19134,244 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v172-saved-id-load-fix === */
+
+
+/* === v173-local-backup-diagnostic: lokal backup + diagnostik för taktikfilmer ===
+   Bas: v172.
+   v172: redigerbar men försvinner efter refresh.
+   Detta betyder att moln-laddningen inte får tillbaka filen, eller att filtret tappar den.
+   v173 gör:
+   - sparar varje sparad taktikfilm även i localStorage
+   - efter cloudLoadTaktik återställer saknade egna filmer från localStorage
+   - visar status: moln antal + lokalt återställda
+   Rör inte editorfixen från v171.
+*/
+
+(function(){
+  if(window.__tt173LocalBackupDiagnostic)return;
+  window.__tt173LocalBackupDiagnostic=true;
+
+  var BACKUP_KEY="tt_taktik_local_backup_v1";
+  var CLAIM_KEYS=["tt_taktik_owned_ids_v2","tt_taktik_owned_ids_v1"];
+
+  function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+  function idOf(tk){return String((tk&&(tk.dbId||tk.id))||"").trim();}
+  function keyOf(tk){
+    var id=idOf(tk);
+    if(id)return "db:"+id;
+    return "name:"+String(tk&&tk.name||"")+"|folder:"+String(tk&&tk.folder||"Taktik");
+  }
+  function readJson(key, fallback){
+    try{
+      var raw=localStorage.getItem(key);
+      return raw?JSON.parse(raw):fallback;
+    }catch(e){return fallback;}
+  }
+  function writeJson(key, value){
+    try{localStorage.setItem(key, JSON.stringify(value));}catch(e){}
+  }
+  function readBackup(){
+    var arr=readJson(BACKUP_KEY,[]);
+    return Array.isArray(arr)?arr:[];
+  }
+  function writeBackup(arr){
+    writeJson(BACKUP_KEY, Array.isArray(arr)?arr:[]);
+  }
+  function claimId(id){
+    id=String(id||"").trim();
+    if(!id)return;
+    CLAIM_KEYS.forEach(function(k){
+      var c=readJson(k,{});
+      if(!c||typeof c!=="object")c={};
+      c[id]=true;
+      writeJson(k,c);
+    });
+  }
+  function backupTaktik(tk){
+    if(!tk || !Array.isArray(tk.steps))return;
+    var x=clone(tk);
+    x.name=x.name||"Taktikfilm";
+    x.folder=x.folder||"Taktik";
+    x.type="taktikfilm";
+    x._localBackupV173=true;
+    x._localBackupUpdatedAtV173=new Date().toISOString();
+
+    var arr=readBackup();
+    var k=keyOf(x);
+    var out=arr.filter(function(item){return keyOf(item)!==k;});
+    out.unshift(x);
+
+    // Håll backupen rimligt liten.
+    out=out.slice(0,50);
+    writeBackup(out);
+
+    var id=idOf(x);
+    if(id)claimId(id);
+  }
+  function mergeBackupIntoList(){
+    var restored=0;
+    var arr=readBackup().filter(function(tk){return tk && Array.isArray(tk.steps) && tk.steps.length>=2;});
+    if(!Array.isArray(taktikFilmer))taktikFilmer=[];
+
+    var existing={};
+    taktikFilmer.forEach(function(tk){existing[keyOf(tk)]=true;});
+
+    arr.forEach(function(tk){
+      var k=keyOf(tk);
+      if(existing[k])return;
+      tk=clone(tk);
+      tk._restoredFromLocalBackupV173=true;
+      delete tk._readOnly;
+      delete tk._openedFromTeam;
+      taktikFilmer.unshift(tk);
+      existing[k]=true;
+      restored++;
+      var id=idOf(tk);
+      if(id)claimId(id);
+    });
+
+    try{
+      var seen={},base=["Taktik","Träning"];
+      taktikFolders=[];
+      base.forEach(function(f){seen[f]=true;taktikFolders.push(f);});
+      (taktikFilmer||[]).forEach(function(tk){
+        var f=tk.folder||"Taktik";
+        if(!seen[f]){seen[f]=true;taktikFolders.push(f);}
+      });
+    }catch(e){}
+
+    return restored;
+  }
+
+  // 1) Backup efter sparning.
+  if(typeof cloudSaveTaktik==="function" && !cloudSaveTaktik._tt173BackupWrapped){
+    var oldSave=cloudSaveTaktik;
+    cloudSaveTaktik=function(){
+      var args=arguments;
+      var ret=oldSave.apply(this,args);
+
+      try{
+        if(ret && typeof ret.then==="function"){
+          return ret.then(function(saved){
+            try{
+              var tk=saved;
+              if(!tk){
+                try{
+                  if(typeof editingTaktikIdx!=="undefined" && taktikFilmer && taktikFilmer[editingTaktikIdx]){
+                    tk=taktikFilmer[editingTaktikIdx];
+                  }
+                }catch(e){}
+                try{if(!tk && playback&&playback.tk)tk=playback.tk;}catch(e){}
+              }
+              backupTaktik(tk);
+              var id=idOf(tk);
+              if(id)claimId(id);
+              try{cloudStatus("✅ Film sparad + lokal backup"+(id?" · id "+id:""),"#4ae87a");}catch(e){}
+            }catch(e){}
+            return saved;
+          });
+        }
+      }catch(e){}
+
+      try{
+        var tk=args&&args[0];
+        if(tk)backupTaktik(tk);
+      }catch(e){}
+
+      return ret;
+    };
+    cloudSaveTaktik._tt173BackupWrapped=true;
+  }
+
+  // 2) Backup efter list-render, så även lokala objekt som fått id hinner sparas.
+  function backupVisibleList(){
+    try{
+      (taktikFilmer||[]).forEach(function(tk){
+        if(tk && Array.isArray(tk.steps) && !tk._openedFromTeam){
+          backupTaktik(tk);
+        }
+      });
+    }catch(e){}
+  }
+
+  // 3) Wrap cloudLoadTaktik: kör befintlig load, återställ sedan backup som saknas.
+  if(typeof cloudLoadTaktik==="function" && !cloudLoadTaktik._tt173BackupWrapped){
+    var oldLoad=cloudLoadTaktik;
+    cloudLoadTaktik=function(){
+      var ret=oldLoad.apply(this,arguments);
+
+      function afterLoad(){
+        var before=0;
+        try{before=(taktikFilmer||[]).length;}catch(e){}
+        var restored=mergeBackupIntoList();
+        try{renderTaktikList();}catch(e){}
+        try{
+          var total=(taktikFilmer||[]).length;
+          cloudStatus("✅ Taktik laddad: moln/lista "+before+" · återställda "+restored+" · totalt "+total,"#4ae87a");
+        }catch(e){}
+      }
+
+      try{
+        if(ret && typeof ret.then==="function"){
+          return ret.then(function(v){
+            afterLoad();
+            return v;
+          }).catch(function(err){
+            // Om molnload misslyckas helt: visa lokal backup ändå.
+            var restored=mergeBackupIntoList();
+            try{renderTaktikList();}catch(e){}
+            try{cloudStatus("⚠️ Molnload misslyckades · lokal backup "+restored,"#e8c84a");}catch(e){}
+            throw err;
+          });
+        }
+      }catch(e){}
+
+      setTimeout(afterLoad,500);
+      return ret;
+    };
+    cloudLoadTaktik._tt173BackupWrapped=true;
+  }
+
+  // 4) Om render körs efter save/load, se till att backup fylls på och skrivskydd inte följer med.
+  if(typeof renderTaktikList==="function" && !renderTaktikList._tt173BackupWrapped){
+    var oldRender=renderTaktikList;
+    renderTaktikList=function(){
+      try{
+        (taktikFilmer||[]).forEach(function(tk){
+          if(tk && Array.isArray(tk.steps) && tk._restoredFromLocalBackupV173){
+            delete tk._readOnly;
+            delete tk._openedFromTeam;
+          }
+        });
+      }catch(e){}
+      var r=oldRender.apply(this,arguments);
+      setTimeout(backupVisibleList,0);
+      return r;
+    };
+    renderTaktikList._tt173BackupWrapped=true;
+  }
+
+  window.tt173ShowLocalBackup=function(){
+    console.log("tt173 local backup", readBackup());
+    try{showToast("Backup: "+readBackup().length+" filmer");}catch(e){}
+    return readBackup();
+  };
+  window.tt173RestoreLocalBackup=function(){
+    var restored=mergeBackupIntoList();
+    try{renderTaktikList();}catch(e){}
+    try{showToast("Återställde "+restored+" filmer");}catch(e){}
+    return restored;
+  };
+
+  setTimeout(function(){
+    try{
+      var restored=mergeBackupIntoList();
+      if(restored){
+        renderTaktikList();
+        cloudStatus("✅ Lokal backup återställd: "+restored,"#4ae87a");
+      }
+    }catch(e){}
+  },1200);
+})();
+
+/* === slut v173-local-backup-diagnostic === */
