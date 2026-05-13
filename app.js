@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
       });
     }catch(e){}
   }
@@ -21220,238 +21220,231 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v201-taktik-profile-name-fallback === */
 
 
-/* === v202-new-step-clears-drawings ===
+/* === v204-new-step-target-only ===
    Bas: 201.
-   Önskemål:
-   - När man skapar nytt taktiksteg ska vanliga ritningar inte följa med automatiskt.
-   - Detta gäller frihand, vanliga pilar, text och zoner/rutor.
-   - Detta gäller INTE rörelsepilar.
-   Princip:
-   - Rör endast klicket på + Nytt steg i taktikeditorn.
-   - Stoppar den gamla handlern i capture phase.
-   - Skapar nytt steg från currentSnap(), men tömmer bara ritlagren.
-   - movementPaths lämnas orört.
-   - Rör inte spara/ladda, Mina/Lagets, delning, animation eller befintliga steg.
+   Syfte:
+   - När + Nytt steg används ska nya steget vara en ren slutbild.
+   - Slutpositioner från rörelsepilar ska följa med.
+   - Själva rörelsepilarna ska inte följa med.
+   - Vanliga ritningar ska inte följa med.
+   Viktigt:
+   - Bygger på befintlig tt145-rörelsemotor om den finns.
+   - Rör inte spara/ladda, Mina/Lagets, delning eller animation.
    Endast app.js behöver bytas.
 */
 
 (function(){
-  if(window.__tt202NewStepClearsDrawings)return;
-  window.__tt202NewStepClearsDrawings=true;
+  if(window.__tt204NewStepTargetOnly)return;
+  window.__tt204NewStepTargetOnly=true;
 
   function setVersion(){
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
       });
     }catch(e){}
   }
 
-  function clearOrdinaryDrawingsOnly(step){
-    if(!step || typeof step!=="object")return step;
+  function clone(o){
+    try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}
+  }
 
-    // Vanliga ritverktyg:
-    // arrows = vanliga ritpilar, inte rörelsepilar.
-    // labels = text.
-    // freehandPaths = frihand.
-    // zones = rutor/zoner/cirklar.
-    step.arrows=[];
-    step.labels=[];
-    step.freehandPaths=[];
-    step.zones=[];
+  function currentTk(){
+    try{
+      if(typeof tt145CurrentTk==="function")return tt145CurrentTk();
+    }catch(e){}
+    try{
+      if(typeof tt76Current==="function")return tt76Current();
+    }catch(e){}
+    try{
+      if(typeof editingTaktikIdx!=="undefined" && editingTaktikIdx!==null){
+        return taktikFilmer && taktikFilmer[editingTaktikIdx];
+      }
+    }catch(e){}
+    return null;
+  }
 
-    // Viktigt: rör INTE movementPaths.
-    // movementPaths är rörelsepilar och ska fungera som tidigare.
-    if(!Array.isArray(step.movementPaths))step.movementPaths=[];
+  function label(idx){
+    try{
+      if(typeof tt145Label==="function")return tt145Label(idx);
+    }catch(e){}
+    try{
+      if(typeof tt76Label==="function")return tt76Label(idx);
+    }catch(e){}
+    return idx===0 ? "Startläge" : "Steg "+idx;
+  }
 
+  function safeStep(step,idx){
+    try{
+      if(typeof tt145SafeStep==="function")return tt145SafeStep(step,idx);
+    }catch(e){}
+    try{
+      if(typeof tt76SafeStep==="function")return tt76SafeStep(step,idx);
+    }catch(e){}
+    step=step||{};
+    if(!Array.isArray(step.players))step.players=[];
+    if(!step.ball)step.ball={x:W/2,y:H/2};
+    if(!step.label)step.label=label(idx||0);
     return step;
   }
 
-  function createNewStepWithoutOrdinaryDrawings(e){
-    var btn=e.target && e.target.closest ? e.target.closest("#btn-edit-add-step") : null;
-    if(!btn)return;
-
-    // Stoppa gamla handlern så vi inte får både gammalt och nytt steg.
-    e.preventDefault();
-    e.stopPropagation();
-    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-
+  function normalizeFilm(tk){
     try{
-      if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return;
-      var tk=taktikFilmer && taktikFilmer[editingTaktikIdx];
-      if(!tk || !Array.isArray(tk.steps))return;
+      if(typeof tt145Normalize==="function")return tt145Normalize(tk);
+    }catch(e){}
+    try{
+      if(typeof tt76NormalizeFilm==="function")return tt76NormalizeFilm(tk);
+    }catch(e){}
+    if(tk && !Array.isArray(tk.steps))tk.steps=[];
+    return tk;
+  }
 
-      if(typeof saveTaktikUndo==="function")saveTaktikUndo();
-
-      var snap;
-      try{
-        snap=typeof currentSnap==="function" ? currentSnap() : null;
-      }catch(err){
-        snap=null;
-      }
-
-      if(!snap){
-        try{snap=typeof buildState==="function" ? buildState() : {};}catch(err2){snap={};}
-      }
-
-      snap=JSON.parse(JSON.stringify(snap || {}));
-      clearOrdinaryDrawingsOnly(snap);
-
-      // Ge nya steget korrekt standardnamn om inget annat finns.
-      try{
-        var newIdx=editingStepIdx+1;
-        if(!snap.label || /^Start|Steg\s+\d+/i.test(String(snap.label))){
-          snap.label=newIdx===0 ? "Startläge" : "Steg "+newIdx;
-        }
-      }catch(err3){}
-
-      tk.steps.splice(editingStepIdx+1,0,snap);
-      editingStepIdx++;
-
-      if(typeof updateEditStepUI==="function")updateEditStepUI();
-      else {
-        try{restoreSnap(snap);render();renderEditSteps(tk);}catch(err4){}
-      }
-
-      try{showToast("Nytt steg skapat utan ritningar");}catch(err5){}
-      try{if(typeof tt76MarkDirty==="function")tt76MarkDirty(); else taktikDirtyV17=true;}catch(err6){}
-    }catch(err){
-      try{showToast("Kunde inte skapa nytt steg",false);}catch(e2){}
-      try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e3){}
-    }
-
+  function isReadOnly(tk){
+    try{
+      if(typeof tt76IsReadOnly==="function")return !!tt76IsReadOnly(tk);
+    }catch(e){}
+    try{
+      if(typeof isReadOnlyFileV10==="function")return !!isReadOnlyFileV10(tk);
+    }catch(e){}
     return false;
   }
 
-  document.addEventListener("click",createNewStepWithoutOrdinaryDrawings,true);
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",setVersion);
-  }else{
-    setVersion();
+  function setPos(step,id,pos){
+    if(!step||!pos)return;
+    if(String(id)==="ball"){
+      step.ball=step.ball||{x:pos.x,y:pos.y};
+      step.ball.x=pos.x;
+      step.ball.y=pos.y;
+      return;
+    }
+    var p=(step.players||[]).find(function(x){return String(x.id)===String(id);});
+    if(p){
+      p.x=pos.x;
+      p.y=pos.y;
+    }
   }
 
-  setTimeout(setVersion,300);
-  setTimeout(setVersion,1000);
-
-  window.tt202ClearOrdinaryDrawingsOnly=clearOrdinaryDrawingsOnly;
-})();
-
-/* === slut v202-new-step-clears-drawings === */
-
-
-/* === v203-new-step-clears-drawings-and-movementpaths ===
-   Bas: 202.
-   Förtydligad taktiklogik:
-   - När man skapar nytt steg ska slutpositionen följa med.
-   - Själva rörelsepilen ska INTE följa med till nya steget.
-   - Vanliga ritningar ska inte heller följa med.
-   Detta löser fallet där man står i sista steget, ritar rörelsepil och sedan skapar nytt steg.
-   Rör inte spara/ladda, Mina/Lagets, delning, animation eller befintliga steg.
-   Endast app.js behöver bytas.
-*/
-
-(function(){
-  if(window.__tt203NewStepClearsDrawingsAndMovementPaths)return;
-  window.__tt203NewStepClearsDrawingsAndMovementPaths=true;
-
-  function setVersion(){
-    try{
-      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
-      spans.forEach(function(s){
-        var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
-      });
-    }catch(e){}
+  function movementEndpointMapFromStep(step){
+    var out={};
+    var list=(step && step.movementPaths) || [];
+    if(!Array.isArray(list))return out;
+    list.forEach(function(mp){
+      if(!mp || !mp.playerId || !mp.pts || mp.pts.length<2)return;
+      var ep=mp.pts[mp.pts.length-1];
+      out[String(mp.playerId)]={x:ep.x,y:ep.y};
+    });
+    return out;
   }
 
-  function clearStepAnnotationsForNewStep(step){
+  function cleanNewStep(step){
     if(!step || typeof step!=="object")return step;
 
-    // Vanliga ritverktyg.
+    // Vanliga ritningar.
     step.arrows=[];
     step.labels=[];
     step.freehandPaths=[];
     step.zones=[];
 
-    // Rörelsepilar ska visa rörelsen in i aktuellt steg.
-    // När ett nytt steg skapas ska bara slutpositionen följa med,
-    // inte själva rörelsepilen.
+    // Rörelsepil hör till föregående steg, inte nya slutbilden.
     step.movementPaths=[];
 
     return step;
   }
 
-  function createNewStepWithoutAnnotations(e){
+  function makeTargetOnlyStep(){
+    var tk=normalizeFilm(currentTk());
+    if(!tk || !Array.isArray(tk.steps))return false;
+    if(isReadOnly(tk))return false;
+
+    var oldIdx=(typeof editingStepIdx==="number") ? editingStepIdx : 0;
+
+    // 1. Spara aktuellt steg med befintlig rörelsemotor.
+    // tt145SaveCurrentStep gör det viktiga: rörelsepilens endpoint blir spelarens slutposition.
+    try{
+      if(typeof tt145SaveCurrentStep==="function"){
+        tt145SaveCurrentStep({allowAutoCreate:false});
+      }else if(typeof tt76SaveCurrentStep==="function"){
+        tt76SaveCurrentStep({allowAutoCreate:false});
+      }else if(typeof autoSaveCurrentStepLocalV16==="function"){
+        autoSaveCurrentStepLocalV16();
+      }
+    }catch(e){}
+
+    tk=normalizeFilm(currentTk());
+    if(!tk || !Array.isArray(tk.steps) || !tk.steps[oldIdx])return false;
+
+    var source=safeStep(tk.steps[oldIdx],oldIdx);
+
+    // Extra säkerhet: om någon äldre motor inte redan skrev endpointen till positionen,
+    // gör vi det direkt här innan nya steget skapas.
+    var ends=movementEndpointMapFromStep(source);
+    Object.keys(ends).forEach(function(id){
+      setPos(source,id,ends[id]);
+    });
+    tk.steps[oldIdx]=source;
+
+    // 2. Nya steget blir kopia av målbilden/slutbilden.
+    var newStep=safeStep(clone(source),oldIdx+1);
+    cleanNewStep(newStep);
+    newStep.label=label(oldIdx+1);
+
+    try{if(typeof saveTaktikUndo==="function")saveTaktikUndo();}catch(e){}
+
+    tk.steps.splice(oldIdx+1,0,newStep);
+    editingStepIdx=oldIdx+1;
+
+    try{normalizeFilm(tk);}catch(e){}
+
+    // 3. Öppna nya steget utan att autospara över det gamla.
+    try{
+      if(typeof tt145GoToStep==="function"){
+        tt145GoToStep(editingStepIdx,false);
+      }else if(typeof tt76LoadStep==="function"){
+        tt76LoadStep(editingStepIdx,{animate:false,skipSave:true});
+      }else if(typeof updateEditStepUI==="function"){
+        updateEditStepUI();
+      }
+    }catch(e){
+      try{restoreSnap(newStep);render();}catch(e2){}
+    }
+
+    try{if(typeof tt76MarkDirty==="function")tt76MarkDirty();else taktikDirtyV17=true;}catch(e){}
+    try{showToast("Nytt steg skapat");}catch(e){}
+
+    return true;
+  }
+
+  // Skriv över den namngivna funktionen så även senare rebindingar använder rätt logik.
+  try{
+    window.tt145AddStep=makeTargetOnlyStep;
+    if(typeof tt145AddStep!=="undefined")tt145AddStep=makeTargetOnlyStep;
+  }catch(e){}
+
+  function captureClick(e){
     var btn=e.target && e.target.closest ? e.target.closest("#btn-edit-add-step") : null;
     if(!btn)return;
-
     e.preventDefault();
     e.stopPropagation();
     if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-
-    try{
-      if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return;
-      var tk=taktikFilmer && taktikFilmer[editingTaktikIdx];
-      if(!tk || !Array.isArray(tk.steps))return;
-
-      if(typeof saveTaktikUndo==="function")saveTaktikUndo();
-
-      var snap;
-      try{
-        snap=typeof currentSnap==="function" ? currentSnap() : null;
-      }catch(err){
-        snap=null;
-      }
-
-      if(!snap){
-        try{snap=typeof buildState==="function" ? buildState() : {};}catch(err2){snap={};}
-      }
-
-      snap=JSON.parse(JSON.stringify(snap || {}));
-
-      // Behåll positioner, boll och grundläge – men ta bort markeringar och rörelsepilar.
-      clearStepAnnotationsForNewStep(snap);
-
-      try{
-        var newIdx=editingStepIdx+1;
-        if(!snap.label || /^Start|Steg\s+\d+/i.test(String(snap.label))){
-          snap.label=newIdx===0 ? "Startläge" : "Steg "+newIdx;
-        }
-      }catch(err3){}
-
-      tk.steps.splice(editingStepIdx+1,0,snap);
-      editingStepIdx++;
-
-      if(typeof updateEditStepUI==="function")updateEditStepUI();
-      else {
-        try{restoreSnap(snap);render();renderEditSteps(tk);}catch(err4){}
-      }
-
-      try{showToast("Nytt steg skapat");}catch(err5){}
-      try{if(typeof tt76MarkDirty==="function")tt76MarkDirty(); else taktikDirtyV17=true;}catch(err6){}
-    }catch(err){
-      try{showToast("Kunde inte skapa nytt steg",false);}catch(e2){}
-      try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e3){}
-    }
-
+    makeTargetOnlyStep();
     return false;
   }
 
-  document.addEventListener("click",createNewStepWithoutAnnotations,true);
+  // Capture på document gör att vi inte behöver röra renderlogiken eller klona om hela UI:t.
+  document.addEventListener("click",captureClick,true);
 
   if(document.readyState==="loading"){
     document.addEventListener("DOMContentLoaded",setVersion);
   }else{
     setVersion();
   }
-
   setTimeout(setVersion,300);
   setTimeout(setVersion,1000);
 
-  window.tt203ClearStepAnnotationsForNewStep=clearStepAnnotationsForNewStep;
+  window.tt204MakeTargetOnlyStep=makeTargetOnlyStep;
+  window.tt204CleanNewStep=cleanNewStep;
 })();
 
-/* === slut v203-new-step-clears-drawings-and-movementpaths === */
+/* === slut v204-new-step-target-only === */
