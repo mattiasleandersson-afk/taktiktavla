@@ -19620,3 +19620,105 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v181-strict-mine-owner-name === */
+
+
+/* === v182-scroll-formation-file-list ===
+   Bas: 181.
+   Fix: Utgångslägets fillista ska kunna scrollas när fler filer finns än får plats.
+   Endast app.js behöver bytas.
+   Rör inte taktikfilm, save/load, delning eller redigering.
+*/
+
+(function(){
+  if(window.__tt182ScrollFormationFileList)return;
+  window.__tt182ScrollFormationFileList=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        if(/^\s*\d+|v\d+|v3\./i.test((s.textContent||"").trim())){
+          s.textContent="182";
+        }
+      });
+    }catch(e){}
+  }
+
+  function injectCss(){
+    if(document.getElementById("tt182-scroll-formation-file-list-css"))return;
+
+    var css=document.createElement("style");
+    css.id="tt182-scroll-formation-file-list-css";
+    css.textContent=[
+      "/* v182: scroll i Utgångslägets fillista */",
+      "body:has(#panel-saves.on) #bottompanel,",
+      "body:has(#panel-uppstallning.on) #bottompanel,",
+      "body:has(#panel-start.on) #bottompanel{",
+      "  overflow:hidden !important;",
+      "}",
+      "#panel-saves.on,",
+      "#panel-uppstallning.on,",
+      "#panel-start.on,",
+      "#panel-saves.tt-v98-formation-compact,",
+      "#panel-uppstallning.tt-v98-formation-compact,",
+      "#panel-start.tt-v98-formation-compact,",
+      "#panel-saves.tt-v99-formation-top,",
+      "#panel-uppstallning.tt-v99-formation-top,",
+      "#panel-start.tt-v99-formation-top{",
+      "  display:flex !important;",
+      "  flex-direction:column !important;",
+      "  min-height:0 !important;",
+      "  max-height:calc(100dvh - 72px) !important;",
+      "  overflow:hidden !important;",
+      "}",
+      "#panel-saves.on > *,",
+      "#panel-uppstallning.on > *,",
+      "#panel-start.on > *{",
+      "  flex-shrink:0 !important;",
+      "}",
+      "#panel-saves #saves-list,",
+      "#panel-uppstallning #saves-list,",
+      "#panel-start #saves-list{",
+      "  flex:1 1 auto !important;",
+      "  min-height:0 !important;",
+      "  max-height:none !important;",
+      "  overflow-y:auto !important;",
+      "  overflow-x:hidden !important;",
+      "  -webkit-overflow-scrolling:touch !important;",
+      "  overscroll-behavior:contain !important;",
+      "  padding-bottom:76px !important;",
+      "  touch-action:pan-y !important;",
+      "}",
+      "@media (max-width:720px){",
+      "  #panel-saves.on,",
+      "  #panel-uppstallning.on,",
+      "  #panel-start.on{",
+      "    max-height:calc(100dvh - 58px) !important;",
+      "  }",
+      "  #panel-saves #saves-list,",
+      "  #panel-uppstallning #saves-list,",
+      "  #panel-start #saves-list{",
+      "    padding-bottom:96px !important;",
+      "  }",
+      "}"
+    ].join("\n");
+
+    document.head.appendChild(css);
+  }
+
+  function apply(){
+    setVersion();
+    injectCss();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  setTimeout(apply,250);
+  setTimeout(apply,1000);
+})();
+
+/* === slut v182-scroll-formation-file-list === */
