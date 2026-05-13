@@ -19622,155 +19622,198 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v181-strict-mine-owner-name === */
 
 
-/* === v184-targeted-saves-list-scroll ===
+/* === v185-saves-library-scroll-like-taktik ===
    Bas: 181.
-   Ersätter inte 182/183, utan bygger från stabil 181.
-   Fix: scroll endast i Utgångslägets fillista.
-   Viktigt:
-   - Rör bara #panel-saves och #saves-list.
-   - Rör inte Taktik, Formation eller Lag.
+   Fix: Utgångsläge-listan får samma listläge/scroll-princip som fungerande Taktik-lista.
+   Skillnad mot 182-184:
+   - Bygger från stabil 181.
    - Ingen bred DOM-sökning.
-   - Endast app.js behöver bytas.
+   - Rör bara panel-saves/saves-list.
+   - När Utgångsläge-listan är öppen döljs planen och bottompanel får hel yta,
+     på samma sätt som body.tt-v82-taktik-library gör för taktiklistan.
+   Endast app.js behöver bytas.
 */
 
 (function(){
-  if(window.__tt184TargetedSavesListScroll)return;
-  window.__tt184TargetedSavesListScroll=true;
+  if(window.__tt185SavesLibraryScrollLikeTaktik)return;
+  window.__tt185SavesLibraryScrollLikeTaktik=true;
 
   function setVersion(){
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="184";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="185";
       });
     }catch(e){}
   }
 
   function injectCss(){
-    if(document.getElementById("tt184-targeted-saves-scroll-css"))return;
+    if(document.getElementById("tt185-saves-library-scroll-css"))return;
 
-    var style=document.createElement("style");
-    style.id="tt184-targeted-saves-scroll-css";
-    style.textContent=[
-      "/* v184: endast Utgångsläge-listan */",
-      "body.tt184-saves-panel-open #panel-saves.on{",
+    var css=document.createElement("style");
+    css.id="tt185-saves-library-scroll-css";
+    css.textContent=[
+      "/* v185: Utgångsläge-lista enligt samma princip som fungerande Taktik-lista */",
+
+      "body.tt185-saves-library #pitch-wrapper,",
+      "body.tt185-saves-library #taktikbar,",
+      "body.tt185-saves-library #rec-ui,",
+      "body.tt185-saves-library #edit-taktik-ui {",
+      "  display:none !important;",
+      "}",
+
+      "body.tt185-saves-library #bottompanel {",
+      "  flex:1 1 auto !important;",
+      "  display:block !important;",
+      "  width:100% !important;",
+      "  max-width:none !important;",
+      "  min-height:calc(100vh - 92px) !important;",
+      "  max-height:calc(100vh - 72px) !important;",
+      "  overflow:hidden !important;",
+      "  align-items:flex-start !important;",
+      "  justify-content:flex-start !important;",
+      "  align-content:flex-start !important;",
+      "  padding-top:0 !important;",
+      "}",
+
+      "body.tt185-saves-library #panel-saves.on {",
+      "  display:block !important;",
+      "  width:100% !important;",
+      "  max-width:none !important;",
       "  min-height:0 !important;",
       "  overflow:hidden !important;",
       "}",
-      "body.tt184-saves-panel-open #panel-saves.on > div{",
-      "  display:flex !important;",
-      "  flex-direction:column !important;",
+
+      "body.tt185-saves-library #panel-saves > div {",
+      "  width:100% !important;",
+      "  max-width:none !important;",
       "  min-height:0 !important;",
       "  overflow:hidden !important;",
       "}",
-      "body.tt184-saves-panel-open #saves-list{",
+
+      "body.tt185-saves-library #saves-list {",
+      "  display:block !important;",
+      "  max-height:calc(100vh - 245px) !important;",
+      "  min-height:260px !important;",
       "  overflow-y:auto !important;",
       "  overflow-x:hidden !important;",
+      "  padding-bottom:60px !important;",
       "  -webkit-overflow-scrolling:touch !important;",
       "  overscroll-behavior:contain !important;",
       "  touch-action:pan-y !important;",
-      "  min-height:0 !important;",
-      "  padding-bottom:90px !important;",
       "}",
-      "body:not(.tt184-saves-panel-open) #saves-list{",
-      "  max-height:'';",
+
+      "@media (max-width:720px){",
+      "  body.tt185-saves-library #bottompanel {",
+      "    min-height:calc(100vh - 78px) !important;",
+      "    max-height:calc(100vh - 58px) !important;",
+      "  }",
+      "  body.tt185-saves-library #saves-list {",
+      "    max-height:calc(100vh - 205px) !important;",
+      "    min-height:300px !important;",
+      "    padding-bottom:95px !important;",
+      "  }",
+      "}",
+
+      "body:not(.tt185-saves-library) #saves-list {",
+      "  touch-action:auto;",
       "}"
     ].join("\n");
 
-    document.head.appendChild(style);
+    document.head.appendChild(css);
   }
 
-  function isSavesOpen(){
-    var panel=document.getElementById("panel-saves");
-    return !!(panel && panel.classList.contains("on"));
+  function savesPanelOpen(){
+    var p=document.getElementById("panel-saves");
+    return !!(p && p.classList.contains("on"));
   }
 
-  function applyScroll(){
+  function apply(){
     setVersion();
     injectCss();
+
+    var on=savesPanelOpen();
+
+    // Var strikt: bara Utgångsläge-panelen aktiverar listläget.
+    document.body.classList.toggle("tt185-saves-library", !!on);
 
     var panel=document.getElementById("panel-saves");
     var list=document.getElementById("saves-list");
 
-    if(!panel || !list)return;
-
-    var open=isSavesOpen();
-    document.body.classList.toggle("tt184-saves-panel-open",open);
-
-    if(!open){
-      list.style.maxHeight="";
-      list.style.overflowY="";
-      return;
+    if(on && panel){
+      panel.classList.add("tt-v99-formation-top");
+      panel.classList.add("tt-v98-formation-compact");
     }
 
-    // Räkna faktisk plats från listans överkant till skärmens nederkant.
-    // Då fungerar det även om topbar/bottompanel har olika höjd på mobil/dator.
-    var top=0;
-    try{top=list.getBoundingClientRect().top;}catch(e){}
-    var vh=window.innerHeight || document.documentElement.clientHeight || 700;
-    var bottomGap=22;
-    var h=Math.max(170, Math.floor(vh - top - bottomGap));
+    if(on && list){
+      list.style.overflowY="auto";
+      list.style.overflowX="hidden";
+      list.style.webkitOverflowScrolling="touch";
+      list.style.touchAction="pan-y";
+    }
+  }
 
-    list.style.maxHeight=h+"px";
-    list.style.overflowY="auto";
-    list.style.overflowX="hidden";
-    list.style.webkitOverflowScrolling="touch";
-    list.style.touchAction="pan-y";
-
+  function leaveIfOtherPanel(){
     try{
-      panel.style.overflow="hidden";
-      if(panel.firstElementChild){
-        panel.firstElementChild.style.overflow="hidden";
-        panel.firstElementChild.style.minHeight="0";
+      if(!savesPanelOpen()){
+        document.body.classList.remove("tt185-saves-library");
       }
     }catch(e){}
   }
 
-  function wrapRenderSavesList(){
-    try{
-      if(typeof renderSavesList!=="function" || renderSavesList._tt184Wrapped)return;
-      var old=renderSavesList;
-      renderSavesList=function(){
-        var r=old.apply(this,arguments);
-        setTimeout(applyScroll,0);
-        setTimeout(applyScroll,120);
-        setTimeout(applyScroll,350);
-        return r;
-      };
-      renderSavesList._tt184Wrapped=true;
-    }catch(e){}
+  if(typeof renderSavesList==="function" && !renderSavesList._tt185Wrapped){
+    var oldRenderSavesList=renderSavesList;
+    renderSavesList=function(){
+      var r=oldRenderSavesList.apply(this,arguments);
+      setTimeout(apply,0);
+      setTimeout(apply,120);
+      setTimeout(apply,350);
+      return r;
+    };
+    renderSavesList._tt185Wrapped=true;
   }
-
-  wrapRenderSavesList();
 
   document.addEventListener("click",function(e){
     try{
-      var tab=e.target.closest && e.target.closest('.tab[data-panel="saves"],#btn-cloud-refresh,#btn-cloud-save,#btn-save-over,#btn-export,#btn-import-btn,#panel-saves button');
+      var tab=e.target.closest && e.target.closest(".tab");
       if(tab){
-        setTimeout(applyScroll,80);
-        setTimeout(applyScroll,300);
+        setTimeout(function(){
+          if(savesPanelOpen())apply();
+          else leaveIfOtherPanel();
+        },80);
+        setTimeout(function(){
+          if(savesPanelOpen())apply();
+          else leaveIfOtherPanel();
+        },300);
+      }
+
+      var inSaves=e.target.closest && e.target.closest("#panel-saves");
+      if(inSaves){
+        setTimeout(apply,120);
       }
     }catch(err){}
   },true);
 
   window.addEventListener("resize",function(){
-    setTimeout(applyScroll,80);
+    setTimeout(function(){
+      if(savesPanelOpen())apply();
+    },80);
   });
 
   if(document.readyState==="loading"){
     document.addEventListener("DOMContentLoaded",function(){
-      setTimeout(applyScroll,0);
-      setTimeout(applyScroll,300);
-      setTimeout(applyScroll,1000);
+      setTimeout(apply,0);
+      setTimeout(apply,400);
+      setTimeout(apply,1200);
     });
   }else{
-    setTimeout(applyScroll,0);
-    setTimeout(applyScroll,300);
-    setTimeout(applyScroll,1000);
+    setTimeout(apply,0);
+    setTimeout(apply,400);
+    setTimeout(apply,1200);
   }
 
-  window.tt184ApplySavesScroll=applyScroll;
+  window.tt185ApplySavesLibraryScroll=apply;
 })();
 
-/* === slut v184-targeted-saves-list-scroll === */
+/* === slut v185-saves-library-scroll-like-taktik === */
