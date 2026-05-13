@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="195";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="195";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="195";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="195";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="195";
       });
     }catch(e){}
   }
@@ -20669,90 +20669,93 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v192-taktik-cross-device-load === */
 
 
-/* === v194-rename-existing-formation ===
-   Bas: 193.
-   Fix: Byt namn på redan sparat Utgångsläge.
+/* === v195-rename-formation-inline-safe ===
+   Bas: 193. Bygger INTE på 194.
+   Fixar namnbyte på sparat Utgångsläge utan att skapa ny fil och utan att radbryta åtgärdsknappar.
    Princip:
-   - Ingen omskrivning av renderSavesList.
-   - Efter att befintlig lista renderats läggs en liten ✏-knapp på Mina-rader.
-   - PATCH:ar endast name på samma rad i Supabase.
-   - Rör inte Taktikfilm, delning, kopiering, save/load-logik eller ritningar.
+   - Override endast renderSavesList för att lägga pennan inne i filnamnet.
+   - PATCH:ar bara kolumnen name på samma id.
+   - Ingen ny post/POST.
+   - Rör inte Taktikfilm, delning, kopiering eller övrig save/load.
    Endast app.js behöver bytas.
 */
 
 (function(){
-  if(window.__tt194RenameExistingFormation)return;
-  window.__tt194RenameExistingFormation=true;
+  if(window.__tt195RenameFormationInlineSafe)return;
+  window.__tt195RenameFormationInlineSafe=true;
 
   function setVersion(){
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="195";
       });
     }catch(e){}
   }
 
-  function norm(v){
-    return String(v||"").trim().toLowerCase();
-  }
-
-  function currentVisibleMineFormations(){
+  function dedupeSavedFormationsById(){
     try{
-      if(typeof saveScope!=="undefined" && saveScope==="team")return [];
-
-      var list=(savedFormations||[]).filter(function(s){
-        var visible=typeof isFileVisibleInScopeV10==="function" ? isFileVisibleInScopeV10(s,"mine") : true;
-        if(!visible)return false;
-        var inFolder=(typeof currentFolder==="undefined" || currentFolder==="Alla") || (s.folder||"Allmänt")===currentFolder;
-        var q=typeof searchQuery==="string" ? searchQuery : "";
-        var inSearch=!q || norm(s.name).indexOf(norm(q))>=0;
-        return inFolder && inSearch;
+      var seen={};
+      savedFormations=(savedFormations||[]).filter(function(s){
+        if(!s || !s.id)return true;
+        var k=String(s.id);
+        if(seen[k])return false;
+        seen[k]=true;
+        return true;
       });
-
-      list.sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""),"sv");});
-      return list;
-    }catch(e){
-      return [];
-    }
+    }catch(e){}
   }
 
-  function patchFormationName(s,newName){
+  function renameFormationInlineV195(s){
     if(!s || !s.id){
       try{showToast("Kan inte byta namn på osparad fil",false);}catch(e){}
       return;
     }
 
-    newName=String(newName||"").trim();
-    if(!newName || newName===s.name)return;
+    var oldName=String(s.name||"");
+    var next=prompt("Nytt namn på utgångsläget:", oldName);
+    if(next===null)return;
 
-    var oldName=s.name;
-    s.name=newName;
-
-    try{
-      if(typeof activeFormationId!=="undefined" && String(activeFormationId)===String(s.id)){
-        activeFormationName=newName;
-        if(typeof updateSaveButtons==="function")updateSaveButtons();
-      }
-    }catch(e){}
-
-    try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
+    next=String(next||"").trim();
+    if(!next){
+      try{showToast("Namnet får inte vara tomt",false);}catch(e){}
+      return;
+    }
+    if(next===oldName)return;
 
     try{cloudStatus("Byter namn...","#7aaa88");}catch(e){}
 
     fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
       method:"PATCH",
       headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
-      body:JSON.stringify({name:newName})
+      body:JSON.stringify({name:next})
     })
     .then(function(r){
       if(!r.ok)throw new Error("HTTP "+r.status);
       return r.json();
     })
     .then(function(){
-      try{cloudStatus("✅ Namn ändrat: "+newName,"#4ae87a");}catch(e){}
+      // Uppdatera endast lokal rad med samma id. Skapa aldrig ny lokal fil.
+      try{
+        (savedFormations||[]).forEach(function(x){
+          if(x && String(x.id)===String(s.id))x.name=next;
+        });
+        dedupeSavedFormationsById();
+      }catch(e){}
+
+      try{
+        if(typeof activeFormationId!=="undefined" && String(activeFormationId)===String(s.id)){
+          activeFormationName=next;
+          if(typeof updateSaveButtons==="function")updateSaveButtons();
+        }
+      }catch(e){}
+
+      try{renderSavesList();}catch(e){}
+      try{cloudStatus("✅ Namn ändrat: "+next,"#4ae87a");}catch(e){}
       try{showToast("Namn ändrat");}catch(e){}
+
+      // Ladda om försiktigt från molnet så listan säkert speglar samma rad.
       try{
         if(typeof cloudLoadSaves==="function"){
           setTimeout(function(){cloudLoadSaves();},250);
@@ -20760,102 +20763,126 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       }catch(e){}
     })
     .catch(function(err){
-      s.name=oldName;
-      try{
-        if(typeof activeFormationId!=="undefined" && String(activeFormationId)===String(s.id)){
-          activeFormationName=oldName;
-          if(typeof updateSaveButtons==="function")updateSaveButtons();
-        }
-      }catch(e){}
-      try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
       try{cloudStatus("❌ Kunde inte byta namn: "+err.message,"#e84a4a");}catch(e){}
       try{showToast("Kunde inte byta namn",false);}catch(e){}
     });
   }
 
-  function addRenameButtons(){
+  renderSavesList=function(){
     setVersion();
+    dedupeSavedFormationsById();
 
-    var list=document.getElementById("saves-list");
-    if(!list)return;
+    var list=document.getElementById("saves-list");if(!list)return;list.innerHTML="";
+    addScopeTabsV10(list,saveScope,function(v){saveScope=v;renderSavesList();});
 
-    try{
-      if(typeof saveScope!=="undefined" && saveScope==="team")return;
-    }catch(e){}
+    var visibleAll=savedFormations.filter(function(s){return isFileVisibleInScopeV10(s,saveScope);});
+    var folderCounts={"Alla":visibleAll.length};
+    for(var i=0;i<visibleAll.length;i++){var f=visibleAll[i].folder||"Allmänt";folderCounts[f]=(folderCounts[f]||0)+1;}
 
-    var forms=currentVisibleMineFormations();
-    if(!forms.length)return;
+    var filterRow=document.createElement("div");filterRow.style.cssText="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;width:100%";
+    var allFolders=["Alla"];var seen2={};
+    for(var i=0;i<visibleAll.length;i++){var f=visibleAll[i].folder||"Allmänt";if(!seen2[f]){seen2[f]=true;allFolders.push(f);}}
+    if(saveScope==="mine"){
+      for(var i=0;i<folders.length;i++){if(!seen2[folders[i]]&&folders[i]!=="Alla"){seen2[folders[i]]=true;allFolders.push(folders[i]);}}
+    }
+    for(var i=0;i<allFolders.length;i++){
+      (function(f){
+        var wrap=document.createElement("div");wrap.style.cssText="display:flex;align-items:center;gap:1px;margin-bottom:2px";
+        var fb=document.createElement("button");fb.className="tab"+(currentFolder===f?" on":"");fb.textContent=f+" ("+(folderCounts[f]||0)+")";fb.style.fontSize="0.62rem";fb.style.padding="2px 6px";
+        fb.addEventListener("click",function(){currentFolder=f;renderSavesList();});
+        wrap.appendChild(fb);
+        if(f!=="Alla"&&saveScope==="mine"){
+          var rnBtn=document.createElement("button");rnBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#7aaa88;border:1px solid #2d4a35;border-left:none;cursor:pointer";rnBtn.textContent="✏";rnBtn.title="Byt namn";rnBtn.addEventListener("click",function(e){e.stopPropagation();openRenameFolder(f);});wrap.appendChild(rnBtn);
+          var delBtn=document.createElement("button");delBtn.style.cssText="font-size:0.6rem;padding:2px 4px;background:#111a14;color:#e84a4a;border:1px solid #2d4a35;border-left:none;border-radius:0 4px 4px 0;cursor:pointer";delBtn.textContent="×";delBtn.title="Radera mapp";
+          delBtn.addEventListener("click",function(e){e.stopPropagation();var count=folderCounts[f]||0;if(count===0){if(!confirm("Radera mappen \""+f+"\"?"))return;folders=folders.filter(function(x){return x!==f;});if(currentFolder===f)currentFolder="Alla";renderSavesList();}else{openDeleteFolderConfirm(f,"saves");}});
+          wrap.appendChild(delBtn);
+        }
+        filterRow.appendChild(wrap);
+      })(allFolders[i]);
+    }
+    if(saveScope==="mine"){
+      var addBtn=document.createElement("button");addBtn.style.cssText="font-size:0.62rem;padding:2px 8px;background:#111a14;color:#4ae87a;border:1px solid #4ae87a;border-radius:4px;cursor:pointer";addBtn.textContent="+ Mapp";
+      addBtn.addEventListener("click",function(){pendingFolderTarget="saves";document.getElementById("new-folder-inp").value="";document.getElementById("modal-new-folder").classList.remove("hidden");setTimeout(function(){document.getElementById("new-folder-inp").focus();},100);});
+      filterRow.appendChild(addBtn);
+    }
+    list.appendChild(filterRow);
 
-    var rows=Array.from(list.querySelectorAll(":scope > .row"));
-    rows.forEach(function(row,idx){
-      if(row.querySelector(".tt194-rename-formation"))return;
+    var filtered=visibleAll.filter(function(s){var inFolder=currentFolder==="Alla"||(s.folder||"Allmänt")===currentFolder;var inSearch=!searchQuery||s.name.toLowerCase().indexOf(searchQuery)>=0;return inFolder&&inSearch;});
+    if(!filtered.length){var empty=document.createElement("span");empty.style.cssText="color:#7aaa88;font-size:0.8rem";empty.textContent=saveScope==="team"?"Inga delade lagfiler":"Inga uppställningar";list.appendChild(empty);try{if(typeof tt191ApplyListFixes==="function")tt191ApplyListFixes();}catch(e){}return;}
+    var sorted=filtered.slice().sort(function(a,b){return a.name.localeCompare(b.name,"sv");});
 
-      var s=forms[idx];
-      if(!s || !s.id)return;
+    for(var i=0;i<sorted.length;i++){
+      (function(s){
+        var mine=isMineV10(s), readOnly=isReadOnlyFileV10(s);
+        var row=document.createElement("div");row.className="row";row.style.flexWrap="nowrap";row.style.alignItems="center";
 
-      var btn=document.createElement("button");
-      btn.className="sa tt194-rename-formation";
-      btn.textContent="✏";
-      btn.title="Byt namn";
-      btn.setAttribute("aria-label","Byt namn");
-      btn.style.cssText="min-width:24px;padding:2px 5px;font-size:0.72rem;line-height:1.1;color:#e8c84a;border-color:#e8c84a";
+        var nm=document.createElement("span");nm.className="row-name";
+        nm.style.display="inline-flex";
+        nm.style.alignItems="center";
+        nm.style.gap="4px";
+        nm.style.minWidth="0";
 
-      btn.addEventListener("click",function(e){
-        e.preventDefault();
-        e.stopPropagation();
+        var nameText=document.createElement("span");
+        nameText.textContent=s.name;
+        nameText.style.overflow="hidden";
+        nameText.style.textOverflow="ellipsis";
+        nameText.style.whiteSpace="nowrap";
+        nm.appendChild(nameText);
 
-        var next=prompt("Nytt namn på utgångsläget:", s.name || "");
-        if(next===null)return;
-
-        next=String(next||"").trim();
-        if(!next){
-          try{showToast("Namnet får inte vara tomt",false);}catch(err){}
-          return;
+        if(mine && saveScope==="mine" && s.id){
+          var rn=document.createElement("button");
+          rn.className="tt195-rename-inline";
+          rn.textContent="✏";
+          rn.title="Byt namn";
+          rn.setAttribute("aria-label","Byt namn");
+          rn.style.cssText="flex:0 0 auto;background:transparent;border:0;color:#e8c84a;font-size:0.72rem;padding:0 2px;cursor:pointer;line-height:1";
+          rn.addEventListener("click",function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            renameFormationInlineV195(s);
+          });
+          nm.appendChild(rn);
         }
 
-        patchFormationName(s,next);
-      });
+        var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(s.folder||"Allmänt")+(mine?"":" · "+ownerNameV10(s)+" · skrivskyddad");
+        var ld=document.createElement("button");ld.className="sa load";ld.textContent=readOnly?"Öppna":"Ladda";
+        ld.addEventListener("click",function(){
+          applyState(JSON.parse(JSON.stringify(s.state)));
+          activeFormationId=readOnly?null:s.id;
+          activeFormationName=readOnly?null:s.name;
+          updateSaveButtons();
+          if(readOnly)showToast("Öppnad skrivskyddat – kopiera för att redigera");
+        });
 
-      // Lägg knappen efter filnamn/mapp men före de andra åtgärdsknapparna.
-      var sub=row.querySelector(".row-sub");
-      if(sub && sub.nextSibling){
-        row.insertBefore(btn,sub.nextSibling);
-      }else{
-        row.appendChild(btn);
-      }
-    });
-  }
+        row.appendChild(nm);row.appendChild(fl);
 
-  if(typeof renderSavesList==="function" && !renderSavesList._tt194RenameWrapped){
-    var oldRenderSavesList=renderSavesList;
-    renderSavesList=function(){
-      var r=oldRenderSavesList.apply(this,arguments);
-      setTimeout(addRenameButtons,0);
-      setTimeout(addRenameButtons,120);
-      return r;
-    };
-    renderSavesList._tt194RenameWrapped=true;
-  }
+        if(mine){
+          var share=document.createElement("button");share.className="sa";share.style.cssText="color:#4ae8e8;border-color:#4ae8e8";share.textContent=fileMetaV10(s).sharedWithTeam?"Dölj":"Dela";
+          share.title=fileMetaV10(s).sharedWithTeam?"Sluta dela med laget":"Dela med laget";
+          share.addEventListener("click",function(){patchFormationShareV10(s,!fileMetaV10(s).sharedWithTeam);});
 
-  document.addEventListener("click",function(e){
-    try{
-      if(e.target && e.target.closest && e.target.closest("#panel-saves")){
-        setTimeout(addRenameButtons,80);
-      }
-    }catch(err){}
-  },true);
+          var toTk=document.createElement("button");toTk.className="sa";toTk.style.cssText="color:#4ae8e8;border-color:#4ae8e8";toTk.textContent="Till taktik";toTk.addEventListener("click",function(){sendSavedFormationToTaktik(s);});
 
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",function(){
-      setTimeout(addRenameButtons,0);
-      setTimeout(addRenameButtons,400);
-    });
-  }else{
-    setTimeout(addRenameButtons,0);
-    setTimeout(addRenameButtons,400);
-  }
+          var mv=document.createElement("button");mv.className="sa";mv.style.cssText="color:#e8c84a;border-color:#e8c84a";mv.textContent="⇆ Flytta";mv.addEventListener("click",function(){openMoveFolder(s);});
 
-  window.tt194AddRenameFormationButtons=addRenameButtons;
+          var dl=document.createElement("button");dl.className="sa del";dl.textContent="×";dl.addEventListener("click",function(){if(!confirm("Radera utgångsläget \""+(s.name||"utan namn")+"\"?"))return;if(s.id)cloudDelete(s.id);});
+
+          row.appendChild(share);row.appendChild(mv);row.appendChild(ld);row.appendChild(toTk);row.appendChild(dl);
+        }else{
+          var cp=document.createElement("button");cp.className="sa";cp.style.cssText="color:#4ae8e8;border-color:#4ae8e8";cp.textContent="Kopiera";cp.addEventListener("click",function(){copyFormationToMineV10(s);});
+          row.appendChild(ld);row.appendChild(cp);
+        }
+
+        list.appendChild(row);
+      })(sorted[i]);
+    }
+
+    try{if(typeof tt191ApplyListFixes==="function")tt191ApplyListFixes();}catch(e){}
+    try{if(typeof tt188ApplyIosSavesScroll==="function")tt188ApplyIosSavesScroll();}catch(e){}
+  };
+
+  try{renderSavesList();}catch(e){}
+  window.tt195RenameFormationInline=renameFormationInlineV195;
 })();
 
-/* === slut v194-rename-existing-formation === */
+/* === slut v195-rename-formation-inline-safe === */
