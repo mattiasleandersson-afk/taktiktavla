@@ -19426,3 +19426,197 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v180-strict-mine-owner === */
+
+
+/* === v181-strict-mine-owner-name ===
+   Bas: 180.
+   Fel: filer syntes i Mina hos både person 1 och person 2.
+   Slutsats: ownerId är inte tillräckligt personbundet i appens profilflöde.
+   Fix:
+   - Sparade taktikfilmer i Mina kräver personmatchning.
+   - I första hand: ownerId + ownerName matchar.
+   - För äldre filer utan ownerId: ownerName + team matchar.
+   - Delade filer för annan person visas bara i Lagets, inte i Mina.
+   - Filtrerar både i render-helper och efter cloudLoadTaktik.
+   Rör bara app.js.
+*/
+
+(function(){
+  if(window.__tt181StrictMineOwnerName)return;
+  window.__tt181StrictMineOwnerName=true;
+
+  function isTaktik(obj){
+    return !!(obj && Array.isArray(obj.steps));
+  }
+
+  function idOf(tk){
+    return String((tk && (tk.dbId || tk.id)) || "").trim();
+  }
+
+  function norm(v){
+    return String(v||"").trim().toLowerCase();
+  }
+
+  function teamNorm(v){
+    return String(v||"").trim().toUpperCase().replace(/\s+/g,"-");
+  }
+
+  function profile(){
+    try{
+      if(typeof getUserProfile==="function"){
+        var p=getUserProfile();
+        if(p)return p;
+      }
+    }catch(e){}
+    try{
+      var raw=localStorage.getItem("tt_profile_v1");
+      if(raw)return JSON.parse(raw);
+    }catch(e){}
+    return null;
+  }
+
+  function meta(tk){
+    if(!tk)return {};
+    if(tk._meta)return tk._meta;
+    if(tk.meta)return tk.meta;
+    if(tk.data && tk.data._meta)return tk.data._meta;
+    return {};
+  }
+
+  function sameName(tk){
+    var p=profile(), m=meta(tk);
+    return !!(p && m && norm(p.ownerName) && norm(m.ownerName) && norm(p.ownerName)===norm(m.ownerName));
+  }
+
+  function sameOwnerId(tk){
+    var p=profile(), m=meta(tk);
+    return !!(p && m && p.ownerId && m.ownerId && String(p.ownerId)===String(m.ownerId));
+  }
+
+  function sameTeam(tk){
+    var p=profile(), m=meta(tk);
+    if(!p || !m)return false;
+    var pt=teamNorm(p.teamId || p.teamCode || p.teamName);
+    var mt=teamNorm(m.teamId || m.teamCode || m.teamName);
+    return !!(pt && mt && pt===mt);
+  }
+
+  function hasOwnerMeta(tk){
+    var m=meta(tk);
+    return !!(m && (m.ownerId || m.ownerName));
+  }
+
+  function strictMine(tk){
+    if(!isTaktik(tk))return false;
+
+    var saved=!!idOf(tk);
+    var m=meta(tk);
+
+    // Helt nya lokala utkast utan id får räknas som egna tills de sparas.
+    if(!saved && !hasOwnerMeta(tk))return true;
+
+    // Sparade filer utan namn ska inte visas som Mina för alla.
+    if(saved && !m.ownerName)return false;
+
+    // Normal ny fil: kräv både id-match och namnmatch.
+    if(m.ownerId){
+      return sameOwnerId(tk) && sameName(tk);
+    }
+
+    // Äldre/migrerad fil utan ownerId: tillåt bara namn + lag.
+    return sameName(tk) && sameTeam(tk);
+  }
+
+  function teamShared(tk){
+    var m=meta(tk);
+    return !!(isTaktik(tk) && m && m.sharedWithTeam && sameTeam(tk));
+  }
+
+  function visible(tk,scope){
+    return scope==="team" ? teamShared(tk) : strictMine(tk);
+  }
+
+  function readOnly(tk){
+    try{
+      if(typeof taktikScope!=="undefined" && taktikScope==="team" && teamShared(tk))return true;
+    }catch(e){}
+    return !strictMine(tk);
+  }
+
+  function filterCurrentList(){
+    try{
+      if(!Array.isArray(taktikFilmer))return;
+      var scope=(typeof taktikScope!=="undefined" && taktikScope==="team") ? "team" : "mine";
+      // Behåll båda typerna i minnet för flikar, men ta bort filer som varken är egna eller lagdelade.
+      taktikFilmer=taktikFilmer.filter(function(tk){
+        return strictMine(tk) || teamShared(tk);
+      });
+      try{
+        if(typeof renderTaktikList==="function")renderTaktikList();
+      }catch(e){}
+    }catch(e){}
+  }
+
+  // Override globala helpers.
+  var oldIsMineV10=(typeof isMineV10==="function") ? isMineV10 : null;
+  isMineV10=function(obj){
+    if(isTaktik(obj))return strictMine(obj);
+    return oldIsMineV10 ? oldIsMineV10(obj) : true;
+  };
+
+  var oldTeamSharedV10=(typeof isSameTeamSharedV10==="function") ? isSameTeamSharedV10 : null;
+  isSameTeamSharedV10=function(obj){
+    if(isTaktik(obj))return teamShared(obj);
+    return oldTeamSharedV10 ? oldTeamSharedV10(obj) : false;
+  };
+
+  var oldVisibleV10=(typeof isFileVisibleInScopeV10==="function") ? isFileVisibleInScopeV10 : null;
+  isFileVisibleInScopeV10=function(obj,scope){
+    if(isTaktik(obj))return visible(obj,scope);
+    return oldVisibleV10 ? oldVisibleV10(obj,scope) : true;
+  };
+
+  var oldReadOnlyV10=(typeof isReadOnlyFileV10==="function") ? isReadOnlyFileV10 : null;
+  isReadOnlyFileV10=function(obj){
+    if(isTaktik(obj))return readOnly(obj);
+    return oldReadOnlyV10 ? oldReadOnlyV10(obj) : false;
+  };
+
+  try{
+    if(window.tt176TaktikFs){
+      window.tt176TaktikFs.isMine=strictMine;
+      window.tt176TaktikFs.sharedToMyTeam=teamShared;
+      window.tt176TaktikFs.visible=visible;
+      window.tt176TaktikFs.readOnly=readOnly;
+    }
+  }catch(e){}
+
+  // Viktigt: v176:s cloudLoadTaktik hade egen intern fallback.
+  // Därför efterfiltrerar vi resultatet efter varje laddning.
+  if(typeof cloudLoadTaktik==="function" && !cloudLoadTaktik._tt181StrictFilterWrapped){
+    var oldLoad=cloudLoadTaktik;
+    cloudLoadTaktik=function(){
+      var ret=oldLoad.apply(this,arguments);
+      try{
+        if(ret && typeof ret.then==="function"){
+          return ret.then(function(x){
+            filterCurrentList();
+            return x;
+          });
+        }
+      }catch(e){}
+      setTimeout(filterCurrentList,300);
+      return ret;
+    };
+    cloudLoadTaktik._tt181StrictFilterWrapped=true;
+  }
+
+  // Även efter render kan gammal kod ha behållit lista; säkerställ vid start.
+  setTimeout(filterCurrentList,200);
+  setTimeout(filterCurrentList,900);
+
+  window.tt181StrictMineTaktik=strictMine;
+  window.tt181TeamSharedTaktik=teamShared;
+})();
+
+/* === slut v181-strict-mine-owner-name === */
