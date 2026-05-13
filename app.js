@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -21793,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -21900,7 +21900,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -22083,7 +22083,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -22220,7 +22220,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -22443,7 +22443,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -22773,7 +22773,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -23088,7 +23088,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -23347,7 +23347,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -23472,7 +23472,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="219";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
       });
     }catch(e){}
   }
@@ -23574,3 +23574,176 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v219-match-list-sort-by-played-count === */
+
+
+/* === v220-force-match-dom-sort-by-count ===
+   Bas: 219.
+   Problem:
+   - Matcher → Match visas fortfarande i tröjnummerordning.
+   - Äldre rendering bygger listan efter nummer efter vår renderfunktion.
+   Fix:
+   - Sorterar den synliga DOM-listan #match-trupp-list efter texten "X mat.".
+   - Lägst antal matcher överst.
+   - Vid lika antal sorteras alfabetiskt efter namn.
+   - Körs efter rendering och via MutationObserver.
+   Rör inte data, statistik-id, matchsparning, trupp, Utgångsläge eller Taktikfilm.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt220ForceMatchDomSortByCount)return;
+  window.__tt220ForceMatchDomSortByCount=true;
+
+  var sorting=false;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+      });
+    }catch(e){}
+  }
+
+  function rowName(row){
+    try{
+      var spans=row.querySelectorAll("span");
+      if(spans && spans.length>=2){
+        return String(spans[1].textContent||"").trim();
+      }
+    }catch(e){}
+
+    try{
+      return String(row.textContent||"")
+        .replace(/^#?\d+\s*/,"")
+        .replace(/\d+\s*mat\./i,"")
+        .replace(/\bStart\b/i,"")
+        .trim();
+    }catch(e){
+      return "";
+    }
+  }
+
+  function rowCount(row){
+    try{
+      var txt=String(row.textContent||"");
+      var m=txt.match(/(\d+)\s*mat\./i);
+      if(m)return parseInt(m[1],10)||0;
+    }catch(e){}
+    return 0;
+  }
+
+  function rowNumber(row){
+    try{
+      var txt=String(row.textContent||"");
+      var m=txt.match(/#\s*(\d+)/);
+      if(m)return parseInt(m[1],10)||0;
+    }catch(e){}
+    return 0;
+  }
+
+  function sortVisibleMatchList(){
+    if(sorting)return;
+
+    var list=document.getElementById("match-trupp-list");
+    if(!list)return;
+
+    var rows=Array.from(list.children||[]).filter(function(el){
+      return el && el.classList && el.classList.contains("row");
+    });
+
+    if(rows.length<2)return;
+
+    sorting=true;
+    try{
+      rows.sort(function(a,b){
+        var ca=rowCount(a);
+        var cb=rowCount(b);
+        if(ca!==cb)return ca-cb;
+
+        var na=rowName(a);
+        var nb=rowName(b);
+        var c=na.localeCompare(nb,"sv",{sensitivity:"base"});
+        if(c!==0)return c;
+
+        return rowNumber(a)-rowNumber(b);
+      });
+
+      rows.forEach(function(r){
+        list.appendChild(r);
+      });
+    }catch(e){}
+    sorting=false;
+  }
+
+  function scheduleSort(){
+    setTimeout(sortVisibleMatchList,0);
+    setTimeout(sortVisibleMatchList,60);
+    setTimeout(sortVisibleMatchList,180);
+    setTimeout(sortVisibleMatchList,400);
+  }
+
+  // Wrap om nuvarande renderfunktion, men lita även på DOM-sorteringen efteråt.
+  var prevRender=typeof renderMatchTruppList==="function" ? renderMatchTruppList : null;
+  if(prevRender && !prevRender.__tt220Wrapped){
+    var wrapped=function(){
+      var res=prevRender.apply(this,arguments);
+      scheduleSort();
+      return res;
+    };
+    wrapped.__tt220Wrapped=true;
+    renderMatchTruppList=wrapped;
+    window.renderMatchTruppList=wrapped;
+  }
+
+  function observeList(){
+    var list=document.getElementById("match-trupp-list");
+    if(!list || list.__tt220Observed)return;
+    list.__tt220Observed=true;
+
+    try{
+      var mo=new MutationObserver(function(){
+        if(sorting)return;
+        scheduleSort();
+      });
+      mo.observe(list,{childList:true,subtree:false});
+    }catch(e){}
+  }
+
+  function apply(){
+    setVersion();
+    observeList();
+    scheduleSort();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  // När man går in i Matcher/Match ritas listan ofta efter klicket.
+  document.addEventListener("click",function(e){
+    try{
+      var t=e.target;
+      var txt=String((t&&t.textContent)||"").trim().toLowerCase();
+      var lag=t&&t.getAttribute?t.getAttribute("data-lag"):"";
+      var id=String((t&&t.id)||"").toLowerCase();
+
+      if(lag==="match" || txt==="match" || txt==="matcher" || id.indexOf("match")>=0){
+        setTimeout(apply,0);
+        setTimeout(apply,120);
+        setTimeout(apply,350);
+      }
+    }catch(err){}
+  },true);
+
+  setTimeout(apply,300);
+  setTimeout(apply,1000);
+  setTimeout(apply,2000);
+
+  window.tt220SortVisibleMatchList=sortVisibleMatchList;
+})();
+
+/* === slut v220-force-match-dom-sort-by-count === */
