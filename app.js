@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="200";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="201";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="200";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="201";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="200";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="201";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="200";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="201";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="200";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="201";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="200";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="201";
       });
     }catch(e){}
   }
@@ -20921,3 +20921,300 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v200-taktik-load-no-step-filter === */
+
+
+/* === v201-taktik-profile-name-fallback ===
+   Bas: v200.
+   Problem: odelade taktikfilmer syns inte i Mina på annan enhet,
+   men de syns om filen är delad. Det betyder att team-match fungerar,
+   men person/namn-match faller bort.
+   Fix:
+   - Taktikfilmens "Mina"-matchning läser användarnamn från fler möjliga profilfält.
+   - Fallback: läs profilknappens text, t.ex. "Mattias · MUNKA-IF-P2013".
+   - Mina = ownerName + team matchar.
+   - Lagets = sharedWithTeam + team matchar.
+   Rör inte Utgångsläge, save, redigering, steg eller animation.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt201TaktikProfileNameFallback)return;
+  window.__tt201TaktikProfileNameFallback=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="201";
+      });
+    }catch(e){}
+  }
+
+  function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+  function clean(v){return String(v||"").trim();}
+  function norm(v){return clean(v).toLowerCase();}
+  function teamNorm(v){return clean(v).toUpperCase().replace(/\s+/g,"-");}
+
+  function rawProfile(){
+    try{if(typeof getUserProfile==="function"){var p=getUserProfile(); if(p)return p;}}catch(e){}
+    try{if(typeof getProfileSafeV10==="function"){var p2=getProfileSafeV10(); if(p2)return p2;}}catch(e){}
+    try{var raw=localStorage.getItem("tt_profile_v1"); if(raw)return JSON.parse(raw);}catch(e){}
+    return {};
+  }
+
+  function profileButtonText(){
+    try{
+      var btn=document.getElementById("btn-profile-team") ||
+              document.getElementById("btn-profile-v59") ||
+              document.getElementById("btn-profile-v102") ||
+              document.querySelector("button[id*='profile'],button[title*='Profil'],button[title*='profil']");
+      return btn ? clean(btn.textContent||"") : "";
+    }catch(e){
+      return "";
+    }
+  }
+
+  function profileNames(){
+    var p=rawProfile();
+    var out=[];
+    ["ownerName","name","userName","username","coachName","trainerName","displayName","createdBy"].forEach(function(k){
+      if(p && p[k])out.push(p[k]);
+    });
+
+    var txt=profileButtonText();
+    if(txt){
+      txt=txt.replace(/^👤\s*/,"").trim();
+      var first=txt.split("·")[0].trim();
+      if(first)out.push(first);
+    }
+
+    var seen={};
+    return out.map(clean).filter(function(x){
+      var k=norm(x);
+      if(!k || seen[k])return false;
+      seen[k]=true;
+      return true;
+    });
+  }
+
+  function profileTeams(){
+    var p=rawProfile();
+    var out=[];
+    ["teamId","teamCode","teamName","team","club","clubName"].forEach(function(k){
+      if(p && p[k])out.push(p[k]);
+    });
+
+    var txt=profileButtonText();
+    if(txt && txt.indexOf("·")>=0){
+      var team=txt.split("·").slice(1).join("·").trim();
+      if(team)out.push(team);
+    }
+
+    var seen={};
+    return out.map(teamNorm).filter(function(x){
+      if(!x || seen[x])return false;
+      seen[x]=true;
+      return true;
+    });
+  }
+
+  function isTaktik(obj){
+    return !!(obj && (Array.isArray(obj.steps) || obj.type==="taktikfilm"));
+  }
+
+  function meta(tk){
+    if(!tk)return {};
+    if(tk._meta)return tk._meta;
+    if(tk.meta)return tk.meta;
+    if(tk.data && tk.data._meta)return tk.data._meta;
+    return {};
+  }
+
+  function idOf(tk){
+    return String((tk && (tk.dbId || tk.id)) || "").trim();
+  }
+
+  function sameName(tk){
+    var m=meta(tk);
+    var owner=norm(m.ownerName || m.createdBy || "");
+    if(!owner)return false;
+    return profileNames().some(function(n){return norm(n)===owner;});
+  }
+
+  function sameOwnerId(tk){
+    var p=rawProfile(), m=meta(tk);
+    return !!(p && m && p.ownerId && m.ownerId && String(p.ownerId)===String(m.ownerId));
+  }
+
+  function sameTeam(tk){
+    var m=meta(tk);
+    var mt=[m.teamId,m.teamCode,m.teamName,m.team].map(teamNorm).filter(Boolean);
+    var pt=profileTeams();
+    if(!mt.length || !pt.length)return false;
+    return mt.some(function(a){return pt.indexOf(a)>=0;});
+  }
+
+  function isMineCrossDevice(tk){
+    if(!isTaktik(tk))return false;
+
+    var m=meta(tk);
+
+    if(!idOf(tk) && !(m && (m.ownerName || m.ownerId)))return true;
+
+    if(m && m.ownerId && sameOwnerId(tk) && sameName(tk))return true;
+
+    // Viktigt: samma användare på annan enhet.
+    if(sameName(tk) && sameTeam(tk))return true;
+
+    return false;
+  }
+
+  function isTeamShared(tk){
+    var m=meta(tk);
+    return !!(isTaktik(tk) && m && m.sharedWithTeam && sameTeam(tk));
+  }
+
+  function normalizeRow(row){
+    var tk=clone((row && row.data) || {});
+    if(!tk || typeof tk!=="object")tk={};
+    if(!Array.isArray(tk.steps))tk.steps=[];
+    tk.dbId=row.id;
+    tk.id=row.id;
+    tk.name=tk.name || row.name || "Taktikfilm";
+    tk.folder=tk.folder || row.folder || "Taktik";
+    tk.type="taktikfilm";
+    if(!tk._meta && tk.meta)tk._meta=tk.meta;
+    if(!tk._meta)tk._meta={};
+    tk._meta.kind=tk._meta.kind || "taktikfilm";
+
+    if(isMineCrossDevice(tk)){
+      delete tk._readOnly;
+      delete tk._openedFromTeam;
+      delete tk.readOnly;
+      delete tk.readonly;
+      delete tk._readonly;
+    }
+
+    return tk;
+  }
+
+  function dedupe(list){
+    var seen={}, out=[];
+    (list||[]).forEach(function(tk){
+      if(!tk)return;
+      var key=tk.dbId ? "id:"+tk.dbId : "name:"+norm(tk.name)+"|folder:"+norm(tk.folder);
+      if(seen[key])return;
+      seen[key]=true;
+      out.push(tk);
+    });
+    return out;
+  }
+
+  function rebuildFoldersLocal(){
+    try{
+      var seen={"Taktik":true,"Träning":true};
+      taktikFolders=["Taktik","Träning"];
+      (taktikFilmer||[]).forEach(function(tk){
+        var f=tk.folder || "Taktik";
+        if(f && !seen[f]){
+          seen[f]=true;
+          taktikFolders.push(f);
+        }
+      });
+    }catch(e){}
+  }
+
+  // Skriv över bara taktikfilmshjälpare.
+  var prevIsMine=(typeof isMineV10==="function") ? isMineV10 : null;
+  isMineV10=function(obj){
+    if(isTaktik(obj))return isMineCrossDevice(obj);
+    return prevIsMine ? prevIsMine(obj) : true;
+  };
+
+  var prevTeam=(typeof isSameTeamSharedV10==="function") ? isSameTeamSharedV10 : null;
+  isSameTeamSharedV10=function(obj){
+    if(isTaktik(obj))return isTeamShared(obj);
+    return prevTeam ? prevTeam(obj) : false;
+  };
+
+  var prevVisible=(typeof isFileVisibleInScopeV10==="function") ? isFileVisibleInScopeV10 : null;
+  isFileVisibleInScopeV10=function(obj,scope){
+    if(isTaktik(obj))return scope==="team" ? isTeamShared(obj) : isMineCrossDevice(obj);
+    return prevVisible ? prevVisible(obj,scope) : true;
+  };
+
+  var prevReadOnly=(typeof isReadOnlyFileV10==="function") ? isReadOnlyFileV10 : null;
+  isReadOnlyFileV10=function(obj){
+    if(isTaktik(obj)){
+      try{
+        if(typeof taktikScope!=="undefined" && taktikScope==="team" && isTeamShared(obj))return true;
+      }catch(e){}
+      return !isMineCrossDevice(obj);
+    }
+    return prevReadOnly ? prevReadOnly(obj) : false;
+  };
+
+  cloudLoadTaktik=function(){
+    setVersion();
+    try{cloudStatus("Laddar taktik...","#7aaa88");}catch(e){}
+
+    return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?order=id.desc",{headers:supaHeaders()})
+      .then(function(r){
+        if(!r.ok)throw new Error("HTTP "+r.status);
+        return r.json();
+      })
+      .then(function(rows){
+        if(!Array.isArray(rows))rows=[];
+
+        var loaded=[];
+        rows.forEach(function(row){
+          var data=row && row.data;
+          var rowIsTaktik=(row && row.type==="taktikfilm") ||
+            (data && (Array.isArray(data.steps) || data.type==="taktikfilm" || (data._meta && data._meta.kind==="taktikfilm")));
+          if(!rowIsTaktik)return;
+
+          var tk=normalizeRow(row);
+
+          // Inget stegfilter: egna filer ska synas även om de har få steg.
+          if(isMineCrossDevice(tk) || isTeamShared(tk)){
+            loaded.push(tk);
+          }
+        });
+
+        taktikFilmer=dedupe(loaded);
+        rebuildFoldersLocal();
+
+        try{
+          if(typeof taktikScope==="undefined" || !taktikScope)taktikScope="mine";
+          if(typeof currentTaktikFolder==="undefined" || !currentTaktikFolder)currentTaktikFolder="Alla";
+        }catch(e){}
+
+        try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+        try{if(typeof tt191ApplyListFixes==="function")tt191ApplyListFixes();}catch(e){}
+
+        try{
+          var mineCount=taktikFilmer.filter(isMineCrossDevice).length;
+          var teamCount=taktikFilmer.filter(isTeamShared).length;
+          cloudStatus("✅ Taktik laddad: Mina "+mineCount+" · Lagets "+teamCount,"#4ae87a");
+        }catch(e){
+          try{cloudStatus("✅ Taktik laddad","#4ae87a");}catch(e2){}
+        }
+
+        return taktikFilmer;
+      })
+      .catch(function(err){
+        try{cloudStatus("❌ Kunde inte ladda taktik: "+err.message,"#e84a4a");}catch(e){}
+        throw err;
+      });
+  };
+
+  setTimeout(function(){try{cloudLoadTaktik();}catch(e){}},250);
+
+  window.tt201TaktikIsMine=isMineCrossDevice;
+  window.tt201TaktikIsTeamShared=isTeamShared;
+  window.tt201ProfileNames=profileNames;
+  window.tt201ProfileTeams=profileTeams;
+})();
+
+/* === slut v201-taktik-profile-name-fallback === */
