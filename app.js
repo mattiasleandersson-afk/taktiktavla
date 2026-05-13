@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -21793,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -21900,7 +21900,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -22083,7 +22083,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -22220,7 +22220,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -22443,7 +22443,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -22773,7 +22773,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="216";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
       });
     }catch(e){}
   }
@@ -23065,3 +23065,260 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v216-player-edit-single-path-alpha === */
+
+
+/* === v217-save-match-zero-players-hard ===
+   Bas: 216.
+   Problem:
+   - Match kan fortfarande inte alltid sparas med 0 spelare.
+   Fix:
+   - Fångar matchens sparknappar bredare men bara inom Match/Matcher-panelen.
+   - Sparar match med tomma startade/avbytare-listor.
+   - Datum krävs. Tomt motstånd blir "Okänd".
+   - Behåller 216-fixen för spelar-id, statistik och alfabetisk sortering.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt217SaveMatchZeroPlayersHard)return;
+  window.__tt217SaveMatchZeroPlayersHard=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+      });
+    }catch(e){}
+  }
+
+  function clone(o){
+    try{return JSON.parse(JSON.stringify(o||{}));}catch(e){return o;}
+  }
+
+  function isInMatchPanel(el){
+    try{
+      return !!(el && el.closest && (
+        el.closest("#lag-match") ||
+        el.closest("#panel-lag") ||
+        el.closest("[id*='match']")
+      ));
+    }catch(e){
+      return false;
+    }
+  }
+
+  function isMatchSaveButton(el){
+    if(!el || !el.closest)return false;
+
+    var btn=el.closest("button");
+    if(!btn)return false;
+
+    var id=String(btn.id||"").toLowerCase();
+    var txt=String(btn.textContent||"").trim().toLowerCase();
+
+    if(id==="btn-spara-match")return true;
+    if(id.indexOf("spara-match")>=0)return true;
+
+    // Undvik bänkens/laguppställningens save-knapp; den hanteras av 214.
+    if(id==="bench-save-btn")return false;
+
+    if(isInMatchPanel(btn) && (txt==="spara match" || txt==="spara" || txt.indexOf("spara match")>=0)){
+      return true;
+    }
+
+    return false;
+  }
+
+  function selectedIds(kind){
+    var out=[];
+    try{
+      (trupp||[]).forEach(function(sp){
+        if(matchSelections && matchSelections[sp.id]===kind)out.push(sp.id);
+      });
+    }catch(e){}
+    return out;
+  }
+
+  function currentMatchId(){
+    try{return window._editingMatchId || null;}catch(e){return null;}
+  }
+
+  function getInputValues(){
+    var datum="";
+    var motstand="";
+
+    try{
+      var d=document.getElementById("match-datum");
+      if(d)datum=d.value;
+    }catch(e){}
+
+    try{
+      var m=document.getElementById("match-motstand");
+      if(m)motstand=String(m.value||"").trim();
+    }catch(e){}
+
+    // Om vi redigerar en match och fälten av någon anledning är tomma,
+    // fall tillbaka till öppnad match.
+    try{
+      var id=currentMatchId();
+      if(id && Array.isArray(matcher)){
+        var old=matcher.find(function(x){return String(x.dbId)===String(id);});
+        if(old){
+          if(!datum && old.datum)datum=old.datum;
+          if(!motstand && old.motstand)motstand=old.motstand;
+        }
+      }
+    }catch(e){}
+
+    return {datum:datum,motstand:motstand||"Okänd"};
+  }
+
+  function buildMatchZeroOk(){
+    var vals=getInputValues();
+
+    if(!vals.datum){
+      try{showToast("Välj datum!");}catch(e){}
+      return null;
+    }
+
+    try{
+      if(matchVariants && matchVariants.length>0 && typeof saveCurrentVariant==="function"){
+        saveCurrentVariant();
+      }
+    }catch(e){}
+
+    var match={
+      datum:vals.datum,
+      motstand:vals.motstand || "Okänd",
+      startade:selectedIds("start"),
+      avbytare:selectedIds("avbytare"),
+      uppstallningar:clone(matchVariants||[]),
+      mal_hemma:matchGoals && typeof matchGoals.home!=="undefined" ? matchGoals.home : 0,
+      mal_borta:matchGoals && typeof matchGoals.away!=="undefined" ? matchGoals.away : 0
+    };
+
+    return match;
+  }
+
+  function updateLocal(match){
+    try{
+      if(!Array.isArray(matcher))matcher=[];
+      var idx=matcher.findIndex(function(x){return String(x.dbId)===String(match.dbId);});
+      if(idx>=0)matcher[idx]=Object.assign({},matcher[idx],match);
+      else matcher.push(match);
+    }catch(e){}
+  }
+
+  function afterSaved(match,msg){
+    updateLocal(match);
+    try{window._editingMatchId=match.dbId;}catch(e){}
+    try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
+    try{if(typeof renderMatchHistory==="function")renderMatchHistory();}catch(e){}
+    try{if(typeof renderStatistik==="function")renderStatistik();}catch(e){}
+    try{if(typeof renderMatchTruppList==="function")renderMatchTruppList();}catch(e){}
+    try{showToast(msg);}catch(e){}
+    try{cloudStatus("✅ Match sparad","#4ae87a");}catch(e){}
+  }
+
+  function saveMatchZeroOk(){
+    setVersion();
+
+    var match=buildMatchZeroOk();
+    if(!match)return false;
+
+    var editId=currentMatchId();
+
+    var dataPayload;
+    try{
+      dataPayload=(typeof addMetaToData==="function") ? addMetaToData(match) : match;
+    }catch(e){
+      dataPayload=match;
+    }
+
+    var body={
+      name:match.datum+" "+match.motstand,
+      data:dataPayload,
+      type:"match",
+      folder:"Allmänt"
+    };
+
+    try{cloudStatus("Sparar match...","#7aaa88");}catch(e){}
+
+    if(editId){
+      match.dbId=editId;
+      fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+editId,{
+        method:"PATCH",
+        headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+        body:JSON.stringify(body)
+      })
+      .then(function(r){
+        if(!r.ok)throw new Error("HTTP "+r.status);
+        return r.json();
+      })
+      .then(function(){
+        afterSaved(match,"Match uppdaterad!");
+      })
+      .catch(function(err){
+        try{cloudStatus("❌ Fel: "+err.message,"#e84a4a");}catch(e){}
+        try{showToast("Kunde inte spara match",false);}catch(e){}
+      });
+    }else{
+      fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{
+        method:"POST",
+        headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+        body:JSON.stringify(body)
+      })
+      .then(function(r){
+        if(!r.ok)throw new Error("HTTP "+r.status);
+        return r.json();
+      })
+      .then(function(data){
+        var id=data && data[0] && data[0].id;
+        if(!id)throw new Error("Saknar id från databasen");
+        match.dbId=id;
+        afterSaved(match,"Match sparad: "+match.datum+" vs "+match.motstand);
+      })
+      .catch(function(err){
+        try{cloudStatus("❌ Fel: "+err.message,"#e84a4a");}catch(e){}
+        try{showToast("Kunde inte spara match",false);}catch(e){}
+      });
+    }
+
+    return false;
+  }
+
+  // Exponera och ersätt äldre sparfunktioner där det går.
+  try{window.tt217SaveMatchZeroOk=saveMatchZeroOk;}catch(e){}
+  try{window.tt210SaveMatchAllowEmpty=saveMatchZeroOk;}catch(e){}
+  try{tt101SaveMatchPreserveUI=saveMatchZeroOk;}catch(e){}
+  try{window.tt101SaveMatchPreserveUI=saveMatchZeroOk;}catch(e){}
+
+  // Fånga före äldre handlers som stoppar vid 0 spelare.
+  document.addEventListener("click",function(e){
+    if(!isMatchSaveButton(e.target))return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+
+    saveMatchZeroOk();
+    return false;
+  },true);
+
+  function apply(){
+    setVersion();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  setTimeout(apply,300);
+  setTimeout(apply,1000);
+})();
+
+/* === slut v217-save-match-zero-players-hard === */
