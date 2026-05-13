@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="190";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="190";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="190";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="191";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="192";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
       });
     }catch(e){}
   }
@@ -20667,3 +20667,195 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v192-taktik-cross-device-load === */
+
+
+/* === v194-rename-existing-formation ===
+   Bas: 193.
+   Fix: Byt namn på redan sparat Utgångsläge.
+   Princip:
+   - Ingen omskrivning av renderSavesList.
+   - Efter att befintlig lista renderats läggs en liten ✏-knapp på Mina-rader.
+   - PATCH:ar endast name på samma rad i Supabase.
+   - Rör inte Taktikfilm, delning, kopiering, save/load-logik eller ritningar.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt194RenameExistingFormation)return;
+  window.__tt194RenameExistingFormation=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="194";
+      });
+    }catch(e){}
+  }
+
+  function norm(v){
+    return String(v||"").trim().toLowerCase();
+  }
+
+  function currentVisibleMineFormations(){
+    try{
+      if(typeof saveScope!=="undefined" && saveScope==="team")return [];
+
+      var list=(savedFormations||[]).filter(function(s){
+        var visible=typeof isFileVisibleInScopeV10==="function" ? isFileVisibleInScopeV10(s,"mine") : true;
+        if(!visible)return false;
+        var inFolder=(typeof currentFolder==="undefined" || currentFolder==="Alla") || (s.folder||"Allmänt")===currentFolder;
+        var q=typeof searchQuery==="string" ? searchQuery : "";
+        var inSearch=!q || norm(s.name).indexOf(norm(q))>=0;
+        return inFolder && inSearch;
+      });
+
+      list.sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""),"sv");});
+      return list;
+    }catch(e){
+      return [];
+    }
+  }
+
+  function patchFormationName(s,newName){
+    if(!s || !s.id){
+      try{showToast("Kan inte byta namn på osparad fil",false);}catch(e){}
+      return;
+    }
+
+    newName=String(newName||"").trim();
+    if(!newName || newName===s.name)return;
+
+    var oldName=s.name;
+    s.name=newName;
+
+    try{
+      if(typeof activeFormationId!=="undefined" && String(activeFormationId)===String(s.id)){
+        activeFormationName=newName;
+        if(typeof updateSaveButtons==="function")updateSaveButtons();
+      }
+    }catch(e){}
+
+    try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
+
+    try{cloudStatus("Byter namn...","#7aaa88");}catch(e){}
+
+    fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
+      method:"PATCH",
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+      body:JSON.stringify({name:newName})
+    })
+    .then(function(r){
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      return r.json();
+    })
+    .then(function(){
+      try{cloudStatus("✅ Namn ändrat: "+newName,"#4ae87a");}catch(e){}
+      try{showToast("Namn ändrat");}catch(e){}
+      try{
+        if(typeof cloudLoadSaves==="function"){
+          setTimeout(function(){cloudLoadSaves();},250);
+        }
+      }catch(e){}
+    })
+    .catch(function(err){
+      s.name=oldName;
+      try{
+        if(typeof activeFormationId!=="undefined" && String(activeFormationId)===String(s.id)){
+          activeFormationName=oldName;
+          if(typeof updateSaveButtons==="function")updateSaveButtons();
+        }
+      }catch(e){}
+      try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
+      try{cloudStatus("❌ Kunde inte byta namn: "+err.message,"#e84a4a");}catch(e){}
+      try{showToast("Kunde inte byta namn",false);}catch(e){}
+    });
+  }
+
+  function addRenameButtons(){
+    setVersion();
+
+    var list=document.getElementById("saves-list");
+    if(!list)return;
+
+    try{
+      if(typeof saveScope!=="undefined" && saveScope==="team")return;
+    }catch(e){}
+
+    var forms=currentVisibleMineFormations();
+    if(!forms.length)return;
+
+    var rows=Array.from(list.querySelectorAll(":scope > .row"));
+    rows.forEach(function(row,idx){
+      if(row.querySelector(".tt194-rename-formation"))return;
+
+      var s=forms[idx];
+      if(!s || !s.id)return;
+
+      var btn=document.createElement("button");
+      btn.className="sa tt194-rename-formation";
+      btn.textContent="✏";
+      btn.title="Byt namn";
+      btn.setAttribute("aria-label","Byt namn");
+      btn.style.cssText="min-width:24px;padding:2px 5px;font-size:0.72rem;line-height:1.1;color:#e8c84a;border-color:#e8c84a";
+
+      btn.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+
+        var next=prompt("Nytt namn på utgångsläget:", s.name || "");
+        if(next===null)return;
+
+        next=String(next||"").trim();
+        if(!next){
+          try{showToast("Namnet får inte vara tomt",false);}catch(err){}
+          return;
+        }
+
+        patchFormationName(s,next);
+      });
+
+      // Lägg knappen efter filnamn/mapp men före de andra åtgärdsknapparna.
+      var sub=row.querySelector(".row-sub");
+      if(sub && sub.nextSibling){
+        row.insertBefore(btn,sub.nextSibling);
+      }else{
+        row.appendChild(btn);
+      }
+    });
+  }
+
+  if(typeof renderSavesList==="function" && !renderSavesList._tt194RenameWrapped){
+    var oldRenderSavesList=renderSavesList;
+    renderSavesList=function(){
+      var r=oldRenderSavesList.apply(this,arguments);
+      setTimeout(addRenameButtons,0);
+      setTimeout(addRenameButtons,120);
+      return r;
+    };
+    renderSavesList._tt194RenameWrapped=true;
+  }
+
+  document.addEventListener("click",function(e){
+    try{
+      if(e.target && e.target.closest && e.target.closest("#panel-saves")){
+        setTimeout(addRenameButtons,80);
+      }
+    }catch(err){}
+  },true);
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){
+      setTimeout(addRenameButtons,0);
+      setTimeout(addRenameButtons,400);
+    });
+  }else{
+    setTimeout(addRenameButtons,0);
+    setTimeout(addRenameButtons,400);
+  }
+
+  window.tt194AddRenameFormationButtons=addRenameButtons;
+})();
+
+/* === slut v194-rename-existing-formation === */
