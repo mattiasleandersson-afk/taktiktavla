@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
       });
     }catch(e){}
   }
@@ -21700,3 +21700,73 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v205-quick-formation-in-saves === */
+
+
+/* === v206-quick-formation-desktop-width ===
+   Bas: 205.
+   Fix:
+   - Den nya formationsväljaren i Utgångsläge blev för smal/ihoptryckt på dator.
+   - Ändrar bara CSS/layout för snabbväljaren.
+   - Rör inte funktion, spara/ladda, Taktikfilm, Mina/Lagets eller steg.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt206QuickFormationDesktopWidth)return;
+  window.__tt206QuickFormationDesktopWidth=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+      });
+    }catch(e){}
+  }
+
+  function injectDesktopWidthFix(){
+    if(document.getElementById("tt206-style"))return;
+
+    var st=document.createElement("style");
+    st.id="tt206-style";
+    st.textContent=[
+      "@media (min-width: 760px){",
+      "  #tt205-quick-formation{width:100%;box-sizing:border-box;align-self:stretch;}",
+      "  #tt205-qf-body{width:100%;box-sizing:border-box;}",
+      "  #tt205-qf-row{width:100%;box-sizing:border-box;}",
+      "  #tt205-qf-buttons{width:100%;box-sizing:border-box;display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:5px;max-height:none;overflow:visible;}",
+      "  #tt205-qf-buttons .btn{width:100%;text-align:center;white-space:nowrap;}",
+      "}",
+      "@media (max-width: 759px){",
+      "  #tt205-qf-buttons{display:flex;flex-wrap:wrap;}",
+      "}"
+    ].join("\n");
+
+    document.head.appendChild(st);
+  }
+
+  function apply(){
+    setVersion();
+    injectDesktopWidthFix();
+
+    try{
+      var qf=document.getElementById("tt205-quick-formation");
+      if(qf){
+        qf.style.width="100%";
+        qf.style.boxSizing="border-box";
+      }
+    }catch(e){}
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  setTimeout(apply,300);
+  setTimeout(apply,1000);
+})();
+
+/* === slut v206-quick-formation-desktop-width === */
