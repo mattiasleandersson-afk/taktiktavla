@@ -19918,3 +19918,200 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v187-center-pitch-with-saves-scroll === */
+
+
+/* === v188-ios-saves-list-scroll ===
+   Bas: 187.
+   Fel: Utgångsläge-scroll fungerar på dator men inte på iPhone/iPad.
+   Fix:
+   - ge #saves-list tydlig pixelhöjd på iOS/mobil
+   - lås touch-scroll till #saves-list
+   - stoppa inte planen/andra paneler
+   - rör endast Utgångsläge-listan
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt188IosSavesListScroll)return;
+  window.__tt188IosSavesListScroll=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="188";
+      });
+    }catch(e){}
+  }
+
+  function isIosLike(){
+    try{
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    }catch(e){
+      return false;
+    }
+  }
+
+  function savesPanelOpen(){
+    var p=document.getElementById("panel-saves");
+    return !!(p && p.classList.contains("on"));
+  }
+
+  function injectCss(){
+    if(document.getElementById("tt188-ios-saves-list-scroll-css"))return;
+
+    var style=document.createElement("style");
+    style.id="tt188-ios-saves-list-scroll-css";
+    style.textContent=[
+      "/* v188: iOS-scroll endast i Utgångslägets fillista */",
+
+      "body.tt188-saves-ios-open #panel-saves.on {",
+      "  min-height:0 !important;",
+      "  overflow:visible !important;",
+      "}",
+
+      "body.tt188-saves-ios-open #panel-saves.on > div {",
+      "  min-height:0 !important;",
+      "  overflow:visible !important;",
+      "}",
+
+      "body.tt188-saves-ios-open #saves-list {",
+      "  display:block !important;",
+      "  overflow-y:scroll !important;",
+      "  overflow-x:hidden !important;",
+      "  -webkit-overflow-scrolling:touch !important;",
+      "  overscroll-behavior:contain !important;",
+      "  touch-action:pan-y !important;",
+      "  position:relative !important;",
+      "  z-index:5 !important;",
+      "  padding-bottom:120px !important;",
+      "}",
+
+      "body.tt188-saves-ios-open #pitch-wrapper {",
+      "  display:flex !important;",
+      "  justify-content:center !important;",
+      "  align-items:center !important;",
+      "  width:100% !important;",
+      "  margin-left:auto !important;",
+      "  margin-right:auto !important;",
+      "}",
+
+      "@supports (-webkit-touch-callout:none){",
+      "  body.tt188-saves-ios-open #saves-list {",
+      "    overflow-y:scroll !important;",
+      "    -webkit-overflow-scrolling:touch !important;",
+      "  }",
+      "}"
+    ].join("\n");
+
+    document.head.appendChild(style);
+  }
+
+  function apply(){
+    setVersion();
+    injectCss();
+
+    var list=document.getElementById("saves-list");
+    var panel=document.getElementById("panel-saves");
+
+    if(!list || !panel || !savesPanelOpen()){
+      document.body.classList.remove("tt188-saves-ios-open");
+      return;
+    }
+
+    document.body.classList.add("tt188-saves-ios-open");
+
+    // iPhone/iPad behöver pixelhöjd, inte bara calc/max-height.
+    var rect=list.getBoundingClientRect();
+    var top=rect && rect.top ? rect.top : 0;
+
+    var vh=window.innerHeight || document.documentElement.clientHeight || 700;
+
+    // På iOS ligger browserns adressfält ofta och påverkar höjden.
+    // Använd lite större marginal på touch-enheter.
+    var touch=("ontouchstart" in window) || (navigator.maxTouchPoints||0)>0;
+    var gap=touch ? 118 : 82;
+
+    var h=Math.floor(vh - top - gap);
+
+    // På iPhone kan listan annars bli för låg och då börjar sidan i stället scrolla.
+    h=Math.max(touch ? 190 : 140, h);
+
+    list.style.height=h+"px";
+    list.style.maxHeight=h+"px";
+    list.style.overflowY="scroll";
+    list.style.overflowX="hidden";
+    list.style.webkitOverflowScrolling="touch";
+    list.style.touchAction="pan-y";
+    list.style.position="relative";
+
+    // Se till att föräldrar inte klipper bort scrollområdet på iOS.
+    try{
+      panel.style.overflow="visible";
+      if(panel.firstElementChild){
+        panel.firstElementChild.style.overflow="visible";
+        panel.firstElementChild.style.minHeight="0";
+      }
+    }catch(e){}
+
+    // Behåll planens centrering från 187.
+    try{
+      var pw=document.getElementById("pitch-wrapper");
+      if(pw){
+        pw.style.display="flex";
+        pw.style.justifyContent="center";
+        pw.style.alignItems="center";
+        pw.style.width="100%";
+        pw.style.marginLeft="auto";
+        pw.style.marginRight="auto";
+      }
+    }catch(e){}
+  }
+
+  // Hjälp iOS att låta själva listan ta scrollen.
+  document.addEventListener("touchmove",function(e){
+    try{
+      if(!savesPanelOpen())return;
+      var list=document.getElementById("saves-list");
+      if(!list)return;
+      if(e.target && e.target.closest && e.target.closest("#saves-list")){
+        // Rör inte eventet; listan ska få native-scroll.
+        return;
+      }
+    }catch(err){}
+  },{passive:true,capture:true});
+
+  document.addEventListener("click",function(){
+    setTimeout(apply,80);
+    setTimeout(apply,300);
+    setTimeout(apply,900);
+  },true);
+
+  window.addEventListener("resize",function(){
+    setTimeout(apply,80);
+    setTimeout(apply,350);
+  });
+
+  window.addEventListener("orientationchange",function(){
+    setTimeout(apply,250);
+    setTimeout(apply,900);
+  });
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){
+      setTimeout(apply,0);
+      setTimeout(apply,300);
+      setTimeout(apply,1000);
+    });
+  }else{
+    setTimeout(apply,0);
+    setTimeout(apply,300);
+    setTimeout(apply,1000);
+  }
+
+  window.tt188ApplyIosSavesScroll=apply;
+})();
+
+/* === slut v188-ios-saves-list-scroll === */
