@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="204";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
       });
     }catch(e){}
   }
@@ -21448,3 +21448,255 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v204-new-step-target-only === */
+
+
+/* === v205-quick-formation-in-saves ===
+   Bas: 204.
+   Syfte:
+   - Göra formationsval åtkomligt även inne i Utgångsläge.
+   - Inte flytta hela formationspanelen.
+   - Lägga en kompakt, hopfälld väljare i panelen Utgångsläge.
+   - När den öppnas visas format + formationer.
+   - Använder samma FORMATIONS/initPlayers/buildFormationBtns som vanliga Formation-fliken.
+   Rör inte Taktikfilm, spara/ladda, Mina/Lagets, steg eller animation.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt205QuickFormationInSaves)return;
+  window.__tt205QuickFormationInSaves=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="205";
+      });
+    }catch(e){}
+  }
+
+  function injectStyle(){
+    if(document.getElementById("tt205-style"))return;
+    var st=document.createElement("style");
+    st.id="tt205-style";
+    st.textContent=[
+      "#tt205-quick-formation{margin:0 0 6px 0;border:1px solid #243b2a;border-radius:8px;background:rgba(17,26,20,.78);overflow:hidden}",
+      "#tt205-qf-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:6px;background:transparent;border:0;color:#4ae87a;padding:5px 8px;font-size:.74rem;font-weight:800;font-family:Arial Narrow,Arial,sans-serif;text-transform:uppercase;letter-spacing:.3px;cursor:pointer}",
+      "#tt205-qf-current{color:#e8c84a;font-weight:900;text-transform:none;letter-spacing:0;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+      "#tt205-qf-body{display:none;padding:6px 7px 7px;border-top:1px solid #243b2a}",
+      "#tt205-quick-formation.open #tt205-qf-body{display:block}",
+      "#tt205-qf-row{display:flex;gap:5px;align-items:center;margin-bottom:6px}",
+      "#tt205-qf-format{background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:4px 7px;font-size:.72rem;font-family:Arial Narrow,Arial,sans-serif}",
+      "#tt205-qf-buttons{display:flex;gap:4px;flex-wrap:wrap;max-height:88px;overflow:auto;-webkit-overflow-scrolling:touch}",
+      "#tt205-qf-buttons .btn{padding:4px 7px;font-size:.7rem}",
+      "#tt205-qf-buttons .btn.on{border-color:#4ae87a;color:#4ae87a;background:rgba(74,232,122,.08)}"
+    ].join("\n");
+    document.head.appendChild(st);
+  }
+
+  function currentFormationName(){
+    try{
+      var active=document.querySelector("#formation-btns .btn.on");
+      if(active && active.textContent)return active.textContent.trim();
+    }catch(e){}
+    try{
+      if(typeof _defaultFormation!=="undefined" && _defaultFormation)return _defaultFormation;
+    }catch(e){}
+    return "4-4-2";
+  }
+
+  function currentFormat(){
+    try{
+      if(typeof format!=="undefined" && format)return parseInt(format,10)||11;
+    }catch(e){}
+    try{
+      var sel=document.getElementById("fmt-sel");
+      if(sel)return parseInt(sel.value,10)||11;
+    }catch(e){}
+    return 11;
+  }
+
+  function formationsFor(fmt){
+    try{
+      return (FORMATIONS && FORMATIONS[fmt]) ? FORMATIONS[fmt] : (FORMATIONS && FORMATIONS[11]) || ["4-4-2"];
+    }catch(e){
+      return ["4-4-2"];
+    }
+  }
+
+  function updateLabel(){
+    try{
+      var cur=document.getElementById("tt205-qf-current");
+      if(cur)cur.textContent=currentFormat()+"v"+currentFormat()+" · "+currentFormationName();
+    }catch(e){}
+  }
+
+  function renderButtons(){
+    var box=document.getElementById("tt205-qf-buttons");
+    if(!box)return;
+    var fmt=currentFormat();
+    var active=currentFormationName();
+    box.innerHTML="";
+    formationsFor(fmt).forEach(function(f){
+      var b=document.createElement("button");
+      b.className="btn"+(f===active?" on":"");
+      b.type="button";
+      b.textContent=f;
+      b.addEventListener("click",function(){
+        applyFormation(fmt,f);
+      });
+      box.appendChild(b);
+    });
+    updateLabel();
+  }
+
+  function syncOriginalFormationButtons(fmt,f){
+    try{
+      if(typeof buildFormationBtns==="function")buildFormationBtns();
+      var btns=document.querySelectorAll("#formation-btns .btn");
+      btns.forEach(function(b){
+        if((b.textContent||"").trim()===f){
+          b.classList.add("on");
+        }else{
+          b.classList.remove("on");
+        }
+      });
+    }catch(e){}
+  }
+
+  function applyFormation(fmt,f){
+    try{
+      format=parseInt(fmt,10)||11;
+    }catch(e){}
+
+    try{
+      var sel=document.getElementById("fmt-sel");
+      if(sel)sel.value=String(format);
+    }catch(e){}
+
+    try{
+      syncOriginalFormationButtons(format,f);
+    }catch(e){}
+
+    try{
+      if(typeof initPlayers==="function")initPlayers(f);
+    }catch(e){}
+
+    try{
+      if(typeof render==="function")render();
+    }catch(e){}
+
+    try{
+      if(typeof showToast==="function")showToast("Formation: "+f);
+    }catch(e){}
+
+    renderButtons();
+  }
+
+  function buildUi(){
+    injectStyle();
+
+    var panel=document.getElementById("panel-saves");
+    if(!panel)return;
+
+    if(document.getElementById("tt205-quick-formation")){
+      renderButtons();
+      updateLabel();
+      return;
+    }
+
+    var inner=panel.querySelector("div");
+    if(!inner)return;
+
+    var wrap=document.createElement("div");
+    wrap.id="tt205-quick-formation";
+
+    var head=document.createElement("button");
+    head.id="tt205-qf-head";
+    head.type="button";
+    head.innerHTML='<span>Formation</span><span id="tt205-qf-current"></span><span id="tt205-qf-caret">▾</span>';
+    head.addEventListener("click",function(){
+      wrap.classList.toggle("open");
+      var caret=document.getElementById("tt205-qf-caret");
+      if(caret)caret.textContent=wrap.classList.contains("open")?"▴":"▾";
+    });
+
+    var body=document.createElement("div");
+    body.id="tt205-qf-body";
+
+    var row=document.createElement("div");
+    row.id="tt205-qf-row";
+
+    var sel=document.createElement("select");
+    sel.id="tt205-qf-format";
+    [11,9,7,5].forEach(function(n){
+      var opt=document.createElement("option");
+      opt.value=String(n);
+      opt.textContent=n+"v"+n;
+      sel.appendChild(opt);
+    });
+    sel.value=String(currentFormat());
+    sel.addEventListener("change",function(){
+      var fmt=parseInt(sel.value,10)||11;
+      try{
+        format=fmt;
+        var top=document.getElementById("fmt-sel");
+        if(top)top.value=String(fmt);
+        if(typeof buildFormationBtns==="function")buildFormationBtns();
+      }catch(e){}
+      renderButtons();
+    });
+
+    var hint=document.createElement("span");
+    hint.style.cssText="font-size:.66rem;color:#7aaa88;white-space:nowrap";
+    hint.textContent="Välj uppställning";
+
+    row.appendChild(sel);
+    row.appendChild(hint);
+
+    var buttons=document.createElement("div");
+    buttons.id="tt205-qf-buttons";
+
+    body.appendChild(row);
+    body.appendChild(buttons);
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+
+    // Lägg överst i Utgångsläge-panelen, precis ovanför Spara/Spara som-raden.
+    inner.insertBefore(wrap,inner.firstChild);
+
+    renderButtons();
+    updateLabel();
+  }
+
+  // Håll etiketten rimligt uppdaterad utan att röra befintlig renderlogik.
+  var oldBuild=typeof buildFormationBtns==="function" ? buildFormationBtns : null;
+  if(oldBuild && !oldBuild.__tt205Wrapped){
+    var wrapped=function(){
+      var res=oldBuild.apply(this,arguments);
+      setTimeout(function(){try{renderButtons();updateLabel();}catch(e){}},0);
+      return res;
+    };
+    wrapped.__tt205Wrapped=true;
+    buildFormationBtns=wrapped;
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){
+      setVersion();
+      buildUi();
+    });
+  }else{
+    setVersion();
+    buildUi();
+  }
+
+  setTimeout(buildUi,300);
+  setTimeout(buildUi,1000);
+  setTimeout(setVersion,1000);
+
+  window.tt205BuildQuickFormation=buildUi;
+})();
+
+/* === slut v205-quick-formation-in-saves === */
