@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="196";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="197";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="196";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="197";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="196";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="197";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="196";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="197";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="196";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="197";
       });
     }catch(e){}
   }
@@ -20667,3 +20667,205 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v192-taktik-cross-device-load === */
+
+
+/* === v197-ipad-tactic-name-keyboard ===
+   Bas: 196.
+   Fix: iPad visar ibland autofyllruta i stället för tangentbord när ny taktikfilm ska namnges.
+   Princip:
+   - Rör bara fokus/attribut på namnfält i modal för ny taktikfilm.
+   - Ingen ändring i save/load, listor, steg, ritningar eller animation.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt197IpadTacticNameKeyboard)return;
+  window.__tt197IpadTacticNameKeyboard=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="197";
+      });
+    }catch(e){}
+  }
+
+  function isAppleTouch(){
+    try{
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform==="MacIntel" && (navigator.maxTouchPoints||0)>1);
+    }catch(e){
+      return false;
+    }
+  }
+
+  function likelyTaktikNameInput(inp){
+    if(!inp)return false;
+    var id=(inp.id||"").toLowerCase();
+    var name=(inp.name||"").toLowerCase();
+    var ph=(inp.getAttribute("placeholder")||"").toLowerCase();
+    var aria=(inp.getAttribute("aria-label")||"").toLowerCase();
+
+    if(id.indexOf("taktik")>=0 && (id.indexOf("name")>=0 || id.indexOf("namn")>=0))return true;
+    if(name.indexOf("taktik")>=0 && (name.indexOf("name")>=0 || name.indexOf("namn")>=0))return true;
+    if(ph.indexOf("taktik")>=0 || ph.indexOf("film")>=0)return true;
+    if(aria.indexOf("taktik")>=0 || aria.indexOf("film")>=0)return true;
+
+    // Kända namn från tidigare modalvarianter.
+    if([
+      "new-taktik-name",
+      "taktik-name",
+      "taktik-name-inp",
+      "new-taktik-name-inp",
+      "taktikfilm-name",
+      "film-name",
+      "taktik-title",
+      "new-film-name"
+    ].indexOf(id)>=0)return true;
+
+    return false;
+  }
+
+  function findTaktikNameInput(){
+    var selectors=[
+      "#new-taktik-name",
+      "#taktik-name",
+      "#taktik-name-inp",
+      "#new-taktik-name-inp",
+      "#taktikfilm-name",
+      "#film-name",
+      "#taktik-title",
+      "#new-film-name",
+      "#modal-new-taktik input[type='text']",
+      "#modal-taktik-name input[type='text']",
+      "#modal-new-film input[type='text']",
+      ".modal:not(.hidden) input[type='text']",
+      "dialog[open] input[type='text']"
+    ];
+
+    for(var i=0;i<selectors.length;i++){
+      try{
+        var el=document.querySelector(selectors[i]);
+        if(el && (!el.offsetParent || true) && (likelyTaktikNameInput(el) || selectors[i].indexOf(".modal")>=0 || selectors[i].indexOf("dialog")>=0)){
+          // För modal/dialog-selector: kontrollera att närliggande text handlar om taktik.
+          if(selectors[i].indexOf(".modal")>=0 || selectors[i].indexOf("dialog")>=0){
+            var box=el.closest(".modal,dialog,[id*='modal']");
+            var txt=(box && box.textContent || "").toLowerCase();
+            if(txt.indexOf("taktik")<0 && txt.indexOf("film")<0)continue;
+          }
+          return el;
+        }
+      }catch(e){}
+    }
+
+    var inputs=Array.from(document.querySelectorAll("input[type='text'],input:not([type])"));
+    for(var j=0;j<inputs.length;j++){
+      if(likelyTaktikNameInput(inputs[j]))return inputs[j];
+    }
+
+    return null;
+  }
+
+  function prepareInput(inp){
+    if(!inp)return;
+
+    try{inp.setAttribute("autocomplete","off");}catch(e){}
+    try{inp.setAttribute("autocorrect","off");}catch(e){}
+    try{inp.setAttribute("autocapitalize","sentences");}catch(e){}
+    try{inp.setAttribute("spellcheck","false");}catch(e){}
+    try{inp.setAttribute("inputmode","text");}catch(e){}
+
+    // iPad kan fastna i kontakt-autofyll om fältet ser ut som namn/person.
+    // Ett neutralt name-attribut minskar risken utan att påverka id.
+    try{
+      if(isAppleTouch()){
+        inp.setAttribute("name","taktikfilm_titel");
+      }
+    }catch(e){}
+  }
+
+  function focusInput(inp){
+    if(!inp)return;
+    prepareInput(inp);
+
+    try{inp.readOnly=false;}catch(e){}
+    try{inp.disabled=false;}catch(e){}
+
+    try{inp.focus({preventScroll:true});}catch(e){try{inp.focus();}catch(e2){}}
+
+    // Markera texten en kort stund senare. Det brukar trigga riktigt tangentbord på iPad
+    // om första fokus bara gav autofylllisten.
+    setTimeout(function(){
+      try{inp.focus({preventScroll:true});}catch(e){try{inp.focus();}catch(e2){}}
+      try{
+        var len=String(inp.value||"").length;
+        inp.setSelectionRange(0,len);
+      }catch(e){}
+    },80);
+
+    setTimeout(function(){
+      try{inp.focus({preventScroll:true});}catch(e){try{inp.focus();}catch(e2){}}
+    },250);
+  }
+
+  function applyIfTaktikModalOpen(){
+    setVersion();
+    var inp=findTaktikNameInput();
+    if(!inp)return;
+    focusInput(inp);
+  }
+
+  // Fånga klick som öppnar ny taktikfilm / ny film.
+  document.addEventListener("click",function(e){
+    try{
+      var txt=(e.target && e.target.textContent || "").toLowerCase();
+      var id=(e.target && e.target.id || "").toLowerCase();
+      var cls=(e.target && e.target.className || "").toString().toLowerCase();
+
+      var maybe=
+        txt.indexOf("ny taktik")>=0 ||
+        txt.indexOf("ny film")>=0 ||
+        txt.indexOf("+ taktik")>=0 ||
+        txt.indexOf("+ film")>=0 ||
+        id.indexOf("new-taktik")>=0 ||
+        id.indexOf("new-film")>=0 ||
+        cls.indexOf("new-taktik")>=0 ||
+        cls.indexOf("new-film")>=0;
+
+      if(maybe){
+        setTimeout(applyIfTaktikModalOpen,0);
+        setTimeout(applyIfTaktikModalOpen,120);
+        setTimeout(applyIfTaktikModalOpen,350);
+        setTimeout(applyIfTaktikModalOpen,700);
+      }
+    }catch(err){}
+  },true);
+
+  // Om modalen öppnas utan klick, upptäck den.
+  try{
+    var mo=new MutationObserver(function(){
+      var inp=findTaktikNameInput();
+      if(inp){
+        prepareInput(inp);
+        if(isAppleTouch()){
+          setTimeout(function(){focusInput(inp);},60);
+        }
+      }
+    });
+    mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["class","style","open"]});
+  }catch(e){}
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){
+      setTimeout(setVersion,0);
+    });
+  }else{
+    setTimeout(setVersion,0);
+  }
+
+  window.tt197FocusTaktikNameInput=applyIfTaktikModalOpen;
+})();
+
+/* === slut v197-ipad-tactic-name-keyboard === */
