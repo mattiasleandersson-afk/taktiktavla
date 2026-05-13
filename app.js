@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -21793,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -21900,7 +21900,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
       });
     }catch(e){}
   }
@@ -22063,3 +22063,557 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v208-delete-formation-duplicates === */
+
+
+/* === v209-match-alpha-and-menu-label ===
+   Bas: 208.
+   Ändringar:
+   - Namnlistan i Match/Matcher sorteras alfabetiskt efter spelarnamn.
+   - Huvudmenyns "Lag" döps om till "Matcher".
+   Rör inte Utgångsläge, Taktikfilm, spara/ladda, Mina/Lagets, steg eller animation.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt209MatchAlphaAndMenuLabel)return;
+  window.__tt209MatchAlphaAndMenuLabel=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
+      });
+    }catch(e){}
+  }
+
+  function byNameThenNr(a,b){
+    var an=String((a&&a.namn)||"").trim();
+    var bn=String((b&&b.namn)||"").trim();
+    var c=an.localeCompare(bn,"sv",{sensitivity:"base"});
+    if(c!==0)return c;
+    return ((a&&a.nr)||0)-((b&&b.nr)||0);
+  }
+
+  function updateLagLabel(){
+    try{
+      document.querySelectorAll(".tab,[data-panel],button").forEach(function(el){
+        var dp=el.getAttribute && el.getAttribute("data-panel");
+        var txt=String(el.textContent||"").trim();
+        if(dp==="lag" && txt==="Lag"){
+          el.textContent="Matcher";
+        }
+      });
+    }catch(e){}
+
+    // Extra fallback: byt bara exakt "Lag" på synliga menyknappar, inte ord inne i längre texter.
+    try{
+      document.querySelectorAll("button").forEach(function(btn){
+        if(String(btn.textContent||"").trim()==="Lag" && (btn.classList.contains("tab") || btn.getAttribute("data-panel")==="lag")){
+          btn.textContent="Matcher";
+        }
+      });
+    }catch(e){}
+  }
+
+  function renderMatchTruppListAlpha(){
+    var list=document.getElementById("match-trupp-list");
+    if(!list)return;
+
+    list.innerHTML="";
+
+    var nSelected=Object.values(matchSelections||{}).filter(function(v){return v==="start";}).length;
+    var counter=document.getElementById("match-counter");
+    if(counter)counter.textContent=nSelected+" vald"+(nSelected===1?"":"a");
+
+    var sorted=(trupp||[]).slice().sort(byNameThenNr);
+
+    if(!sorted.length){
+      list.innerHTML="<span style=\"color:#7aaa88;font-size:0.8rem\">Lägg till spelare i truppen först</span>";
+      return;
+    }
+
+    sorted.forEach(function(sp){
+      var sel=(matchSelections||{})[sp.id]||null;
+
+      var row=document.createElement("div");
+      row.className="row";
+      row.style.padding="4px 8px";
+
+      var nr=document.createElement("span");
+      nr.style.cssText="font-weight:900;color:#4ae87a;min-width:24px;font-size:0.82rem";
+      nr.textContent="#"+sp.nr;
+
+      var nm=document.createElement("span");
+      nm.style.cssText="flex:1;font-size:0.82rem";
+      nm.textContent=sp.namn;
+
+      var cnt=getPlayerMatchCount(sp.id);
+      var cntEl=document.createElement("span");
+      cntEl.style.cssText="font-size:0.68rem;color:#7aaa88;white-space:nowrap";
+      cntEl.textContent=cnt+" mat.";
+
+      var btnS=document.createElement("button");
+      btnS.className="btn"+(sel==="start"?" on":"");
+      btnS.style.cssText="padding:2px 7px;font-size:0.65rem";
+      btnS.textContent="Start";
+      btnS.addEventListener("click",function(){
+        matchSelections[sp.id]=sel==="start"?null:"start";
+        renderMatchTruppList();
+      });
+
+      row.appendChild(nr);
+      row.appendChild(nm);
+      row.appendChild(cntEl);
+      row.appendChild(btnS);
+      list.appendChild(row);
+    });
+  }
+
+  // Skriv över bara matchens namnlista.
+  renderMatchTruppList=renderMatchTruppListAlpha;
+  window.renderMatchTruppList=renderMatchTruppListAlpha;
+
+  function apply(){
+    setVersion();
+    updateLagLabel();
+    try{
+      var matchPanel=document.getElementById("lag-match");
+      if(matchPanel && matchPanel.style.display!=="none")renderMatchTruppList();
+    }catch(e){}
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  setTimeout(apply,300);
+  setTimeout(apply,1000);
+  setTimeout(apply,2000);
+
+  window.tt209UpdateLagLabel=updateLagLabel;
+})();
+
+/* === slut v209-match-alpha-and-menu-label === */
+
+
+/* === v210-save-empty-match ===
+   Bas: 209.
+   Syfte:
+   - Det ska gå att spara kommande matcher utan valda spelare.
+   - Kräver endast datum. Motstånd får vara tomt och sparas då som "Okänd".
+   - startade/avbytare sparas som tomma listor om inga spelare valts.
+   - Senare kan matchen öppnas och spelare kan läggas till.
+   Rör inte Utgångsläge, Taktikfilm, Formation, steg, animation eller laguppställningsplanen.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt210SaveEmptyMatch)return;
+  window.__tt210SaveEmptyMatch=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
+      });
+    }catch(e){}
+  }
+
+  function clone(obj){
+    try{return JSON.parse(JSON.stringify(obj||{}));}catch(e){return obj;}
+  }
+
+  function selectedIds(kind){
+    var out=[];
+    try{
+      (trupp||[]).forEach(function(sp){
+        if(matchSelections && matchSelections[sp.id]===kind)out.push(sp.id);
+      });
+    }catch(e){}
+    return out;
+  }
+
+  function buildMatchAllowEmpty(){
+    var datumEl=document.getElementById("match-datum");
+    var motEl=document.getElementById("match-motstand");
+
+    var datum=datumEl ? datumEl.value : "";
+    var motstand=motEl ? String(motEl.value||"").trim() : "";
+
+    if(!datum){
+      try{showToast("Välj datum!");}catch(e){}
+      return null;
+    }
+
+    // Spara aktuell variant om en sådan finns. Om ingen spelare är vald
+    // sparas matchen ändå med tom uppställning.
+    try{
+      if(matchVariants && matchVariants.length>0 && typeof saveCurrentVariant==="function"){
+        saveCurrentVariant();
+      }else if(matchAssignments && Object.keys(matchAssignments).length>0){
+        matchVariants=[{
+          namn:"Uppst. 1",
+          assignments:clone(matchAssignments),
+          playerStates:(players||[]).filter(function(p){return p.team==="home";}).map(function(p){
+            return {id:p.id,number:p.number,name:p.name,x:p.x,y:p.y};
+          })
+        }];
+        activeVariantIdx=0;
+      }
+    }catch(e){}
+
+    return {
+      datum:datum,
+      motstand:motstand || "Okänd",
+      startade:selectedIds("start"),
+      avbytare:selectedIds("avbytare"),
+      uppstallningar:clone(matchVariants||[]),
+      mal_hemma:matchGoals && typeof matchGoals.home!=="undefined" ? matchGoals.home : 0,
+      mal_borta:matchGoals && typeof matchGoals.away!=="undefined" ? matchGoals.away : 0
+    };
+  }
+
+  function syncLocalMatch(savedMatch){
+    try{
+      if(!Array.isArray(matcher))matcher=[];
+      var idx=matcher.findIndex(function(x){return String(x.dbId)===String(savedMatch.dbId);});
+      if(idx>=0)matcher[idx]=savedMatch;
+      else matcher.push(savedMatch);
+    }catch(e){}
+  }
+
+  function restoreUiSelections(beforeSel){
+    try{matchSelections=clone(beforeSel||{});}catch(e){}
+    try{if(typeof renderMatchTruppList==="function")renderMatchTruppList();}catch(e){}
+    try{
+      var n=Object.keys(matchSelections||{}).filter(function(id){return matchSelections[id];}).length;
+      var c=document.getElementById("match-counter");
+      if(c)c.textContent=n+" vald"+(n===1?"":"a");
+    }catch(e){}
+  }
+
+  function saveMatchAllowEmpty(){
+    setVersion();
+
+    var beforeSel=clone(matchSelections||{});
+    var match=buildMatchAllowEmpty();
+    if(!match)return;
+
+    var editId=window._editingMatchId||null;
+    var payloadData;
+    try{
+      payloadData=(typeof addMetaToData==="function") ? addMetaToData(match) : match;
+    }catch(e){
+      payloadData=match;
+    }
+
+    function afterSaved(dbId,label){
+      match.dbId=dbId;
+      window._editingMatchId=dbId;
+      syncLocalMatch(Object.assign({},match,{dbId:dbId}));
+
+      restoreUiSelections(beforeSel);
+
+      try{if(typeof renderStatistik==="function")renderStatistik();}catch(e){}
+      try{if(typeof renderMatchHistory==="function")renderMatchHistory();}catch(e){}
+      try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
+
+      try{
+        if(typeof tt101SetMatchEditorActive==="function")tt101SetMatchEditorActive(true);
+      }catch(e){}
+
+      try{showToast(label);}catch(e){}
+    }
+
+    var body={
+      name:match.datum+" "+match.motstand,
+      data:payloadData,
+      type:"match",
+      folder:"Allmänt"
+    };
+
+    if(editId){
+      fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+editId,{
+        method:"PATCH",
+        headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+        body:JSON.stringify(body)
+      })
+      .then(function(r){return r.json();})
+      .then(function(){afterSaved(editId,"Match uppdaterad!");})
+      .catch(function(err){
+        try{cloudStatus("❌ Fel: "+err.message,"#e84a4a");}catch(e){}
+        try{showToast("Kunde inte uppdatera match",false);}catch(e){}
+        restoreUiSelections(beforeSel);
+      });
+    }else{
+      fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{
+        method:"POST",
+        headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
+        body:JSON.stringify(body)
+      })
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(!data || !data[0] || !data[0].id){
+          var msg=(data&&data.message)?data.message:"Matchen kunde inte sparas";
+          try{showToast(msg,false);}catch(e){}
+          try{cloudStatus("❌ "+msg,"#e84a4a");}catch(e){}
+          restoreUiSelections(beforeSel);
+          return;
+        }
+        afterSaved(data[0].id,"Match sparad: "+match.datum+" vs "+match.motstand);
+      })
+      .catch(function(err){
+        try{cloudStatus("❌ Fel: "+err.message,"#e84a4a");}catch(e){}
+        try{showToast("Kunde inte spara match",false);}catch(e){}
+        restoreUiSelections(beforeSel);
+      });
+    }
+  }
+
+  // Exponera så befintliga patchar kan använda samma funktion.
+  window.tt210SaveMatchAllowEmpty=saveMatchAllowEmpty;
+
+  // Skriv även över den tidigare tt101-funktionen om den finns.
+  try{tt101SaveMatchPreserveUI=saveMatchAllowEmpty;}catch(e){}
+  try{window.tt101SaveMatchPreserveUI=saveMatchAllowEmpty;}catch(e){}
+
+  // Viktigt: fånga klick på document i capture phase före äldre knapplyssnare.
+  document.addEventListener("click",function(e){
+    try{
+      var btn=e.target && e.target.closest ? e.target.closest("#btn-spara-match") : null;
+      if(!btn)return;
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      saveMatchAllowEmpty();
+      return false;
+    }catch(err){}
+  },true);
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",setVersion);
+  }else{
+    setVersion();
+  }
+
+  setTimeout(setVersion,300);
+  setTimeout(setVersion,1000);
+})();
+
+/* === slut v210-save-empty-match === */
+
+
+/* === v211-edit-player-preserve-id ===
+   Bas: 210.
+   Problem:
+   - När man redigerade en spelare togs den bort ur truppen.
+   - När man sedan sparade skapades en ny spelare med nytt id.
+   - Då tappade matcher/statistik kopplingen till spelaren.
+   Fix:
+   - Redigera spelare behåller samma sp.id.
+   - Endast nummer/namn uppdateras.
+   - Befintliga matcher/statistik fortsätter peka på samma id.
+   - Rör inte matchsparning, Utgångsläge, Taktikfilm, steg eller animation.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt211EditPlayerPreserveId)return;
+  window.__tt211EditPlayerPreserveId=true;
+
+  var editingTruppId=null;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="211";
+      });
+    }catch(e){}
+  }
+
+  function byMatchCountThenName(a,b){
+    try{
+      var ca=getPlayerMatchCount(a.id), cb=getPlayerMatchCount(b.id);
+      return ca-cb || String(a.namn||"").localeCompare(String(b.namn||""),"sv",{sensitivity:"base"});
+    }catch(e){
+      return String(a.namn||"").localeCompare(String(b.namn||""),"sv",{sensitivity:"base"});
+    }
+  }
+
+  function setAddButtonText(){
+    try{
+      var btn=document.getElementById("btn-add-trupp");
+      if(btn)btn.textContent=editingTruppId ? "Spara spelare" : "Lägg till";
+    }catch(e){}
+  }
+
+  function clearPlayerEditForm(){
+    editingTruppId=null;
+    var nr=document.getElementById("ny-spelare-nr");
+    var namn=document.getElementById("ny-spelare-namn");
+    if(nr)nr.value="";
+    if(namn)namn.value="";
+    setAddButtonText();
+  }
+
+  function renderTruppListPreserveId(){
+    var list=document.getElementById("trupp-list");
+    if(!list)return;
+
+    list.innerHTML="";
+
+    var sorted=(trupp||[]).slice().sort(byMatchCountThenName);
+
+    if(!sorted.length){
+      list.innerHTML="<span style=\"color:#7aaa88;font-size:0.8rem\">Inga spelare i truppen</span>";
+      setAddButtonText();
+      return;
+    }
+
+    sorted.forEach(function(sp){
+      var row=document.createElement("div");
+      row.className="row";
+      if(editingTruppId===sp.id){
+        row.style.background="rgba(232,200,74,0.08)";
+      }
+
+      var nr=document.createElement("span");
+      nr.style.cssText="font-weight:900;color:#4ae87a;min-width:24px;font-size:0.85rem";
+      nr.textContent="#"+sp.nr;
+
+      var nm=document.createElement("span");
+      nm.className="row-name";
+      nm.textContent=sp.namn;
+
+      var count=document.createElement("span");
+      count.className="row-sub";
+      count.style.cssText="font-size:0.68rem;white-space:nowrap";
+      try{count.textContent=getPlayerMatchCount(sp.id)+" mat.";}catch(e){count.textContent="";}
+
+      var ed=document.createElement("button");
+      ed.className="sa";
+      ed.style.cssText="color:#e8c84a;border-color:#e8c84a";
+      ed.textContent="✏";
+      ed.title="Redigera spelare";
+      ed.addEventListener("click",function(){
+        editingTruppId=sp.id;
+        var nrInp=document.getElementById("ny-spelare-nr");
+        var nmInp=document.getElementById("ny-spelare-namn");
+        if(nrInp)nrInp.value=sp.nr;
+        if(nmInp)nmInp.value=sp.namn;
+        setAddButtonText();
+        renderTruppListPreserveId();
+        setTimeout(function(){try{if(nmInp)nmInp.focus();}catch(e){}},60);
+      });
+
+      var dl=document.createElement("button");
+      dl.className="sa del";
+      dl.textContent="×";
+      dl.title="Ta bort spelare";
+      dl.addEventListener("click",function(){
+        if(!confirm("Ta bort "+(sp.namn||"spelaren")+" från truppen? Statistik i redan sparade matcher kan då inte längre visas för spelaren."))return;
+        trupp=trupp.filter(function(x){return x.id!==sp.id;});
+        if(editingTruppId===sp.id)clearPlayerEditForm();
+        renderTruppListPreserveId();
+        try{saveTrupp();}catch(e){}
+        try{renderMatchTruppList();}catch(e){}
+        try{renderStatistik();}catch(e){}
+        try{showToast((sp.namn||"Spelaren")+" borttagen");}catch(e){}
+      });
+
+      row.appendChild(nr);
+      row.appendChild(nm);
+      row.appendChild(count);
+      row.appendChild(ed);
+      row.appendChild(dl);
+      list.appendChild(row);
+    });
+
+    setAddButtonText();
+  }
+
+  function savePlayerFromForm(){
+    var nrInp=document.getElementById("ny-spelare-nr");
+    var nmInp=document.getElementById("ny-spelare-namn");
+
+    var nr=parseInt(nrInp && nrInp.value,10) || 0;
+    var namn=String((nmInp && nmInp.value)||"").trim();
+    if(!namn)return;
+
+    if(editingTruppId){
+      var sp=(trupp||[]).find(function(x){return x.id===editingTruppId;});
+      if(sp){
+        sp.nr=nr;
+        sp.namn=namn;
+        try{showToast("Spelare uppdaterad");}catch(e){}
+      }else{
+        // Fallback om id saknas av någon anledning.
+        trupp.push({id:editingTruppId,nr:nr,namn:namn});
+        try{showToast("Spelare återställd");}catch(e){}
+      }
+    }else{
+      trupp.push({id:"sp"+Date.now(),nr:nr,namn:namn});
+      try{showToast(namn+" tillagd!");}catch(e){}
+    }
+
+    clearPlayerEditForm();
+
+    try{saveTrupp();}catch(e){}
+    renderTruppListPreserveId();
+    try{renderMatchTruppList();}catch(e){}
+    try{renderStatistik();}catch(e){}
+    try{renderMatchHistory();}catch(e){}
+    try{renderSparadeMatcherList();}catch(e){}
+  }
+
+  // Skriv över renderfunktionen så gamla redigera-knappen inte längre tar bort spelaren.
+  renderTruppList=renderTruppListPreserveId;
+  window.renderTruppList=renderTruppListPreserveId;
+
+  // Fånga "Lägg till/Spara spelare" före äldre listener som annars skapar ny id.
+  document.addEventListener("click",function(e){
+    var btn=e.target && e.target.closest ? e.target.closest("#btn-add-trupp") : null;
+    if(!btn)return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    savePlayerFromForm();
+    return false;
+  },true);
+
+  // Enter i namnfältet ska använda nya sparlogiken.
+  document.addEventListener("keydown",function(e){
+    var inp=e.target && e.target.closest ? e.target.closest("#ny-spelare-namn") : null;
+    if(!inp || e.key!=="Enter")return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    savePlayerFromForm();
+    return false;
+  },true);
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){
+      setVersion();
+      renderTruppListPreserveId();
+    });
+  }else{
+    setVersion();
+    renderTruppListPreserveId();
+  }
+
+  setTimeout(function(){setVersion();renderTruppListPreserveId();},300);
+  setTimeout(function(){setVersion();renderTruppListPreserveId();},1000);
+
+  window.tt211ClearPlayerEditForm=clearPlayerEditForm;
+})();
+
+/* === slut v211-edit-player-preserve-id === */
