@@ -19282,3 +19282,147 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v179-unified-unsaved-after-cloud-save === */
+
+
+/* === v180-strict-mine-owner ===
+   Bas: 179.
+   Fel: sparade taktikfilmer kunde synas i Mina för annan användare i samma lag.
+   Orsak: ägarfallback från felsökningen var för generös.
+   Fix:
+   - Mina för sparade taktikfilmer kräver ownerId === aktuell ownerId.
+   - Endast helt nya osparade lokala utkast utan id/dbId får räknas som mina utan ownerId.
+   - Lagets fortsätter visa sharedWithTeam=true i samma lag.
+   Rör inte redigering, spara, osparat-varning, delning eller kopiering.
+*/
+
+(function(){
+  if(window.__tt180StrictMineOwner)return;
+  window.__tt180StrictMineOwner=true;
+
+  function isTaktik(obj){
+    return !!(obj && Array.isArray(obj.steps));
+  }
+
+  function idOf(tk){
+    return String((tk && (tk.dbId || tk.id)) || "").trim();
+  }
+
+  function profile(){
+    try{
+      if(typeof getUserProfile==="function"){
+        var p=getUserProfile();
+        if(p)return p;
+      }
+    }catch(e){}
+    try{
+      var raw=localStorage.getItem("tt_profile_v1");
+      if(raw)return JSON.parse(raw);
+    }catch(e){}
+    return null;
+  }
+
+  function meta(tk){
+    if(!tk)return {};
+    if(tk._meta)return tk._meta;
+    if(tk.meta)return tk.meta;
+    if(tk.data && tk.data._meta)return tk.data._meta;
+    return {};
+  }
+
+  function teamNorm(v){
+    return String(v||"").trim().toUpperCase().replace(/\s+/g,"-");
+  }
+
+  function sameTeam(tk){
+    var p=profile(), m=meta(tk);
+    if(!p || !m)return false;
+    var pt=teamNorm(p.teamId || p.teamCode || p.teamName);
+    var mt=teamNorm(m.teamId || m.teamCode || m.teamName);
+    return !!(pt && mt && pt===mt);
+  }
+
+  function strictMine(tk){
+    if(!isTaktik(tk))return false;
+
+    var id=idOf(tk);
+    var m=meta(tk);
+    var p=profile();
+
+    // Bara helt nya lokala utkast utan id får räknas som mina utan ownerId.
+    // Så fort filen är sparad måste ownerId finnas och matcha.
+    if(!id && !(m && m.ownerId)){
+      return true;
+    }
+
+    if(!p || !p.ownerId || !m || !m.ownerId){
+      return false;
+    }
+
+    return String(m.ownerId)===String(p.ownerId);
+  }
+
+  function teamShared(tk){
+    var m=meta(tk);
+    return !!(isTaktik(tk) && m && m.sharedWithTeam && sameTeam(tk));
+  }
+
+  // Override bara behörighets-/filterfunktionerna för taktikfilm.
+  var oldIsMineV10 = (typeof isMineV10==="function") ? isMineV10 : null;
+  isMineV10=function(obj){
+    if(isTaktik(obj))return strictMine(obj);
+    return oldIsMineV10 ? oldIsMineV10(obj) : true;
+  };
+
+  var oldTeamSharedV10 = (typeof isSameTeamSharedV10==="function") ? isSameTeamSharedV10 : null;
+  isSameTeamSharedV10=function(obj){
+    if(isTaktik(obj))return teamShared(obj);
+    return oldTeamSharedV10 ? oldTeamSharedV10(obj) : false;
+  };
+
+  var oldVisibleV10 = (typeof isFileVisibleInScopeV10==="function") ? isFileVisibleInScopeV10 : null;
+  isFileVisibleInScopeV10=function(obj,scope){
+    if(isTaktik(obj)){
+      return scope==="team" ? teamShared(obj) : strictMine(obj);
+    }
+    return oldVisibleV10 ? oldVisibleV10(obj,scope) : true;
+  };
+
+  var oldReadOnlyV10 = (typeof isReadOnlyFileV10==="function") ? isReadOnlyFileV10 : null;
+  isReadOnlyFileV10=function(obj){
+    if(isTaktik(obj)){
+      try{
+        if(typeof taktikScope!=="undefined" && taktikScope==="team" && teamShared(obj))return true;
+      }catch(e){}
+      return !strictMine(obj);
+    }
+    return oldReadOnlyV10 ? oldReadOnlyV10(obj) : false;
+  };
+
+  // v176/v179 exponerade ett hjälpbibliotek. Uppdatera det också så senare kod får samma regel.
+  try{
+    if(window.tt176TaktikFs){
+      window.tt176TaktikFs.isMine=strictMine;
+      window.tt176TaktikFs.sharedToMyTeam=teamShared;
+      window.tt176TaktikFs.visible=function(tk,scope){return scope==="team" ? teamShared(tk) : strictMine(tk);};
+      window.tt176TaktikFs.readOnly=function(tk){
+        try{
+          if(typeof taktikScope!=="undefined" && taktikScope==="team" && teamShared(tk))return true;
+        }catch(e){}
+        return !strictMine(tk);
+      };
+    }
+  }catch(e){}
+
+  // Ladda om listan med strikt Mina-filter när patchen aktiveras.
+  try{
+    if(typeof cloudLoadTaktik==="function"){
+      cloudLoadTaktik();
+    }else if(typeof renderTaktikList==="function"){
+      renderTaktikList();
+    }
+  }catch(e){}
+
+  window.tt180StrictMineTaktik=strictMine;
+})();
+
+/* === slut v180-strict-mine-owner === */
