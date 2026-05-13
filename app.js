@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -21793,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
       });
     }catch(e){}
   }
@@ -21876,3 +21876,190 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v207-desktop-saves-panel-width === */
+
+
+/* === v208-delete-formation-duplicates ===
+   Bas: 207.
+   Problem:
+   - Utgångsläge behöver ibland raderas två gånger.
+   - Orsak: det finns troligen flera Supabase-rader som appen dedupar till en synlig fil.
+   Fix:
+   - När ett utgångsläge raderas tas alla molnrader bort som har samma dedupe-nyckel
+     som den synliga filen: ägare + mapp + namn.
+   - Lokalt tas samma dubbletter bort direkt.
+   - Rör inte Taktikfilm, Formation, spara, ladda, Mina/Lagets, steg eller animation.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt208DeleteFormationDuplicates)return;
+  window.__tt208DeleteFormationDuplicates=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="208";
+      });
+    }catch(e){}
+  }
+
+  function rowToFormation(row){
+    return {
+      id: row && row.id,
+      name: row && row.name,
+      state: row && row.data,
+      folder: row && row.folder || "Allmänt"
+    };
+  }
+
+  function fallbackKey(s){
+    function n(v){return String(v||"").trim().toLowerCase();}
+    var m={};
+    try{
+      if(s && s.state && s.state._meta)m=s.state._meta;
+      else if(s && s.state && s.state.meta)m=s.state.meta;
+    }catch(e){}
+    var owner=n(m.ownerId || m.ownerName || "legacy");
+    return owner+"|"+n(s&&s.folder||"Allmänt")+"|"+n(s&&s.name||"");
+  }
+
+  function keyOf(s){
+    try{
+      if(typeof saveDedupeKeyV67==="function")return saveDedupeKeyV67(s);
+    }catch(e){}
+    return fallbackKey(s);
+  }
+
+  function isOwnerSafe(s){
+    try{
+      if(typeof isOwnerV68==="function")return isOwnerV68(s);
+    }catch(e){}
+    try{
+      if(typeof isMineV10==="function")return isMineV10(s);
+    }catch(e){}
+    return true;
+  }
+
+  function localRemoveByIdsAndKey(ids,key){
+    var idSet={};
+    (ids||[]).forEach(function(id){idSet[String(id)]=true;});
+
+    try{
+      if(typeof deletedFormationIdsV64!=="undefined"){
+        Object.keys(idSet).forEach(function(id){deletedFormationIdsV64[id]=true;});
+      }
+    }catch(e){}
+
+    try{
+      savedFormations=(savedFormations||[]).filter(function(s){
+        if(s && s.id && idSet[String(s.id)])return false;
+        return keyOf(s)!==key;
+      });
+    }catch(e){}
+
+    try{
+      if(typeof dedupeSavesV64==="function")savedFormations=dedupeSavesV64(savedFormations||[]);
+    }catch(e){}
+
+    try{
+      if(typeof rebuildFormationFoldersV67==="function")rebuildFormationFoldersV67();
+      else if(typeof rebuildFoldersV64==="function")rebuildFoldersV64();
+    }catch(e){}
+
+    try{renderSavesList();}catch(e){}
+    try{updateFolderSelect();}catch(e){}
+  }
+
+  function deleteIds(ids){
+    ids=(ids||[]).filter(function(x){return x!==undefined && x!==null && String(x)!=="";});
+    var seen={}, clean=[];
+    ids.forEach(function(id){
+      var k=String(id);
+      if(seen[k])return;
+      seen[k]=true;
+      clean.push(k);
+    });
+
+    if(!clean.length)return Promise.resolve();
+
+    // PostgREST: id=in.(1,2,3)
+    var inList=clean.map(function(id){return encodeURIComponent(id);}).join(",");
+    return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=in.("+inList+")",{
+      method:"DELETE",
+      headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"})
+    });
+  }
+
+  function robustFormationDelete(id){
+    setVersion();
+
+    var target=null;
+    try{
+      target=(savedFormations||[]).find(function(s){return String(s.id)===String(id);});
+    }catch(e){}
+
+    if(target && !isOwnerSafe(target)){
+      showToast("Du kan inte radera någon annans fil",false);
+      return;
+    }
+
+    var targetKey=target ? keyOf(target) : null;
+    var localIds=[];
+    try{
+      (savedFormations||[]).forEach(function(s){
+        if(!targetKey){
+          if(String(s.id)===String(id))localIds.push(s.id);
+        }else if(keyOf(s)===targetKey){
+          localIds.push(s.id);
+        }
+      });
+    }catch(e){}
+
+    if(id && localIds.map(String).indexOf(String(id))<0)localIds.push(id);
+
+    // Ta bort lokalt direkt, så filen inte ligger kvar efter första OK.
+    if(targetKey)localRemoveByIdsAndKey(localIds,targetKey);
+    else localRemoveByIdsAndKey([id],"__none__");
+
+    // Hämta molnrader och radera alla som appen skulle dedupa till samma fil.
+    return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=id.desc",{headers:supaHeaders()})
+      .then(function(r){return r.ok?r.json():[];})
+      .then(function(rows){
+        var ids=localIds.slice();
+
+        if(targetKey && Array.isArray(rows)){
+          rows.forEach(function(row){
+            if(!row || row.type!=="uppstallning")return;
+            var s=rowToFormation(row);
+            if(keyOf(s)===targetKey)ids.push(row.id);
+          });
+        }
+
+        return deleteIds(ids);
+      })
+      .then(function(){
+        showToast("Raderat!");
+        setTimeout(function(){try{cloudLoadSaves();}catch(e){}},300);
+      })
+      .catch(function(err){
+        cloudStatus("❌ Raderingsfel: "+err.message,"#e84a4a");
+        showToast("Kunde inte radera",false);
+        try{cloudLoadSaves();}catch(e){}
+      });
+  }
+
+  cloudDelete=robustFormationDelete;
+  window.cloudDelete=robustFormationDelete;
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",setVersion);
+  }else{
+    setVersion();
+  }
+  setTimeout(setVersion,300);
+  setTimeout(setVersion,1000);
+})();
+
+/* === slut v208-delete-formation-duplicates === */
