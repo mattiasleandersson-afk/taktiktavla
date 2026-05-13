@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="206";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
       });
     }catch(e){}
   }
@@ -21770,3 +21770,109 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v206-quick-formation-desktop-width === */
+
+
+/* === v207-desktop-saves-panel-width ===
+   Bas: 206.
+   Problem:
+   - På dator känns hela Utgångsläge-menyn för smal, nästan som mobilbredd.
+   - Telefon och iPad är bra och ska inte påverkas.
+   Fix:
+   - Endast desktop-CSS.
+   - Gör #panel-saves och dess direkta innehåll bredare/mer flexibelt.
+   - Rör inte funktion, Taktikfilm, Formation, spara/ladda, Mina/Lagets eller steg.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt207DesktopSavesPanelWidth)return;
+  window.__tt207DesktopSavesPanelWidth=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="207";
+      });
+    }catch(e){}
+  }
+
+  function injectStyle(){
+    if(document.getElementById("tt207-style"))return;
+
+    var st=document.createElement("style");
+    st.id="tt207-style";
+    st.textContent=[
+      "@media (min-width: 1024px) and (hover:hover) and (pointer:fine){",
+      "  #panel-saves{",
+      "    width: min(520px, 34vw) !important;",
+      "    max-width: 520px !important;",
+      "    min-width: 420px !important;",
+      "    flex: 0 0 min(520px, 34vw) !important;",
+      "    box-sizing: border-box !important;",
+      "  }",
+      "  #panel-saves > div{",
+      "    width: 100% !important;",
+      "    max-width: none !important;",
+      "    box-sizing: border-box !important;",
+      "  }",
+      "  #panel-saves .btn-row,",
+      "  #panel-saves .row,",
+      "  #panel-saves [class*='row']{",
+      "    width: 100%;",
+      "    box-sizing: border-box;",
+      "  }",
+      "  #saves-list{",
+      "    width: 100% !important;",
+      "    max-width: none !important;",
+      "    box-sizing: border-box !important;",
+      "  }",
+      "  #tt205-quick-formation{",
+      "    width:100% !important;",
+      "    max-width:none !important;",
+      "  }",
+      "}",
+      "",
+      "/* Mellanstora touch-skärmar, t.ex. iPad, lämnas i princip som tidigare. */",
+      "@media (max-width: 1023px){",
+      "  #panel-saves{",
+      "    max-width: initial;",
+      "  }",
+      "}"
+    ].join("\n");
+
+    document.head.appendChild(st);
+  }
+
+  function apply(){
+    setVersion();
+    injectStyle();
+
+    try{
+      var isDesktop = window.matchMedia &&
+        window.matchMedia("(min-width: 1024px) and (hover:hover) and (pointer:fine)").matches;
+
+      var p=document.getElementById("panel-saves");
+      if(p && isDesktop){
+        p.style.width="min(520px, 34vw)";
+        p.style.maxWidth="520px";
+        p.style.minWidth="420px";
+        p.style.flex="0 0 min(520px, 34vw)";
+        p.style.boxSizing="border-box";
+      }
+    }catch(e){}
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  setTimeout(apply,300);
+  setTimeout(apply,1000);
+  setTimeout(apply,2000);
+})();
+
+/* === slut v207-desktop-saves-panel-width === */
