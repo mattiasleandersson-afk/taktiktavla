@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="186";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="189";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="187";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="189";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="188";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="189";
       });
     }catch(e){}
   }
@@ -20115,3 +20115,63 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v188-ios-saves-list-scroll === */
+
+
+/* === v189-version-number-lock ===
+   Bas: 188.
+   Fixar endast versionsvisningen.
+   Orsak: äldre setVersion-block från 186/187 kunde skriva tillbaka siffran i hörnet.
+   Ingen funktionslogik ändras.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt189VersionNumberLock)return;
+  window.__tt189VersionNumberLock=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t)){
+          s.textContent="189";
+        }
+      });
+    }catch(e){}
+  }
+
+  function apply(){
+    setVersion();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  // Kör efter de gamla timers som fanns i 186/187/188.
+  [0,100,350,1000,1800,3000].forEach(function(ms){
+    setTimeout(apply,ms);
+  });
+
+  document.addEventListener("click",function(){
+    setTimeout(apply,0);
+    setTimeout(apply,150);
+    setTimeout(apply,600);
+  },true);
+
+  window.addEventListener("resize",function(){
+    setTimeout(apply,150);
+  });
+
+  try{
+    var mo=new MutationObserver(function(){ setVersion(); });
+    mo.observe(document.body,{childList:true,subtree:true,characterData:true});
+  }catch(e){}
+
+  window.tt189SetVersion=apply;
+})();
+
+/* === slut v189-version-number-lock === */
