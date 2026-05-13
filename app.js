@@ -18803,3 +18803,126 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v176-taktik-filesystem-like-formations === */
+
+
+/* === v177-editor-save-uses-cloudSaveTaktik ===
+   Bas: v176.
+   Konkret fel:
+   - Gamla editorns spara-knappar går förbi cloudSaveTaktik.
+   - För ny film utan dbId visar de bara "Sparad lokalt".
+   - Då försvinner filmen efter refresh.
+   Fix:
+   - Fånga editorns save-klick i capture phase.
+   - Stoppa gamla handlern.
+   - Kör alltid cloudSaveTaktik(tk).
+   Rör INTE redigering, drag/drop, animation, render eller filsystem i övrigt.
+*/
+
+(function(){
+  if(window.__tt177EditorSaveUsesCloudSaveTaktik)return;
+  window.__tt177EditorSaveUsesCloudSaveTaktik=true;
+
+  function currentTaktik(){
+    try{
+      if(typeof editingTaktikIdx!=="undefined" && editingTaktikIdx!==null && Array.isArray(taktikFilmer) && taktikFilmer[editingTaktikIdx]){
+        return taktikFilmer[editingTaktikIdx];
+      }
+    }catch(e){}
+    try{
+      if(playback && playback.tk && Array.isArray(playback.tk.steps)){
+        return playback.tk;
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function syncCurrentStep(){
+    try{
+      if(typeof tt145SaveCurrentStep==="function"){
+        tt145SaveCurrentStep({allowAutoCreate:false});
+        return;
+      }
+    }catch(e){}
+    try{
+      if(typeof tt76SaveCurrentStep==="function"){
+        tt76SaveCurrentStep({allowAutoCreate:false});
+        return;
+      }
+    }catch(e){}
+  }
+
+  function saveViaCloudButton(e){
+    var btn=e.target && e.target.closest ? e.target.closest("#btn-edit-taktik-save,#btn-taktikbar-save") : null;
+    if(!btn)return;
+
+    var tk=currentTaktik();
+    if(!tk || !Array.isArray(tk.steps))return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+
+    syncCurrentStep();
+
+    tk=currentTaktik() || tk;
+
+    if(!tk.steps || tk.steps.length<2){
+      try{showToast("Lägg till minst ett steg innan du sparar filmen",false);}catch(err){}
+      try{cloudStatus("⚠️ Minst ett steg krävs för att spara taktikfilm","#e8c84a");}catch(err){}
+      return false;
+    }
+
+    try{
+      if(typeof cloudSaveTaktik==="function"){
+        cloudSaveTaktik(tk);
+      }else{
+        showToast("Kunde inte hitta molnsparning",false);
+      }
+    }catch(err){
+      try{showToast("Kunde inte spara film",false);}catch(e2){}
+      try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e2){}
+    }
+
+    return false;
+  }
+
+  document.addEventListener("click",saveViaCloudButton,true);
+
+  // Metamodalen har också en gammal handler som PATCH:ar/lokalsparar direkt.
+  // Här låter vi den först uppdatera namn/mapp i objektet och sparar sedan via cloudSaveTaktik.
+  document.addEventListener("click",function(e){
+    var btn=e.target && e.target.closest ? e.target.closest("#edit-taktik-ok") : null;
+    if(!btn)return;
+
+    var tk=currentTaktik();
+    if(!tk || !Array.isArray(tk.steps))return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+
+    try{
+      var nameInp=document.getElementById("edit-taktik-name-inp");
+      var folderSel=document.getElementById("edit-taktik-folder");
+      if(nameInp)tk.name=nameInp.value.trim() || tk.name;
+      if(folderSel)tk.folder=folderSel.value || tk.folder || "Taktik";
+      var title=document.getElementById("edit-taktik-title-lbl");
+      if(title)title.textContent="✏ "+tk.name;
+      var modal=document.getElementById("modal-edit-taktik-meta");
+      if(modal)modal.classList.add("hidden");
+    }catch(err){}
+
+    syncCurrentStep();
+
+    try{
+      if(typeof cloudSaveTaktik==="function")cloudSaveTaktik(tk);
+    }catch(err){
+      try{showToast("Kunde inte spara film",false);}catch(e2){}
+      try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e2){}
+    }
+
+    return false;
+  },true);
+})();
+
+/* === slut v177-editor-save-uses-cloudSaveTaktik === */
