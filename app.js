@@ -20115,3 +20115,281 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v188-ios-saves-list-scroll === */
+
+
+/* === v191-test-blockers-scroll-loop-crossdevice ===
+   Bas: 190.
+   Fixar bara tre saker för fortsatt funktionstest:
+   1) Listor ska gå att nå längst ner utan gummibands-problem.
+   2) Loop-knapparna i taktikfilm döljs visuellt.
+   3) Samma användare på annan enhet kan se sina taktikfilmer i Mina via ownerName + team.
+   Rör inte ritlogik, steglogik, save/load i övrigt eller Utgångsläge-namnbyte.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt191TestBlockers)return;
+  window.__tt191TestBlockers=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="191";
+      });
+    }catch(e){}
+  }
+
+  function norm(v){
+    return String(v||"").trim().toLowerCase();
+  }
+
+  function teamNorm(v){
+    return String(v||"").trim().toUpperCase().replace(/\s+/g,"-");
+  }
+
+  function profile(){
+    try{
+      if(typeof getUserProfile==="function"){
+        var p=getUserProfile();
+        if(p)return p;
+      }
+    }catch(e){}
+    try{
+      var raw=localStorage.getItem("tt_profile_v1");
+      if(raw)return JSON.parse(raw);
+    }catch(e){}
+    return null;
+  }
+
+  function isTaktik(obj){
+    return !!(obj && Array.isArray(obj.steps));
+  }
+
+  function meta(tk){
+    if(!tk)return {};
+    if(tk._meta)return tk._meta;
+    if(tk.meta)return tk.meta;
+    if(tk.data && tk.data._meta)return tk.data._meta;
+    return {};
+  }
+
+  function sameName(tk){
+    var p=profile(), m=meta(tk);
+    return !!(p && m && norm(p.ownerName) && norm(m.ownerName) && norm(p.ownerName)===norm(m.ownerName));
+  }
+
+  function sameOwnerId(tk){
+    var p=profile(), m=meta(tk);
+    return !!(p && m && p.ownerId && m.ownerId && String(p.ownerId)===String(m.ownerId));
+  }
+
+  function sameTeam(tk){
+    var p=profile(), m=meta(tk);
+    if(!p || !m)return false;
+    var pt=teamNorm(p.teamId || p.teamCode || p.teamName);
+    var mt=teamNorm(m.teamId || m.teamCode || m.teamName);
+    return !!(pt && mt && pt===mt);
+  }
+
+  function idOf(tk){
+    return String((tk && (tk.dbId || tk.id)) || "").trim();
+  }
+
+  function mineCrossDevice(tk){
+    if(!isTaktik(tk))return false;
+
+    var saved=!!idOf(tk);
+    var m=meta(tk);
+
+    // Lokalt nytt utkast innan första save.
+    if(!saved && !(m && (m.ownerId || m.ownerName)))return true;
+
+    // Samma enhet/profil: ownerId + namn om möjligt.
+    if(m && m.ownerId && sameOwnerId(tk) && sameName(tk))return true;
+
+    // Flera enheter: ownerId kan vara olika eftersom vi saknar riktig inloggning.
+    // Då är namn + lag den praktiska identiteten tills vi bygger riktig fleranvändarlogin.
+    if(sameName(tk) && sameTeam(tk))return true;
+
+    return false;
+  }
+
+  function teamShared(tk){
+    var m=meta(tk);
+    return !!(isTaktik(tk) && m && m.sharedWithTeam && sameTeam(tk));
+  }
+
+  function readOnlyTaktik(tk){
+    try{
+      if(typeof taktikScope!=="undefined" && taktikScope==="team" && teamShared(tk))return true;
+    }catch(e){}
+    return !mineCrossDevice(tk);
+  }
+
+  // Uppdatera bara taktikfilmsbehörighet. Utgångsläge lämnas till befintlig logik.
+  var prevIsMine = (typeof isMineV10==="function") ? isMineV10 : null;
+  isMineV10=function(obj){
+    if(isTaktik(obj))return mineCrossDevice(obj);
+    return prevIsMine ? prevIsMine(obj) : true;
+  };
+
+  var prevTeamShared = (typeof isSameTeamSharedV10==="function") ? isSameTeamSharedV10 : null;
+  isSameTeamSharedV10=function(obj){
+    if(isTaktik(obj))return teamShared(obj);
+    return prevTeamShared ? prevTeamShared(obj) : false;
+  };
+
+  var prevVisible = (typeof isFileVisibleInScopeV10==="function") ? isFileVisibleInScopeV10 : null;
+  isFileVisibleInScopeV10=function(obj,scope){
+    if(isTaktik(obj))return scope==="team" ? teamShared(obj) : mineCrossDevice(obj);
+    return prevVisible ? prevVisible(obj,scope) : true;
+  };
+
+  var prevReadOnly = (typeof isReadOnlyFileV10==="function") ? isReadOnlyFileV10 : null;
+  isReadOnlyFileV10=function(obj){
+    if(isTaktik(obj))return readOnlyTaktik(obj);
+    return prevReadOnly ? prevReadOnly(obj) : false;
+  };
+
+  try{
+    if(window.tt176TaktikFs){
+      window.tt176TaktikFs.isMine=mineCrossDevice;
+      window.tt176TaktikFs.sharedToMyTeam=teamShared;
+      window.tt176TaktikFs.visible=function(tk,scope){return scope==="team" ? teamShared(tk) : mineCrossDevice(tk);};
+      window.tt176TaktikFs.readOnly=readOnlyTaktik;
+    }
+  }catch(e){}
+
+  function injectCss(){
+    if(document.getElementById("tt191-css"))return;
+
+    var style=document.createElement("style");
+    style.id="tt191-css";
+    style.textContent=[
+      "/* v191: mer bottenmarginal så sista raden går att använda */",
+      "#saves-list, #taktik-list {",
+      "  scroll-padding-bottom:180px !important;",
+      "}",
+      "#saves-list .tt191-list-bottom-spacer,",
+      "#taktik-list .tt191-list-bottom-spacer {",
+      "  display:block !important;",
+      "  height:170px !important;",
+      "  min-height:170px !important;",
+      "  flex:0 0 170px !important;",
+      "  pointer-events:none !important;",
+      "}",
+      "@media (max-width:720px){",
+      "  #saves-list, #taktik-list {",
+      "    scroll-padding-bottom:230px !important;",
+      "  }",
+      "  #saves-list .tt191-list-bottom-spacer,",
+      "  #taktik-list .tt191-list-bottom-spacer {",
+      "    height:230px !important;",
+      "    min-height:230px !important;",
+      "    flex-basis:230px !important;",
+      "  }",
+      "}",
+      "/* v191: dölj Loop-kontroller utan att ändra animationens övriga logik */",
+      "#play-loop, #ls-loop {",
+      "  display:none !important;",
+      "}"
+    ].join("\n");
+
+    document.head.appendChild(style);
+  }
+
+  function addBottomSpacer(listId){
+    var list=document.getElementById(listId);
+    if(!list)return;
+    var old=list.querySelector(".tt191-list-bottom-spacer");
+    if(old && old.parentNode===list){
+      list.appendChild(old);
+      return;
+    }
+    var spacer=document.createElement("div");
+    spacer.className="tt191-list-bottom-spacer";
+    spacer.setAttribute("aria-hidden","true");
+    list.appendChild(spacer);
+  }
+
+  function hideLoopControls(){
+    ["play-loop","ls-loop"].forEach(function(id){
+      var input=document.getElementById(id);
+      if(!input)return;
+
+      try{input.checked=false;}catch(e){}
+      try{input.style.display="none";}catch(e){}
+
+      var p=input.parentElement;
+      if(p && p.tagName && p.tagName.toLowerCase()==="label"){
+        p.style.display="none";
+      }
+    });
+
+    // Fallback: om texten Loop ligger i annan wrapper.
+    try{
+      document.querySelectorAll("label").forEach(function(lbl){
+        var txt=(lbl.textContent||"").trim().toLowerCase();
+        if(txt==="loop" || txt.endsWith(" loop")){
+          if(lbl.querySelector("#play-loop,#ls-loop"))lbl.style.display="none";
+        }
+      });
+    }catch(e){}
+  }
+
+  function applyListFixes(){
+    setVersion();
+    injectCss();
+    hideLoopControls();
+    addBottomSpacer("saves-list");
+    addBottomSpacer("taktik-list");
+  }
+
+  function wrap(fnName){
+    try{
+      var fn=window[fnName];
+      if(typeof fn!=="function" || fn._tt191Wrapped)return;
+      var old=fn;
+      window[fnName]=function(){
+        var r=old.apply(this,arguments);
+        setTimeout(applyListFixes,0);
+        setTimeout(applyListFixes,150);
+        return r;
+      };
+      window[fnName]._tt191Wrapped=true;
+    }catch(e){}
+  }
+
+  wrap("renderSavesList");
+  wrap("renderTaktikList");
+  wrap("cloudLoadTaktik");
+  wrap("cloudLoadSaves");
+
+  document.addEventListener("click",function(){
+    setTimeout(applyListFixes,80);
+    setTimeout(applyListFixes,350);
+  },true);
+
+  window.addEventListener("resize",function(){
+    setTimeout(applyListFixes,120);
+  });
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){
+      setTimeout(applyListFixes,0);
+      setTimeout(applyListFixes,300);
+      setTimeout(applyListFixes,1000);
+    });
+  }else{
+    setTimeout(applyListFixes,0);
+    setTimeout(applyListFixes,300);
+    setTimeout(applyListFixes,1000);
+  }
+
+  window.tt191ApplyListFixes=applyListFixes;
+  window.tt191MineCrossDeviceTaktik=mineCrossDevice;
+})();
+
+/* === slut v191-test-blockers-scroll-loop-crossdevice === */
