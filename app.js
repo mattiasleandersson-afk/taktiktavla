@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="202";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="202";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="202";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="202";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="202";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="202";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="202";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
       });
     }catch(e){}
   }
@@ -21244,7 +21244,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="202";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
       });
     }catch(e){}
   }
@@ -21340,3 +21340,118 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v202-new-step-clears-drawings === */
+
+
+/* === v203-new-step-clears-drawings-and-movementpaths ===
+   Bas: 202.
+   Förtydligad taktiklogik:
+   - När man skapar nytt steg ska slutpositionen följa med.
+   - Själva rörelsepilen ska INTE följa med till nya steget.
+   - Vanliga ritningar ska inte heller följa med.
+   Detta löser fallet där man står i sista steget, ritar rörelsepil och sedan skapar nytt steg.
+   Rör inte spara/ladda, Mina/Lagets, delning, animation eller befintliga steg.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt203NewStepClearsDrawingsAndMovementPaths)return;
+  window.__tt203NewStepClearsDrawingsAndMovementPaths=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="203";
+      });
+    }catch(e){}
+  }
+
+  function clearStepAnnotationsForNewStep(step){
+    if(!step || typeof step!=="object")return step;
+
+    // Vanliga ritverktyg.
+    step.arrows=[];
+    step.labels=[];
+    step.freehandPaths=[];
+    step.zones=[];
+
+    // Rörelsepilar ska visa rörelsen in i aktuellt steg.
+    // När ett nytt steg skapas ska bara slutpositionen följa med,
+    // inte själva rörelsepilen.
+    step.movementPaths=[];
+
+    return step;
+  }
+
+  function createNewStepWithoutAnnotations(e){
+    var btn=e.target && e.target.closest ? e.target.closest("#btn-edit-add-step") : null;
+    if(!btn)return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+
+    try{
+      if(typeof editingTaktikIdx==="undefined" || editingTaktikIdx===null)return;
+      var tk=taktikFilmer && taktikFilmer[editingTaktikIdx];
+      if(!tk || !Array.isArray(tk.steps))return;
+
+      if(typeof saveTaktikUndo==="function")saveTaktikUndo();
+
+      var snap;
+      try{
+        snap=typeof currentSnap==="function" ? currentSnap() : null;
+      }catch(err){
+        snap=null;
+      }
+
+      if(!snap){
+        try{snap=typeof buildState==="function" ? buildState() : {};}catch(err2){snap={};}
+      }
+
+      snap=JSON.parse(JSON.stringify(snap || {}));
+
+      // Behåll positioner, boll och grundläge – men ta bort markeringar och rörelsepilar.
+      clearStepAnnotationsForNewStep(snap);
+
+      try{
+        var newIdx=editingStepIdx+1;
+        if(!snap.label || /^Start|Steg\s+\d+/i.test(String(snap.label))){
+          snap.label=newIdx===0 ? "Startläge" : "Steg "+newIdx;
+        }
+      }catch(err3){}
+
+      tk.steps.splice(editingStepIdx+1,0,snap);
+      editingStepIdx++;
+
+      if(typeof updateEditStepUI==="function")updateEditStepUI();
+      else {
+        try{restoreSnap(snap);render();renderEditSteps(tk);}catch(err4){}
+      }
+
+      try{showToast("Nytt steg skapat");}catch(err5){}
+      try{if(typeof tt76MarkDirty==="function")tt76MarkDirty(); else taktikDirtyV17=true;}catch(err6){}
+    }catch(err){
+      try{showToast("Kunde inte skapa nytt steg",false);}catch(e2){}
+      try{cloudStatus("❌ "+err.message,"#e84a4a");}catch(e3){}
+    }
+
+    return false;
+  }
+
+  document.addEventListener("click",createNewStepWithoutAnnotations,true);
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",setVersion);
+  }else{
+    setVersion();
+  }
+
+  setTimeout(setVersion,300);
+  setTimeout(setVersion,1000);
+
+  window.tt203ClearStepAnnotationsForNewStep=clearStepAnnotationsForNewStep;
+})();
+
+/* === slut v203-new-step-clears-drawings-and-movementpaths === */
