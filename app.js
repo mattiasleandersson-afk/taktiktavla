@@ -20393,3 +20393,277 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v191-test-blockers-scroll-loop-crossdevice === */
+
+
+/* === v192-taktik-cross-device-load ===
+   Bas: 191.
+   Fel: samma användare på olika enheter ser Utgångsläge men inte egna Taktikfilmer.
+   Orsak: gamla cloudLoadTaktik filtrerar sannolikt bort taktikfilmer innan de nya Mina-reglerna används.
+   Fix:
+   - Override endast cloudLoadTaktik.
+   - Hämta alla taktikfilmer från molnet.
+   - Mina = ownerName + team matchar aktuell profil, även om ownerId skiljer mellan enheter.
+   - Lagets = sharedWithTeam=true + team matchar.
+   Rör inte save, editorn, steg, ritningar, animation eller Utgångsläge.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt192TaktikCrossDeviceLoad)return;
+  window.__tt192TaktikCrossDeviceLoad=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="192";
+      });
+    }catch(e){}
+  }
+
+  function clone(o){
+    try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}
+  }
+
+  function norm(v){
+    return String(v||"").trim().toLowerCase();
+  }
+
+  function teamNorm(v){
+    return String(v||"").trim().toUpperCase().replace(/\s+/g,"-");
+  }
+
+  function profile(){
+    try{
+      if(typeof getUserProfile==="function"){
+        var p=getUserProfile();
+        if(p)return p;
+      }
+    }catch(e){}
+    try{
+      var raw=localStorage.getItem("tt_profile_v1");
+      if(raw)return JSON.parse(raw);
+    }catch(e){}
+    return null;
+  }
+
+  function isTaktik(obj){
+    return !!(obj && Array.isArray(obj.steps));
+  }
+
+  function meta(tk){
+    if(!tk)return {};
+    if(tk._meta)return tk._meta;
+    if(tk.meta)return tk.meta;
+    if(tk.data && tk.data._meta)return tk.data._meta;
+    return {};
+  }
+
+  function sameName(tk){
+    var p=profile(), m=meta(tk);
+    return !!(p && m && norm(p.ownerName) && norm(m.ownerName) && norm(p.ownerName)===norm(m.ownerName));
+  }
+
+  function sameTeam(tk){
+    var p=profile(), m=meta(tk);
+    if(!p || !m)return false;
+    var pt=teamNorm(p.teamId || p.teamCode || p.teamName);
+    var mt=teamNorm(m.teamId || m.teamCode || m.teamName);
+    return !!(pt && mt && pt===mt);
+  }
+
+  function sameOwnerId(tk){
+    var p=profile(), m=meta(tk);
+    return !!(p && m && p.ownerId && m.ownerId && String(p.ownerId)===String(m.ownerId));
+  }
+
+  function idOf(tk){
+    return String((tk && (tk.dbId || tk.id)) || "").trim();
+  }
+
+  function isMineCrossDevice(tk){
+    if(!isTaktik(tk))return false;
+
+    var m=meta(tk);
+
+    // Ny lokal osparad film
+    if(!idOf(tk) && !(m && (m.ownerName || m.ownerId)))return true;
+
+    // Samma enhet/profil
+    if(m && m.ownerId && sameOwnerId(tk) && sameName(tk))return true;
+
+    // Samma användare på annan enhet: namn + lag.
+    if(sameName(tk) && sameTeam(tk))return true;
+
+    return false;
+  }
+
+  function isTeamShared(tk){
+    var m=meta(tk);
+    return !!(isTaktik(tk) && m && m.sharedWithTeam && sameTeam(tk));
+  }
+
+  function normalizeRow(row){
+    var tk=clone((row && row.data) || {});
+    if(!tk || typeof tk!=="object")tk={};
+    if(!Array.isArray(tk.steps))tk.steps=[];
+    tk.dbId=row.id;
+    tk.id=row.id;
+    tk.name=tk.name || row.name || "Taktikfilm";
+    tk.folder=tk.folder || row.folder || "Taktik";
+    tk.type="taktikfilm";
+
+    // Normalisera äldre metadataformer om möjligt.
+    if(!tk._meta && tk.meta)tk._meta=tk.meta;
+    if(!tk._meta)tk._meta={};
+    tk._meta.kind=tk._meta.kind || "taktikfilm";
+
+    if(isMineCrossDevice(tk)){
+      delete tk._readOnly;
+      delete tk._openedFromTeam;
+      delete tk.readOnly;
+      delete tk.readonly;
+      delete tk._readonly;
+    }
+
+    return tk;
+  }
+
+  function dedupe(list){
+    var seen={};
+    var out=[];
+    (list||[]).forEach(function(tk){
+      if(!tk)return;
+      var key=tk.dbId ? "id:"+tk.dbId : "name:"+norm(tk.name)+"|folder:"+norm(tk.folder);
+      if(seen[key])return;
+      seen[key]=true;
+      out.push(tk);
+    });
+    return out;
+  }
+
+  function rebuildFoldersLocal(){
+    try{
+      var seen={"Taktik":true,"Träning":true};
+      taktikFolders=["Taktik","Träning"];
+      (taktikFilmer||[]).forEach(function(tk){
+        var f=tk.folder || "Taktik";
+        if(f && !seen[f]){
+          seen[f]=true;
+          taktikFolders.push(f);
+        }
+      });
+    }catch(e){}
+  }
+
+  // Uppdatera helpers också så listan och editorn använder samma regel.
+  var prevIsMine=(typeof isMineV10==="function") ? isMineV10 : null;
+  isMineV10=function(obj){
+    if(isTaktik(obj))return isMineCrossDevice(obj);
+    return prevIsMine ? prevIsMine(obj) : true;
+  };
+
+  var prevTeam=(typeof isSameTeamSharedV10==="function") ? isSameTeamSharedV10 : null;
+  isSameTeamSharedV10=function(obj){
+    if(isTaktik(obj))return isTeamShared(obj);
+    return prevTeam ? prevTeam(obj) : false;
+  };
+
+  var prevVisible=(typeof isFileVisibleInScopeV10==="function") ? isFileVisibleInScopeV10 : null;
+  isFileVisibleInScopeV10=function(obj,scope){
+    if(isTaktik(obj))return scope==="team" ? isTeamShared(obj) : isMineCrossDevice(obj);
+    return prevVisible ? prevVisible(obj,scope) : true;
+  };
+
+  var prevReadOnly=(typeof isReadOnlyFileV10==="function") ? isReadOnlyFileV10 : null;
+  isReadOnlyFileV10=function(obj){
+    if(isTaktik(obj)){
+      try{
+        if(typeof taktikScope!=="undefined" && taktikScope==="team" && isTeamShared(obj))return true;
+      }catch(e){}
+      return !isMineCrossDevice(obj);
+    }
+    return prevReadOnly ? prevReadOnly(obj) : false;
+  };
+
+  try{
+    if(window.tt176TaktikFs){
+      window.tt176TaktikFs.isMine=isMineCrossDevice;
+      window.tt176TaktikFs.sharedToMyTeam=isTeamShared;
+      window.tt176TaktikFs.visible=function(tk,scope){return scope==="team" ? isTeamShared(tk) : isMineCrossDevice(tk);};
+      window.tt176TaktikFs.readOnly=function(tk){
+        try{
+          if(typeof taktikScope!=="undefined" && taktikScope==="team" && isTeamShared(tk))return true;
+        }catch(e){}
+        return !isMineCrossDevice(tk);
+      };
+    }
+  }catch(e){}
+
+  cloudLoadTaktik=function(){
+    setVersion();
+    try{cloudStatus("Laddar taktik...","#7aaa88");}catch(e){}
+
+    return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?order=id.desc",{headers:supaHeaders()})
+      .then(function(r){
+        if(!r.ok)throw new Error("HTTP "+r.status);
+        return r.json();
+      })
+      .then(function(rows){
+        if(!Array.isArray(rows))rows=[];
+
+        var loaded=[];
+        rows.forEach(function(row){
+          var data=row && row.data;
+          var rowIsTaktik=(row && row.type==="taktikfilm") || (data && Array.isArray(data.steps));
+          if(!rowIsTaktik)return;
+
+          var tk=normalizeRow(row);
+
+          // Taktikfilm måste ha minst startläge + ett steg.
+          // Bevara samma krav som tidigare fungerande sparning.
+          if(!tk.steps || tk.steps.length<2)return;
+
+          if(isMineCrossDevice(tk) || isTeamShared(tk)){
+            loaded.push(tk);
+          }
+        });
+
+        taktikFilmer=dedupe(loaded);
+        rebuildFoldersLocal();
+
+        try{
+          if(typeof taktikScope==="undefined" || !taktikScope)taktikScope="mine";
+          if(typeof currentTaktikFolder==="undefined" || !currentTaktikFolder)currentTaktikFolder="Alla";
+        }catch(e){}
+
+        try{if(typeof renderTaktikList==="function")renderTaktikList();}catch(e){}
+        try{if(typeof tt191ApplyListFixes==="function")tt191ApplyListFixes();}catch(e){}
+
+        try{
+          var mineCount=taktikFilmer.filter(isMineCrossDevice).length;
+          var teamCount=taktikFilmer.filter(isTeamShared).length;
+          cloudStatus("✅ Taktik laddad: Mina "+mineCount+" · Lagets "+teamCount,"#4ae87a");
+        }catch(e){
+          try{cloudStatus("✅ Taktik laddad","#4ae87a");}catch(e2){}
+        }
+
+        return taktikFilmer;
+      })
+      .catch(function(err){
+        try{cloudStatus("❌ Kunde inte ladda taktik: "+err.message,"#e84a4a");}catch(e){}
+        throw err;
+      });
+  };
+
+  // Ladda om taktik efter att den nya load-funktionen finns på plats.
+  setTimeout(function(){
+    try{cloudLoadTaktik();}catch(e){}
+  },250);
+
+  window.tt192TaktikIsMine=isMineCrossDevice;
+  window.tt192TaktikIsTeamShared=isTeamShared;
+})();
+
+/* === slut v192-taktik-cross-device-load === */
