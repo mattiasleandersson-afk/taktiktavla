@@ -19035,3 +19035,250 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v178-save-clears-warning === */
+
+
+/* === v179-unified-unsaved-after-cloud-save ===
+   Bas: v178.
+   v177 fixade verklig molnsparning.
+   v178 rensade några dirty-flaggor, men gamla snapshot-lager kan fortfarande varna.
+   v179 gör bara detta:
+   - en gemensam osparat-kontroll för taktikfilm
+   - efter lyckad molnsparning tas ny snapshot
+   - metadata/id ignoreras vid jämförelse
+   Rör inte save/load/redigering/delning/kopiering.
+*/
+
+(function(){
+  if(window.__tt179UnifiedUnsavedAfterCloudSave)return;
+  window.__tt179UnifiedUnsavedAfterCloudSave=true;
+
+  var tt179Snapshot="";
+  var tt179LastCleanAt=0;
+
+  function currentTaktik(){
+    try{
+      if(typeof editingTaktikIdx!=="undefined" && editingTaktikIdx!==null && Array.isArray(taktikFilmer) && taktikFilmer[editingTaktikIdx]){
+        return taktikFilmer[editingTaktikIdx];
+      }
+    }catch(e){}
+    try{
+      if(playback && playback.tk && Array.isArray(playback.tk.steps))return playback.tk;
+    }catch(e){}
+    return null;
+  }
+
+  function saveCurrentStepQuiet(){
+    try{
+      if(typeof tt76SaveCurrentStep==="function"){
+        tt76SaveCurrentStep({allowAutoCreate:false});
+        return;
+      }
+    }catch(e){}
+    try{
+      if(typeof saveCurrentStepV75==="function"){
+        saveCurrentStepV75({allowAutoCreate:false});
+        return;
+      }
+    }catch(e){}
+    try{
+      if(typeof autoSaveCurrentStepLocalV16==="function"){
+        autoSaveCurrentStepLocalV16();
+        return;
+      }
+    }catch(e){}
+  }
+
+  function normalized(tk){
+    try{
+      var c=JSON.parse(JSON.stringify(tk||{}));
+
+      // Använd befintlig normalisering om den finns, men håll vår egen städning efteråt.
+      try{
+        if(typeof tt76NormalizeFilm==="function"){
+          c=tt76NormalizeFilm(c) || c;
+        }
+      }catch(e){}
+
+      // Dessa kan ändras av molnsparning, delning eller öppning utan att filmen i sig ändrats.
+      delete c.dbId;
+      delete c.id;
+      delete c._meta;
+      delete c.meta;
+      delete c._readOnly;
+      delete c._openedFromTeam;
+      delete c.readOnly;
+      delete c.readonly;
+      delete c._readonly;
+      delete c._isDraft;
+      delete c._draftUid;
+      delete c._forceEditableV170;
+      delete c._forceEditableV171;
+      delete c._openedFromMineV171;
+      delete c._localBackupV173;
+      delete c._localBackupV174;
+      delete c._localBackupUpdatedAtV173;
+      delete c._localBackupUpdatedAtV174;
+      delete c._restoredFromLocalBackupV173;
+      delete c._restoredFromLocalBackupV174;
+      delete c._saving;
+      delete c._dirty;
+
+      return JSON.stringify(c);
+    }catch(e){
+      return "";
+    }
+  }
+
+  function forceClean(tk){
+    tk=tk || currentTaktik();
+    if(!tk)return;
+
+    // Få in aktuellt steg innan snapshot tas.
+    saveCurrentStepQuiet();
+    tk=currentTaktik() || tk;
+
+    tt179Snapshot=normalized(tk);
+    tt179LastCleanAt=Date.now();
+
+    // Nollställ gamla lager också, så gamla listeners inte ligger kvar visuellt/logiskt.
+    try{taktikDirtyV17=false;}catch(e){}
+    try{window.taktikDirtyV17=false;}catch(e){}
+    try{dirtyTaktikV17=false;}catch(e){}
+    try{window.dirtyTaktikV17=false;}catch(e){}
+    try{taktikHasUnsavedChanges=false;}catch(e){}
+    try{window.taktikHasUnsavedChanges=false;}catch(e){}
+    try{hasUnsavedTaktikChanges=false;}catch(e){}
+    try{window.hasUnsavedTaktikChanges=false;}catch(e){}
+    try{unsavedTaktikChanges=false;}catch(e){}
+    try{window.unsavedTaktikChanges=false;}catch(e){}
+    try{editTaktikDirty=false;}catch(e){}
+    try{window.editTaktikDirty=false;}catch(e){}
+
+    try{lastTaktikSaveAtV23=Date.now();}catch(e){}
+    try{v74LastSaveAt=Date.now();}catch(e){}
+
+    try{
+      if(typeof tt88SavedSnapshot!=="undefined")tt88SavedSnapshot=tt179Snapshot;
+      if(typeof tt88DirtyAfterSave!=="undefined")tt88DirtyAfterSave=false;
+      if(typeof tt88SavingNow!=="undefined")tt88SavingNow=false;
+    }catch(e){}
+
+    try{
+      if(typeof ttV76!=="undefined" && ttV76){
+        ttV76.savedSnapshot=tt179Snapshot;
+        ttV76.lastSaveAt=Date.now();
+        ttV76.suppressDirty=false;
+      }
+    }catch(e){}
+
+    try{savedTaktikSnapshotV21=tt179Snapshot;}catch(e){}
+    try{window.savedTaktikSnapshotV21=tt179Snapshot;}catch(e){}
+
+    try{if(typeof markTaktikSavedCleanV67==="function")markTaktikSavedCleanV67(tk);}catch(e){}
+    try{if(typeof tt76ForceClean==="function")tt76ForceClean(tk);}catch(e){}
+    try{if(typeof tt86MarkCleanNow==="function")tt86MarkCleanNow(tk);}catch(e){}
+    try{if(typeof tt88CaptureSavedSnapshot==="function")tt88CaptureSavedSnapshot();}catch(e){}
+
+    // Efter anrop till äldre clean-funktioner kan deras normalisering ha satt eget snapshot.
+    // Sätt vår snapshot sist igen.
+    try{savedTaktikSnapshotV21=tt179Snapshot;}catch(e){}
+    try{if(typeof tt88SavedSnapshot!=="undefined")tt88SavedSnapshot=tt179Snapshot;}catch(e){}
+    try{if(typeof tt88DirtyAfterSave!=="undefined")tt88DirtyAfterSave=false;}catch(e){}
+
+    try{document.body.classList.remove("taktik-dirty");}catch(e){}
+    try{document.body.classList.remove("has-unsaved-taktik");}catch(e){}
+  }
+
+  function hasUnsaved(){
+    var tk=currentTaktik();
+    if(!tk)return false;
+
+    // Direkt efter save ska gamla mouseup/click-events inte hinna skapa falsk varning.
+    if(Date.now()-tt179LastCleanAt<2500)return false;
+
+    try{
+      if(typeof tt76IsReadOnly==="function" && tt76IsReadOnly(tk))return false;
+    }catch(e){}
+
+    saveCurrentStepQuiet();
+    tk=currentTaktik() || tk;
+
+    var now=normalized(tk);
+    if(!tt179Snapshot){
+      tt179Snapshot=now;
+      return false;
+    }
+
+    return now!==tt179Snapshot;
+  }
+
+  function confirmClean(){
+    if(!hasUnsaved())return true;
+    return confirm("Du har osparade ändringar i taktiken. Vill du lämna utan att spara?");
+  }
+
+  // Peka om alla kända varningsfunktioner till samma beslut.
+  hasUnsavedTaktikChangesV21=hasUnsaved;
+  hasUnsavedTaktikChangesV23=hasUnsaved;
+  confirmUnsavedV21=confirmClean;
+  confirmUnsavedV19=confirmClean;
+  confirmUnsavedTaktikV18=confirmClean;
+  confirmDiscardUnsavedV17=confirmClean;
+  confirmUnsavedUnifiedV23=confirmClean;
+
+  if(typeof cloudSaveTaktik==="function" && !cloudSaveTaktik._tt179CleanWrapped){
+    var oldSave=cloudSaveTaktik;
+    cloudSaveTaktik=function(){
+      var ret=oldSave.apply(this,arguments);
+
+      try{
+        if(ret && typeof ret.then==="function"){
+          return ret.then(function(saved){
+            forceClean(saved || currentTaktik());
+            setTimeout(function(){forceClean(saved || currentTaktik());},80);
+            setTimeout(function(){forceClean(saved || currentTaktik());},500);
+            return saved;
+          });
+        }
+      }catch(e){}
+
+      setTimeout(function(){forceClean(currentTaktik());},80);
+      return ret;
+    };
+    cloudSaveTaktik._tt179CleanWrapped=true;
+  }
+
+  // När en film öppnas sätts en ny baslinje.
+  if(typeof startPlayback==="function" && !startPlayback._tt179OpenWrapped){
+    var oldStart=startPlayback;
+    startPlayback=function(){
+      var r=oldStart.apply(this,arguments);
+      setTimeout(function(){forceClean(currentTaktik());},350);
+      return r;
+    };
+    startPlayback._tt179OpenWrapped=true;
+  }
+
+  if(typeof openEditTaktik==="function" && !openEditTaktik._tt179OpenWrapped){
+    var oldOpen=openEditTaktik;
+    openEditTaktik=function(){
+      var r=oldOpen.apply(this,arguments);
+      setTimeout(function(){forceClean(currentTaktik());},350);
+      return r;
+    };
+    openEditTaktik._tt179OpenWrapped=true;
+  }
+
+  // Extra säkerhet efter spara-klick, eftersom gamla click/mouseup-listeners kan sätta dirty efteråt.
+  document.addEventListener("click",function(e){
+    var btn=e.target && e.target.closest ? e.target.closest("#btn-edit-taktik-save,#btn-taktikbar-save,#edit-taktik-ok") : null;
+    if(!btn)return;
+    setTimeout(function(){forceClean(currentTaktik());},700);
+    setTimeout(function(){forceClean(currentTaktik());},1400);
+  },true);
+
+  window.tt179ForceCleanTaktik=function(){forceClean(currentTaktik());};
+  window.tt179HasUnsavedTaktik=hasUnsaved;
+})();
+
+/* === slut v179-unified-unsaved-after-cloud-save === */
