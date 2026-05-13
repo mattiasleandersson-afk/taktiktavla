@@ -19622,103 +19622,155 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v181-strict-mine-owner-name === */
 
 
-/* === v182-scroll-formation-file-list ===
+/* === v184-targeted-saves-list-scroll ===
    Bas: 181.
-   Fix: Utgångslägets fillista ska kunna scrollas när fler filer finns än får plats.
-   Endast app.js behöver bytas.
-   Rör inte taktikfilm, save/load, delning eller redigering.
+   Ersätter inte 182/183, utan bygger från stabil 181.
+   Fix: scroll endast i Utgångslägets fillista.
+   Viktigt:
+   - Rör bara #panel-saves och #saves-list.
+   - Rör inte Taktik, Formation eller Lag.
+   - Ingen bred DOM-sökning.
+   - Endast app.js behöver bytas.
 */
 
 (function(){
-  if(window.__tt182ScrollFormationFileList)return;
-  window.__tt182ScrollFormationFileList=true;
+  if(window.__tt184TargetedSavesListScroll)return;
+  window.__tt184TargetedSavesListScroll=true;
 
   function setVersion(){
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
-        if(/^\s*\d+|v\d+|v3\./i.test((s.textContent||"").trim())){
-          s.textContent="182";
-        }
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="184";
       });
     }catch(e){}
   }
 
   function injectCss(){
-    if(document.getElementById("tt182-scroll-formation-file-list-css"))return;
+    if(document.getElementById("tt184-targeted-saves-scroll-css"))return;
 
-    var css=document.createElement("style");
-    css.id="tt182-scroll-formation-file-list-css";
-    css.textContent=[
-      "/* v182: scroll i Utgångslägets fillista */",
-      "body:has(#panel-saves.on) #bottompanel,",
-      "body:has(#panel-uppstallning.on) #bottompanel,",
-      "body:has(#panel-start.on) #bottompanel{",
+    var style=document.createElement("style");
+    style.id="tt184-targeted-saves-scroll-css";
+    style.textContent=[
+      "/* v184: endast Utgångsläge-listan */",
+      "body.tt184-saves-panel-open #panel-saves.on{",
+      "  min-height:0 !important;",
       "  overflow:hidden !important;",
       "}",
-      "#panel-saves.on,",
-      "#panel-uppstallning.on,",
-      "#panel-start.on,",
-      "#panel-saves.tt-v98-formation-compact,",
-      "#panel-uppstallning.tt-v98-formation-compact,",
-      "#panel-start.tt-v98-formation-compact,",
-      "#panel-saves.tt-v99-formation-top,",
-      "#panel-uppstallning.tt-v99-formation-top,",
-      "#panel-start.tt-v99-formation-top{",
+      "body.tt184-saves-panel-open #panel-saves.on > div{",
       "  display:flex !important;",
       "  flex-direction:column !important;",
       "  min-height:0 !important;",
-      "  max-height:calc(100dvh - 72px) !important;",
       "  overflow:hidden !important;",
       "}",
-      "#panel-saves.on > *,",
-      "#panel-uppstallning.on > *,",
-      "#panel-start.on > *{",
-      "  flex-shrink:0 !important;",
-      "}",
-      "#panel-saves #saves-list,",
-      "#panel-uppstallning #saves-list,",
-      "#panel-start #saves-list{",
-      "  flex:1 1 auto !important;",
-      "  min-height:0 !important;",
-      "  max-height:none !important;",
+      "body.tt184-saves-panel-open #saves-list{",
       "  overflow-y:auto !important;",
       "  overflow-x:hidden !important;",
       "  -webkit-overflow-scrolling:touch !important;",
       "  overscroll-behavior:contain !important;",
-      "  padding-bottom:76px !important;",
       "  touch-action:pan-y !important;",
+      "  min-height:0 !important;",
+      "  padding-bottom:90px !important;",
       "}",
-      "@media (max-width:720px){",
-      "  #panel-saves.on,",
-      "  #panel-uppstallning.on,",
-      "  #panel-start.on{",
-      "    max-height:calc(100dvh - 58px) !important;",
-      "  }",
-      "  #panel-saves #saves-list,",
-      "  #panel-uppstallning #saves-list,",
-      "  #panel-start #saves-list{",
-      "    padding-bottom:96px !important;",
-      "  }",
+      "body:not(.tt184-saves-panel-open) #saves-list{",
+      "  max-height:'';",
       "}"
     ].join("\n");
 
-    document.head.appendChild(css);
+    document.head.appendChild(style);
   }
 
-  function apply(){
+  function isSavesOpen(){
+    var panel=document.getElementById("panel-saves");
+    return !!(panel && panel.classList.contains("on"));
+  }
+
+  function applyScroll(){
     setVersion();
     injectCss();
+
+    var panel=document.getElementById("panel-saves");
+    var list=document.getElementById("saves-list");
+
+    if(!panel || !list)return;
+
+    var open=isSavesOpen();
+    document.body.classList.toggle("tt184-saves-panel-open",open);
+
+    if(!open){
+      list.style.maxHeight="";
+      list.style.overflowY="";
+      return;
+    }
+
+    // Räkna faktisk plats från listans överkant till skärmens nederkant.
+    // Då fungerar det även om topbar/bottompanel har olika höjd på mobil/dator.
+    var top=0;
+    try{top=list.getBoundingClientRect().top;}catch(e){}
+    var vh=window.innerHeight || document.documentElement.clientHeight || 700;
+    var bottomGap=22;
+    var h=Math.max(170, Math.floor(vh - top - bottomGap));
+
+    list.style.maxHeight=h+"px";
+    list.style.overflowY="auto";
+    list.style.overflowX="hidden";
+    list.style.webkitOverflowScrolling="touch";
+    list.style.touchAction="pan-y";
+
+    try{
+      panel.style.overflow="hidden";
+      if(panel.firstElementChild){
+        panel.firstElementChild.style.overflow="hidden";
+        panel.firstElementChild.style.minHeight="0";
+      }
+    }catch(e){}
   }
+
+  function wrapRenderSavesList(){
+    try{
+      if(typeof renderSavesList!=="function" || renderSavesList._tt184Wrapped)return;
+      var old=renderSavesList;
+      renderSavesList=function(){
+        var r=old.apply(this,arguments);
+        setTimeout(applyScroll,0);
+        setTimeout(applyScroll,120);
+        setTimeout(applyScroll,350);
+        return r;
+      };
+      renderSavesList._tt184Wrapped=true;
+    }catch(e){}
+  }
+
+  wrapRenderSavesList();
+
+  document.addEventListener("click",function(e){
+    try{
+      var tab=e.target.closest && e.target.closest('.tab[data-panel="saves"],#btn-cloud-refresh,#btn-cloud-save,#btn-save-over,#btn-export,#btn-import-btn,#panel-saves button');
+      if(tab){
+        setTimeout(applyScroll,80);
+        setTimeout(applyScroll,300);
+      }
+    }catch(err){}
+  },true);
+
+  window.addEventListener("resize",function(){
+    setTimeout(applyScroll,80);
+  });
 
   if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",apply);
+    document.addEventListener("DOMContentLoaded",function(){
+      setTimeout(applyScroll,0);
+      setTimeout(applyScroll,300);
+      setTimeout(applyScroll,1000);
+    });
   }else{
-    apply();
+    setTimeout(applyScroll,0);
+    setTimeout(applyScroll,300);
+    setTimeout(applyScroll,1000);
   }
 
-  setTimeout(apply,250);
-  setTimeout(apply,1000);
+  window.tt184ApplySavesScroll=applyScroll;
 })();
 
-/* === slut v182-scroll-formation-file-list === */
+/* === slut v184-targeted-saves-list-scroll === */
