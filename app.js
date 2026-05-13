@@ -19798,3 +19798,123 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v186-saves-scroll-keep-pitch === */
+
+
+/* === v187-center-pitch-with-saves-scroll ===
+   Bas: 186.
+   186: planen syns och scroll fungerar, men planen hamnar till vänster.
+   Fix:
+   - centrera planen när Utgångsläge är öppet.
+   - behåll scrollen från 186.
+   - rör inte Taktik, Formation, Lag, save/load eller delning.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt187CenterPitchWithSavesScroll)return;
+  window.__tt187CenterPitchWithSavesScroll=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="187";
+      });
+    }catch(e){}
+  }
+
+  function injectCss(){
+    if(document.getElementById("tt187-center-pitch-with-saves-scroll-css"))return;
+
+    var style=document.createElement("style");
+    style.id="tt187-center-pitch-with-saves-scroll-css";
+    style.textContent=[
+      "/* v187: centrera planen igen när Utgångsläge-listan scrollar */",
+
+      "body.tt186-saves-open #pitch-wrapper,",
+      "body.tt187-saves-open #pitch-wrapper {",
+      "  display:flex !important;",
+      "  justify-content:center !important;",
+      "  align-items:center !important;",
+      "  width:100% !important;",
+      "  margin-left:auto !important;",
+      "  margin-right:auto !important;",
+      "}",
+
+      "body.tt186-saves-open #pitch-card,",
+      "body.tt187-saves-open #pitch-card,",
+      "body.tt186-saves-open #pitch,",
+      "body.tt187-saves-open #pitch,",
+      "body.tt186-saves-open #pitch-svg,",
+      "body.tt187-saves-open #pitch-svg {",
+      "  margin-left:auto !important;",
+      "  margin-right:auto !important;",
+      "}",
+
+      "body.tt186-saves-open main,",
+      "body.tt187-saves-open main,",
+      "body.tt186-saves-open .main,",
+      "body.tt187-saves-open .main,",
+      "body.tt186-saves-open #app,",
+      "body.tt187-saves-open #app {",
+      "  align-items:center !important;",
+      "}",
+
+      "body.tt186-saves-open #bottompanel,",
+      "body.tt187-saves-open #bottompanel {",
+      "  width:100% !important;",
+      "}"
+    ].join("\n");
+
+    document.head.appendChild(style);
+  }
+
+  function savesPanelOpen(){
+    var p=document.getElementById("panel-saves");
+    return !!(p && p.classList.contains("on"));
+  }
+
+  function apply(){
+    setVersion();
+    injectCss();
+    document.body.classList.toggle("tt187-saves-open", savesPanelOpen());
+
+    try{
+      var pw=document.getElementById("pitch-wrapper");
+      if(pw && savesPanelOpen()){
+        pw.style.display="flex";
+        pw.style.justifyContent="center";
+        pw.style.alignItems="center";
+        pw.style.width="100%";
+        pw.style.marginLeft="auto";
+        pw.style.marginRight="auto";
+      }
+    }catch(e){}
+  }
+
+  document.addEventListener("click",function(){
+    setTimeout(apply,80);
+    setTimeout(apply,300);
+  },true);
+
+  window.addEventListener("resize",function(){
+    setTimeout(apply,80);
+  });
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){
+      setTimeout(apply,0);
+      setTimeout(apply,300);
+      setTimeout(apply,1000);
+    });
+  }else{
+    setTimeout(apply,0);
+    setTimeout(apply,300);
+    setTimeout(apply,1000);
+  }
+
+  window.tt187CenterPitchWithSavesScroll=apply;
+})();
+
+/* === slut v187-center-pitch-with-saves-scroll === */
