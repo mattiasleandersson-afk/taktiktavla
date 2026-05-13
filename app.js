@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -21793,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -21900,7 +21900,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -22083,7 +22083,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -22220,7 +22220,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -22443,7 +22443,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -22773,7 +22773,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -23088,7 +23088,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="217";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
       });
     }catch(e){}
   }
@@ -23322,3 +23322,132 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v217-save-match-zero-players-hard === */
+
+
+/* === v218-show-zero-player-matches ===
+   Bas: 217.
+   Problem:
+   - Match med 0 spelare sparas, men visas inte i Sparade matcher.
+   Orsak:
+   - Äldre dedupe/laddningskod filtrerar bort matcher utan spelare och utan uppställning.
+   Fix:
+   - En match är giltig om den har datum + motstånd.
+   - 0 spelare är tillåtet.
+   - Dedupe använder dbId i första hand.
+   - Rör inte truppredigering, statistik-id, laguppställningssparning, Utgångsläge eller Taktikfilm.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt218ShowZeroPlayerMatches)return;
+  window.__tt218ShowZeroPlayerMatches=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="218";
+      });
+    }catch(e){}
+  }
+
+  function validMatch(m){
+    return !!(m && m.datum && (m.motstand || m.motstånd || m.opponent || m.motstand===""));
+  }
+
+  function normalizeMatch(row){
+    var m=(row && row.data) ? row.data : row;
+    if(!m || typeof m!=="object")m={};
+
+    if(!m.motstand){
+      m.motstand=m.motstånd || m.opponent || "Okänd";
+    }
+    if(!Array.isArray(m.startade))m.startade=[];
+    if(!Array.isArray(m.avbytare))m.avbytare=[];
+    if(!Array.isArray(m.uppstallningar))m.uppstallningar=[];
+
+    if(row && row.id)m.dbId=row.id;
+    return m;
+  }
+
+  function dedupeMatcherAllowEmpty(){
+    var seen={};
+    matcher=(matcher||[]).map(function(m){return normalizeMatch(m);}).filter(function(m){
+      if(!validMatch(m))return false;
+      var key=m.dbId ? ("id:"+m.dbId) : ((m.datum||"")+"::"+(m.motstand||""));
+      if(seen[key])return false;
+      seen[key]=true;
+      return true;
+    });
+  }
+
+  // Ersätt äldre dedupe som gömde tomma matcher.
+  dedupeMatcherV12=dedupeMatcherAllowEmpty;
+  window.dedupeMatcherV12=dedupeMatcherAllowEmpty;
+
+  // Ersätt laddningen så 0-spelarmatcher följer med från molnet.
+  loadMatcher=function(){
+    return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.match&order=id.desc",{headers:supaHeaders()})
+      .then(function(r){
+        if(!r.ok)throw new Error("HTTP "+r.status);
+        return r.json();
+      })
+      .then(function(data){
+        if(Array.isArray(data)){
+          var seen={};
+          matcher=[];
+          data.forEach(function(row){
+            var m=normalizeMatch(row);
+            if(!validMatch(m))return;
+            var key=m.dbId ? ("id:"+m.dbId) : ((m.datum||"")+"::"+(m.motstand||""));
+            if(seen[key])return;
+            seen[key]=true;
+            matcher.push(m);
+          });
+        }
+
+        try{if(typeof renderStatistik==="function")renderStatistik();}catch(e){}
+        try{if(typeof renderMatchHistory==="function")renderMatchHistory();}catch(e){}
+        try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
+        return matcher;
+      })
+      .catch(function(err){
+        try{cloudStatus("❌ Kunde inte ladda matcher: "+err.message,"#e84a4a");}catch(e){}
+      });
+  };
+  window.loadMatcher=loadMatcher;
+
+  // Säkerställ att renderingen inte filtrerar bort matchen lokalt.
+  var prevRender=typeof renderSparadeMatcherList==="function" ? renderSparadeMatcherList : null;
+  if(prevRender && !prevRender.__tt218Wrapped){
+    var wrapped=function(){
+      dedupeMatcherAllowEmpty();
+      return prevRender.apply(this,arguments);
+    };
+    wrapped.__tt218Wrapped=true;
+    renderSparadeMatcherList=wrapped;
+    window.renderSparadeMatcherList=wrapped;
+  }
+
+  function apply(){
+    setVersion();
+    try{dedupeMatcherAllowEmpty();}catch(e){}
+    try{if(typeof renderSparadeMatcherList==="function")renderSparadeMatcherList();}catch(e){}
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){
+      apply();
+      setTimeout(function(){try{loadMatcher();}catch(e){}},250);
+    });
+  }else{
+    apply();
+    setTimeout(function(){try{loadMatcher();}catch(e){}},250);
+  }
+
+  setTimeout(apply,500);
+  setTimeout(apply,1200);
+})();
+
+/* === slut v218-show-zero-player-matches === */
