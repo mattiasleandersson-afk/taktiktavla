@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -21793,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -21900,7 +21900,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -22083,7 +22083,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -22220,7 +22220,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -22443,7 +22443,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -22773,7 +22773,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -23088,7 +23088,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -23347,7 +23347,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
@@ -23453,297 +23453,47 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v218-show-zero-player-matches === */
 
 
-/* === v219-match-list-sort-by-played-count ===
+/* === v221-mobile-performance-cleanup ===
    Bas: 218.
-   Ändring:
-   - I Matcher → Match sorteras spelarna efter antal spelade matcher, lägst först.
-   - Vid lika antal matcher sorteras de alfabetiskt.
-   - Trupp-listan påverkas inte och fortsätter sorteras alfabetiskt via v216.
-   Rör inte matchsparning, statistik-id, laguppställning, Utgångsläge eller Taktikfilm.
+   Syfte:
+   - Prestandarensning efter att appen blivit seg på telefon.
+   - Tar INTE med de hårda matchlist-sorteringarna från 219/220.
+   - Behåller viktiga stabila fixar:
+     * truppredigering/id/statistik från 216
+     * match med 0 spelare från 217/218
+     * laguppställning/sparade matcher-fixen från 214
+     * taktik/utgångsläge-fixar från tidigare bas
+   Rör inte funktioner i övrigt.
    Endast app.js behöver bytas.
 */
 
 (function(){
-  if(window.__tt219MatchListSortByPlayedCount)return;
-  window.__tt219MatchListSortByPlayedCount=true;
+  if(window.__tt221MobilePerformanceCleanup)return;
+  window.__tt221MobilePerformanceCleanup=true;
 
   function setVersion(){
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="221";
       });
     }catch(e){}
   }
 
-  function alpha(a,b){
-    var an=String((a&&a.namn)||"").trim();
-    var bn=String((b&&b.namn)||"").trim();
-    var c=an.localeCompare(bn,"sv",{sensitivity:"base"});
-    if(c!==0)return c;
-    return ((a&&a.nr)||0)-((b&&b.nr)||0);
-  }
-
-  function count(sp){
-    try{return getPlayerMatchCount(sp.id)||0;}catch(e){return 0;}
-  }
-
-  function byPlayedCountThenName(a,b){
-    var ca=count(a), cb=count(b);
-    if(ca!==cb)return ca-cb;
-    return alpha(a,b);
-  }
-
-  function renderMatchTruppListByCount(){
-    var list=document.getElementById("match-trupp-list");
-    if(!list)return;
-
-    list.innerHTML="";
-
-    var selectedCount=0;
-    try{
-      selectedCount=Object.values(matchSelections||{}).filter(function(v){return v==="start" || v==="avbytare";}).length;
-    }catch(e){}
-
-    var counter=document.getElementById("match-counter");
-    if(counter)counter.textContent=selectedCount+" vald"+(selectedCount===1?"":"a");
-
-    var sorted=(trupp||[]).slice().sort(byPlayedCountThenName);
-
-    if(!sorted.length){
-      list.innerHTML="<span style=\"color:#7aaa88;font-size:0.8rem\">Lägg till spelare i truppen först</span>";
-      return;
-    }
-
-    sorted.forEach(function(sp){
-      var sel=(matchSelections||{})[sp.id]||null;
-
-      var row=document.createElement("div");
-      row.className="row";
-      row.style.padding="4px 8px";
-
-      var nr=document.createElement("span");
-      nr.style.cssText="font-weight:900;color:#4ae87a;min-width:24px;font-size:0.82rem";
-      nr.textContent="#"+sp.nr;
-
-      var nm=document.createElement("span");
-      nm.style.cssText="flex:1;font-size:0.82rem";
-      nm.textContent=sp.namn;
-
-      var cntEl=document.createElement("span");
-      cntEl.style.cssText="font-size:0.68rem;color:#7aaa88;white-space:nowrap";
-      cntEl.textContent=count(sp)+" mat.";
-
-      var btnS=document.createElement("button");
-      btnS.className="btn"+(sel==="start"?" on":"");
-      btnS.style.cssText="padding:2px 7px;font-size:0.65rem";
-      btnS.textContent="Start";
-      btnS.addEventListener("click",function(){
-        matchSelections[sp.id]=sel==="start"?null:"start";
-        renderMatchTruppListByCount();
-      });
-
-      row.appendChild(nr);
-      row.appendChild(nm);
-      row.appendChild(cntEl);
-      row.appendChild(btnS);
-      list.appendChild(row);
-    });
-  }
-
-  renderMatchTruppList=renderMatchTruppListByCount;
-  window.renderMatchTruppList=renderMatchTruppListByCount;
-
-  function apply(){
-    setVersion();
-    try{renderMatchTruppListByCount();}catch(e){}
-  }
+  /*
+    Medvetet ingen MutationObserver här.
+    Medvetet inga återkommande listsorteringar.
+    Den här versionen ska vara en lugn bas för att se om telefonsegheten försvinner.
+  */
 
   if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",apply);
+    document.addEventListener("DOMContentLoaded",setVersion);
   }else{
-    apply();
-  }
-
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
-  setTimeout(apply,2000);
-
-  window.tt219RenderMatchTruppListByCount=renderMatchTruppListByCount;
-})();
-
-/* === slut v219-match-list-sort-by-played-count === */
-
-
-/* === v220-force-match-dom-sort-by-count ===
-   Bas: 219.
-   Problem:
-   - Matcher → Match visas fortfarande i tröjnummerordning.
-   - Äldre rendering bygger listan efter nummer efter vår renderfunktion.
-   Fix:
-   - Sorterar den synliga DOM-listan #match-trupp-list efter texten "X mat.".
-   - Lägst antal matcher överst.
-   - Vid lika antal sorteras alfabetiskt efter namn.
-   - Körs efter rendering och via MutationObserver.
-   Rör inte data, statistik-id, matchsparning, trupp, Utgångsläge eller Taktikfilm.
-   Endast app.js behöver bytas.
-*/
-
-(function(){
-  if(window.__tt220ForceMatchDomSortByCount)return;
-  window.__tt220ForceMatchDomSortByCount=true;
-
-  var sorting=false;
-
-  function setVersion(){
-    try{
-      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
-      spans.forEach(function(s){
-        var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="220";
-      });
-    }catch(e){}
-  }
-
-  function rowName(row){
-    try{
-      var spans=row.querySelectorAll("span");
-      if(spans && spans.length>=2){
-        return String(spans[1].textContent||"").trim();
-      }
-    }catch(e){}
-
-    try{
-      return String(row.textContent||"")
-        .replace(/^#?\d+\s*/,"")
-        .replace(/\d+\s*mat\./i,"")
-        .replace(/\bStart\b/i,"")
-        .trim();
-    }catch(e){
-      return "";
-    }
-  }
-
-  function rowCount(row){
-    try{
-      var txt=String(row.textContent||"");
-      var m=txt.match(/(\d+)\s*mat\./i);
-      if(m)return parseInt(m[1],10)||0;
-    }catch(e){}
-    return 0;
-  }
-
-  function rowNumber(row){
-    try{
-      var txt=String(row.textContent||"");
-      var m=txt.match(/#\s*(\d+)/);
-      if(m)return parseInt(m[1],10)||0;
-    }catch(e){}
-    return 0;
-  }
-
-  function sortVisibleMatchList(){
-    if(sorting)return;
-
-    var list=document.getElementById("match-trupp-list");
-    if(!list)return;
-
-    var rows=Array.from(list.children||[]).filter(function(el){
-      return el && el.classList && el.classList.contains("row");
-    });
-
-    if(rows.length<2)return;
-
-    sorting=true;
-    try{
-      rows.sort(function(a,b){
-        var ca=rowCount(a);
-        var cb=rowCount(b);
-        if(ca!==cb)return ca-cb;
-
-        var na=rowName(a);
-        var nb=rowName(b);
-        var c=na.localeCompare(nb,"sv",{sensitivity:"base"});
-        if(c!==0)return c;
-
-        return rowNumber(a)-rowNumber(b);
-      });
-
-      rows.forEach(function(r){
-        list.appendChild(r);
-      });
-    }catch(e){}
-    sorting=false;
-  }
-
-  function scheduleSort(){
-    setTimeout(sortVisibleMatchList,0);
-    setTimeout(sortVisibleMatchList,60);
-    setTimeout(sortVisibleMatchList,180);
-    setTimeout(sortVisibleMatchList,400);
-  }
-
-  // Wrap om nuvarande renderfunktion, men lita även på DOM-sorteringen efteråt.
-  var prevRender=typeof renderMatchTruppList==="function" ? renderMatchTruppList : null;
-  if(prevRender && !prevRender.__tt220Wrapped){
-    var wrapped=function(){
-      var res=prevRender.apply(this,arguments);
-      scheduleSort();
-      return res;
-    };
-    wrapped.__tt220Wrapped=true;
-    renderMatchTruppList=wrapped;
-    window.renderMatchTruppList=wrapped;
-  }
-
-  function observeList(){
-    var list=document.getElementById("match-trupp-list");
-    if(!list || list.__tt220Observed)return;
-    list.__tt220Observed=true;
-
-    try{
-      var mo=new MutationObserver(function(){
-        if(sorting)return;
-        scheduleSort();
-      });
-      mo.observe(list,{childList:true,subtree:false});
-    }catch(e){}
-  }
-
-  function apply(){
     setVersion();
-    observeList();
-    scheduleSort();
   }
 
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",apply);
-  }else{
-    apply();
-  }
-
-  // När man går in i Matcher/Match ritas listan ofta efter klicket.
-  document.addEventListener("click",function(e){
-    try{
-      var t=e.target;
-      var txt=String((t&&t.textContent)||"").trim().toLowerCase();
-      var lag=t&&t.getAttribute?t.getAttribute("data-lag"):"";
-      var id=String((t&&t.id)||"").toLowerCase();
-
-      if(lag==="match" || txt==="match" || txt==="matcher" || id.indexOf("match")>=0){
-        setTimeout(apply,0);
-        setTimeout(apply,120);
-        setTimeout(apply,350);
-      }
-    }catch(err){}
-  },true);
-
-  setTimeout(apply,300);
-  setTimeout(apply,1000);
-  setTimeout(apply,2000);
-
-  window.tt220SortVisibleMatchList=sortVisibleMatchList;
+  setTimeout(setVersion,300);
 })();
 
-/* === slut v220-force-match-dom-sort-by-count === */
+/* === slut v221-mobile-performance-cleanup === */
