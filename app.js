@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -21793,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -21900,7 +21900,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -22083,7 +22083,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -22220,7 +22220,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -22443,7 +22443,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -22773,7 +22773,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -23088,7 +23088,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -23347,7 +23347,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -23476,7 +23476,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -23521,7 +23521,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -23698,7 +23698,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -23974,7 +23974,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -24141,7 +24141,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -24273,7 +24273,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -24385,7 +24385,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -24558,7 +24558,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -24710,7 +24710,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -24859,7 +24859,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -25062,7 +25062,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -25339,7 +25339,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -25436,7 +25436,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -25553,7 +25553,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="241";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
       });
     }catch(e){}
   }
@@ -25766,3 +25766,197 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt241RitaToggleTaktikCleanup=apply241;
 })();
 /* === slut v241-rita-toggle-taktik-cleanup === */
+
+
+/* === v242-rita-toggle-keep-main-row ===
+   - Fixar Rita-toggle i vanligt Tavla-läge genom att visa/dölja själva ritknapparna, inte hela huvudraden.
+   - I Taktikfilm döljs bara huvudmenyns Rita-knapp/ritverktyg, medan resten av översta huvudraden visas.
+   - Lämnar taktikfilmsmenyn och dess streck-/färgval i fred.
+*/
+(function(){
+  if(window.__tt242RitaToggleKeepMainRow)return;
+  window.__tt242RitaToggleKeepMainRow=true;
+
+  var ritaOpen242=null;
+
+  function setVersion242(){
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="242";
+      });
+    }catch(e){}
+  }
+
+  function isVisible242(el){
+    if(!el)return false;
+    try{
+      var cs=getComputedStyle(el);
+      return cs.display!=="none" && cs.visibility!=="hidden";
+    }catch(e){return false;}
+  }
+
+  function isTaktikActive242(){
+    try{
+      var p=document.getElementById("panel-taktik");
+      if(p && p.classList.contains("on"))return true;
+      if(document.querySelector('.tab.on[data-panel="taktik"]'))return true;
+      var edit=document.getElementById("edit-taktik-ui");
+      if(edit && getComputedStyle(edit).display!=="none")return true;
+      if(typeof isEditingTaktik!=="undefined" && isEditingTaktik)return true;
+      if(typeof editingTaktikIdx!=="undefined" && editingTaktikIdx!==null)return true;
+      if(typeof playback!=="undefined" && playback)return true;
+    }catch(e){}
+    return false;
+  }
+
+  function isInTaktikUi242(el){
+    if(!el || !el.closest)return false;
+    return !!el.closest('#edit-taktik-ui,#rec-ui,#taktikbar,#panel-taktik');
+  }
+
+  function ritaButtons242(){
+    var arr=[];
+    try{
+      document.querySelectorAll('button,.btn,[role="button"]').forEach(function(el){
+        var txt=(el.textContent||"").trim().toLowerCase();
+        var title=(el.getAttribute("title")||"").trim().toLowerCase();
+        var aria=(el.getAttribute("aria-label")||"").trim().toLowerCase();
+        if(txt==="rita" || title==="rita" || aria==="rita")arr.push(el);
+      });
+    }catch(e){}
+    return arr;
+  }
+
+  function tavlaRitaItems242(){
+    var ids=[
+      "tt236-rita-move","btn-arrow","btn-freehand","btn-zone","btn-text",
+      "tt236-rita-clear","tt236-rita-undo","tt236-rita-reset","btn-movement"
+    ];
+    var items=[];
+    ids.forEach(function(id){var el=document.getElementById(id);if(el)items.push(el);});
+    return items;
+  }
+
+  function optionItems242(){
+    var ids=["arrow-options","freehand-options","zone-options"];
+    var items=[];
+    ids.forEach(function(id){var el=document.getElementById(id);if(el)items.push(el);});
+    return items;
+  }
+
+  function mainRitaRow242(){
+    var ref=document.getElementById("tt236-rita-move") || document.getElementById("btn-arrow") || document.getElementById("btn-freehand") || document.getElementById("btn-zone");
+    return ref&&ref.parentNode?ref.parentNode:null;
+  }
+
+  function injectStyle242(){
+    if(document.getElementById("tt242-rita-toggle-style"))return;
+    var st=document.createElement("style");
+    st.id="tt242-rita-toggle-style";
+    st.textContent=[
+      /* Motverkar v241 som råkade kunna dölja hela huvudraden. */
+      'body.tt241-taktik-active .tt241-tavla-rita-bar.tt242-keep-main-row{display:flex!important}',
+      'body.tt241-rita-closed:not(.tt241-taktik-active) .tt241-tavla-rita-bar.tt242-keep-main-row{display:flex!important}',
+      'body.tt241-rita-open:not(.tt241-taktik-active) .tt241-tavla-rita-bar.tt242-keep-main-row{display:flex!important}',
+      '.tt242-hidden{display:none!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function unhideMainRow242(){
+    var row=mainRitaRow242();
+    if(row){
+      row.classList.add("tt242-keep-main-row");
+      row.style.removeProperty("display");
+    }
+  }
+
+  function setHidden242(el,hidden){
+    if(!el)return;
+    el.classList.toggle("tt242-hidden",!!hidden);
+    if(hidden)el.style.setProperty("display","none","important");
+    else el.style.removeProperty("display");
+  }
+
+  function applyTavlaToggle242(){
+    var taktik=isTaktikActive242();
+    unhideMainRow242();
+
+    // Huvudmenyns Rita-knapp ska bort i Taktikfilm, men övriga huvudmenyn ska vara kvar.
+    ritaButtons242().forEach(function(btn){
+      setHidden242(btn,taktik);
+    });
+
+    var tools=tavlaRitaItems242();
+    if(ritaOpen242===null){
+      // Bevara nuvarande startläge från 239/241, men gör det styrbart efter första klicket.
+      ritaOpen242=tools.some(function(el){return isVisible242(el) && !isInTaktikUi242(el);});
+      if(ritaOpen242===null)ritaOpen242=false;
+    }
+
+    tools.forEach(function(el){
+      // Taktikfilmens egna knappar ska inte påverkas här.
+      if(isInTaktikUi242(el))return;
+      setHidden242(el,taktik || !ritaOpen242);
+    });
+
+    optionItems242().forEach(function(el){
+      // I Taktikfilm ska streck-/färgvalen få leva i taktikfilmsmenyn.
+      if(taktik && isInTaktikUi242(el)){
+        el.classList.remove("tt242-hidden");
+        return;
+      }
+      // I Tavla ska valen följa Rita-menyn. De ska bara kunna synas när Rita är öppen.
+      if(!taktik)setHidden242(el,!ritaOpen242);
+      else if(!isInTaktikUi242(el))setHidden242(el,true);
+    });
+  }
+
+  function bindRitaButtons242(){
+    ritaButtons242().forEach(function(btn){
+      if(btn.dataset.tt242Bound==="1")return;
+      btn.dataset.tt242Bound="1";
+      btn.addEventListener("click",function(e){
+        if(isTaktikActive242())return;
+        e.preventDefault();
+        e.stopPropagation();
+        ritaOpen242=!ritaOpen242;
+        setTimeout(apply242,0);
+        setTimeout(apply242,40);
+      },true);
+    });
+  }
+
+  var oldSetMode242=typeof setMode==="function"?setMode:null;
+  if(oldSetMode242 && !oldSetMode242.__tt242Wrapped){
+    var wrappedSetMode242=function(){
+      var res=oldSetMode242.apply(this,arguments);
+      setTimeout(apply242,0);
+      setTimeout(apply242,60);
+      return res;
+    };
+    wrappedSetMode242.__tt242Wrapped=true;
+    setMode=wrappedSetMode242;
+    window.setMode=wrappedSetMode242;
+  }
+
+  function apply242(){
+    setVersion242();
+    injectStyle242();
+    try{if(typeof window.tt241RitaToggleTaktikCleanup==="function")window.tt241RitaToggleTaktikCleanup();}catch(e){}
+    try{if(typeof window.tt239MoveNormalTavlaOptionsNextToTool==="function" && !isTaktikActive242() && ritaOpen242!==false)window.tt239MoveNormalTavlaOptionsNextToTool();}catch(e){}
+    unhideMainRow242();
+    bindRitaButtons242();
+    applyTavlaToggle242();
+    setVersion242();
+  }
+
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply242);
+  else apply242();
+  document.addEventListener("click",function(){setTimeout(apply242,70);setTimeout(apply242,160);},true);
+  window.addEventListener("resize",function(){setTimeout(apply242,120);});
+  [100,300,700,1200,2000,3200].forEach(function(ms){setTimeout(apply242,ms);});
+  window.tt242ApplyRitaToggleKeepMainRow=apply242;
+})();
+/* === slut v242-rita-toggle-keep-main-row === */
