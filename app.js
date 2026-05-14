@@ -25321,3 +25321,101 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt236ApplyTavlaRitaToolbar=apply236;
 })();
 /* === slut v237-tavla-rita-toolbar === */
+
+
+/* === v238-normal-tavla-drawing-options-inside-rita ===
+   Bas: 237.
+   - Gäller endast vanligt Tavla-läge, inte fullscreen-portrait.
+   - Flyttar pil/frihand/zon-valen (#arrow-options, #freehand-options, #zone-options)
+     in i samma horisontella Rita-rad som verktygsknapparna.
+   - Gör Rita-raden scrollbar i sidled så knappar + val får plats på mobil.
+   - Rör inte själva ritfunktionerna eller Taktikfilm/rörelsepil.
+*/
+(function(){
+  if(window.__tt238NormalTavlaOptionsInRita)return;
+  window.__tt238NormalTavlaOptionsInRita=true;
+
+  function setVersion238(){
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="238";
+      });
+    }catch(e){}
+  }
+
+  function ritaBar238(){
+    var ref=document.getElementById("tt236-rita-move")||document.getElementById("btn-arrow")||document.getElementById("btn-freehand")||document.getElementById("btn-zone");
+    return ref&&ref.parentNode?ref.parentNode:null;
+  }
+
+  function injectStyle238(){
+    if(document.getElementById("tt238-normal-options-style"))return;
+    var st=document.createElement("style");
+    st.id="tt238-normal-options-style";
+    st.textContent=[
+      "body:not(.fullscreen-portrait) .tt238-rita-scrollbar{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:4px!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;max-width:100%!important;scrollbar-width:thin!important;padding-bottom:2px!important}",
+      "body:not(.fullscreen-portrait) #arrow-options.tt238-rita-options,",
+      "body:not(.fullscreen-portrait) #freehand-options.tt238-rita-options,",
+      "body:not(.fullscreen-portrait) #zone-options.tt238-rita-options{position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;z-index:auto!important;flex:0 0 auto!important;margin:0 0 0 4px!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;max-width:none!important;gap:4px!important;align-items:center!important;white-space:nowrap!important}",
+      "body:not(.fullscreen-portrait) #arrow-options.tt238-rita-options select,",
+      "body:not(.fullscreen-portrait) #freehand-options.tt238-rita-options select,",
+      "body:not(.fullscreen-portrait) #zone-options.tt238-rita-options select{height:30px!important;min-height:30px!important;font-size:.75rem!important;max-width:92px!important}",
+      "body:not(.fullscreen-portrait) #arrow-options.tt238-rita-options button,",
+      "body:not(.fullscreen-portrait) #freehand-options.tt238-rita-options button,",
+      "body:not(.fullscreen-portrait) #zone-options.tt238-rita-options button{height:30px!important;min-height:30px!important;font-size:.75rem!important;white-space:nowrap!important}",
+      "body.fullscreen-portrait .tt238-rita-scrollbar{overflow:visible!important}"
+    ].join("\n");
+    document.head.appendChild(st);
+  }
+
+  function moveOptionsIntoRita238(){
+    try{
+      if(document.body.classList.contains("fullscreen-portrait"))return;
+      var bar=ritaBar238();
+      if(!bar)return;
+      bar.classList.add("tt238-rita-scrollbar");
+      ["arrow-options","freehand-options","zone-options"].forEach(function(id){
+        var el=document.getElementById(id);
+        if(!el)return;
+        el.classList.add("tt238-rita-options");
+        if(el.parentNode!==bar)bar.appendChild(el);
+      });
+    }catch(e){}
+  }
+
+  var oldSetMode238=typeof setMode==="function"?setMode:null;
+  if(oldSetMode238 && !oldSetMode238.__tt238Wrapped){
+    var wrappedSetMode238=function(){
+      var res=oldSetMode238.apply(this,arguments);
+      setTimeout(moveOptionsIntoRita238,0);
+      setTimeout(moveOptionsIntoRita238,30);
+      return res;
+    };
+    wrappedSetMode238.__tt238Wrapped=true;
+    setMode=wrappedSetMode238;
+    window.setMode=wrappedSetMode238;
+  }
+
+  function apply238(){
+    setVersion238();
+    injectStyle238();
+    if(typeof window.tt236ApplyTavlaRitaToolbar==="function"){
+      try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
+    }
+    moveOptionsIntoRita238();
+  }
+
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply238);
+  else apply238();
+
+  document.addEventListener("click",function(){
+    setTimeout(apply238,20);
+  },true);
+  window.addEventListener("resize",function(){setTimeout(apply238,80);});
+  setTimeout(apply238,300);
+  setTimeout(apply238,1000);
+
+  window.tt238MoveNormalTavlaOptionsIntoRita=apply238;
+})();
+/* === slut v238-normal-tavla-drawing-options-inside-rita === */
