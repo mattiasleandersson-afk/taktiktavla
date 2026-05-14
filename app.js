@@ -25339,7 +25339,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="243";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="238";
       });
     }catch(e){}
   }
@@ -25436,7 +25436,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="243";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="239";
       });
     }catch(e){}
   }
@@ -25536,30 +25536,30 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v239-normal-tavla-options-next-to-active-tool === */
 
 
-/* === v243-rita-toggle-stabilize-from-239 ===
+/* === v244-rita-toggle-individual-tools-from-239 ===
    Bas: fungerande 239.
-   Syfte:
-   - Backar bort de trasiga 240-242-idéerna genom att bygga på 239.
-   - Gör Rita-knappen i vanligt Tavla-läge till en riktig öppna/stäng-toggle.
-   - Döljer bara huvudmenyns Rita-knapp + Tavla-ritraden i Taktikfilm, inte hela översta huvudmenyraden.
-   - Säkerställer att bara aktivt ritverktygs val syns; färg/linjeval ska inte ligga öppna vid alla knappar.
+   Viktig korrigering efter 240-243:
+   - Göm ALDRIG hela huvudmenyraden/förälderraden.
+   - Rita-knappen visar/döljer bara de enskilda Tavla-ritknapparna + deras val.
+   - I Taktikfilm döljs bara huvudmenyns Rita-knapp och Tavla-ritverktygen.
+   - Taktikfilmens egna knappar (btn-tb-*) lämnas orörda.
 */
 (function(){
-  if(window.__tt243RitaToggleStabilize)return;
-  window.__tt243RitaToggleStabilize=true;
+  if(window.__tt244RitaToggleIndividualTools)return;
+  window.__tt244RitaToggleIndividualTools=true;
 
-  var ritaOpen=false;
+  var ritaOpen244=false;
 
-  function setVersion243(){
+  function setVersion244(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="243";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="244";
       });
     }catch(e){}
   }
 
-  function isTaktikActive243(){
+  function isTaktikActive244(){
     try{
       var p=document.getElementById("panel-taktik");
       if(p&&p.classList.contains("on"))return true;
@@ -25571,20 +25571,21 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return false;
   }
 
-  function ritaBar243(){
+  function ritaBar244(){
     var ref=document.getElementById("tt236-rita-move")||document.getElementById("btn-arrow")||document.getElementById("btn-freehand")||document.getElementById("btn-zone");
     return ref&&ref.parentNode?ref.parentNode:null;
   }
 
-  function ritaButton243(){
+  function ritaButton244(){
     var found=null;
     try{
+      var bar=ritaBar244();
       document.querySelectorAll("button,.btn").forEach(function(el){
-        if(found)return;
-        if(!el||!el.textContent)return;
-        if((el.textContent||"").trim().toLowerCase()!=="rita")return;
-        // Välj huvudmenyns Rita-knapp, inte något verktyg i rit-raden.
-        var bar=ritaBar243();
+        if(found||!el)return;
+        var txt=(el.textContent||"").trim().toLowerCase();
+        var title=(el.getAttribute("title")||"").trim().toLowerCase();
+        if(txt!=="rita" && title!=="rita")return;
+        // Välj huvudmenyns Rita-knapp, inte något som ligger inne i ritverktygsraden.
         if(bar&&bar.contains(el))return;
         found=el;
       });
@@ -25592,9 +25593,23 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return found;
   }
 
-  function optionIds243(){return ["arrow-options","freehand-options","zone-options"];}
+  function tavlaToolIds244(){
+    return [
+      "tt236-rita-move",
+      "btn-arrow",
+      "btn-freehand",
+      "btn-zone",
+      "btn-text",
+      "tt236-rita-clear",
+      "tt236-rita-undo",
+      "tt236-rita-reset",
+      "btn-movement"
+    ];
+  }
 
-  function activeOptionId243(){
+  function optionIds244(){return ["arrow-options","freehand-options","zone-options"];}
+
+  function activeOptionId244(){
     try{
       if(typeof mode!=="undefined"){
         if(mode==="arrow")return "arrow-options";
@@ -25605,101 +25620,116 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return null;
   }
 
-  function syncDrawingOptions243(){
+  function setElShown244(el,shown,displayValue){
+    if(!el)return;
+    if(shown){
+      el.style.setProperty("display",displayValue||"inline-flex","important");
+    }else{
+      el.style.setProperty("display","none","important");
+    }
+  }
+
+  function syncTavlaTools244(){
     try{
-      if(document.body.classList.contains("fullscreen-portrait"))return;
-      var active=activeOptionId243();
-      optionIds243().forEach(function(id){
+      var inTaktik=isTaktikActive244();
+      var showTools=ritaOpen244 && !inTaktik;
+
+      // Viktigt: förälderraden ska alltid få finnas kvar. Annars försvinner även format/halvplan/export osv.
+      var bar=ritaBar244();
+      if(bar){
+        bar.style.removeProperty("display");
+        bar.classList.add("tt238-rita-scrollbar");
+      }
+
+      tavlaToolIds244().forEach(function(id){
         var el=document.getElementById(id);
         if(!el)return;
-        // I vanligt Tavla-läge ska bara aktivt verktygs val synas, och bara när Rita-raden är öppen.
-        if(isTaktikActive243()){
-          // Låt Taktikfilm styra sina egna verktygsval. Här gömmer vi bara Tavla-raden, inte taktikfunktionerna.
+        // Rörelsepil ska aldrig visas i Tavla-raden. Den finns kvar för Taktikfilm via andra knappar/funktioner.
+        if(id==="btn-movement"){
+          setElShown244(el,false);
           return;
         }
-        if(ritaOpen && id===active){
-          el.style.setProperty("display","flex","important");
+        setElShown244(el,showTools,"inline-flex");
+      });
+
+      var activeOpt=activeOptionId244();
+      optionIds244().forEach(function(id){
+        var el=document.getElementById(id);
+        if(!el)return;
+        // I Taktikfilm låter vi de egna taktikfilmsknapparna styra läget; dessa Tavla-val ska inte ligga öppna i huvudmenyn.
+        if(showTools && id===activeOpt){
+          setElShown244(el,true,"flex");
         }else{
-          el.style.setProperty("display","none","important");
+          setElShown244(el,false);
         }
       });
+
+      var btn=ritaButton244();
+      if(btn){
+        if(inTaktik){
+          btn.style.setProperty("display","none","important");
+          ritaOpen244=false;
+        }else{
+          btn.style.removeProperty("display");
+          btn.classList.toggle("on",ritaOpen244);
+          btn.classList.toggle("active",ritaOpen244);
+        }
+      }
     }catch(e){}
   }
 
-  function setRitaRowVisible243(open){
+  function bindRitaButton244(){
     try{
-      var bar=ritaBar243();
-      if(!bar)return;
-      if(isTaktikActive243()){
-        bar.style.setProperty("display","none","important");
-        return;
-      }
-      if(open){
-        bar.style.setProperty("display","flex","important");
-      }else{
-        bar.style.setProperty("display","none","important");
-      }
+      var btn=ritaButton244();
+      if(!btn||btn.dataset.tt244Bound)return;
+      btn.dataset.tt244Bound="1";
+      btn.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+        if(isTaktikActive244()){
+          ritaOpen244=false;
+        }else{
+          ritaOpen244=!ritaOpen244;
+        }
+        syncTavlaTools244();
+        setTimeout(apply244,0);
+        setTimeout(apply244,60);
+      },true);
     }catch(e){}
   }
 
-  function bindRitaButton243(){
-    try{
-      var btn=ritaButton243();
-      if(!btn)return;
-      if(isTaktikActive243()){
-        btn.style.setProperty("display","none","important");
-      }else{
-        btn.style.removeProperty("display");
-        btn.classList.toggle("on",ritaOpen);
-        btn.classList.toggle("active",ritaOpen);
-      }
-      if(!btn.dataset.tt243Bound){
-        btn.dataset.tt243Bound="1";
-        btn.addEventListener("click",function(e){
-          // Ta över bara denna knapp så gamla blandade toggle-logiker inte krockar.
-          e.preventDefault();
-          e.stopPropagation();
-          if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-          if(isTaktikActive243()){
-            ritaOpen=false;
-          }else{
-            ritaOpen=!ritaOpen;
-          }
-          apply243();
-        },true);
-      }
-    }catch(e){}
+  function apply244(){
+    setVersion244();
+    bindRitaButton244();
+    syncTavlaTools244();
   }
 
-  function apply243(){
-    setVersion243();
-    bindRitaButton243();
-    if(isTaktikActive243())ritaOpen=false;
-    setRitaRowVisible243(ritaOpen);
-    syncDrawingOptions243();
-  }
-
-  var oldSetMode243=typeof setMode==="function"?setMode:null;
-  if(oldSetMode243 && !oldSetMode243.__tt243Wrapped){
-    var wrappedSetMode243=function(){
-      var res=oldSetMode243.apply(this,arguments);
-      setTimeout(apply243,0);
-      setTimeout(apply243,30);
+  var oldSetMode244=typeof setMode==="function"?setMode:null;
+  if(oldSetMode244 && !oldSetMode244.__tt244Wrapped){
+    var wrappedSetMode244=function(){
+      var res=oldSetMode244.apply(this,arguments);
+      setTimeout(apply244,0);
+      setTimeout(apply244,60);
       return res;
     };
-    wrappedSetMode243.__tt243Wrapped=true;
-    setMode=wrappedSetMode243;
-    window.setMode=wrappedSetMode243;
+    wrappedSetMode244.__tt244Wrapped=true;
+    setMode=wrappedSetMode244;
+    window.setMode=wrappedSetMode244;
   }
 
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply243);
-  else apply243();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply244);
+  else apply244();
 
-  document.addEventListener("click",function(){setTimeout(apply243,30);},true);
-  window.addEventListener("resize",function(){setTimeout(apply243,80);});
-  setTimeout(apply243,300);
-  setTimeout(apply243,1000);
+  document.addEventListener("click",function(){
+    setTimeout(apply244,0);
+    setTimeout(apply244,60);
+  },true);
+  window.addEventListener("resize",function(){setTimeout(apply244,80);});
+  setTimeout(apply244,300);
+  setTimeout(apply244,1000);
+  setTimeout(apply244,1800);
 
-  window.tt243ApplyRitaToggleStabilize=apply243;
+  window.tt244ApplyRitaToggleIndividualTools=apply244;
 })();
-/* === slut v243-rita-toggle-stabilize-from-239 === */
+/* === slut v244-rita-toggle-individual-tools-from-239 === */
