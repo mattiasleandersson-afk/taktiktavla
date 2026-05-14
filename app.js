@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -21793,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -21900,7 +21900,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -22083,7 +22083,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -22220,7 +22220,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -22443,7 +22443,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -22773,7 +22773,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -23088,7 +23088,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -23347,7 +23347,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -23476,7 +23476,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -23521,7 +23521,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="222";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
       });
     }catch(e){}
   }
@@ -23646,3 +23646,305 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v222-match-list-direct-count-sort === */
+
+
+/* === v223-match-lineup-jersey-symbols ===
+   Bas: 222.
+   Första test:
+   - Endast visuell spelarsymbol i laguppställningsläget.
+   - Val: Cirkel/Tröja.
+   - Val: Nummer på/av.
+   - Rör inte data, id, positioner, drag/drop, statistik, spara/ladda, Utgångsläge eller Taktikfilm.
+   - Cirkeln finns kvar som osynlig klick-/dragyta. Tröjan är bara visuell.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt223MatchLineupJerseySymbols)return;
+  window.__tt223MatchLineupJerseySymbols=true;
+
+  var LS_SYMBOL="tt223_match_symbol";
+  var LS_NUMBERS="tt223_match_numbers";
+
+  function getSymbol(){
+    try{return localStorage.getItem(LS_SYMBOL)||"circle";}catch(e){return "circle";}
+  }
+
+  function setSymbol(v){
+    try{localStorage.setItem(LS_SYMBOL,v);}catch(e){}
+  }
+
+  function getNumbers(){
+    try{
+      var v=localStorage.getItem(LS_NUMBERS);
+      return v===null ? true : v!=="off";
+    }catch(e){return true;}
+  }
+
+  function setNumbers(on){
+    try{localStorage.setItem(LS_NUMBERS,on?"on":"off");}catch(e){}
+  }
+
+  function isLineupMode(){
+    try{
+      return !!((matchRoster||[]).length && document.getElementById("bench-bar") && document.getElementById("bench-bar").classList.contains("active"));
+    }catch(e){
+      return false;
+    }
+  }
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+      });
+    }catch(e){}
+  }
+
+  function injectStyle(){
+    if(document.getElementById("tt223-style"))return;
+    var st=document.createElement("style");
+    st.id="tt223-style";
+    st.textContent=[
+      "#tt223-symbol-controls{display:flex;gap:3px;align-items:center;flex-wrap:wrap;margin-top:2px}",
+      "#tt223-symbol-controls .tt223-mini{background:transparent;border:1px solid #2d4a35;border-radius:5px;color:#7aaa88;padding:2px 6px;font-size:.58rem;font-weight:800;cursor:pointer;white-space:nowrap}",
+      "#tt223-symbol-controls .tt223-mini.on{border-color:#4ae87a;color:#4ae87a;background:rgba(74,232,122,.08)}",
+      "@media(max-width:760px){#tt223-symbol-controls .tt223-mini{padding:2px 5px;font-size:.56rem}}"
+    ].join("\n");
+    document.head.appendChild(st);
+  }
+
+  function jerseyD(x,y){
+    // Enkel tröjform centrerad på samma punkt som gamla cirkeln.
+    return [
+      "M",x-18,y-12,
+      "L",x-9,y-22,
+      "L",x-3,y-16,
+      "L",x+3,y-16,
+      "L",x+9,y-22,
+      "L",x+18,y-12,
+      "L",x+13,y-3,
+      "L",x+10,y-6,
+      "L",x+10,y+18,
+      "L",x-10,y+18,
+      "L",x-10,y-6,
+      "L",x-13,y-3,
+      "Z"
+    ].join(" ");
+  }
+
+  function ensureJerseyForGroup(g,p){
+    if(!g || !p)return;
+
+    var c=g.querySelector("circle");
+    var t=g.querySelector("text.token-text");
+    var jersey=g.querySelector("path.tt223-jersey");
+
+    var symbol=getSymbol();
+    var showNr=getNumbers();
+
+    if(symbol!=="jersey"){
+      if(jersey)jersey.remove();
+      if(c){
+        c.style.opacity="";
+        c.setAttribute("pointer-events","all");
+      }
+      if(t){
+        t.style.display=showNr ? "" : "none";
+      }
+      return;
+    }
+
+    if(!jersey){
+      jersey=document.createElementNS("http://www.w3.org/2000/svg","path");
+      jersey.setAttribute("class","tt223-jersey");
+      jersey.setAttribute("pointer-events","none");
+      if(t)g.insertBefore(jersey,t);
+      else g.appendChild(jersey);
+    }
+
+    var fill=(c && c.getAttribute("fill")) || (p.team==="home"?homeColor:awayColor);
+    var stroke=(c && c.getAttribute("stroke")) || "#fff";
+
+    jersey.setAttribute("d",jerseyD(p.x,p.y));
+    jersey.setAttribute("fill",fill);
+    jersey.setAttribute("stroke",stroke);
+    jersey.setAttribute("stroke-width","2");
+    jersey.setAttribute("stroke-linejoin","round");
+
+    // Behåll den gamla cirkeln som klick-/dragyta men gör den i princip osynlig.
+    if(c){
+      c.style.opacity="0.01";
+      c.setAttribute("pointer-events","all");
+    }
+
+    if(t){
+      t.style.display=showNr ? "" : "none";
+      t.setAttribute("y",p.y+1);
+      t.setAttribute("font-size","13");
+      t.setAttribute("font-weight","900");
+      t.setAttribute("paint-order","stroke");
+      t.setAttribute("stroke","rgba(0,0,0,0.75)");
+      t.setAttribute("stroke-width","1.2");
+    }
+  }
+
+  function updateJerseyPositions(){
+    if(!isLineupMode())return;
+
+    try{
+      (players||[]).forEach(function(p){
+        if(p.team!=="home")return;
+        var g=document.querySelector(".player-token[data-id='"+p.id+"']");
+        if(!g)return;
+        ensureJerseyForGroup(g,p);
+      });
+    }catch(e){}
+  }
+
+  function applySymbols(){
+    try{
+      var lineup=isLineupMode();
+
+      if(!lineup){
+        // Utanför laguppställning: städa bort testformen om den råkar finnas.
+        document.querySelectorAll("path.tt223-jersey").forEach(function(p){p.remove();});
+        document.querySelectorAll(".player-token circle").forEach(function(c){c.style.opacity="";});
+        document.querySelectorAll(".player-token text.token-text").forEach(function(t){t.style.display="";});
+        return;
+      }
+
+      updateJerseyPositions();
+    }catch(e){}
+  }
+
+  function updateControlState(){
+    try{
+      var wrap=document.getElementById("tt223-symbol-controls");
+      if(!wrap)return;
+      var sym=getSymbol();
+      var nums=getNumbers();
+
+      wrap.querySelectorAll("[data-tt223-symbol]").forEach(function(b){
+        b.classList.toggle("on",b.getAttribute("data-tt223-symbol")===sym);
+      });
+      var n=wrap.querySelector("[data-tt223-numbers]");
+      if(n){
+        n.classList.toggle("on",nums);
+        n.textContent=nums ? "Nr på" : "Nr av";
+      }
+    }catch(e){}
+  }
+
+  function injectControls(){
+    injectStyle();
+
+    var bar=document.getElementById("bench-bar");
+    if(!bar)return;
+    if(document.getElementById("tt223-symbol-controls")){
+      updateControlState();
+      return;
+    }
+
+    var left=bar.firstElementChild;
+    if(!left)return;
+
+    var wrap=document.createElement("div");
+    wrap.id="tt223-symbol-controls";
+
+    var bCircle=document.createElement("button");
+    bCircle.type="button";
+    bCircle.className="tt223-mini";
+    bCircle.setAttribute("data-tt223-symbol","circle");
+    bCircle.textContent="Cirkel";
+    bCircle.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      setSymbol("circle");
+      updateControlState();
+      try{render();}catch(err){applySymbols();}
+    });
+
+    var bJersey=document.createElement("button");
+    bJersey.type="button";
+    bJersey.className="tt223-mini";
+    bJersey.setAttribute("data-tt223-symbol","jersey");
+    bJersey.textContent="Tröja";
+    bJersey.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      setSymbol("jersey");
+      updateControlState();
+      try{render();}catch(err){applySymbols();}
+    });
+
+    var bNr=document.createElement("button");
+    bNr.type="button";
+    bNr.className="tt223-mini";
+    bNr.setAttribute("data-tt223-numbers","1");
+    bNr.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      setNumbers(!getNumbers());
+      updateControlState();
+      try{render();}catch(err){applySymbols();}
+    });
+
+    wrap.appendChild(bCircle);
+    wrap.appendChild(bJersey);
+    wrap.appendChild(bNr);
+
+    left.appendChild(wrap);
+    updateControlState();
+  }
+
+  // Wrap render lätt: render ritar som vanligt, sedan byter vi bara utseende i laguppställning.
+  var oldRender=typeof render==="function" ? render : null;
+  if(oldRender && !oldRender.__tt223Wrapped){
+    var renderWrapped=function(){
+      var res=oldRender.apply(this,arguments);
+      setVersion();
+      injectControls();
+      applySymbols();
+      return res;
+    };
+    renderWrapped.__tt223Wrapped=true;
+    render=renderWrapped;
+    window.render=renderWrapped;
+  }
+
+  // Under drag uppdaterar gamla moveDrag cirkel/text. Vi uppdaterar bara tröjans path efteråt.
+  var oldMoveDrag=typeof moveDrag==="function" ? moveDrag : null;
+  if(oldMoveDrag && !oldMoveDrag.__tt223Wrapped){
+    var moveWrapped=function(){
+      var res=oldMoveDrag.apply(this,arguments);
+      if(getSymbol()==="jersey")updateJerseyPositions();
+      return res;
+    };
+    moveWrapped.__tt223Wrapped=true;
+    moveDrag=moveWrapped;
+    window.moveDrag=moveWrapped;
+  }
+
+  function apply(){
+    setVersion();
+    injectControls();
+    updateControlState();
+    applySymbols();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  setTimeout(apply,300);
+  setTimeout(apply,1000);
+
+  window.tt223ApplyMatchLineupSymbols=applySymbols;
+})();
+
+/* === slut v223-match-lineup-jersey-symbols === */
