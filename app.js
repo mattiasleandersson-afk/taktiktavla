@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -21793,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -21900,7 +21900,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -22083,7 +22083,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -22220,7 +22220,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -22443,7 +22443,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -22773,7 +22773,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -23088,7 +23088,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -23347,7 +23347,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -23476,7 +23476,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -23521,7 +23521,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -23698,7 +23698,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="223";
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
       });
     }catch(e){}
   }
@@ -23948,3 +23948,305 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 /* === slut v223-match-lineup-jersey-symbols === */
+
+
+/* === v225-iphone-bench-menu-visible ===
+   Bas: 223.
+   Problem:
+   - På iPhone syns mål/resultatpanelen, men bänk-/avbytarmenyn i laguppställning syns inte.
+   - På dator syns den.
+   Trolig orsak:
+   - bench-bar hamnar för lågt/utanför viewport eller bakom annan mobilpanel.
+   Fix:
+   - Endast iPhone/små touchskärmar.
+   - Gör bench-bar synlig, scrollbar och ovanför planen/overlays.
+   - Gör den inte för hög; avbytare kan scrollas.
+   - Rör inte data, statistik, spara/ladda, Utgångsläge eller Taktikfilm.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt225IphoneBenchMenuVisible)return;
+  window.__tt225IphoneBenchMenuVisible=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
+      });
+    }catch(e){}
+  }
+
+  function injectStyle(){
+    if(document.getElementById("tt225-style"))return;
+
+    var st=document.createElement("style");
+    st.id="tt225-style";
+    st.textContent=[
+      "@media (max-width: 760px), (pointer: coarse) and (max-width: 900px){",
+      "  body.tt101-match-editor-active #bench-bar,",
+      "  #bench-bar.active{",
+      "    display:flex !important;",
+      "    visibility:visible !important;",
+      "    opacity:1 !important;",
+      "    position:fixed !important;",
+      "    left:8px !important;",
+      "    right:8px !important;",
+      "    bottom:calc(env(safe-area-inset-bottom, 0px) + 8px) !important;",
+      "    z-index:2147483000 !important;",
+      "    max-height:min(42vh, 260px) !important;",
+      "    overflow:auto !important;",
+      "    -webkit-overflow-scrolling:touch !important;",
+      "    box-sizing:border-box !important;",
+      "    flex-wrap:wrap !important;",
+      "    align-items:flex-start !important;",
+      "    gap:6px !important;",
+      "    padding:7px !important;",
+      "    border-radius:10px !important;",
+      "    background:rgba(8,16,11,.96) !important;",
+      "    border:1px solid #2d4a35 !important;",
+      "  }",
+      "  body.tt101-match-editor-active #bench-bar > *,",
+      "  #bench-bar.active > *{",
+      "    max-width:100% !important;",
+      "  }",
+      "  body.tt101-match-editor-active #bench-list,",
+      "  #bench-bar.active #bench-list{",
+      "    max-height:150px !important;",
+      "    overflow:auto !important;",
+      "    -webkit-overflow-scrolling:touch !important;",
+      "  }",
+      "  body.tt101-match-editor-active #goal-overlay{",
+      "    z-index:2147482000 !important;",
+      "  }",
+      "}"
+    ].join("\n");
+
+    document.head.appendChild(st);
+  }
+
+  function isSmallTouch(){
+    try{
+      return (window.matchMedia && window.matchMedia("(max-width: 760px)").matches) ||
+             ((navigator.maxTouchPoints||0)>0 && window.innerWidth<=900);
+    }catch(e){
+      return false;
+    }
+  }
+
+  function isLineupMode(){
+    try{
+      return !!((matchRoster||[]).length && document.getElementById("bench-bar"));
+    }catch(e){
+      return false;
+    }
+  }
+
+  function forceBenchVisible(){
+    setVersion();
+    injectStyle();
+
+    if(!isSmallTouch() || !isLineupMode())return;
+
+    try{
+      var bar=document.getElementById("bench-bar");
+      if(!bar)return;
+
+      bar.classList.add("active");
+      bar.style.display="flex";
+      bar.style.visibility="visible";
+      bar.style.opacity="1";
+      bar.style.position="fixed";
+      bar.style.left="8px";
+      bar.style.right="8px";
+      bar.style.bottom="calc(env(safe-area-inset-bottom, 0px) + 8px)";
+      bar.style.zIndex="2147483000";
+      bar.style.maxHeight="min(42vh, 260px)";
+      bar.style.overflow="auto";
+      bar.style.webkitOverflowScrolling="touch";
+      bar.style.boxSizing="border-box";
+      bar.style.flexWrap="wrap";
+    }catch(e){}
+  }
+
+  // Wrap render lätt så menyn återställs efter omritning.
+  var oldRender=typeof render==="function" ? render : null;
+  if(oldRender && !oldRender.__tt225Wrapped){
+    var wrapped=function(){
+      var res=oldRender.apply(this,arguments);
+      setTimeout(forceBenchVisible,0);
+      return res;
+    };
+    wrapped.__tt225Wrapped=true;
+    render=wrapped;
+    window.render=wrapped;
+  }
+
+  // När man laddar uppställning eller trycker i matchläget kan baren skapas/ändras efter klick.
+  document.addEventListener("click",function(e){
+    try{
+      var txt=String((e.target&&e.target.textContent)||"").toLowerCase();
+      var id=String((e.target&&e.target.id)||"").toLowerCase();
+      if(txt.indexOf("ladda uppst")>=0 || id.indexOf("bench")>=0 || id.indexOf("match")>=0){
+        setTimeout(forceBenchVisible,0);
+        setTimeout(forceBenchVisible,150);
+        setTimeout(forceBenchVisible,500);
+      }
+    }catch(err){}
+  },true);
+
+  function apply(){
+    injectStyle();
+    setVersion();
+    forceBenchVisible();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  setTimeout(apply,300);
+  setTimeout(apply,1000);
+
+  window.tt225ForceBenchVisible=forceBenchVisible;
+})();
+
+/* === slut v225-iphone-bench-menu-visible === */
+
+
+/* === v226-iphone-second-menu-horizontal-scroll ===
+   Bas: 225.
+   Problem:
+   - På iPhone blir andra menyraden, t.ex. Formation / Utgångsläge / ... / Användare,
+     bredare än skärmen men går inte att scrolla i sidled.
+   - Översta raden fungerar redan.
+   Fix:
+   - Endast mobil/små touchskärmar.
+   - Gör andra tab-/panelraden horisontellt scrollbar.
+   - Tvingar knapparna att ligga på en rad och inte krympa sönder.
+   - Rör inte funktion, data, statistik, spara/ladda, Utgångsläge eller Taktikfilm.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt226IphoneSecondMenuHorizontalScroll)return;
+  window.__tt226IphoneSecondMenuHorizontalScroll=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="226";
+      });
+    }catch(e){}
+  }
+
+  function injectStyle(){
+    if(document.getElementById("tt226-style"))return;
+
+    var st=document.createElement("style");
+    st.id="tt226-style";
+    st.textContent=[
+      "@media (max-width: 760px), (pointer: coarse) and (max-width: 900px){",
+      "  /* Andra huvudmenyraden: Formation / Utgångsläge / Taktikfilm / Matcher / Användare */",
+      "  .tabs,",
+      "  .tabbar,",
+      "  #tabs,",
+      "  #main-tabs,",
+      "  #panel-tabs,",
+      "  .main-tabs,",
+      "  nav:has(.tab),",
+      "  div:has(> .tab){",
+      "    overflow-x:auto !important;",
+      "    overflow-y:hidden !important;",
+      "    -webkit-overflow-scrolling:touch !important;",
+      "    scrollbar-width:none;",
+      "    max-width:100vw !important;",
+      "    box-sizing:border-box !important;",
+      "  }",
+      "  .tabs::-webkit-scrollbar,",
+      "  .tabbar::-webkit-scrollbar,",
+      "  #tabs::-webkit-scrollbar,",
+      "  #main-tabs::-webkit-scrollbar,",
+      "  #panel-tabs::-webkit-scrollbar,",
+      "  .main-tabs::-webkit-scrollbar{",
+      "    display:none;",
+      "  }",
+      "  .tabs .tab,",
+      "  .tabbar .tab,",
+      "  #tabs .tab,",
+      "  #main-tabs .tab,",
+      "  #panel-tabs .tab,",
+      "  .main-tabs .tab,",
+      "  nav .tab,",
+      "  div > .tab{",
+      "    flex:0 0 auto !important;",
+      "    white-space:nowrap !important;",
+      "  }",
+      "}"
+    ].join("\n");
+
+    document.head.appendChild(st);
+  }
+
+  function likelySecondMenu(el){
+    if(!el || !el.querySelectorAll)return false;
+
+    try{
+      var tabs=Array.from(el.querySelectorAll(":scope > .tab"));
+      if(tabs.length<3)return false;
+      var text=tabs.map(function(t){return (t.textContent||"").trim().toLowerCase();}).join(" ");
+      return text.indexOf("formation")>=0 &&
+             text.indexOf("utgång")>=0 &&
+             (text.indexOf("taktik")>=0 || text.indexOf("matcher")>=0 || text.indexOf("använd")>=0);
+    }catch(e){
+      return false;
+    }
+  }
+
+  function applyInline(){
+    try{
+      var candidates=Array.from(document.querySelectorAll("div,nav,header,section"));
+      candidates.forEach(function(el){
+        if(!likelySecondMenu(el))return;
+
+        el.style.overflowX="auto";
+        el.style.overflowY="hidden";
+        el.style.webkitOverflowScrolling="touch";
+        el.style.maxWidth="100vw";
+        el.style.boxSizing="border-box";
+        el.style.flexWrap="nowrap";
+
+        Array.from(el.querySelectorAll(":scope > .tab")).forEach(function(btn){
+          btn.style.flex="0 0 auto";
+          btn.style.whiteSpace="nowrap";
+        });
+      });
+    }catch(e){}
+  }
+
+  function apply(){
+    setVersion();
+    injectStyle();
+    applyInline();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  setTimeout(apply,300);
+  setTimeout(apply,1000);
+  setTimeout(apply,2000);
+
+  window.tt226ApplySecondMenuScroll=apply;
+})();
+
+/* === slut v226-iphone-second-menu-horizontal-scroll === */
