@@ -25419,3 +25419,118 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt238MoveNormalTavlaOptionsIntoRita=apply238;
 })();
 /* === slut v238-normal-tavla-drawing-options-inside-rita === */
+
+
+/* === v239-normal-tavla-options-next-to-active-tool ===
+   Bas: 238.
+   - Gäller endast vanligt Tavla-läge, inte fullscreen.
+   - Låter pil/frihand/zon-valen ligga direkt till höger om respektive verktygsknapp.
+   - Behåller horisontell scroll i Rita-raden.
+   - Rör inte Taktikfilm/rörelsepil eller själva ritfunktionerna.
+*/
+(function(){
+  if(window.__tt239OptionsNextToTool)return;
+  window.__tt239OptionsNextToTool=true;
+
+  function setVersion239(){
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="239";
+      });
+    }catch(e){}
+  }
+
+  function ritaBar239(){
+    var ref=document.getElementById("tt236-rita-move")||document.getElementById("btn-arrow")||document.getElementById("btn-freehand")||document.getElementById("btn-zone");
+    return ref&&ref.parentNode?ref.parentNode:null;
+  }
+
+  function putAfter239(el,anchor){
+    if(!el||!anchor||!anchor.parentNode)return;
+    var parent=anchor.parentNode;
+    var next=anchor.nextSibling;
+    if(next===el)return;
+    parent.insertBefore(el,next);
+  }
+
+  function injectStyle239(){
+    if(document.getElementById("tt239-options-next-to-tool-style"))return;
+    var st=document.createElement("style");
+    st.id="tt239-options-next-to-tool-style";
+    st.textContent=[
+      "body:not(.fullscreen-portrait) .tt238-rita-scrollbar{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:4px!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;max-width:100%!important;scrollbar-width:thin!important;padding-bottom:2px!important}",
+      "body:not(.fullscreen-portrait) #arrow-options.tt238-rita-options,",
+      "body:not(.fullscreen-portrait) #freehand-options.tt238-rita-options,",
+      "body:not(.fullscreen-portrait) #zone-options.tt238-rita-options{position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;z-index:auto!important;flex:0 0 auto!important;margin:0 6px 0 0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;max-width:none!important;gap:4px!important;align-items:center!important;white-space:nowrap!important}",
+      "body:not(.fullscreen-portrait) #arrow-options.tt238-rita-options select,",
+      "body:not(.fullscreen-portrait) #freehand-options.tt238-rita-options select,",
+      "body:not(.fullscreen-portrait) #zone-options.tt238-rita-options select{height:30px!important;min-height:30px!important;font-size:.75rem!important;max-width:92px!important}",
+      "body:not(.fullscreen-portrait) #arrow-options.tt238-rita-options button,",
+      "body:not(.fullscreen-portrait) #freehand-options.tt238-rita-options button,",
+      "body:not(.fullscreen-portrait) #zone-options.tt238-rita-options button{height:30px!important;min-height:30px!important;font-size:.75rem!important;white-space:nowrap!important}",
+      "body.fullscreen-portrait .tt238-rita-scrollbar{overflow:visible!important}"
+    ].join("\n");
+    document.head.appendChild(st);
+  }
+
+  function moveOptionsNextToTool239(){
+    try{
+      setVersion239();
+      if(document.body.classList.contains("fullscreen-portrait"))return;
+      var bar=ritaBar239();
+      if(!bar)return;
+      bar.classList.add("tt238-rita-scrollbar");
+
+      var pairs=[
+        ["arrow-options","btn-arrow"],
+        ["freehand-options","btn-freehand"],
+        ["zone-options","btn-zone"]
+      ];
+
+      // Sätt bakifrån så ordningen blir: pil + pilval, frihand + frihandsval, zon + zonval.
+      for(var i=pairs.length-1;i>=0;i--){
+        var opt=document.getElementById(pairs[i][0]);
+        var btn=document.getElementById(pairs[i][1]);
+        if(!opt||!btn)continue;
+        opt.classList.add("tt238-rita-options");
+        putAfter239(opt,btn);
+      }
+    }catch(e){}
+  }
+
+  var oldSetMode239=typeof setMode==="function"?setMode:null;
+  if(oldSetMode239 && !oldSetMode239.__tt239Wrapped){
+    var wrappedSetMode239=function(){
+      var res=oldSetMode239.apply(this,arguments);
+      setTimeout(moveOptionsNextToTool239,0);
+      setTimeout(moveOptionsNextToTool239,30);
+      return res;
+    };
+    wrappedSetMode239.__tt239Wrapped=true;
+    setMode=wrappedSetMode239;
+    window.setMode=wrappedSetMode239;
+  }
+
+  function apply239(){
+    setVersion239();
+    injectStyle239();
+    if(typeof window.tt236ApplyTavlaRitaToolbar==="function"){
+      try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
+    }
+    moveOptionsNextToTool239();
+  }
+
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply239);
+  else apply239();
+
+  document.addEventListener("click",function(){
+    setTimeout(apply239,20);
+  },true);
+  window.addEventListener("resize",function(){setTimeout(apply239,80);});
+  setTimeout(apply239,300);
+  setTimeout(apply239,1000);
+
+  window.tt239MoveNormalTavlaOptionsNextToTool=apply239;
+})();
+/* === slut v239-normal-tavla-options-next-to-active-tool === */
