@@ -23809,7 +23809,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var lineup=isLineupMode();
 
       if(!lineup){
-        // Utanför laguppställning: städa bort testformen om den råkar finnas.
+        // Utanför laguppställningen: städa bort testformen om den råkar finnas.
         document.querySelectorAll("path.tt223-jersey").forEach(function(p){p.remove();});
         document.querySelectorAll(".player-token circle").forEach(function(c){c.style.opacity="";});
         document.querySelectorAll(".player-token text.token-text").forEach(function(t){t.style.display="";});
