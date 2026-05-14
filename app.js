@@ -25308,7 +25308,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply236);
   else apply236();
 
-  document.addEventListener("click",function(){
+  document.addEventListener("click",function(ev){
+    try{
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
+    }catch(e){}
     setTimeout(function(){
       setVersion236();
       renameFormationToTavla236();
@@ -25409,7 +25412,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply238);
   else apply238();
 
-  document.addEventListener("click",function(){
+  document.addEventListener("click",function(ev){
+    try{
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
+    }catch(e){}
     setTimeout(apply238,20);
   },true);
   window.addEventListener("resize",function(){setTimeout(apply238,80);});
@@ -25524,7 +25530,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply239);
   else apply239();
 
-  document.addEventListener("click",function(){
+  document.addEventListener("click",function(ev){
+    try{
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
+    }catch(e){}
     setTimeout(apply239,20);
   },true);
   window.addEventListener("resize",function(){setTimeout(apply239,80);});
@@ -25553,7 +25562,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='253';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='254';
       });
     }catch(e){}
   }
@@ -25758,7 +25767,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='253';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='254';
       });
     }catch(e){}
   }
@@ -25811,7 +25820,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='253';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='254';
       });
     }catch(e){}
   }
@@ -25837,7 +25846,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var coarse=window.matchMedia&&window.matchMedia('(pointer: coarse)').matches;
       var ua=navigator.userAgent||'';
       var explicitIpad=/iPad/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-      return explicitIpad || (coarse&&minSide>=700&&maxSide<=1400);
+      // v254: använd samma separata ritrad även på dator/tablet, men inte på smal mobil.
+      return explicitIpad || (coarse&&minSide>=700&&maxSide<=1400) || (minSide>=760);
     }catch(e){return false;}
   }
 
@@ -25990,7 +26000,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='253';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='254';
       });
     }catch(e){}
   }
@@ -26054,3 +26064,65 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt253IpadRitaOptionsTouchFix=apply253;
 })();
 /* === slut v253-ipad-rita-options-touch-fix === */
+
+
+/* === v254-desktop-own-rita-row-and-select-fix ===
+   Bas: v253.
+   - Låter v252-raden användas även på dator/tablet så flikarna hamnar på egen rad.
+   - Stoppar äldre rita-layoutpatchar från att köra när man trycker på färg-/streckvalen.
+   - Tar bort touch-action-låsning på select-valen så native-menyer kan öppnas.
+*/
+(function(){
+  if(window.__tt254DesktopRitaRowSelectFix)return;
+  window.__tt254DesktopRitaRowSelectFix=true;
+
+  function setVersion254(){
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
+        var t=(s.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='254';
+      });
+    }catch(e){}
+  }
+
+  function injectStyle254(){
+    if(document.getElementById('tt254-select-fix-style'))return;
+    var st=document.createElement('style');
+    st.id='tt254-select-fix-style';
+    st.textContent=[
+      'body.tt252-ipad-layout:not(.fullscreen-portrait) #tt252-ipad-rita-row{touch-action:auto!important;overflow-x:auto!important;overflow-y:visible!important}',
+      'body.tt252-ipad-layout:not(.fullscreen-portrait) #tt252-ipad-rita-row #arrow-options,',
+      'body.tt252-ipad-layout:not(.fullscreen-portrait) #tt252-ipad-rita-row #freehand-options,',
+      'body.tt252-ipad-layout:not(.fullscreen-portrait) #tt252-ipad-rita-row #zone-options{touch-action:auto!important;pointer-events:auto!important;overflow:visible!important}',
+      'body.tt252-ipad-layout:not(.fullscreen-portrait) #tt252-ipad-rita-row select,',
+      'body.tt252-ipad-layout:not(.fullscreen-portrait) #tt252-ipad-rita-row button{touch-action:auto!important;pointer-events:auto!important;-webkit-user-select:auto!important;user-select:auto!important}',
+      'body.tt252-ipad-layout:not(.fullscreen-portrait) #topbar{overflow:visible!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function apply254(){
+    injectStyle254();
+    setVersion254();
+    try{if(typeof window.tt252IpadOwnRitaRow==='function')window.tt252IpadOwnRitaRow();}catch(e){}
+  }
+
+  ['touchstart','pointerdown','mousedown','click'].forEach(function(type){
+    document.addEventListener(type,function(ev){
+      try{
+        if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options')){
+          // Markera att användaren interagerar med ett native-val; senare sync ska inte flytta DOM just då.
+          window.__tt254InteractingWithDrawOption=true;
+          setTimeout(function(){window.__tt254InteractingWithDrawOption=false;},650);
+        }
+      }catch(e){}
+    },true);
+  });
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply254);
+  else apply254();
+  setTimeout(apply254,100);
+  setTimeout(apply254,500);
+  setTimeout(setVersion254,2000);
+})();
+/* === slut v254-desktop-own-rita-row-and-select-fix === */
