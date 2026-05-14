@@ -25534,3 +25534,229 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt239MoveNormalTavlaOptionsNextToTool=apply239;
 })();
 /* === slut v239-normal-tavla-options-next-to-active-tool === */
+
+/* === v240-rita-toggle-and-taktik-menu-options ===
+   Bas: 239.
+   - Fixar att Rita-menyn i vanligt Tavla-läge kan öppnas/stängas igen.
+   - Döljer huvudmenyns Rita-del när Taktikfilm är aktiv, så taktikfilmsläget slipper dubbla ritknappar.
+   - Flyttar ritvalen för pil/frihand/zon till aktiv ritknapp även i Taktikfilm.
+   - Rör inte själva ritfunktionerna, sparning eller taktiksteg.
+*/
+(function(){
+  if(window.__tt240RitaToggleTaktikOptions)return;
+  window.__tt240RitaToggleTaktikOptions=true;
+
+  var ritaOpen240=null;
+
+  function setVersion240(){
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="240";
+      });
+    }catch(e){}
+  }
+
+  function isTaktikActive240(){
+    try{
+      return !!(document.querySelector('.tab.on[data-panel="taktik"]') || playback || isEditingTaktik || editingTaktikIdx!==null);
+    }catch(e){return false;}
+  }
+
+  function mainRitaButton240(){
+    var found=null;
+    try{
+      document.querySelectorAll('button,.btn').forEach(function(el){
+        if(found)return;
+        var txt=(el.textContent||"").trim().toLowerCase();
+        var title=(el.getAttribute('title')||"").trim().toLowerCase();
+        if(txt==="rita" || title==="rita")found=el;
+      });
+    }catch(e){}
+    return found;
+  }
+
+  function mainRitaBar240(){
+    var ref=document.getElementById('tt236-rita-move') || document.getElementById('btn-arrow') || document.getElementById('btn-freehand') || document.getElementById('btn-zone');
+    return ref&&ref.parentNode?ref.parentNode:null;
+  }
+
+  function markMainRitaParts240(){
+    var btn=mainRitaButton240();
+    var bar=mainRitaBar240();
+    if(btn)btn.classList.add('tt240-main-rita-button');
+    if(bar)bar.classList.add('tt240-main-rita-bar');
+    return {btn:btn,bar:bar};
+  }
+
+  function injectStyle240(){
+    if(document.getElementById('tt240-rita-toggle-style'))return;
+    var st=document.createElement('style');
+    st.id='tt240-rita-toggle-style';
+    st.textContent=[
+      '.tt240-force-hide{display:none!important}',
+      'body.tt240-taktik-active .tt240-main-rita-button{display:none!important}',
+      'body.tt240-taktik-active .tt240-main-rita-bar{display:none!important}',
+      'body.tt240-rita-closed:not(.tt240-taktik-active) .tt240-main-rita-bar{display:none!important}',
+      'body.tt240-rita-open:not(.tt240-taktik-active) .tt240-main-rita-bar{display:flex!important}',
+      '#arrow-options.tt240-taktik-options,#freehand-options.tt240-taktik-options,#zone-options.tt240-taktik-options{position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;z-index:auto!important;flex:0 0 auto!important;margin:0 6px 0 0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;max-width:none!important;gap:4px!important;align-items:center!important;white-space:nowrap!important}',
+      '#arrow-options.tt240-taktik-options select,#freehand-options.tt240-taktik-options select,#zone-options.tt240-taktik-options select{height:30px!important;min-height:30px!important;font-size:.75rem!important;max-width:92px!important}',
+      '#arrow-options.tt240-taktik-options button,#freehand-options.tt240-taktik-options button,#zone-options.tt240-taktik-options button{height:30px!important;min-height:30px!important;font-size:.75rem!important;white-space:nowrap!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function setRitaOpen240(open){
+    ritaOpen240=!!open;
+    document.body.classList.toggle('tt240-rita-open',ritaOpen240);
+    document.body.classList.toggle('tt240-rita-closed',!ritaOpen240);
+    var bar=mainRitaBar240();
+    if(bar){
+      if(ritaOpen240 && !isTaktikActive240())bar.style.removeProperty('display');
+      else bar.style.setProperty('display','none','important');
+    }
+  }
+
+  function bindRitaButton240(){
+    var btn=mainRitaButton240();
+    if(!btn || btn.dataset.tt240RitaToggleBound==='1')return;
+    btn.dataset.tt240RitaToggleBound='1';
+    btn.addEventListener('click',function(e){
+      if(isTaktikActive240())return;
+      e.preventDefault();
+      e.stopPropagation();
+      setRitaOpen240(!ritaOpen240);
+      setTimeout(apply240,0);
+    },true);
+  }
+
+  function activeOptions240(){
+    if(mode==='arrow')return document.getElementById('arrow-options');
+    if(mode==='freehand')return document.getElementById('freehand-options');
+    if(mode==='zone')return document.getElementById('zone-options');
+    return null;
+  }
+
+  function hideInactiveOptions240(){
+    ['arrow-options','freehand-options','zone-options'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el)return;
+      if(isTaktikActive240())el.classList.add('tt240-taktik-options');
+      else el.classList.remove('tt240-taktik-options');
+    });
+  }
+
+  function visibleTaktikToolParent240(){
+    var roots=['edit-taktik-ui','taktikbar','rec-ui','panel-taktik'];
+    for(var r=0;r<roots.length;r++){
+      var root=document.getElementById(roots[r]);
+      if(!root)continue;
+      var btns=root.querySelectorAll('button,.btn');
+      for(var i=0;i<btns.length;i++){
+        var b=btns[i];
+        var txt=(b.textContent||'').trim().toLowerCase();
+        var title=(b.getAttribute('title')||'').trim().toLowerCase();
+        var aria=(b.getAttribute('aria-label')||'').trim().toLowerCase();
+        var key=txt+' '+title+' '+aria+' '+(b.id||'');
+        if(key.indexOf('pil')>=0 || key.indexOf('rita')>=0 || key.indexOf('zon')>=0 || key.indexOf('text')>=0 || key.indexOf('movement')>=0 || key.indexOf('rörelse')>=0){
+          return b.parentNode||root;
+        }
+      }
+    }
+    return document.getElementById('edit-taktik-ui') || document.getElementById('taktikbar') || null;
+  }
+
+  function anchorForOptions240(optId,parent){
+    if(!parent)return null;
+    var want=[];
+    if(optId==='arrow-options')want=['btn-arrow','pil','↗'];
+    if(optId==='freehand-options')want=['btn-freehand','fri','✎'];
+    if(optId==='zone-options')want=['btn-zone','zon','▭'];
+    var btns=parent.querySelectorAll('button,.btn');
+    for(var i=0;i<btns.length;i++){
+      var b=btns[i];
+      var hay=((b.id||'')+' '+(b.textContent||'')+' '+(b.title||'')+' '+(b.getAttribute('aria-label')||'')).toLowerCase();
+      for(var j=0;j<want.length;j++){
+        if(hay.indexOf(String(want[j]).toLowerCase())>=0)return b;
+      }
+    }
+    return btns[btns.length-1]||null;
+  }
+
+  function putAfter240(el,anchor,parent){
+    if(!el||!parent)return;
+    if(anchor&&anchor.parentNode===parent)parent.insertBefore(el,anchor.nextSibling);
+    else parent.appendChild(el);
+  }
+
+  function moveOptionsForTaktik240(){
+    try{
+      if(!isTaktikActive240())return;
+      var opt=activeOptions240();
+      if(!opt)return;
+      var parent=visibleTaktikToolParent240();
+      if(!parent)return;
+      parent.style.overflowX='auto';
+      parent.style.webkitOverflowScrolling='touch';
+      if(parent.style.display!=='flex')parent.style.flexWrap='nowrap';
+      var anchor=anchorForOptions240(opt.id,parent);
+      opt.classList.add('tt240-taktik-options');
+      putAfter240(opt,anchor,parent);
+    }catch(e){}
+  }
+
+  function applyVisibility240(){
+    var parts=markMainRitaParts240();
+    var active=isTaktikActive240();
+    document.body.classList.toggle('tt240-taktik-active',active);
+
+    if(active){
+      if(parts.btn)parts.btn.style.setProperty('display','none','important');
+      if(parts.bar)parts.bar.style.setProperty('display','none','important');
+    }else{
+      if(parts.btn)parts.btn.style.removeProperty('display');
+      if(ritaOpen240===null){
+        // Behåll ungefär befintligt läge första gången, men låt knappen styra efter det.
+        var currentlyVisible=parts.bar?getComputedStyle(parts.bar).display!=='none':false;
+        setRitaOpen240(currentlyVisible);
+      }else{
+        setRitaOpen240(ritaOpen240);
+      }
+    }
+  }
+
+  var oldSetMode240=typeof setMode==='function'?setMode:null;
+  if(oldSetMode240 && !oldSetMode240.__tt240Wrapped){
+    var wrappedSetMode240=function(){
+      var res=oldSetMode240.apply(this,arguments);
+      setTimeout(function(){hideInactiveOptions240();moveOptionsForTaktik240();applyVisibility240();},0);
+      setTimeout(function(){hideInactiveOptions240();moveOptionsForTaktik240();applyVisibility240();},30);
+      return res;
+    };
+    wrappedSetMode240.__tt240Wrapped=true;
+    setMode=wrappedSetMode240;
+    window.setMode=wrappedSetMode240;
+  }
+
+  function apply240(){
+    setVersion240();
+    injectStyle240();
+    try{if(typeof window.tt239MoveNormalTavlaOptionsNextToTool==='function' && !isTaktikActive240())window.tt239MoveNormalTavlaOptionsNextToTool();}catch(e){}
+    markMainRitaParts240();
+    bindRitaButton240();
+    hideInactiveOptions240();
+    moveOptionsForTaktik240();
+    applyVisibility240();
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply240);
+  else apply240();
+
+  document.addEventListener('click',function(){setTimeout(apply240,25);},true);
+  window.addEventListener('resize',function(){setTimeout(apply240,80);});
+  setTimeout(apply240,300);
+  setTimeout(apply240,1000);
+
+  window.tt240RitaToggleTaktikOptions=apply240;
+})();
+/* === slut v240-rita-toggle-and-taktik-menu-options === */
