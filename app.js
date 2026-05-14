@@ -25040,3 +25040,71 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt231AddFullscreenButtons=addButtons;
 })();
 /* === slut v231-fullscreen-undo-reset-board === */
+
+/* === v232-fullscreen-undo-reset-button-size ===
+   Bas: v231.
+   Problem:
+   - De nya Ångra-/Återställ-knapparna i fullscreen fungerar men är lite större
+     än övriga knappar i #fs-top-tools.
+   Fix:
+   - Matchar storlek mot befintliga .ls-btn i samma fält:
+     min-width 34px, height 32px, padding 4px 7px, font-size .85rem.
+   - Rör inte funktion, placering, event listeners eller reset/undo-logik.
+   Endast app.js behöver bytas.
+*/
+
+(function(){
+  if(window.__tt232FullscreenUndoResetButtonSize)return;
+  window.__tt232FullscreenUndoResetButtonSize=true;
+
+  function setVersion(){
+    try{
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=(s.textContent||"").trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent="232";
+      });
+    }catch(e){}
+  }
+
+  function injectStyle(){
+    if(document.getElementById("tt232-style"))return;
+    var st=document.createElement("style");
+    st.id="tt232-style";
+    st.textContent=[
+      "body.fullscreen-portrait #fs-top-tools .tt231-fs-btn{",
+      "  flex:0 0 auto!important;",
+      "  width:auto!important;",
+      "  height:32px!important;",
+      "  min-width:34px!important;",
+      "  padding:4px 7px!important;",
+      "  display:inline-flex!important;",
+      "  align-items:center!important;",
+      "  justify-content:center!important;",
+      "  font-size:.85rem!important;",
+      "  line-height:1!important;",
+      "  font-weight:900!important;",
+      "  box-sizing:border-box!important;",
+      "}"
+    ].join("\n");
+    document.head.appendChild(st);
+  }
+
+  function apply(){
+    setVersion();
+    injectStyle();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",apply);
+  }else{
+    apply();
+  }
+
+  setTimeout(apply,300);
+  setTimeout(apply,1000);
+
+  window.tt232ApplyFullscreenUndoResetButtonSize=apply;
+})();
+
+/* === slut v232-fullscreen-undo-reset-button-size === */
