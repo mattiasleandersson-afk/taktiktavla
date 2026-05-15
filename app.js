@@ -26126,3 +26126,105 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   setTimeout(setVersion254,2000);
 })();
 /* === slut v254-desktop-own-rita-row-and-select-fix === */
+
+
+/* === v255-hide-bench-in-match-submenus ===
+   Bas: v254.
+   - Fix: När man trycker på undermenyn "Match" under Matcher ska laguppställningens
+     avbytare/bänkpanel inte öppnas eller ligga kvar.
+   - Rör inte laguppställningsfunktionen när den faktiskt används via Ladda uppst.
+*/
+(function(){
+  if(window.__tt255HideBenchInMatchSubmenus)return;
+  window.__tt255HideBenchInMatchSubmenus=true;
+
+  function setVersion255(){
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
+        var t=String(s.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='255';
+      });
+    }catch(e){}
+  }
+
+  function activeLagSubmenu(){
+    try{
+      var b=document.querySelector('[data-lag].on');
+      return b ? String(b.getAttribute('data-lag')||'') : '';
+    }catch(e){return '';}
+  }
+
+  function isInMatcherMainPanel(){
+    try{
+      var tab=document.querySelector('.tab.on[data-panel="lag"]');
+      var panel=document.getElementById('panel-lag');
+      return !!(tab || (panel && panel.classList.contains('on')));
+    }catch(e){return false;}
+  }
+
+  function shouldHideBenchHere(){
+    var sub=activeLagSubmenu();
+    // Dessa är vanliga Matcher-undermenyer. Bänken hör inte hemma här.
+    return isInMatcherMainPanel() && (sub==='match' || sub==='trupp' || sub==='statistik' || sub==='sparade');
+  }
+
+  function hideBenchForMatcherSubmenus(){
+    try{
+      if(!shouldHideBenchHere())return;
+      var bar=document.getElementById('bench-bar');
+      if(bar){
+        bar.classList.remove('active');
+        bar.style.display='none';
+        bar.style.visibility='hidden';
+        bar.style.opacity='0';
+      }
+      var cont=document.getElementById('bench-players');
+      if(cont){
+        cont.style.display='none';
+        cont.style.visibility='hidden';
+      }
+      var goal=document.getElementById('goal-overlay');
+      if(goal)goal.style.display='none';
+      document.body.classList.remove('tt108-desktop-match-lineup');
+    }catch(e){}
+  }
+
+  // När man växlar undermeny i Matcher, dölj bänken efter äldre handlers har kört.
+  document.addEventListener('click',function(e){
+    try{
+      var btn=e.target && e.target.closest ? e.target.closest('[data-lag]') : null;
+      if(!btn)return;
+      var val=String(btn.getAttribute('data-lag')||'');
+      if(val==='match' || val==='trupp' || val==='statistik' || val==='sparade'){
+        setTimeout(hideBenchForMatcherSubmenus,0);
+        setTimeout(hideBenchForMatcherSubmenus,80);
+        setTimeout(hideBenchForMatcherSubmenus,250);
+      }
+    }catch(err){}
+  },true);
+
+  // Om någon äldre renderBench visar bänken igen i Matcher-undermeny, göm den direkt efteråt.
+  if(typeof renderBench==='function' && !renderBench._tt255HideMatcherBenchWrapped){
+    var _renderBench_tt255=renderBench;
+    renderBench=function(){
+      var r=_renderBench_tt255.apply(this,arguments);
+      setTimeout(hideBenchForMatcherSubmenus,0);
+      return r;
+    };
+    renderBench._tt255HideMatcherBenchWrapped=true;
+  }
+
+  function apply255(){
+    setVersion255();
+    hideBenchForMatcherSubmenus();
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply255);
+  else apply255();
+  setTimeout(apply255,300);
+  setTimeout(setVersion255,1800);
+
+  window.tt255HideBenchForMatcherSubmenus=hideBenchForMatcherSubmenus;
+})();
+
+/* === slut v255-hide-bench-in-match-submenus === */
