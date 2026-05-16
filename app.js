@@ -13536,8 +13536,6 @@ function tt101SaveMatchPreserveUI(){
 
   var editId=window._editingMatchId||null;
   var payloadData=(typeof addMetaToData==="function"?addMetaToData(match):match);
-  if(typeof tt277AddTeamMetaToData==='function')payloadData=tt277AddTeamMetaToData(payloadData);
-  try{if(payloadData&&payloadData._meta)match._meta=payloadData._meta;}catch(e){}
 
   function afterSaved(dbId,label){
     match.dbId=dbId;
@@ -19644,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -19821,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -19942,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -20138,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -20419,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -20692,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -20948,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -21244,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -21473,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -21722,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -21795,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -21902,7 +21900,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -22085,7 +22083,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -22202,102 +22200,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v209-match-alpha-and-menu-label === */
 
 
-
-/* === v277-team-scoped-match-core ===
-   Bas: v276 fungerande Matcher.
-   Syfte: Matcher och Trupp kopplas till aktiv lagkod/team.
-   Viktigt: gamla match-/trupp-rader utan teammetadata ignoreras; ingen migrering görs.
-*/
-function tt277NormKey(v){return String(v||'').trim().toLowerCase();}
-function tt277Profile(){
-  try{if(typeof getUserProfile==='function'){var p=getUserProfile();if(p)return p;}}catch(e){}
-  try{if(typeof getProfileSafeV10==='function'){var p2=getProfileSafeV10();if(p2)return p2;}}catch(e){}
-  try{if(typeof ensureUserProfile==='function'){var p3=ensureUserProfile(false);if(p3)return p3;}}catch(e){}
-  try{var raw=localStorage.getItem('tt_profile_v1');return raw?JSON.parse(raw):null;}catch(e){}
-  return null;
-}
-function tt277TeamKeysFromProfile(p){
-  var out=[];
-  ['teamId','teamCode','teamName'].forEach(function(k){
-    var v=tt277NormKey(p&&p[k]);
-    if(v && out.indexOf(v)<0)out.push(v);
-  });
-  return out;
-}
-function tt277Meta(obj){
-  if(!obj)return {};
-  if(obj._meta)return obj._meta;
-  if(obj.meta)return obj.meta;
-  if(obj.data&&obj.data._meta)return obj.data._meta;
-  if(obj.state&&obj.state._meta)return obj.state._meta;
-  return {};
-}
-function tt277TeamKeysFromData(obj){
-  var m=tt277Meta(obj), out=[];
-  [m.teamId,m.teamCode,m.teamName,obj&&obj.teamId,obj&&obj.teamCode,obj&&obj.teamName].forEach(function(v){
-    v=tt277NormKey(v);
-    if(v && out.indexOf(v)<0)out.push(v);
-  });
-  return out;
-}
-function tt277ActiveTeam(){
-  var p=tt277Profile();
-  var keys=tt277TeamKeysFromProfile(p);
-  if(!p || !keys.length)return null;
-  return {
-    profile:p,
-    keys:keys,
-    teamId:p.teamId||p.teamCode||p.teamName,
-    teamCode:p.teamCode||p.teamId||p.teamName,
-    teamName:p.teamName||p.teamCode||p.teamId,
-    ownerId:p.ownerId||'',
-    ownerName:p.ownerName||''
-  };
-}
-function tt277BelongsToActiveTeam(obj){
-  var active=tt277ActiveTeam();
-  if(!active)return false;
-  var keys=tt277TeamKeysFromData(obj);
-  if(!keys.length)return false; // legacy utan lagmetadata ska inte visas
-  return keys.some(function(k){return active.keys.indexOf(k)>=0;});
-}
-function tt277AddTeamMetaToData(obj){
-  var active=tt277ActiveTeam();
-  if(!active)return obj;
-  var d;
-  try{d=JSON.parse(JSON.stringify(obj||{}));}catch(e){d=obj||{};}
-  d._meta=d._meta||{};
-  d._meta.teamId=active.teamId;
-  d._meta.teamCode=active.teamCode;
-  d._meta.teamName=active.teamName;
-  if(active.ownerName)d._meta.updatedBy=active.ownerName;
-  if(active.ownerId)d._meta.updatedById=active.ownerId;
-  if(!d._meta.createdBy && active.ownerName)d._meta.createdBy=active.ownerName;
-  if(!d._meta.createdById && active.ownerId)d._meta.createdById=active.ownerId;
-  d._meta.updatedAt=new Date().toISOString();
-  return d;
-}
-function tt277TeamRowName(prefix){
-  var active=tt277ActiveTeam();
-  return prefix+' '+(active?(active.teamCode||active.teamName||active.teamId):'utan-lag');
-}
-function tt277ResetMatchStateForTeamChange(){
-  try{matcher=[];}catch(e){}
-  try{trupp=[];}catch(e){}
-  try{matchSelections={};}catch(e){}
-  try{matchRoster=[];}catch(e){}
-  try{matchAssignments={};}catch(e){}
-  try{matchVariants=[];activeVariantIdx=0;}catch(e){}
-  try{matchGoals={home:0,away:0};if(typeof updateGoalDisplay==='function')updateGoalDisplay();}catch(e){}
-  try{window._editingMatchId=null;}catch(e){}
-  try{if(typeof renderTruppList==='function')renderTruppList();}catch(e){}
-  try{if(typeof renderMatchTruppList==='function')renderMatchTruppList();}catch(e){}
-  try{if(typeof renderSparadeMatcherList==='function')renderSparadeMatcherList();}catch(e){}
-  try{if(typeof renderStatistik==='function')renderStatistik();}catch(e){}
-}
-/* === slut v277-team-scoped-match-core === */
-
-
 /* === v210-save-empty-match ===
    Bas: 209.
    Syfte:
@@ -22318,7 +22220,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -22407,7 +22309,6 @@ function tt277ResetMatchStateForTeamChange(){
     var payloadData;
     try{
       payloadData=(typeof addMetaToData==="function") ? addMetaToData(match) : match;
-      if(typeof tt277AddTeamMetaToData==='function')payloadData=tt277AddTeamMetaToData(payloadData);
     }catch(e){
       payloadData=match;
     }
@@ -22542,7 +22443,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -22687,7 +22588,6 @@ function tt277ResetMatchStateForTeamChange(){
     var dataPayload;
     try{
       dataPayload=(typeof addMetaToData==="function") ? addMetaToData(match) : match;
-      if(typeof tt277AddTeamMetaToData==='function')dataPayload=tt277AddTeamMetaToData(dataPayload);
     }catch(e){
       dataPayload=match;
     }
@@ -22873,7 +22773,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -23188,7 +23088,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -23333,7 +23233,6 @@ function tt277ResetMatchStateForTeamChange(){
     var dataPayload;
     try{
       dataPayload=(typeof addMetaToData==="function") ? addMetaToData(match) : match;
-      if(typeof tt277AddTeamMetaToData==='function')dataPayload=tt277AddTeamMetaToData(dataPayload);
     }catch(e){
       dataPayload=match;
     }
@@ -23448,7 +23347,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -23577,7 +23476,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -23622,7 +23521,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -23799,7 +23698,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -24075,7 +23974,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -24242,7 +24141,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -24374,7 +24273,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -24486,7 +24385,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -24659,7 +24558,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -24811,7 +24710,7 @@ function tt277ResetMatchStateForTeamChange(){
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -24960,7 +24859,7 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -25163,7 +25062,7 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -25443,7 +25342,7 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -25543,7 +25442,7 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -25663,7 +25562,7 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -25868,7 +25767,7 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -25921,7 +25820,7 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -26101,7 +26000,7 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -26181,7 +26080,7 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -26243,7 +26142,7 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=String(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -26348,7 +26247,7 @@ function tt277ResetMatchStateForTeamChange(){
       if(/^(v?\d+|v3\.)$/i.test(t))nodes.push(spans[j]);
     }
     for(var k=0;k<nodes.length;k++){
-      if(nodes[k] && (nodes[k].textContent||'').trim()!=='277')nodes[k].textContent='277';
+      if(nodes[k] && (nodes[k].textContent||'').trim()!=='276')nodes[k].textContent='278';
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion256);
@@ -26373,10 +26272,10 @@ function tt277ResetMatchStateForTeamChange(){
   function setVersion257(){
     try{
       var ids=['version','app-version','version-label','app-version-label'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='277';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='278';});
       document.querySelectorAll('span,small,div').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='277';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='278';
       });
     }catch(e){}
   }
@@ -26461,11 +26360,11 @@ function tt277ResetMatchStateForTeamChange(){
     var ids=['version','app-version','version-label','app-version-label'];
     for(var i=0;i<ids.length;i++){
       var el=document.getElementById(ids[i]);
-      if(el)el.textContent='277';
+      if(el)el.textContent='278';
     }
     var nodes=document.querySelectorAll('[data-version], .version, .app-version, .version-label, .app-version-label');
     for(var j=0;j<nodes.length;j++){
-      nodes[j].textContent='277';
+      nodes[j].textContent='278';
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion268);
@@ -26494,10 +26393,10 @@ function tt277ResetMatchStateForTeamChange(){
   function setVersion268(){
     try{
       var ids=['app-version','version','version-label','ver','build-version'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='277';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='278';});
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -26624,10 +26523,10 @@ function tt277ResetMatchStateForTeamChange(){
   function setVersion269(){
     try{
       var ids=['app-version','version','version-label','ver','build-version'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='277';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='278';});
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='278';
       });
     }catch(e){}
   }
@@ -26664,12 +26563,12 @@ function tt277ResetMatchStateForTeamChange(){
     try{
       ['version','version-label','app-version','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
-        if(el)el.textContent='277';
+        if(el)el.textContent='278';
       });
       var spans=document.querySelectorAll('span');
       for(var i=0;i<spans.length;i++){
         var t=(spans[i].textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))spans[i].textContent='277';
+        if(/^(v?\d+|v3\.)/i.test(t))spans[i].textContent='278';
       }
     }catch(e){}
   }
@@ -26697,10 +26596,10 @@ function tt277ResetMatchStateForTeamChange(){
   function setVersion275(){
     try{
       var ids=['version','app-version','version-label','app-version-label'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='277';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='278';});
       document.querySelectorAll('span,small,div,[data-version],.version,.app-version,.version-label,.app-version-label').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='277';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='278';
       });
     }catch(e){}
   }
@@ -26830,10 +26729,10 @@ function tt277ResetMatchStateForTeamChange(){
   function setVersion276(){
     try{
       var ids=['version','app-version','version-label','app-version-label','ver','build-version'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='277';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='278';});
       document.querySelectorAll('span,small,div,[data-version],.version,.app-version,.version-label,.app-version-label').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='277';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='278';
       });
     }catch(e){}
   }
@@ -26895,8 +26794,6 @@ function tt277ResetMatchStateForTeamChange(){
     var payloadData;
     try{payloadData=(typeof addMetaToData==='function') ? addMetaToData(match) : match;}
     catch(e){payloadData=match;}
-    if(typeof tt277AddTeamMetaToData==='function')payloadData=tt277AddTeamMetaToData(payloadData);
-    try{if(payloadData&&payloadData._meta)match._meta=payloadData._meta;}catch(e){}
 
     var body={
       name:match.datum+' '+match.motstand,
@@ -26996,129 +26893,206 @@ function tt277ResetMatchStateForTeamChange(){
 /* === slut v276-autosave-match-before-lineup === */
 
 
-/* === v277-team-scoped-match-trupp-load-save ===
-   Ersätter breda typ-hämtningar för Trupp/Matcher med lagfiltrering.
-   Gamla rader utan teammetadata ignoreras enligt beslut.
+/* === v278-team-scoped-matcher-clean ===
+   Bas: v276 fungerande Matcher.
+   Syfte: lagisolera Trupp och Matcher utan att röra planlayout/laguppställningsflöde.
+   Viktigt:
+   - gamla trupp-/matchrader utan teamId/teamCode ignoreras
+   - ingen migrering/adoption av gamla filer
+   - match/trupp-data laddas om efter gamla startladdningar, så fel lag inte ligger kvar i minnet
 */
-function saveTrupp(){
-  var active=tt277ActiveTeam&&tt277ActiveTeam();
-  if(!active){try{showToast('Saknar lagkod – truppen sparades inte',false);}catch(e){} return;}
-  var payload=tt277AddTeamMetaToData({trupp:trupp||[]});
-  fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?type=eq.trupp&order=id.desc',{headers:supaHeaders()})
-    .then(function(r){return r.json();})
-    .then(function(rows){
-      rows=Array.isArray(rows)?rows:[];
-      var existing=rows.find(function(row){return row && row.data && tt277BelongsToActiveTeam(row.data);});
-      var body={name:tt277TeamRowName('trupp'),data:payload,type:'trupp',folder:'Allmänt'};
-      if(existing && existing.id){
-        return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?id=eq.'+existing.id,{method:'PATCH',headers:Object.assign({},supaHeaders(),{'Prefer':'return=representation'}),body:JSON.stringify(body)});
-      }
-      return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE,{method:'POST',headers:Object.assign({},supaHeaders(),{'Prefer':'return=representation'}),body:JSON.stringify(body)});
-    }).catch(function(err){try{cloudStatus('❌ Truppfel: '+err.message,'#e84a4a');}catch(e){}});
-}
-function loadTrupp(){
-  var active=tt277ActiveTeam&&tt277ActiveTeam();
-  if(!active){trupp=[];try{renderTruppList();}catch(e){} return;}
-  fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?type=eq.trupp&order=id.desc',{headers:supaHeaders()})
-    .then(function(r){return r.json();})
-    .then(function(rows){
-      rows=Array.isArray(rows)?rows:[];
-      var row=rows.find(function(x){return x && x.data && tt277BelongsToActiveTeam(x.data);});
-      trupp=(row && row.data && Array.isArray(row.data.trupp)) ? row.data.trupp : [];
-      try{renderTruppList();}catch(e){}
-      try{renderMatchTruppList();}catch(e){}
-      try{renderStatistik();}catch(e){}
-    }).catch(function(){trupp=[];try{renderTruppList();}catch(e){}});
-}
-function loadMatcher(){
-  var active=tt277ActiveTeam&&tt277ActiveTeam();
-  if(!active){matcher=[];try{renderStatistik();}catch(e){} try{renderSparadeMatcherList();}catch(e){} return;}
-  fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?type=eq.match&order=id.desc',{headers:supaHeaders()})
-    .then(function(r){return r.json();})
-    .then(function(data){
-      if(Array.isArray(data)){
-        var seen={};matcher=[];
-        data.forEach(function(row){
-          var m=row.data||{};
-          if(!tt277BelongsToActiveTeam(m))return;
-          var hasPlayers=(m.startade&&m.startade.length)||(m.avbytare&&m.avbytare.length);
-          var hasLineups=(m.uppstallningar&&m.uppstallningar.length);
-          if(!m.datum||!m.motstand||(!hasPlayers&&!hasLineups))return;
-          m.dbId=row.id;
-          var key=String(row.id);
-          if(!seen[key]){seen[key]=true;matcher.push(m);}
-        });
-      }
-      try{if(typeof renderStatistik==='function')renderStatistik();}catch(e){}
-      try{if(typeof renderSparadeMatcherList==='function')renderSparadeMatcherList();}catch(e){}
-      try{if(typeof renderMatchTruppList==='function')renderMatchTruppList();}catch(e){}
-    }).catch(function(){});
-}
 (function(){
-  if(window.__tt277TeamScopedFinal)return;
-  window.__tt277TeamScopedFinal=true;
-  function setVersion277(){
+  if(window.__tt278TeamScopedMatcherClean)return;
+  window.__tt278TeamScopedMatcherClean=true;
+
+  function norm(v){return String(v||'').trim().toLowerCase();}
+  function profile(){
+    try{ if(typeof getUserProfile==='function'){var p=getUserProfile(); if(p)return p;} }catch(e){}
+    try{ if(typeof getProfileSafeV10==='function'){var p2=getProfileSafeV10(); if(p2)return p2;} }catch(e){}
+    try{ var raw=localStorage.getItem('tt_profile_v1'); return raw?JSON.parse(raw):null; }catch(e){}
+    return null;
+  }
+  function active(){
+    var p=profile();
+    if(!p)return null;
+    var keys=[];
+    [p.teamId,p.teamCode].forEach(function(v){v=norm(v); if(v && keys.indexOf(v)<0)keys.push(v);});
+    if(!keys.length)return null;
+    return {
+      profile:p,
+      keys:keys,
+      teamId:p.teamId||p.teamCode,
+      teamCode:p.teamCode||p.teamId,
+      teamName:p.teamName||p.teamCode||p.teamId,
+      ownerId:p.ownerId||'',
+      ownerName:p.ownerName||''
+    };
+  }
+  function meta(obj){
+    if(!obj)return {};
+    return obj._meta || obj.meta || (obj.data&&obj.data._meta) || {};
+  }
+  function dataKeys(obj){
+    var m=meta(obj), out=[];
+    [m.teamId,m.teamCode,obj&&obj.teamId,obj&&obj.teamCode].forEach(function(v){
+      v=norm(v); if(v && out.indexOf(v)<0)out.push(v);
+    });
+    return out;
+  }
+  function belongs(obj){
+    var a=active(); if(!a)return false;
+    var ks=dataKeys(obj);
+    if(!ks.length)return false; // legacy utan lag-id/kod visas inte
+    return ks.some(function(k){return a.keys.indexOf(k)>=0;});
+  }
+  function withTeamData(obj){
+    var a=active();
+    var d;
+    try{d=JSON.parse(JSON.stringify(obj||{}));}catch(e){d=obj||{};}
+    if(!a)return d;
+    d._meta=d._meta||{};
+    d._meta.teamId=a.teamId;
+    d._meta.teamCode=a.teamCode;
+    d._meta.teamName=a.teamName;
+    if(a.ownerName)d._meta.updatedBy=a.ownerName;
+    if(a.ownerId)d._meta.updatedById=a.ownerId;
+    if(!d._meta.createdBy && a.ownerName)d._meta.createdBy=a.ownerName;
+    if(!d._meta.createdById && a.ownerId)d._meta.createdById=a.ownerId;
+    d._meta.updatedAt=new Date().toISOString();
+    return d;
+  }
+  function setVersion(){
     try{
       var ids=['version','app-version','version-label','app-version-label','ver','build-version'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='277';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='278';});
       document.querySelectorAll('span,small,div,[data-version],.version,.app-version,.version-label,.app-version-label').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='277';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='278';
       });
     }catch(e){}
   }
-  function reloadTeamScopedData(){
-    try{tt277ResetMatchStateForTeamChange();}catch(e){}
-    try{loadTrupp();}catch(e){}
-    try{loadMatcher();}catch(e){}
+  function rowName(type){
+    var a=active();
+    return type+' '+(a?(a.teamCode||a.teamId):'utan-lag');
   }
-  var lastKey='';
-  try{var a=tt277ActiveTeam();lastKey=a?a.keys.join('|'):'';}catch(e){}
-  if(typeof ensureUserProfile==='function' && !ensureUserProfile._tt277Wrapped){
-    var oldEnsure=ensureUserProfile;
-    ensureUserProfile=function(showDialog){
-      var before='';
-      try{var b=tt277ActiveTeam();before=b?b.keys.join('|'):'';}catch(e){}
-      var p=oldEnsure.apply(this,arguments);
-      var after='';
-      try{var a=tt277ActiveTeam();after=a?a.keys.join('|'):'';}catch(e){}
-      if(after && before && after!==before){setTimeout(reloadTeamScopedData,0);}
-      lastKey=after||lastKey;
-      return p;
+  function resetMatchMemory(){
+    try{matcher=[];}catch(e){}
+    try{trupp=[];}catch(e){}
+    try{matchSelections={};}catch(e){}
+    try{matchRoster=[];}catch(e){}
+    try{matchAssignments={};}catch(e){}
+    try{matchVariants=[];activeVariantIdx=0;}catch(e){}
+    try{matchGoals={home:0,away:0}; if(typeof updateGoalDisplay==='function')updateGoalDisplay();}catch(e){}
+    try{window._editingMatchId=null;}catch(e){}
+  }
+  function renderAllMatchViews(){
+    try{if(typeof renderTruppList==='function')renderTruppList();}catch(e){}
+    try{if(typeof renderMatchTruppList==='function')renderMatchTruppList();}catch(e){}
+    try{if(typeof renderSparadeMatcherList==='function')renderSparadeMatcherList();}catch(e){}
+    try{if(typeof renderStatistik==='function')renderStatistik();}catch(e){}
+  }
+
+  // Säkerhetsnät: alla befintliga match-/trupp-sparvägar får lagmetadata utan att vi skriver om flödena.
+  if(!window.__tt278FetchWrapped){
+    window.__tt278FetchWrapped=true;
+    var oldFetch=window.fetch;
+    window.fetch=function(input,init){
+      try{
+        var url=String(input&&input.url?input.url:input||'');
+        if(init && init.body && url.indexOf(SUPA_TABLE)>=0){
+          var body=JSON.parse(init.body);
+          var t=body && body.type;
+          if((t==='match' || t==='trupp') && body.data){
+            body.data=withTeamData(body.data);
+            if(!body.name)body.name=rowName(t);
+            init=Object.assign({},init,{body:JSON.stringify(body)});
+          }
+        }
+      }catch(e){}
+      return oldFetch.apply(this,arguments.length? [input,init] : arguments);
     };
-    ensureUserProfile._tt277Wrapped=true;
   }
-  function wrapProfileSaver277(name){
-    try{
-      var fn=window[name];
-      if(typeof fn!=='function' || fn._tt277Wrapped)return;
-      window[name]=function(){
-        var before='';
-        try{var b=tt277ActiveTeam();before=b?b.keys.join('|'):'';}catch(e){}
-        var res=fn.apply(this,arguments);
-        var after='';
-        try{var a=tt277ActiveTeam();after=a?a.keys.join('|'):'';}catch(e){}
-        if(after && before && after!==before)setTimeout(reloadTeamScopedData,0);
-        lastKey=after||lastKey;
-        return res;
-      };
-      window[name]._tt277Wrapped=true;
-    }catch(e){}
+
+  window.saveTrupp=function(){
+    var a=active();
+    if(!a){try{showToast('Saknar lagkod – truppen sparades inte');}catch(e){} return;}
+    var payload=withTeamData({trupp:trupp||[]});
+    return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?type=eq.trupp&order=id.desc',{headers:supaHeaders()})
+      .then(function(r){return r.json();})
+      .then(function(rows){
+        rows=Array.isArray(rows)?rows:[];
+        var existing=rows.find(function(row){return row && row.data && belongs(row.data);});
+        var body={name:rowName('trupp'),data:payload,type:'trupp',folder:'Allmänt'};
+        if(existing && existing.id){
+          return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?id=eq.'+existing.id,{method:'PATCH',headers:Object.assign({},supaHeaders(),{'Prefer':'return=representation'}),body:JSON.stringify(body)});
+        }
+        return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE,{method:'POST',headers:Object.assign({},supaHeaders(),{'Prefer':'return=representation'}),body:JSON.stringify(body)});
+      })
+      .catch(function(err){try{cloudStatus('❌ Truppfel: '+err.message,'#e84a4a');}catch(e){}});
+  };
+
+  window.loadTrupp=function(){
+    var a=active();
+    if(!a){trupp=[];renderAllMatchViews();return Promise.resolve([]);}
+    return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?type=eq.trupp&order=id.desc',{headers:supaHeaders()})
+      .then(function(r){return r.json();})
+      .then(function(rows){
+        rows=Array.isArray(rows)?rows:[];
+        var row=rows.find(function(x){return x && x.data && belongs(x.data);});
+        trupp=(row && row.data && Array.isArray(row.data.trupp)) ? row.data.trupp : [];
+        renderAllMatchViews();
+        return trupp;
+      })
+      .catch(function(){trupp=[];renderAllMatchViews();return [];});
+  };
+
+  window.loadMatcher=function(){
+    var a=active();
+    if(!a){matcher=[];renderAllMatchViews();return Promise.resolve([]);}
+    return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?type=eq.match&order=id.desc',{headers:supaHeaders()})
+      .then(function(r){return r.json();})
+      .then(function(rows){
+        matcher=[];
+        rows=Array.isArray(rows)?rows:[];
+        rows.forEach(function(row){
+          var m=row && row.data ? row.data : null;
+          if(!m || !belongs(m))return;
+          m.dbId=row.id;
+          matcher.push(m);
+        });
+        renderAllMatchViews();
+        return matcher;
+      })
+      .catch(function(){matcher=[];renderAllMatchViews();return [];});
+  };
+
+  function reloadScoped(){
+    resetMatchMemory();
+    renderAllMatchViews();
+    try{window.loadTrupp();}catch(e){}
+    try{window.loadMatcher();}catch(e){}
   }
-  wrapProfileSaver277('tt102SaveProfile');
-  wrapProfileSaver277('saveUserProfile');
-  window.addEventListener('storage',function(e){
-    if(e && e.key==='tt_profile_v1')setTimeout(reloadTeamScopedData,0);
-  });
-  document.addEventListener('visibilitychange',function(){
-    if(document.hidden)return;
-    try{
-      var a=tt277ActiveTeam();var k=a?a.keys.join('|'):'';
-      if(k && lastKey && k!==lastKey){lastKey=k;reloadTeamScopedData();}
-    }catch(e){}
-  });
-  setVersion277();
-  setTimeout(setVersion277,300);
-  setTimeout(setVersion277,1200);
+  window.tt278ReloadScopedMatcherData=reloadScoped;
+
+  // Kör efter gamla startladdningar så fel lag inte ligger kvar i minnet.
+  function boot(){setVersion(); reloadScoped();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);
+  else setTimeout(boot,0);
+  setTimeout(boot,500);
+  setTimeout(boot,1800);
+
+  // Vid profil-/lagbyte: ladda om matchdata för nya laget.
+  var last='';
+  function currentKey(){var a=active();return a?a.keys.join('|'):'';}
+  function checkTeamChanged(){
+    var k=currentKey();
+    if(!last){last=k;return;}
+    if(k && k!==last){last=k;reloadScoped();}
+  }
+  last=currentKey();
+  window.addEventListener('storage',function(e){if(e && e.key==='tt_profile_v1')setTimeout(function(){last='';reloadScoped();},0);});
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)checkTeamChanged();});
+  document.addEventListener('click',function(){setTimeout(checkTeamChanged,100);setTimeout(checkTeamChanged,700);},true);
+  setTimeout(setVersion,2600);
 })();
-/* === slut v277-team-scoped-match-trupp-load-save === */
+/* === slut v278-team-scoped-matcher-clean === */
