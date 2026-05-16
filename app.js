@@ -19642,7 +19642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -19819,7 +19819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -19940,7 +19940,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -20136,7 +20136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -20417,7 +20417,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -20690,7 +20690,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -20946,7 +20946,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -21242,7 +21242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -21471,7 +21471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -21720,7 +21720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -21793,7 +21793,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -21900,7 +21900,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -22083,7 +22083,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -22220,7 +22220,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -22443,7 +22443,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -22773,7 +22773,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -23088,7 +23088,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -23347,7 +23347,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -23476,7 +23476,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -23521,7 +23521,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -23698,7 +23698,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -23974,7 +23974,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -24141,7 +24141,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -24273,7 +24273,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -24385,7 +24385,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -24558,7 +24558,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -24710,7 +24710,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -24859,7 +24859,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -25062,7 +25062,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -25342,7 +25342,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -25442,7 +25442,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -25562,7 +25562,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -25767,7 +25767,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -25820,7 +25820,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -26000,7 +26000,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -26080,7 +26080,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -26142,7 +26142,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=String(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -26247,7 +26247,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(/^(v?\d+|v3\.)$/i.test(t))nodes.push(spans[j]);
     }
     for(var k=0;k<nodes.length;k++){
-      if(nodes[k] && (nodes[k].textContent||'').trim()!=='274')nodes[k].textContent='274';
+      if(nodes[k] && (nodes[k].textContent||'').trim()!=='275')nodes[k].textContent='275';
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion256);
@@ -26272,10 +26272,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function setVersion257(){
     try{
       var ids=['version','app-version','version-label','app-version-label'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='274';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='275';});
       document.querySelectorAll('span,small,div').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='274';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='275';
       });
     }catch(e){}
   }
@@ -26360,11 +26360,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var ids=['version','app-version','version-label','app-version-label'];
     for(var i=0;i<ids.length;i++){
       var el=document.getElementById(ids[i]);
-      if(el)el.textContent='274';
+      if(el)el.textContent='275';
     }
     var nodes=document.querySelectorAll('[data-version], .version, .app-version, .version-label, .app-version-label');
     for(var j=0;j<nodes.length;j++){
-      nodes[j].textContent='274';
+      nodes[j].textContent='275';
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion268);
@@ -26393,10 +26393,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function setVersion268(){
     try{
       var ids=['app-version','version','version-label','ver','build-version'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='274';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='275';});
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -26523,10 +26523,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function setVersion269(){
     try{
       var ids=['app-version','version','version-label','ver','build-version'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='274';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='275';});
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='275';
       });
     }catch(e){}
   }
@@ -26563,12 +26563,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       ['version','version-label','app-version','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
-        if(el)el.textContent='274';
+        if(el)el.textContent='275';
       });
       var spans=document.querySelectorAll('span');
       for(var i=0;i<spans.length;i++){
         var t=(spans[i].textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))spans[i].textContent='274';
+        if(/^(v?\d+|v3\.)/i.test(t))spans[i].textContent='275';
       }
     }catch(e){}
   }
@@ -26580,3 +26580,135 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   setTimeout(setVersion274,1800);
 })();
 /* === slut v274-single-final-version-stabilizer === */
+
+
+/* === v275-match-empty-lineup-dialog-and-alpha-list ===
+   Bas: v274.
+   Smal fix:
+   1) Om man försöker skapa laguppställning från Match utan valda spelare visas dialogruta.
+   2) Matcher → Match-listan sorteras alfabetiskt på namn.
+   Rör inte sparade matcher, mål, plan-döljning, laguppställning eller Supabase.
+*/
+(function(){
+  if(window.__tt275MatchDialogAlphaList)return;
+  window.__tt275MatchDialogAlphaList=true;
+
+  function setVersion275(){
+    try{
+      var ids=['version','app-version','version-label','app-version-label'];
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='275';});
+      document.querySelectorAll('span,small,div,[data-version],.version,.app-version,.version-label,.app-version-label').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='275';
+      });
+    }catch(e){}
+  }
+
+  function selectedStartPlayers275(){
+    try{
+      return (trupp||[]).filter(function(sp){return (matchSelections||{})[sp.id]==='start';});
+    }catch(e){return [];}
+  }
+
+  function installEmptyLineupGuard275(){
+    var btn=document.getElementById('btn-match-to-taktik');
+    if(!btn || btn._tt275EmptyGuard)return;
+    btn._tt275EmptyGuard=true;
+    btn.addEventListener('click',function(e){
+      try{
+        if(!selectedStartPlayers275().length){
+          e.preventDefault();
+          e.stopPropagation();
+          if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();
+          if(typeof showToast==='function')showToast('Du har inte valt några spelare.',false);
+          alert('Du har inte valt några spelare. Välj minst en spelare i Match-listan innan du skapar laguppställning.');
+          return false;
+        }
+      }catch(err){}
+    },true);
+  }
+
+  function playerAlpha275(a,b){
+    var an=String((a&&a.namn)||'').trim();
+    var bn=String((b&&b.namn)||'').trim();
+    var c=an.localeCompare(bn,'sv',{sensitivity:'base'});
+    if(c!==0)return c;
+    return ((a&&a.nr)||0)-((b&&b.nr)||0);
+  }
+
+  function safeMatchCount275(sp){
+    try{return getPlayerMatchCount(sp.id)||0;}catch(e){return 0;}
+  }
+
+  function renderMatchTruppList275(){
+    var list=document.getElementById('match-trupp-list');
+    if(!list)return;
+    list.innerHTML='';
+
+    var nSelected=0;
+    try{
+      nSelected=Object.values(matchSelections||{}).filter(function(v){return v==='start' || v==='avbytare';}).length;
+    }catch(e){}
+    var counter=document.getElementById('match-counter');
+    if(counter)counter.textContent=nSelected+' vald'+(nSelected===1?'':'a');
+
+    var sorted=(trupp||[]).slice().sort(playerAlpha275);
+    if(!sorted.length){
+      list.innerHTML='<span style="color:#7aaa88;font-size:0.8rem">Lägg till spelare i truppen först</span>';
+      return;
+    }
+
+    sorted.forEach(function(sp){
+      var sel=(matchSelections||{})[sp.id]||null;
+      var row=document.createElement('div');
+      row.className='row';
+      row.style.padding='4px 8px';
+
+      var nr=document.createElement('span');
+      nr.style.cssText='font-weight:900;color:#4ae87a;min-width:24px;font-size:0.82rem';
+      nr.textContent='#'+(sp.nr||'');
+
+      var nm=document.createElement('span');
+      nm.style.cssText='flex:1;font-size:0.82rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      nm.textContent=sp.namn||'';
+
+      var cntEl=document.createElement('span');
+      cntEl.style.cssText='font-size:0.68rem;color:#7aaa88;white-space:nowrap';
+      cntEl.textContent=safeMatchCount275(sp)+' mat.';
+
+      var btnS=document.createElement('button');
+      btnS.className='btn'+(sel==='start'?' on':'');
+      btnS.style.cssText='padding:2px 7px;font-size:0.65rem';
+      btnS.textContent='Start';
+      btnS.addEventListener('click',function(){
+        matchSelections[sp.id]=sel==='start'?null:'start';
+        renderMatchTruppList275();
+      });
+
+      row.appendChild(nr);
+      row.appendChild(nm);
+      row.appendChild(cntEl);
+      row.appendChild(btnS);
+      list.appendChild(row);
+    });
+  }
+
+  function apply275(){
+    setVersion275();
+    installEmptyLineupGuard275();
+    try{
+      renderMatchTruppList=renderMatchTruppList275;
+      window.renderMatchTruppList=renderMatchTruppList275;
+      var p=document.getElementById('lag-match');
+      if(p && p.style.display!=='none')renderMatchTruppList275();
+    }catch(e){}
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply275);
+  else apply275();
+  setTimeout(apply275,100);
+  setTimeout(apply275,600);
+  setTimeout(setVersion275,1600);
+  window.tt275RenderMatchTruppList=renderMatchTruppList275;
+})();
+/* === slut v275-match-empty-lineup-dialog-and-alpha-list === */
