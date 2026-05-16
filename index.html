@@ -12,147 +12,10 @@
 <link rel="stylesheet" href="styles.css">
 
 
-<style id="v45-hard-ui-fix">
-  /* Hård fix: den app-skapade topbar-dubletten ska aldrig synas */
-  #btn-save-as-topbar { display: none !important; }
-
-  /* När topbar minimeras ska pilen alltid ligga synligt */
-  #btn-topbar-toggle {
-    position: relative;
-    z-index: 10000;
-    flex-shrink: 0;
-  }
-  #topbar.v45-collapsed {
-    min-height: 30px !important;
-    padding: 2px 6px !important;
-    overflow: visible !important;
-  }
-  #topbar.v45-collapsed > .v45-toggle-holder {
-    display: flex !important;
-  }
-  #topbar.v45-collapsed #btn-topbar-toggle {
-    display: inline-flex !important;
-  }
-</style>
 
 
-<style id="v48-inbar-toggle-fix">
-  /* Korrekt beteende: pilen ska ligga i själva topbaren, inte flyta ovanför. */
-  #topbar {
-    overflow: visible !important;
-  }
-
-  #v48-topbar-open-row {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    padding-right: 44px;
-  }
-
-  #v48-collapse-btn,
-  #v48-expand-btn {
-    border: 1px solid #2d4a35;
-    background: rgba(12, 24, 16, 0.96);
-    color: #e6ffe9;
-    border-radius: 7px;
-    min-width: 38px;
-    min-height: 30px;
-    padding: 4px 10px;
-    font-weight: 900;
-    font-size: 16px;
-    line-height: 1;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  #v48-collapse-btn {
-    flex: 0 0 auto;
-    margin-left: auto;
-  }
-
-  #v48-collapsed-row {
-    display: none;
-    height: 34px;
-    min-height: 34px;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 2px 8px;
-    box-sizing: border-box;
-  }
-
-  body.v48-topbar-collapsed #topbar {
-    height: 38px !important;
-    min-height: 38px !important;
-    padding: 2px 6px !important;
-    box-sizing: border-box !important;
-  }
-
-  body.v48-topbar-collapsed #v48-topbar-open-row,
-  body.v48-topbar-collapsed #topbar > div:not(#v48-collapsed-row) {
-    display: none !important;
-  }
-
-  body.v48-topbar-collapsed #v48-collapsed-row {
-    display: flex !important;
-  }
-
-  /* Dölj gamla experimenthållaren om den finns kvar från v45. */
-  .v45-toggle-holder {
-    display: none !important;
-  }
-</style>
 
 
-<style id="v50-topbar-drawer-css">
-  #btn-draw-tools-toggle {
-    color: #4ae8e8 !important;
-    border-color: #4ae8e8 !important;
-    flex: 0 0 auto !important;
-  }
-
-  #topbar-draw-tools {
-    display: none;
-    gap: 5px;
-    align-items: center;
-    overflow-x: auto;
-    padding: 4px 0 2px 0;
-    border-top: 1px solid #1a3020;
-    flex-wrap: nowrap;
-  }
-
-  #topbar-draw-tools.open {
-    display: flex !important;
-  }
-
-  #topbar-draw-tools .btn,
-  #topbar-draw-tools label {
-    flex: 0 0 auto;
-  }
-
-  @media (max-width: 700px) {
-    #v48-topbar-open-row {
-      gap: 4px !important;
-      padding-right: 44px !important;
-    }
-
-    #v48-topbar-open-row .btn,
-    #v48-topbar-open-row select.btn {
-      padding-left: 7px !important;
-      padding-right: 7px !important;
-    }
-
-    #topbar-draw-tools {
-      scrollbar-width: thin;
-      padding-right: 44px;
-    }
-  }
-
-  body.v48-topbar-collapsed #topbar-draw-tools {
-    display: none !important;
-  }
-</style>
 
 
 <style id="v53-bugfix-css">
@@ -1257,27 +1120,19 @@
 </style>
 
 
-
-<style id="tt267-startup-clean-index-css">
-  /* Startup-clean för stabil app_js_v267.
-     Index innehåller fortfarande gammal statisk meny. Den döljs direkt så den
-     inte blinkar fram innan app.js flyttar/visar rätt kontroller.
-     app.js sätter senare inline display:... !important på de verktyg som ska synas. */
-  #btn-arrow,
-  #btn-text,
-  #btn-freehand,
-  #btn-zone,
-  #btn-movement,
-  #btn-undo,
-  #btn-reset,
+<style id="tt267-index-no-legacy-topbar-css">
+  /* Hindra gamla topbar-drawer/minimera-rester från index från att blinka fram.
+     OBS: gömmer INTE de riktiga ritknapparna (btn-arrow, btn-text osv), eftersom app.js återanvänder dem. */
   #btn-draw-tools-toggle,
-  button[title="Rita"],
-  button[aria-label="Rita"],
+  #topbar-draw-tools,
   #btn-topbar-toggle,
-  .v45-toggle-holder {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
+  .v45-toggle-holder,
+  #v48-collapse-btn,
+  #v48-expand-btn,
+  #v48-collapsed-row {
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
   }
 </style>
 
@@ -1314,8 +1169,7 @@
   <button class="btn" id="btn-fs-topbar" style="color:#4ae87a;border-color:#4ae87a" title="Helsk\u00e4rm">&#x26F6;</button>
   <button class="btn" id="btn-orientation-toggle" style="display:none;color:#4ae8e8;border-color:#4ae8e8" title="V&#228;xla liggande/st&#229;ende">&#8645;</button>
   </div>
-  <div class="v45-toggle-holder" style="position:absolute;right:6px;top:4px;z-index:10000;display:flex"><button class="btn" id="btn-topbar-toggle" title="Minimera menyn">&#9650;</button></div>
-  <div style="display:flex;gap:0;padding-top:3px;border-top:1px solid #1a3020;overflow-x:auto;flex-shrink:0">
+<div style="display:flex;gap:0;padding-top:3px;border-top:1px solid #1a3020;overflow-x:auto;flex-shrink:0">
     <button class="tab on" data-panel="formations" style="font-size:0.72rem;padding:3px 10px">Tavla</button>
     <button class="tab" data-panel="saves" style="font-size:0.72rem;padding:3px 10px">Utg&#229;ngsläge</button>
     <button class="tab" data-panel="taktik" style="font-size:0.72rem;padding:3px 10px">&#127916; Taktikfilm</button>
@@ -1978,252 +1832,10 @@
 </script>
 
 
-<script id="v45-hard-ui-script">
-(function(){
-  function removeDuplicateSaveButtons(){
-    var topbar=document.getElementById("topbar");
-    Array.prototype.slice.call(document.querySelectorAll("#btn-save-as-topbar")).forEach(function(el){
-      el.remove();
-    });
-    if(topbar){
-      Array.prototype.slice.call(topbar.querySelectorAll("button")).forEach(function(b){
-        var txt=(b.textContent||"").trim().toLowerCase();
-        if(txt==="spara som"){
-          b.remove();
-        }
-      });
-    }
-  }
-
-  function bindSafeTopbarToggle(){
-    var tb=document.getElementById("topbar");
-    var btn=document.getElementById("btn-topbar-toggle");
-    if(!tb||!btn||btn.dataset.v45Bound)return;
-
-    btn.dataset.v45Bound="1";
-    var open=true;
-
-    btn.onclick=function(e){
-      if(e){e.preventDefault();e.stopPropagation();}
-      open=!open;
-
-      // Hide/show every direct child except the toggle holder
-      Array.prototype.forEach.call(tb.children,function(ch){
-        if(ch.classList && ch.classList.contains("v45-toggle-holder")){
-          ch.style.display="flex";
-        }else{
-          ch.style.display=open ? "" : "none";
-        }
-      });
-
-      tb.classList.toggle("v45-collapsed",!open);
-      btn.innerHTML=open ? "▲" : "▼";
-      btn.title=open ? "Minimera menyn" : "Visa menyn";
-      btn.style.display="inline-flex";
-
-      return false;
-    };
-  }
-
-  function runV45(){
-    removeDuplicateSaveButtons();
-    bindSafeTopbarToggle();
-  }
-
-  runV45();
-  setTimeout(runV45,100);
-  setTimeout(runV45,500);
-  setTimeout(runV45,1500);
-  window.addEventListener("load",runV45);
-
-  // Om någon gammal JS skapar tillbaka dubletten senare: ta bort direkt.
-  var obs=new MutationObserver(runV45);
-  if(document.body)obs.observe(document.body,{childList:true,subtree:true});
-})();
-</script>
 
 
-<script id="v48-inbar-toggle-fix">
-(function(){
-  function removeTopbarSaveDuplicate(){
-    var topbar=document.getElementById("topbar");
-    Array.prototype.slice.call(document.querySelectorAll("#btn-save-as-topbar")).forEach(function(el){ el.remove(); });
-
-    if(topbar){
-      Array.prototype.slice.call(topbar.querySelectorAll("button")).forEach(function(b){
-        var txt=(b.textContent||"").trim().toLowerCase();
-        if(txt==="spara som") b.remove();
-      });
-    }
-  }
-
-  function setupInbarToggle(){
-    removeTopbarSaveDuplicate();
-
-    var topbar=document.getElementById("topbar");
-    if(!topbar)return;
-
-    // Ta bort gamla flytande/experiment-knappar.
-    var floating=document.getElementById("v47-topbar-float");
-    if(floating)floating.remove();
-    var oldHolder=topbar.querySelector(".v45-toggle-holder");
-    if(oldHolder)oldHolder.remove();
-
-    var firstRow=topbar.children[0];
-    if(!firstRow)return;
-    firstRow.id="v48-topbar-open-row";
-
-    // Ta bort den gamla topbar-toggle-knappen om den ligger fel.
-    Array.prototype.slice.call(document.querySelectorAll("#btn-topbar-toggle")).forEach(function(el){
-      el.remove();
-    });
-
-    var collapse=document.getElementById("v48-collapse-btn");
-    if(!collapse){
-      collapse=document.createElement("button");
-      collapse.id="v48-collapse-btn";
-      collapse.className="btn";
-      collapse.type="button";
-      collapse.innerHTML="▲";
-      collapse.title="Minimera menyn";
-      firstRow.appendChild(collapse);
-    }
-
-    var collapsedRow=document.getElementById("v48-collapsed-row");
-    if(!collapsedRow){
-      collapsedRow=document.createElement("div");
-      collapsedRow.id="v48-collapsed-row";
-
-      var expand=document.createElement("button");
-      expand.id="v48-expand-btn";
-      expand.className="btn";
-      expand.type="button";
-      expand.innerHTML="▼";
-      expand.title="Visa menyn";
-
-      collapsedRow.appendChild(expand);
-      topbar.appendChild(collapsedRow);
-    }
-
-    function setCollapsed(on){
-      document.body.classList.toggle("v48-topbar-collapsed", !!on);
-    }
-
-    collapse.onclick=function(e){
-      if(e){e.preventDefault();e.stopPropagation();}
-      setCollapsed(true);
-      return false;
-    };
-
-    var expandBtn=document.getElementById("v48-expand-btn");
-    if(expandBtn){
-      expandBtn.onclick=function(e){
-        if(e){e.preventDefault();e.stopPropagation();}
-        setCollapsed(false);
-        return false;
-      };
-    }
-  }
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded", setupInbarToggle);
-  }else{
-    setupInbarToggle();
-  }
-
-  window.addEventListener("load", setupInbarToggle);
-  setTimeout(setupInbarToggle, 250);
-  setTimeout(removeTopbarSaveDuplicate, 800);
-})();
-</script>
 
 
-<script id="v50-topbar-drawer-js">
-(function(){
-  function setupTopbarDrawerV50(){
-    var topbar=document.getElementById("topbar");
-    if(!topbar)return;
-
-    var row=document.getElementById("v48-topbar-open-row") || topbar.children[0];
-    if(!row)return;
-    row.id="v48-topbar-open-row";
-
-    // Skapa Rita-knappen.
-    var drawBtn=document.getElementById("btn-draw-tools-toggle");
-    if(!drawBtn){
-      drawBtn=document.createElement("button");
-      drawBtn.id="btn-draw-tools-toggle";
-      drawBtn.type="button";
-      drawBtn.className="btn";
-      drawBtn.textContent="Rita ▾";
-      drawBtn.title="Visa/dölj ritverktyg";
-    }
-
-    // Skapa lådan för ritverktyg.
-    var drawer=document.getElementById("topbar-draw-tools");
-    if(!drawer){
-      drawer=document.createElement("div");
-      drawer.id="topbar-draw-tools";
-      // Lägg efter första raden men före flik-raden om möjligt.
-      var tabRow=row.nextElementSibling;
-      topbar.insertBefore(drawer, tabRow || null);
-    }
-
-    // Flytta ritverktyg och mindre ofta använda knappar till lådan.
-    var toolIds=[
-      "btn-arrow",
-      "btn-text",
-      "btn-freehand",
-      "btn-zone",
-      "btn-movement"
-    ];
-
-    toolIds.forEach(function(id){
-      var el=document.getElementById(id);
-      if(el && el.parentNode!==drawer)drawer.appendChild(el);
-    });
-// Behåll de viktigaste synliga i ordning: ikon, version, format, Lag, Korr, Dag, Helskärm, Rita, minimera.
-    var h1=row.querySelector("h1");
-    var version=row.querySelector("span");
-    var fmt=document.getElementById("fmt-sel");
-    var setup=document.getElementById("btn-setup");
-    var corridors=document.getElementById("chk-korridorer");
-    var corridorsLabel=corridors?corridors.closest("label"):null;
-    var day=document.getElementById("btn-daylight");
-    var fs=document.getElementById("btn-fs-topbar");
-    var orient=document.getElementById("btn-orientation-toggle");
-    var collapse=document.getElementById("v48-collapse-btn");
-
-    [h1,version,fmt,setup,corridorsLabel,day,fs,drawBtn,orient,collapse].forEach(function(el){
-      if(el && el.parentNode!==row)row.appendChild(el);
-    });
-
-    // Om collapse-knappen inte har skapats än av v48, lägg Rita sist just nu.
-    if(drawBtn.parentNode!==row)row.appendChild(drawBtn);
-
-    if(!drawBtn.dataset.v50Bound){
-      drawBtn.dataset.v50Bound="1";
-      drawBtn.addEventListener("click",function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        drawer.classList.toggle("open");
-        drawBtn.textContent=drawer.classList.contains("open") ? "Rita ▴" : "Rita ▾";
-        return false;
-      },true);
-    }
-  }
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",setupTopbarDrawerV50);
-  }else{
-    setupTopbarDrawerV50();
-  }
-
-  window.addEventListener("load",setupTopbarDrawerV50);
-  setTimeout(setupTopbarDrawerV50,250);
-  setTimeout(setupTopbarDrawerV50,1000);
-})();
-</script>
 
 </body>
 </html>
