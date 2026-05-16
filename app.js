@@ -26509,3 +26509,48 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   setTimeout(setVersion268,1400);
 })();
 /* === slut v268-draw-option-values-after-index-clean === */
+
+
+/* === v269-player-button-label-only ===
+   Bas: v268 + rensad index.html.
+   Fix: Spelarfärg-/spelarinställningsknappen (#btn-setup) ska heta "Spelare".
+   Den ska inte påverkas av Lag -> Matcher-textbytet för huvudfliken.
+   Rör inte funktionen, Matcher, ritrad eller taktikfilm. */
+(function(){
+  if(window.__tt269PlayerButtonLabelOnly)return;
+  window.__tt269PlayerButtonLabelOnly=true;
+
+  function setVersion269(){
+    try{
+      var ids=['app-version','version','version-label','ver','build-version'];
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='269';});
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
+        var t=(s.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='269';
+      });
+    }catch(e){}
+  }
+
+  function fixPlayerButtonLabel269(){
+    try{
+      var btn=document.getElementById('btn-setup');
+      if(btn){
+        btn.textContent='Spelare';
+        btn.setAttribute('title','Spelare');
+        btn.setAttribute('aria-label','Spelare');
+      }
+    }catch(e){}
+  }
+
+  function apply269(){
+    setVersion269();
+    fixPlayerButtonLabel269();
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply269);
+  else apply269();
+  setTimeout(apply269,0);
+  setTimeout(apply269,150);
+  setTimeout(apply269,700);
+})();
+/* === slut v269-player-button-label-only === */
