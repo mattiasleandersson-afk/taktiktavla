@@ -131,7 +131,7 @@
     right: 92px !important;
     left: auto !important;
     z-index: 10010 !important;
-    max-width: min(272px, calc(100vw - 112px)) !important;
+    max-width: min(270px, calc(100vw - 112px)) !important;
     overflow-x: auto !important;
     background: rgba(17,26,20,.94) !important;
     border: 1px solid #2d4a35 !important;
@@ -176,7 +176,7 @@
     right:92px !important;
     left:auto !important;
     z-index:10010 !important;
-    max-width:min(272px, calc(100vw - 112px)) !important;
+    max-width:min(270px, calc(100vw - 112px)) !important;
     overflow-x:auto !important;
     background:rgba(17,26,20,.94) !important;
     border:1px solid #2d4a35 !important;
@@ -205,7 +205,7 @@
     right:calc(env(safe-area-inset-right,0px) + 92px) !important;
     left:auto !important;
     z-index:10020 !important;
-    max-width:min(272px, calc(100vw - 118px)) !important;
+    max-width:min(270px, calc(100vw - 118px)) !important;
     overflow-x:auto !important;
     background:rgba(17,26,20,.94) !important;
     border:1px solid #2d4a35 !important;
@@ -1136,13 +1136,66 @@
   }
 </style>
 
+
+
+<style id="tt274-matcher-hide-pitch-css">
+  /* v274: Matcher som listläge. Ren CSS: dölj bara planen när huvudfliken Matcher är aktiv.
+     Rör inte matchpaneler, Sparade matcher, Spara match eller Ladda uppst. */
+  body:has(.tab.on[data-panel="lag"]) #pitch-wrapper,
+  body:has(.tab.on[data-panel="lag"]) #panel-toggle-strip {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  body:has(.tab.on[data-panel="lag"]) #bottompanel {
+    flex: 1 1 auto !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: calc(100vh - 118px) !important;
+    max-height: calc(100vh - 118px) !important;
+    overflow: auto !important;
+    box-sizing: border-box !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  body:has(.tab.on[data-panel="lag"]) #panel-lag.on {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  body:has(.tab.on[data-panel="lag"]) #panel-lag > div,
+  body:has(.tab.on[data-panel="lag"]) #lag-trupp,
+  body:has(.tab.on[data-panel="lag"]) #lag-match,
+  body:has(.tab.on[data-panel="lag"]) #lag-statistik,
+  body:has(.tab.on[data-panel="lag"]) #lag-sparade {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(.tab.on[data-panel="lag"]) #trupp-list,
+  body:has(.tab.on[data-panel="lag"]) #match-trupp-list,
+  body:has(.tab.on[data-panel="lag"]) #stat-list,
+  body:has(.tab.on[data-panel="lag"]) #sparade-match-list,
+  body:has(.tab.on[data-panel="lag"]) #match-history-list {
+    max-height: calc(100vh - 245px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-bottom: 36px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">272</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">274</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
