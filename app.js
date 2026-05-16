@@ -27295,3 +27295,136 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt283SyncDrawOptions=requestSync283;
 })();
 /* === slut v283-taktikfilm-draw-options-on-pitch === */
+
+
+/* === v284-taktikfilm-desktop-tool-click-stabilizer ===
+   Bas: v283. Syfte: på desktop får Taktikfilm-ritvalen inte bara synas medan
+   musknappen hålls nere. Vi fångar taktikfilmsverktygens click i capture-läge,
+   sätter ritläge explicit och stoppar äldre toggle-handlers från att slå tillbaka
+   till move på mouseup/click. Rör inte ritmotor, sparning, uppspelning, Matcher eller Trupp. */
+(function(){
+  if(window.__tt284TaktikfilmDesktopToolClickStabilizer)return;
+  window.__tt284TaktikfilmDesktopToolClickStabilizer=true;
+
+  function setVersion284(){
+    try{
+      var ids=['app-version','version','version-label','ver','build-version'];
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='284';});
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"],span,small,div,[data-version],.version,.app-version,.version-label,.app-version-label').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='284';
+      });
+    }catch(e){}
+  }
+
+  function isTaktikActive284(){
+    try{ if(document.body.classList.contains('tt248-taktik-active')) return true; }catch(e){}
+    try{
+      var tab=document.querySelector('.tab.on[data-panel="taktik"]');
+      var bar=document.getElementById('taktikbar');
+      if(tab || (bar && getComputedStyle(bar).display!=='none')) return true;
+    }catch(e){}
+    try{ if(playback||isEditingTaktik||editingTaktikIdx!==null) return true; }catch(e){}
+    return false;
+  }
+
+  var toolMap={
+    'btn-tb-arrow':'arrow',
+    'btn-tb-freehand':'freehand',
+    'btn-tb-zone':'zone',
+    'btn-tb-text':'text',
+    'btn-tb-movement':'movement'
+  };
+  var optionMap={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
+
+  function updateTaktikToolButtons284(activeMode){
+    try{
+      Object.keys(toolMap).forEach(function(id){
+        var b=document.getElementById(id);
+        if(b)b.classList.toggle('on',activeMode===toolMap[id]);
+      });
+    }catch(e){}
+  }
+
+  function showTaktikOptions284(m){
+    try{
+      var optId=optionMap[m]||null;
+      if(optId) window.__tt284LastTaktikOptionId=optId;
+      else window.__tt284LastTaktikOptionId=null;
+      ['arrow-options','freehand-options','zone-options'].forEach(function(id){
+        var el=document.getElementById(id);
+        if(!el)return;
+        if(typeof window.tt283SyncDrawOptions==='function'){
+          // Låt v283 placera panelen på planen, men sätt display redan nu så den inte blinkar bort.
+          if(id===optId){
+            var pw=document.getElementById('pitch-wrapper');
+            if(pw && el.parentNode!==pw)pw.appendChild(el);
+            el.classList.remove('tt279-taktik-options','tt280-taktik-options','tt281-taktik-options','tt282-taktik-options');
+            el.classList.add('tt283-taktik-plane-options');
+            el.style.display='flex';
+          }else{
+            el.style.display='none';
+          }
+        }
+      });
+      if(typeof window.tt283SyncDrawOptions==='function'){
+        window.tt283SyncDrawOptions();
+        setTimeout(window.tt283SyncDrawOptions,0);
+        setTimeout(window.tt283SyncDrawOptions,80);
+      }
+    }catch(e){}
+  }
+
+  function activateTaktikTool284(id,ev){
+    if(!toolMap[id] || !isTaktikActive284())return false;
+    if(ev){
+      try{ev.preventDefault();}catch(e){}
+      try{ev.stopPropagation();}catch(e){}
+      try{ev.stopImmediatePropagation();}catch(e){}
+    }
+    var m=toolMap[id];
+    try{setMode(m);}catch(e){try{window.setMode(m);}catch(_){}}
+    updateTaktikToolButtons284(m);
+    showTaktikOptions284(m);
+    return false;
+  }
+
+  // Desktop-felet kom av äldre click/toggle-handlers. Capture + stopImmediate hindrar dem.
+  document.addEventListener('click',function(ev){
+    try{
+      var btn=ev.target && ev.target.closest ? ev.target.closest('#btn-tb-arrow,#btn-tb-freehand,#btn-tb-zone,#btn-tb-text,#btn-tb-movement') : null;
+      if(btn) return activateTaktikTool284(btn.id,ev);
+    }catch(e){}
+  },true);
+
+  // Gör att panelen kommer upp redan på nedtryckning, men utan att släppa igenom en äldre toggle.
+  document.addEventListener('pointerdown',function(ev){
+    try{
+      var btn=ev.target && ev.target.closest ? ev.target.closest('#btn-tb-arrow,#btn-tb-freehand,#btn-tb-zone') : null;
+      if(!btn || !isTaktikActive284())return;
+      var m=toolMap[btn.id];
+      window.__tt284LastTaktikOptionId=optionMap[m]||null;
+      setTimeout(function(){showTaktikOptions284(m);},0);
+    }catch(e){}
+  },true);
+
+  // Efter att man ritat på desktop kör musup/render; håll kvar panelen om ritverktyg fortfarande är aktivt.
+  ['mouseup','pointerup','touchend'].forEach(function(evtName){
+    document.addEventListener(evtName,function(){
+      try{
+        if(!isTaktikActive284())return;
+        if(mode==='arrow'||mode==='freehand'||mode==='zone'){
+          updateTaktikToolButtons284(mode);
+          setTimeout(function(){showTaktikOptions284(mode);},0);
+          setTimeout(function(){showTaktikOptions284(mode);},80);
+        }
+      }catch(e){}
+    },true);
+  });
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion284);
+  else setVersion284();
+  setTimeout(setVersion284,400);
+  setTimeout(setVersion284,1600);
+})();
+/* === slut v284-taktikfilm-desktop-tool-click-stabilizer === */
