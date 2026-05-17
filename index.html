@@ -1195,7 +1195,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px" id="app-version" class="app-version" data-version="app">304</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px" id="app-version" class="app-version" data-version="app">305</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1335,10 +1335,17 @@
     <button class="btn" id="btn-prev" style="font-size:0.85rem;padding:3px 8px">&#9664;</button>
     <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.78rem;min-width:40px;text-align:center">Start</span>
     <button class="btn" id="btn-next" style="font-size:0.85rem;padding:3px 8px">&#9654;</button>
-    <select class="btn" id="play-speed" style="padding:3px 12px 3px 5px;font-size:0.65rem">
-      <option value="1200">Sakta</option>
-      <option value="600" selected>Normal</option>
-      <option value="300">Snabb</option>
+    <select class="btn" id="play-speed" style="padding:3px 12px 3px 5px;font-size:0.65rem" title="Uppspelningshastighet">
+      <option value="1">1 Extra sakta</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5" selected>5 Normal</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10 Snabb</option>
     </select>
     <label style="display:flex;align-items:center;gap:2px;font-size:0.65rem;color:#7aaa88;cursor:pointer"><input type="checkbox" id="play-loop"> Loop</label>
     <button class="btn" id="btn-copy-drawings" style="padding:3px 6px;font-size:0.65rem;color:#e8c84a;border-color:#e8c84a" title="Kopiera ritningar">&#9000;</button>
@@ -1701,10 +1708,17 @@
 </div>
 <div id="ls-next-side" style="display:none">
   <button class="ls-btn" id="ls-next-btn">&#9654;</button>
-  <select class="ls-select" id="ls-speed-sel">
-    <option value="1200">S</option>
-    <option value="600" selected>N</option>
-    <option value="300">F</option>
+  <select class="ls-select" id="ls-speed-sel" title="Uppspelningshastighet">
+    <option value="1">1 sakta</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5" selected>5 normal</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10 snabb</option>
   </select>
   <label class="ls-label" style="writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);display:flex;align-items:center;gap:3px"><input type="checkbox" id="ls-loop" style="width:12px;height:12px"> Loop</label>
   <button class="ls-btn" id="ls-day-btn3" style="font-size:0.9rem;padding:8px 8px" title="Dagsljus">&#9728;</button>
