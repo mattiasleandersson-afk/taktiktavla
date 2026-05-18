@@ -30258,3 +30258,258 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   setTimeout(function(){setVersion319();polishIcons319();},1400);
 })();
 /* === slut v319-delete-formation-key-and-centered-unshare-icon === */
+
+/* === v320-account-team-ui-polish ===
+   Bas: stabil v319.
+   Syfte: tydligare Konto och lag utan att ändra ägarskap/delning/RLS.
+   - Visar inloggad e-post, visningsnamn, aktivt lag och roll tydligare.
+   - Adminverktyg visas bara för admin.
+   - Medlemslistan har tydligare rubriker/hjälptexter.
+*/
+(function(){
+  if(window.__tt320AccountTeamUiPolish)return;
+  window.__tt320AccountTeamUiPolish=true;
+  var VERSION='320';
+
+  function setVersion320(){
+    try{
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
+        if(el && /^(\s*\d+\s*)$/.test(el.textContent||''))el.textContent=VERSION;
+      });
+    }catch(e){}
+  }
+  function esc320(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function norm320(v){return String(v||'').trim().toLowerCase();}
+  function normTeam320(v){return String(v||'').trim().toUpperCase().replace(/\s+/g,'-');}
+  function email320(){try{return norm320(window.tt298GetAuthUserEmail&&window.tt298GetAuthUserEmail());}catch(e){return '';}}
+  function userId320(){try{return String(window.tt298GetAuthUserId&&window.tt298GetAuthUserId()||'');}catch(e){return '';}}
+  function sessionToken320(){
+    try{if(typeof tt302AuthAccessToken==='function'){var t=tt302AuthAccessToken();if(t)return t;}}catch(e){}
+    try{var s=window.tt298GetAuthSession&&window.tt298GetAuthSession();if(s&&s.access_token)return s.access_token;}catch(e){}
+    return '';
+  }
+  function readProfile320(){
+    try{if(typeof getUserProfile==='function'){var p=getUserProfile();if(p)return p;}}catch(e){}
+    try{if(typeof getProfileSafeV10==='function'){var p2=getProfileSafeV10();if(p2)return p2;}}catch(e){}
+    try{var raw=localStorage.getItem('tt_profile_v1');return raw?JSON.parse(raw):null;}catch(e){}
+    return null;
+  }
+  function defaultName320(){var e=email320();return e?e.split('@')[0]:'Tränare';}
+  function activeTeam320(){var p=readProfile320()||{};return normTeam320(p.teamCode||p.teamId||'');}
+  function saveProfile320(name,team){
+    name=String(name||'').trim()||defaultName320();
+    team=normTeam320(team);
+    if(!team)return null;
+    var old=readProfile320()||{};
+    var p={
+      ownerId:old.ownerId || ('user_'+Math.random().toString(36).slice(2,10)),
+      ownerName:name,
+      teamId:team,
+      teamCode:team,
+      teamName:team,
+      authUserId:userId320() || old.authUserId || '',
+      authEmail:email320() || old.authEmail || ''
+    };
+    try{localStorage.setItem('tt_profile_v1',JSON.stringify(p));}catch(e){}
+    try{if(typeof updateAccountTeamButtons298==='function')updateAccountTeamButtons298();}catch(e){}
+    return p;
+  }
+  function headers320(){return {'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+(sessionToken320()||SUPA_KEY)};}
+  async function rest320(path,opts){
+    var res=await fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+path,opts||{});
+    var txt=await res.text();
+    var data=null;
+    try{data=txt?JSON.parse(txt):null;}catch(e){data=txt;}
+    if(!res.ok)throw new Error((data&&data.message)||txt||('Supabase-fel '+res.status));
+    return data;
+  }
+  function memberData320(row){
+    var d=(row&&row.data)||{};
+    return {id:row&&row.id,teamCode:normTeam320(d.teamCode||d.teamId||''),email:norm320(d.email||row.name||''),role:String(d.role||'member').toLowerCase()==='admin'?'admin':'member',status:String(d.status||'active').toLowerCase(),raw:row};
+  }
+  async function loadMembers320(team){
+    team=normTeam320(team||activeTeam320());
+    if(!team)return [];
+    var rows=await rest320('?type=eq.team_member&select=*&order=id.asc',{headers:headers320()});
+    return (Array.isArray(rows)?rows:[]).map(memberData320).filter(function(m){return m.teamCode===team && m.status!=='removed';});
+  }
+  function roleOf320(members,email){
+    email=norm320(email||email320());
+    var m=(members||[]).find(function(x){return x.email===email;});
+    return m?m.role:'';
+  }
+  function isAdmin320(members,email){return roleOf320(members,email)==='admin';}
+  async function createMember320(team,email,role){
+    team=normTeam320(team||activeTeam320());email=norm320(email);role=(String(role||'member').toLowerCase()==='admin')?'admin':'member';
+    if(!team)throw new Error('Fyll i aktiv lagkod först');
+    if(!email || email.indexOf('@')<1)throw new Error('Fyll i en giltig e-postadress');
+    var now=new Date().toISOString();
+    var data={teamCode:team,teamId:team,email:email,role:role,status:'active',createdByEmail:email320(),createdAt:now,updatedAt:now};
+    return rest320('',{method:'POST',headers:Object.assign({},headers320(),{'Prefer':'return=representation'}),body:JSON.stringify({name:'Medlem '+email,type:'team_member',folder:'System',data:data})});
+  }
+  async function patchMember320(member,patch){
+    var d=Object.assign({},(member.raw&&member.raw.data)||{});
+    Object.keys(patch||{}).forEach(function(k){d[k]=patch[k];});d.updatedAt=new Date().toISOString();
+    return rest320('?id=eq.'+encodeURIComponent(member.id),{method:'PATCH',headers:Object.assign({},headers320(),{'Prefer':'return=representation'}),body:JSON.stringify({data:d,name:'Medlem '+(d.email||member.email)})});
+  }
+  async function deleteMember320(member){return rest320('?id=eq.'+encodeURIComponent(member.id),{method:'DELETE',headers:headers320()});}
+
+  function addCss320(){
+    if(document.getElementById('tt320-account-ui-css'))return;
+    var st=document.createElement('style');st.id='tt320-account-ui-css';
+    st.textContent=[
+      '#tt320-account-modal{position:fixed;inset:0;z-index:50500;background:rgba(0,0,0,.66);display:flex;align-items:center;justify-content:center;padding:14px}',
+      '#tt320-account-box{width:min(520px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:#101812;border:1px solid #2d4a35;border-radius:16px;box-shadow:0 18px 58px rgba(0,0,0,.5);padding:14px;color:#edf5ee;font-family:Arial Narrow,Arial,sans-serif}',
+      '#tt320-account-box h2{font-size:1.05rem;margin:0 0 10px;color:#4ae8e8}',
+      '.tt320-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px}',
+      '.tt320-card{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:11px;padding:8px 9px;min-width:0}',
+      '.tt320-card-label{font-size:.66rem;color:#7aaa88;text-transform:uppercase;letter-spacing:.35px;font-weight:900;margin-bottom:2px}',
+      '.tt320-card-value{font-size:.84rem;color:#edf5ee;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.tt320-pill{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:2px 8px;font-size:.72rem;font-weight:900;background:#7aaa88;color:#07110a}',
+      '.tt320-pill.admin{background:#4ae87a;color:#07110a}.tt320-pill.none{background:#49322f;color:#ffb2a8}',
+      '#tt320-account-box label{display:block;font-size:.72rem;color:#7aaa88;text-transform:uppercase;letter-spacing:.4px;margin:8px 0 3px;font-weight:900}',
+      '#tt320-account-box input,#tt320-member-role{width:100%;box-sizing:border-box;background:#0b120d;color:#edf5ee;border:1px solid #2d4a35;border-radius:8px;padding:8px 9px;font-size:.9rem}',
+      '.tt320-help{font-size:.73rem;line-height:1.35;color:#7aaa88;margin:7px 0 10px}.tt320-help strong{color:#d8f8de}',
+      '#tt320-members-box{margin-top:12px;border-top:1px solid rgba(74,232,232,.22);padding-top:10px}',
+      '.tt320-members-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.88rem;color:#4ae8e8;font-weight:900;margin-bottom:7px}',
+      '.tt320-status{font-size:.74rem;line-height:1.35;color:#9dc8a7;background:rgba(74,232,232,.055);border:1px solid rgba(74,232,232,.16);border-radius:9px;padding:7px 8px;margin:6px 0 8px}',
+      '.tt320-status.warn{background:rgba(255,139,139,.08);border-color:rgba(255,139,139,.25);color:#ffb2a8}',
+      '.tt320-member-row{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:7px 8px;font-size:.78rem;margin:5px 0}',
+      '.tt320-member-email{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#edf5ee}',
+      '.tt320-member-actions{display:flex;gap:4px;flex-wrap:wrap}.tt320-member-actions .btn{font-size:.65rem;padding:3px 6px}',
+      '#tt320-add-member{display:grid;grid-template-columns:1fr auto auto;gap:6px;margin-top:9px}',
+      '#tt320-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}',
+      '#tt320-actions .tt320-login{color:#ffd36b;border-color:#ffd36b}',
+      '@media(max-width:620px){.tt320-summary{grid-template-columns:1fr}#tt320-add-member{grid-template-columns:1fr}.tt320-member-row{align-items:flex-start;flex-direction:column}.tt320-member-actions{width:100%}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+  function close320(){var m=document.getElementById('tt320-account-modal');if(m)m.remove();var old=document.getElementById('tt298-account-modal');if(old)old.remove();}
+  function reloadTeamData320(){
+    try{if(typeof cloudLoadSaves==='function')cloudLoadSaves();}catch(e){}
+    try{if(typeof cloudLoadTaktik==='function')cloudLoadTaktik();}catch(e){}
+    try{if(typeof loadTrupp==='function')loadTrupp();}catch(e){}
+    try{if(typeof loadMatcher==='function')loadMatcher();}catch(e){}
+    try{if(typeof renderTruppList==='function')renderTruppList();}catch(e){}
+    try{if(typeof renderSparadeMatcherList==='function')renderSparadeMatcherList();}catch(e){}
+    try{if(typeof renderMatchTruppList==='function')renderMatchTruppList();}catch(e){}
+  }
+  function roleLabel320(role){return role==='admin'?'Admin':(role==='member'?'Medlem':'Ingen åtkomst');}
+  function renderMembers320(team){
+    var box=document.getElementById('tt320-members-box');if(!box)return;
+    var mail=email320();team=normTeam320(team||activeTeam320());
+    if(!mail){box.innerHTML='<div class="tt320-members-head">Medlemmar</div><div class="tt320-status warn">Logga in först. Medlemslistan och rollen bygger på inloggad e-post.</div>';return;}
+    if(!team){box.innerHTML='<div class="tt320-members-head">Medlemmar</div><div class="tt320-status warn">Spara en aktiv lagkod först.</div>';return;}
+    box.innerHTML='<div class="tt320-members-head"><span>Medlemmar</span><span class="tt320-pill">'+esc320(team)+'</span></div><div class="tt320-status">Laddar medlemslista...</div>';
+    loadMembers320(team).then(function(members){
+      var role=roleOf320(members,mail);var admin=role==='admin';
+      updateSummaryRole320(role);
+      var html='<div class="tt320-members-head"><span>Medlemmar</span><span class="tt320-pill">'+esc320(team)+'</span></div>';
+      if(!members.length){
+        html+='<div class="tt320-status warn">Det finns ingen medlemslista för detta lag ännu. Första inloggade personen kan skapa sig själv som admin för lagkoden.</div>';
+        html+='<button class="btn" id="tt320-bootstrap-admin" style="color:#4ae87a;border-color:#4ae87a">Gör mig till första admin</button>';
+        box.innerHTML=html;
+        var boot=document.getElementById('tt320-bootstrap-admin');
+        if(boot)boot.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();boot.disabled=true;boot.textContent='Skapar...';createMember320(team,mail,'admin').then(function(){try{showToast('Du är admin för '+team);}catch(_e){}renderMembers320(team);}).catch(function(err){boot.disabled=false;boot.textContent='Gör mig till första admin';try{showToast(err.message||'Kunde inte skapa admin',false);}catch(e2){alert(err.message||err);}});});
+        return;
+      }
+      if(admin)html+='<div class="tt320-status">Du är <strong>admin</strong>. Du kan lägga till e-postadresser, ändra roller och ta bort medlemmar från laget.</div>';
+      else if(role==='member')html+='<div class="tt320-status">Du är <strong>medlem</strong>. Du har åtkomst till laget men kan inte ändra medlemslistan.</div>';
+      else html+='<div class="tt320-status warn">Din e-post finns inte i medlemslistan. Du ska normalt inte ha åtkomst till lagets material.</div>';
+      members.forEach(function(m){
+        html+='<div class="tt320-member-row" data-id="'+esc320(m.id)+'"><div class="tt320-member-email">'+esc320(m.email)+(m.email===mail?' <span style="color:#7aaa88">(du)</span>':'')+'</div><span class="tt320-pill '+(m.role==='admin'?'admin':'')+'">'+(m.role==='admin'?'Admin':'Medlem')+'</span>';
+        if(admin){
+          html+='<div class="tt320-member-actions">';
+          html+='<button class="btn" data-act="role" data-role="'+(m.role==='admin'?'member':'admin')+'" data-id="'+esc320(m.id)+'">'+(m.role==='admin'?'Gör medlem':'Gör admin')+'</button>';
+          html+='<button class="btn del" data-act="remove" data-id="'+esc320(m.id)+'">Ta bort</button></div>';
+        }
+        html+='</div>';
+      });
+      if(admin){
+        html+='<div id="tt320-add-member"><input id="tt320-new-email" type="email" placeholder="ny.medlem@example.com"><select id="tt320-member-role"><option value="member">Medlem</option><option value="admin">Admin</option></select><button class="btn on" id="tt320-add-btn">Lägg till</button></div>';
+      }
+      box.innerHTML=html;
+      if(admin){
+        var byId={};members.forEach(function(m){byId[String(m.id)]=m;});
+        Array.prototype.slice.call(box.querySelectorAll('[data-act]')).forEach(function(btn){
+          btn.addEventListener('click',function(e){
+            e.preventDefault();e.stopPropagation();
+            var m=byId[String(btn.getAttribute('data-id')||'')];if(!m)return;
+            var act=btn.getAttribute('data-act');
+            if(act==='role'){
+              patchMember320(m,{role:btn.getAttribute('data-role')==='admin'?'admin':'member'}).then(function(){renderMembers320(team);}).catch(function(err){try{showToast(err.message||'Kunde inte ändra roll',false);}catch(_e){}});
+            }else if(act==='remove'){
+              if(m.email===mail && m.role==='admin' && members.filter(function(x){return x.role==='admin';}).length<=1){try{showToast('Sista admin kan inte tas bort',false);}catch(_e){}return;}
+              if(!confirm('Ta bort '+m.email+' från laget?'))return;
+              deleteMember320(m).then(function(){renderMembers320(team);}).catch(function(err){try{showToast(err.message||'Kunde inte ta bort medlem',false);}catch(_e){}});
+            }
+          });
+        });
+        var add=document.getElementById('tt320-add-btn');
+        if(add)add.addEventListener('click',function(e){
+          e.preventDefault();e.stopPropagation();
+          var em=norm320((document.getElementById('tt320-new-email')||{}).value||'');
+          var ro=(document.getElementById('tt320-member-role')||{}).value||'member';
+          if(members.some(function(m){return m.email===em;})){try{showToast('E-posten finns redan i laget',false);}catch(_e){}return;}
+          add.disabled=true;add.textContent='Lägger till...';
+          createMember320(team,em,ro).then(function(){try{showToast('Medlem tillagd: '+em);}catch(_e){}renderMembers320(team);}).catch(function(err){add.disabled=false;add.textContent='Lägg till';try{showToast(err.message||'Kunde inte lägga till medlem',false);}catch(e2){alert(err.message||err);}});
+        });
+      }
+    }).catch(function(err){box.innerHTML='<div class="tt320-members-head">Medlemmar</div><div class="tt320-status warn">Kunde inte ladda medlemslista: '+esc320(err.message||err)+'</div>';});
+  }
+  function updateSummaryRole320(role){
+    var el=document.getElementById('tt320-summary-role');if(!el)return;
+    el.textContent=roleLabel320(role);el.className='tt320-pill '+(role==='admin'?'admin':(role?'':'none'));
+  }
+  function open320(){
+    addCss320();close320();
+    var p=readProfile320()||{};var mail=email320();var team=normTeam320(p.teamCode||p.teamId||'');
+    var modal=document.createElement('div');modal.id='tt320-account-modal';
+    var box=document.createElement('div');box.id='tt320-account-box';
+    box.innerHTML=''
+      +'<h2>Konto och lag</h2>'
+      +'<div class="tt320-summary">'
+      +'<div class="tt320-card"><div class="tt320-card-label">Inloggad som</div><div class="tt320-card-value">'+(mail?esc320(mail):'Inte inloggad')+'</div></div>'
+      +'<div class="tt320-card"><div class="tt320-card-label">Din roll</div><div class="tt320-card-value"><span id="tt320-summary-role" class="tt320-pill '+(mail?'':'none')+'">'+(mail?'Laddar...':'Ingen åtkomst')+'</span></div></div>'
+      +'<div class="tt320-card"><div class="tt320-card-label">Visningsnamn</div><div class="tt320-card-value">'+esc320(p.ownerName||defaultName320())+'</div></div>'
+      +'<div class="tt320-card"><div class="tt320-card-label">Aktivt lag</div><div class="tt320-card-value">'+(team?esc320(team):'Inte valt')+'</div></div>'
+      +'</div>'
+      +'<label for="tt320-display-name">Visningsnamn i appen</label><input id="tt320-display-name" value="'+esc320(p.ownerName||defaultName320())+'" placeholder="'+esc320(defaultName320())+'">'
+      +'<label for="tt320-team-code">Aktiv lagkod</label><input id="tt320-team-code" value="'+esc320(team)+'" placeholder="Exempel: P2015">'
+      +'<div class="tt320-help"><strong>Skillnaden:</strong> e-postinloggningen är din riktiga identitet. Visningsnamnet är bara etiketten som visas i appen. Aktiv lagkod väljer vilket lag du arbetar i.</div>'
+      +'<div id="tt320-members-box"></div>'
+      +'<div id="tt320-actions"><button class="btn tt320-login" id="tt320-login-btn">'+(mail?'Visa inloggning':'Logga in')+'</button><button class="btn" id="tt320-close-btn">Stäng</button><button class="btn on" id="tt320-save-btn">Spara lagval</button></div>';
+    modal.appendChild(box);document.body.appendChild(modal);
+    modal.addEventListener('click',function(e){if(e.target===modal)close320();});
+    document.getElementById('tt320-close-btn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();close320();});
+    document.getElementById('tt320-login-btn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();close320();setTimeout(function(){try{window.tt298OpenAuthModal&&window.tt298OpenAuthModal();}catch(_e){}},0);});
+    document.getElementById('tt320-save-btn').addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();
+      var t=normTeam320((document.getElementById('tt320-team-code')||{}).value||'');
+      if(!t){try{showToast('Fyll i aktiv lagkod',false);}catch(_e){}return;}
+      var n=(document.getElementById('tt320-display-name')||{}).value||'';
+      var saved=saveProfile320(n,t);
+      reloadTeamData320();
+      try{showToast('Aktivt lag sparat: '+(saved.teamCode||t));}catch(_e){}
+      close320();setTimeout(open320,80);
+    });
+    renderMembers320(team);
+    setTimeout(function(){try{(document.getElementById('tt320-team-code')||document.getElementById('tt320-display-name')).focus();}catch(e){}},80);
+  }
+
+  function bind320(){
+    addCss320();setVersion320();
+    try{window.tt298OpenAccountTeamModal=open320;}catch(e){}
+    try{window.tt102OpenProfileModal=open320;tt102OpenProfileModal=open320;}catch(e){}
+    document.addEventListener('click',function(e){
+      var b=e.target&&e.target.closest&&e.target.closest('#btn-profile-team,#btn-profile-v59,#btn-profile-v61,#tt102-profile-btn,.tt298-team-btn');
+      if(!b)return;
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();open320();return false;
+    },true);
+  }
+  bind320();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind320);else setTimeout(bind320,0);
+  setTimeout(bind320,300);setTimeout(function(){setVersion320();},1200);setTimeout(function(){setVersion320();},3200);
+})();
+/* === slut v320-account-team-ui-polish === */
