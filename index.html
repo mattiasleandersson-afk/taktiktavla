@@ -1189,13 +1189,35 @@
   }
 </style>
 
+
+
+<style id="tt332-match-ios-bottom-space-css">
+  /* v332: iPhone/Safari: ge nedersta Match-knapparna mer luft vid scrollens gummibandseffekt.
+     Rör bara layout/padding i Match-vyn, inte matchlogik eller sparning. */
+  @media (max-width: 700px) {
+    body:has(.tab.on[data-panel="lag"]) #lag-match {
+      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+      box-sizing: border-box !important;
+    }
+
+    body:has(.tab.on[data-panel="lag"]) #lag-match #match-trupp-list {
+      padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    body:has(.tab.on[data-panel="lag"]) #lag-match #btn-match-to-taktik,
+    body:has(.tab.on[data-panel="lag"]) #lag-match #btn-spara-match {
+      margin-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px" id="app-version" class="app-version" data-version="app">331</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px" id="app-version" class="app-version" data-version="app">332</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
