@@ -27899,6 +27899,83 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     scheduleAuthIdentityReload315('auth-logout');
   }
 
+  function resetRedirectUrl321(){
+    try{return window.location.origin+window.location.pathname;}catch(e){return window.location.href.split('#')[0].split('?')[0];}
+  }
+  async function requestPasswordReset321(email){
+    email=String(email||'').trim();
+    if(!email || email.indexOf('@')<1)throw new Error('Fyll i e-postadressen först');
+    await authFetch('/auth/v1/recover?redirect_to='+encodeURIComponent(resetRedirectUrl321()),{
+      method:'POST',headers:authHeaders(),body:JSON.stringify({email:email})
+    });
+    return true;
+  }
+  async function updateRecoveredPassword321(token,pass){
+    token=String(token||'');
+    if(!token)throw new Error('Återställningslänken saknar giltig inloggningstoken');
+    if(!pass || pass.length<6)throw new Error('Nytt lösenord behöver vara minst 6 tecken');
+    await authFetch('/auth/v1/user',{
+      method:'PUT',headers:authHeaders(token),body:JSON.stringify({password:pass})
+    });
+    saveSession(null);
+    return true;
+  }
+  function showResetStatus321(msg,ok){
+    var el=document.getElementById('tt321-reset-status');
+    if(!el)return;
+    el.textContent=msg||'';
+    el.style.color=(ok===false)?'#ff8b8b':'#7aaa88';
+  }
+  function closeResetModal321(){
+    var m=document.getElementById('tt321-reset-modal');
+    if(m)m.classList.add('hidden');
+  }
+  function openResetModal321(token){
+    ensureStyle298();
+    var old=document.getElementById('tt321-reset-modal');
+    if(old)old.remove();
+    var modal=document.createElement('div');
+    modal.id='tt321-reset-modal';
+    modal.innerHTML=''
+      +'<div id="tt321-reset-card" role="dialog" aria-modal="true" aria-labelledby="tt321-reset-title">'
+      +'<h2 id="tt321-reset-title">Välj nytt lösenord</h2>'
+      +'<p>Skriv ett nytt lösenord för kontot. När det är sparat loggar du in igen med det nya lösenordet.</p>'
+      +'<label for="tt321-reset-pass1">Nytt lösenord</label><input id="tt321-reset-pass1" type="password" autocomplete="new-password" placeholder="Minst 6 tecken">'
+      +'<label for="tt321-reset-pass2">Upprepa lösenord</label><input id="tt321-reset-pass2" type="password" autocomplete="new-password" placeholder="Samma lösenord igen">'
+      +'<div id="tt321-reset-actions"><button class="btn on" id="tt321-reset-save">Spara nytt lösenord</button><button class="btn" id="tt321-reset-close">Stäng</button></div>'
+      +'<div id="tt321-reset-status"></div></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click',function(e){if(e.target===modal)closeResetModal321();});
+    document.getElementById('tt321-reset-close').addEventListener('click',function(e){e.preventDefault();closeResetModal321();});
+    document.getElementById('tt321-reset-save').addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();
+      var p1=(document.getElementById('tt321-reset-pass1')||{}).value||'';
+      var p2=(document.getElementById('tt321-reset-pass2')||{}).value||'';
+      if(p1!==p2){showResetStatus321('Lösenorden är inte lika',false);return;}
+      showResetStatus321('Sparar nytt lösenord...');
+      updateRecoveredPassword321(token,p1).then(function(){
+        showResetStatus321('Lösenordet är uppdaterat. Logga in med ditt nya lösenord.');
+        setTimeout(function(){closeResetModal321();try{openAuthModal298();}catch(e){}},900);
+      }).catch(function(err){showResetStatus321(err.message||'Kunde inte uppdatera lösenord',false);});
+    });
+    modal.classList.remove('hidden');
+    setTimeout(function(){try{document.getElementById('tt321-reset-pass1').focus();}catch(e){}},80);
+  }
+  function handleRecoveryUrl321(){
+    try{
+      var hash=new URLSearchParams(String(window.location.hash||'').replace(/^#/,''));
+      var query=new URLSearchParams(String(window.location.search||'').replace(/^\?/,''));
+      var type=hash.get('type')||query.get('type')||'';
+      var token=hash.get('access_token')||query.get('access_token')||'';
+      if(type==='recovery' && token){
+        try{history.replaceState(null,document.title,window.location.origin+window.location.pathname);}catch(e){}
+        setTimeout(function(){openResetModal321(token);},120);
+        return true;
+      }
+    }catch(e){}
+    return false;
+  }
+
   function ensureStyle298(){
     if(document.getElementById('tt298-auth-account-style'))return;
     var st=document.createElement('style');
@@ -27916,6 +27993,16 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       '#tt298-auth-card input{width:100%;box-sizing:border-box;background:#0b120d;color:#edf5ee;border:1px solid #2d4a35;border-radius:8px;padding:8px 9px;font-size:.9rem}',
       '#tt298-auth-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}',
       '#tt298-auth-actions .btn{padding:7px 10px}',
+      '#tt321-forgot-password{font-size:.7rem;color:#ffd36b;border-color:#ffd36b;background:transparent}',
+      '#tt321-reset-modal{position:fixed;inset:0;z-index:51000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:14px}',
+      '#tt321-reset-modal.hidden{display:none}',
+      '#tt321-reset-card{width:min(420px,calc(100vw - 28px));background:#101812;border:1px solid #2d4a35;border-radius:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);padding:14px;color:#edf5ee;font-family:Arial Narrow,Arial,sans-serif}',
+      '#tt321-reset-card h2{font-size:1rem;margin:0 0 8px;color:#4ae87a}',
+      '#tt321-reset-card p{font-size:.76rem;line-height:1.35;color:#9dc8a7;margin:0 0 12px}',
+      '#tt321-reset-card label{display:block;font-size:.72rem;color:#7aaa88;text-transform:uppercase;letter-spacing:.4px;margin:8px 0 3px;font-weight:800}',
+      '#tt321-reset-card input{width:100%;box-sizing:border-box;background:#0b120d;color:#edf5ee;border:1px solid #2d4a35;border-radius:8px;padding:8px 9px;font-size:.9rem}',
+      '#tt321-reset-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}',
+      '#tt321-reset-status{font-size:.75rem;line-height:1.3;min-height:1.2em;margin-top:10px;color:#7aaa88}',
       '#tt298-auth-status{font-size:.75rem;line-height:1.3;min-height:1.2em;margin-top:10px;color:#7aaa88}',
       '#tt298-auth-current{font-size:.74rem;color:#7aaa88;margin:8px 0 0;word-break:break-word}',
       '#tt298-account-modal{position:fixed;inset:0;z-index:49000;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:14px}',
@@ -27950,6 +28037,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       +'<div id="tt298-auth-actions">'
       +'<button class="btn" id="tt298-auth-login" style="color:#4ae87a;border-color:#4ae87a">Logga in</button>'
       +'<button class="btn" id="tt298-auth-signup">Skapa konto</button>'
+      +'<button class="btn" id="tt321-forgot-password">Glömt lösenord?</button>'
       +'<button class="btn" id="tt298-auth-logout" style="color:#ff8b8b;border-color:#ff8b8b">Logga ut</button>'
       +'<button class="btn" id="tt298-auth-close">Stäng</button>'
       +'</div><div id="tt298-auth-status"></div></div>';
@@ -27972,6 +28060,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(pass.length<6){showAuthStatus('Lösenordet behöver vara minst 6 tecken',false);return;}
       showAuthStatus('Skapar konto...');
       signUp(email,pass).catch(function(err){showAuthStatus(err.message||'Kunde inte skapa konto',false);});
+    });
+    document.getElementById('tt321-forgot-password').addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();
+      var email=(document.getElementById('tt298-auth-email').value||'').trim();
+      showAuthStatus('Skickar återställningsmejl...');
+      requestPasswordReset321(email).then(function(){
+        showAuthStatus('Återställningsmejl skickat om e-postadressen finns. Kontrollera även skräppost.');
+      }).catch(function(err){showAuthStatus(err.message||'Kunde inte skicka återställningsmejl',false);});
     });
     document.getElementById('tt298-auth-logout').addEventListener('click',function(e){
       e.preventDefault();e.stopPropagation();
@@ -28343,6 +28439,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt298GetAuthUserEmail=currentUserEmail;
   window.tt298GetAuthUserId=currentUserId;
   window.tt298OpenAuthModal=openAuthModal298;
+  window.tt321OpenPasswordResetFromRecovery=openResetModal321;
   window.tt298OpenAccountTeamModal=openAccountTeamModal298;
   // Compatibility alias for the previous test version if any old code calls it.
   window.tt295OpenAuthModal=openAuthModal298;
@@ -28351,6 +28448,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){init298();});
   else init298();
+  handleRecoveryUrl321();
   // Ett par init-körningar behövs eftersom den gamla appen bygger delar av menyn sent.
   // Alla versionssättare i denna fil skriver dock samma nummer: 302.
   setTimeout(init298,250);
@@ -30269,7 +30367,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt320AccountTeamUiPolish)return;
   window.__tt320AccountTeamUiPolish=true;
-  var VERSION='320';
+  var VERSION='321';
 
   function setVersion320(){
     try{
