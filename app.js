@@ -28541,7 +28541,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt301SoftTeamAccessGate)return;
   window.__tt301SoftTeamAccessGate=true;
 
-  var VERSION='328';
+  var VERSION='329';
   var MEMBER_TYPE='team_member';
   var cacheKey='';
   var cacheAt=0;
@@ -28755,7 +28755,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt302RlsReadyAuthToken)return;
   window.__tt302RlsReadyAuthToken=true;
-  var VERSION='328';
+  var VERSION='329';
   function setVersion302(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
@@ -28800,7 +28800,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt303NewTaktikDraftEditableGuard)return;
   window.__tt303NewTaktikDraftEditableGuard=true;
-  var VERSION='328';
+  var VERSION='329';
 
   function setVersion303(){
     try{
@@ -29090,7 +29090,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt310AuthIdentitySourceFix)return;
   window.__tt310AuthIdentitySourceFix=true;
 
-  var VERSION='328';
+  var VERSION='329';
   var ALIAS_KEY='tt310_display_name_aliases_v1';
 
   function setVersion310(){
@@ -29317,7 +29317,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt312AdminUnshareAndTeamRestore)return;
   window.__tt312AdminUnshareAndTeamRestore=true;
-  var VERSION='328';
+  var VERSION='329';
 
   function setVersion312(){
     try{
@@ -29519,7 +29519,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt313TeamListRestoreAfterViewExit)return;
   window.__tt313TeamListRestoreAfterViewExit=true;
-  var VERSION='328';
+  var VERSION='329';
   var lastTeamOpen=false;
   var lastFolder='Alla';
   var lastSearch='';
@@ -29646,7 +29646,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt316SafeFormationShareOwnerPreserve)return;
   window.__tt316SafeFormationShareOwnerPreserve=true;
-  var VERSION='328';
+  var VERSION='329';
 
   function setVersion316(){
     try{
@@ -29843,7 +29843,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt317AdminFormationUnshareFromTeamFix)return;
   window.__tt317AdminFormationUnshareFromTeamFix=true;
-  var VERSION='328';
+  var VERSION='329';
 
   function setVersion317(){
     try{
@@ -30036,7 +30036,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt318DeleteRefreshAndIconPolish)return;
   window.__tt318DeleteRefreshAndIconPolish=true;
-  var VERSION='328';
+  var VERSION='329';
 
   function setVersion318(){
     try{
@@ -30267,7 +30267,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt319DeleteFormationKeyAndCenteredIcon)return;
   window.__tt319DeleteFormationKeyAndCenteredIcon=true;
-  var VERSION='328';
+  var VERSION='329';
 
   function setVersion319(){
     try{
@@ -30427,7 +30427,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v319-delete-formation-key-and-centered-unshare-icon === */
 
-/* === v328-invite-link-no-sticky-team-lock ===
+/* === v329-team-save-reloads-cleanly ===
    Bas: v324, med v323:s konto/lag-fix kvar.
    Syfte: tydligare Konto och lag utan att ändra ägarskap/delning/RLS.
    - Visar inloggad e-post, visningsnamn, aktivt lag och roll tydligare.
@@ -30437,7 +30437,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt322AccountTeamUiPolish)return;
   window.__tt322AccountTeamUiPolish=true;
-  var VERSION='328';
+  var VERSION='329';
 
   function setVersion323(){
     try{
@@ -30775,26 +30775,31 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var t=normTeam320((document.getElementById('tt320-team-code')||{}).value||'');
       if(!t){try{showToast('Fyll i aktiv lagkod',false);}catch(_e){}return;}
       var n=(document.getElementById('tt320-display-name')||{}).value||'';
+      var beforeTeam=activeTeam320();
       clearStoredInvite328();
       clearInviteUrlParams328();
       var saved=saveProfile320(n,t);
       reloadTeamData320();
-      // v328: lagbyte efter inbjudnings-/spärrläge ska slå igenom direkt i samma vy.
-      // Dölj gammal spärrruta medan åtkomst räknas om, och tvinga ny kontroll mot nya lagkoden.
+      // v329: efter lagbyte ska hela appens start-/åtkomstflöde byggas om från sparad profil.
+      // Tidigare försök renderade om konto-rutan, men äldre cache/listor kunde fortfarande visa gamla laget.
       try{
         var gate=document.getElementById('tt301-access-gate');
         if(gate)gate.classList.add('hidden');
       }catch(_e){}
+      try{
+        document.dispatchEvent(new CustomEvent('tt-team-changed',{detail:{teamCode:(saved.teamCode||t)}}));
+      }catch(_e){}
+      try{showToast('Aktivt lag sparat: '+(saved.teamCode||t));}catch(_e){}
+      if(beforeTeam!==normTeam320(saved.teamCode||t)){
+        setTimeout(function(){try{window.location.reload();}catch(_e){location.reload();}},180);
+        return;
+      }
       try{
         if(window.tt301CheckTeamAccess){
           setTimeout(function(){window.tt301CheckTeamAccess();},30);
           setTimeout(function(){window.tt301CheckTeamAccess();},700);
         }
       }catch(_e){}
-      try{
-        document.dispatchEvent(new CustomEvent('tt-team-changed',{detail:{teamCode:(saved.teamCode||t)}}));
-      }catch(_e){}
-      try{showToast('Aktivt lag sparat: '+(saved.teamCode||t));}catch(_e){}
       close320();setTimeout(open320,80);
     });
     renderMembers320(team);
@@ -30819,4 +30824,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind320);else setTimeout(bind320,0);
   setTimeout(bind320,300);setTimeout(function(){setVersion323();},1200);setTimeout(function(){setVersion323();},3200);setTimeout(function(){setVersion323();},4200);
 })();
-/* === slut v328-invite-link-no-sticky-team-lock === */
+/* === slut v329-team-save-reloads-cleanly === */
