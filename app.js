@@ -28450,7 +28450,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else init298();
   handleRecoveryUrl322();
   // Ett par init-körningar behövs eftersom den gamla appen bygger delar av menyn sent.
-  // v322: aktiva versionssättare i denna fil är synkade till 322.
+  // v323: aktiva versionssättare i denna fil är synkade till 323.
   setTimeout(init298,250);
   setTimeout(init298,900);
   setTimeout(init298,1800);
@@ -28471,7 +28471,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt301SoftTeamAccessGate)return;
   window.__tt301SoftTeamAccessGate=true;
 
-  var VERSION='322';
+  var VERSION='323';
   var MEMBER_TYPE='team_member';
   var cacheKey='';
   var cacheAt=0;
@@ -28685,7 +28685,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt302RlsReadyAuthToken)return;
   window.__tt302RlsReadyAuthToken=true;
-  var VERSION='322';
+  var VERSION='323';
   function setVersion302(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
@@ -28730,7 +28730,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt303NewTaktikDraftEditableGuard)return;
   window.__tt303NewTaktikDraftEditableGuard=true;
-  var VERSION='322';
+  var VERSION='323';
 
   function setVersion303(){
     try{
@@ -29020,7 +29020,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt310AuthIdentitySourceFix)return;
   window.__tt310AuthIdentitySourceFix=true;
 
-  var VERSION='322';
+  var VERSION='323';
   var ALIAS_KEY='tt310_display_name_aliases_v1';
 
   function setVersion310(){
@@ -29247,7 +29247,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt312AdminUnshareAndTeamRestore)return;
   window.__tt312AdminUnshareAndTeamRestore=true;
-  var VERSION='322';
+  var VERSION='323';
 
   function setVersion312(){
     try{
@@ -29449,7 +29449,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt313TeamListRestoreAfterViewExit)return;
   window.__tt313TeamListRestoreAfterViewExit=true;
-  var VERSION='322';
+  var VERSION='323';
   var lastTeamOpen=false;
   var lastFolder='Alla';
   var lastSearch='';
@@ -29576,7 +29576,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt316SafeFormationShareOwnerPreserve)return;
   window.__tt316SafeFormationShareOwnerPreserve=true;
-  var VERSION='322';
+  var VERSION='323';
 
   function setVersion316(){
     try{
@@ -29773,7 +29773,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt317AdminFormationUnshareFromTeamFix)return;
   window.__tt317AdminFormationUnshareFromTeamFix=true;
-  var VERSION='322';
+  var VERSION='323';
 
   function setVersion317(){
     try{
@@ -29966,7 +29966,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt318DeleteRefreshAndIconPolish)return;
   window.__tt318DeleteRefreshAndIconPolish=true;
-  var VERSION='322';
+  var VERSION='323';
 
   function setVersion318(){
     try{
@@ -30197,7 +30197,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt319DeleteFormationKeyAndCenteredIcon)return;
   window.__tt319DeleteFormationKeyAndCenteredIcon=true;
-  var VERSION='322';
+  var VERSION='323';
 
   function setVersion319(){
     try{
@@ -30357,7 +30357,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v319-delete-formation-key-and-centered-unshare-icon === */
 
-/* === v322-account-team-ui-polish-and-password-reset-version-clean ===
+/* === v323-account-team-access-bootstrap-fix ===
    Bas: stabil v319.
    Syfte: tydligare Konto och lag utan att ändra ägarskap/delning/RLS.
    - Visar inloggad e-post, visningsnamn, aktivt lag och roll tydligare.
@@ -30367,9 +30367,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt322AccountTeamUiPolish)return;
   window.__tt322AccountTeamUiPolish=true;
-  var VERSION='322';
+  var VERSION='323';
 
-  function setVersion322(){
+  function setVersion323(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -30493,6 +30493,42 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{if(typeof renderSparadeMatcherList==='function')renderSparadeMatcherList();}catch(e){}
     try{if(typeof renderMatchTruppList==='function')renderMatchTruppList();}catch(e){}
   }
+  async function teamAccessForAccount323(team){
+    team=normTeam320(team||activeTeam320());
+    if(!team)return null;
+    try{
+      var res=await fetch(SUPA_URL+'/rest/v1/rpc/tt_my_team_access',{
+        method:'POST',
+        headers:headers320(),
+        body:JSON.stringify({p_team:team})
+      });
+      var txt=await res.text();
+      var data=null;
+      try{data=txt?JSON.parse(txt):null;}catch(e){data=txt;}
+      if(!res.ok)return null;
+      return data||null;
+    }catch(e){return null;}
+  }
+  function renderFirstAdminOption323(box,team,mail){
+    var html='<div class="tt320-members-head"><span>Medlemmar</span><span class="tt320-pill">'+esc320(team)+'</span></div>';
+    html+='<div class="tt320-status warn">Det finns ingen medlemslista för detta lag ännu. Första inloggade personen kan skapa sig själv som admin för lagkoden.</div>';
+    html+='<button class="btn" id="tt320-bootstrap-admin" style="color:#4ae87a;border-color:#4ae87a">Gör mig till första admin</button>';
+    box.innerHTML=html;
+    var boot=document.getElementById('tt320-bootstrap-admin');
+    if(boot)boot.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();boot.disabled=true;boot.textContent='Skapar...';createMember320(team,mail,'admin').then(function(){try{showToast('Du är admin för '+team);}catch(_e){}renderMembers320(team);}).catch(function(err){boot.disabled=false;boot.textContent='Gör mig till första admin';try{showToast(err.message||'Kunde inte skapa admin',false);}catch(e2){alert(err.message||err);}});});
+  }
+  function renderNoAccountAccess323(box,team,mail,access){
+    var role=(access&&access.is_admin)?'admin':((access&&access.is_member)?'member':'');
+    updateSummaryRole320(role);
+    var html='<div class="tt320-members-head"><span>Medlemmar</span><span class="tt320-pill">'+esc320(team)+'</span></div>';
+    if(role==='member'){
+      html+='<div class="tt320-status">Du har åtkomst till laget som <strong>medlem</strong>, men medlemslistan kan bara visas/ändras av admin.</div>';
+    }else{
+      html+='<div class="tt320-status warn">Din inloggade e-post <strong>'+esc320(mail)+'</strong> är inte tillagd i laget <strong>'+esc320(team)+'</strong>.</div>';
+      html+='<div class="tt320-status warn">Laget har redan en medlemslista. Be en admin lägga till exakt denna e-postadress i <strong>Konto och lag → Medlemmar</strong>.</div>';
+    }
+    box.innerHTML=html;
+  }
   function roleLabel320(role){return role==='admin'?'Admin':(role==='member'?'Medlem':'Ingen åtkomst');}
   function renderMembers320(team){
     var box=document.getElementById('tt320-members-box');if(!box)return;
@@ -30505,11 +30541,17 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       updateSummaryRole320(role);
       var html='<div class="tt320-members-head"><span>Medlemmar</span><span class="tt320-pill">'+esc320(team)+'</span></div>';
       if(!members.length){
-        html+='<div class="tt320-status warn">Det finns ingen medlemslista för detta lag ännu. Första inloggade personen kan skapa sig själv som admin för lagkoden.</div>';
-        html+='<button class="btn" id="tt320-bootstrap-admin" style="color:#4ae87a;border-color:#4ae87a">Gör mig till första admin</button>';
-        box.innerHTML=html;
-        var boot=document.getElementById('tt320-bootstrap-admin');
-        if(boot)boot.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();boot.disabled=true;boot.textContent='Skapar...';createMember320(team,mail,'admin').then(function(){try{showToast('Du är admin för '+team);}catch(_e){}renderMembers320(team);}).catch(function(err){boot.disabled=false;boot.textContent='Gör mig till första admin';try{showToast(err.message||'Kunde inte skapa admin',false);}catch(e2){alert(err.message||err);}});});
+        teamAccessForAccount323(team).then(function(access){
+          if(access && access.has_members){
+            renderNoAccountAccess323(box,team,mail,access);
+            return;
+          }
+          updateSummaryRole320('');
+          renderFirstAdminOption323(box,team,mail);
+        }).catch(function(){
+          updateSummaryRole320('');
+          renderFirstAdminOption323(box,team,mail);
+        });
         return;
       }
       if(admin)html+='<div class="tt320-status">Du är <strong>admin</strong>. Du kan lägga till e-postadresser, ändra roller och ta bort medlemmar från laget.</div>';
@@ -30597,7 +30639,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function bind320(){
-    addCss320();setVersion322();
+    addCss320();setVersion323();
     try{window.tt298OpenAccountTeamModal=open320;}catch(e){}
     try{window.tt102OpenProfileModal=open320;tt102OpenProfileModal=open320;}catch(e){}
     document.addEventListener('click',function(e){
@@ -30608,6 +30650,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   bind320();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind320);else setTimeout(bind320,0);
-  setTimeout(bind320,300);setTimeout(function(){setVersion322();},1200);setTimeout(function(){setVersion322();},3200);
+  setTimeout(bind320,300);setTimeout(function(){setVersion323();},1200);setTimeout(function(){setVersion323();},3200);
 })();
-/* === slut v322-account-team-ui-polish-and-password-reset-version-clean === */
+/* === slut v323-account-team-access-bootstrap-fix === */
