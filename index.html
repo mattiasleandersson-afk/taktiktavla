@@ -1191,22 +1191,25 @@
 
 
 
-<style id="tt332-match-ios-bottom-space-css">
-  /* v332: iPhone/Safari: ge nedersta Match-knapparna mer luft vid scrollens gummibandseffekt.
-     Rör bara layout/padding i Match-vyn, inte matchlogik eller sparning. */
+<style id="tt333-match-ios-single-scroll-css">
+  /* v333: iPhone/Safari: Match-lista och nedersta knappar ska kännas som samma yta.
+     Tar bort extra scroll i spelarlistan på mobil och låter hela Matcher-panelen scrolla. */
   @media (max-width: 700px) {
     body:has(.tab.on[data-panel="lag"]) #lag-match {
-      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
       box-sizing: border-box !important;
     }
 
     body:has(.tab.on[data-panel="lag"]) #lag-match #match-trupp-list {
-      padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important;
+      max-height: none !important;
+      overflow: visible !important;
+      padding-bottom: 6px !important;
+      -webkit-overflow-scrolling: auto !important;
     }
 
-    body:has(.tab.on[data-panel="lag"]) #lag-match #btn-match-to-taktik,
-    body:has(.tab.on[data-panel="lag"]) #lag-match #btn-spara-match {
-      margin-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    body:has(.tab.on[data-panel="lag"]) #lag-match div:has(> #btn-match-to-taktik) {
+      margin-top: 4px !important;
+      padding-bottom: calc(26px + env(safe-area-inset-bottom, 0px)) !important;
     }
   }
 </style>
@@ -1217,7 +1220,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px" id="app-version" class="app-version" data-version="app">332</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px" id="app-version" class="app-version" data-version="app">333</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
