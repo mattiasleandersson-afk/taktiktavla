@@ -28544,7 +28544,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt301SoftTeamAccessGate)return;
   window.__tt301SoftTeamAccessGate=true;
 
-  var VERSION='343';
+  var VERSION='344';
   var MEMBER_TYPE='team_member';
   var cacheKey='';
   var cacheAt=0;
@@ -28763,7 +28763,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt302RlsReadyAuthToken)return;
   window.__tt302RlsReadyAuthToken=true;
-  var VERSION='343';
+  var VERSION='344';
   function setVersion302(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
@@ -28808,7 +28808,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt303NewTaktikDraftEditableGuard)return;
   window.__tt303NewTaktikDraftEditableGuard=true;
-  var VERSION='343';
+  var VERSION='344';
 
   function setVersion303(){
     try{
@@ -29098,7 +29098,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt310AuthIdentitySourceFix)return;
   window.__tt310AuthIdentitySourceFix=true;
 
-  var VERSION='343';
+  var VERSION='344';
   var ALIAS_KEY='tt310_display_name_aliases_v1';
 
   function setVersion310(){
@@ -29325,7 +29325,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt312AdminUnshareAndTeamRestore)return;
   window.__tt312AdminUnshareAndTeamRestore=true;
-  var VERSION='343';
+  var VERSION='344';
 
   function setVersion312(){
     try{
@@ -29527,7 +29527,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt313TeamListRestoreAfterViewExit)return;
   window.__tt313TeamListRestoreAfterViewExit=true;
-  var VERSION='343';
+  var VERSION='344';
   var lastTeamOpen=false;
   var lastFolder='Alla';
   var lastSearch='';
@@ -29654,7 +29654,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt316SafeFormationShareOwnerPreserve)return;
   window.__tt316SafeFormationShareOwnerPreserve=true;
-  var VERSION='343';
+  var VERSION='344';
 
   function setVersion316(){
     try{
@@ -29851,7 +29851,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt317AdminFormationUnshareFromTeamFix)return;
   window.__tt317AdminFormationUnshareFromTeamFix=true;
-  var VERSION='343';
+  var VERSION='344';
 
   function setVersion317(){
     try{
@@ -30044,7 +30044,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt318DeleteRefreshAndIconPolish)return;
   window.__tt318DeleteRefreshAndIconPolish=true;
-  var VERSION='343';
+  var VERSION='344';
 
   function setVersion318(){
     try{
@@ -30275,7 +30275,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt319DeleteFormationKeyAndCenteredIcon)return;
   window.__tt319DeleteFormationKeyAndCenteredIcon=true;
-  var VERSION='343';
+  var VERSION='344';
 
   function setVersion319(){
     try{
@@ -30445,7 +30445,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt322AccountTeamUiPolish)return;
   window.__tt322AccountTeamUiPolish=true;
-  var VERSION='343';
+  var VERSION='344';
 
   function setVersion323(){
     try{
@@ -30991,6 +30991,36 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       try{tt339Notice('Kunde inte skapa lag',msg,true);}catch(_e2){}
     });
   }
+  async function claimAdminlessTeam344(team){
+    team=normTeam320(team||activeTeam320());
+    if(!team)throw new Error('Saknar lagkod');
+    if(!email320())throw new Error('Logga in först');
+
+    // Viktigt: vanliga PATCH-anrop stoppas ofta av RLS när laget saknar admin.
+    // Därför används en säker SECURITY DEFINER-RPC som bara får lyckas när:
+    // 1) inloggad e-post redan är medlem i laget, och
+    // 2) laget har exakt noll admins.
+    var token=sessionToken320();
+    if(!token)throw new Error('Saknar inloggningssession. Logga in igen och försök på nytt.');
+    var res=await fetch(SUPA_URL+'/rest/v1/rpc/tt_claim_adminless_team',{
+      method:'POST',
+      headers:Object.assign({},headers320(),{'Content-Type':'application/json'}),
+      body:JSON.stringify({p_team_code:team})
+    });
+    var txt=await res.text();
+    var data=null;
+    try{data=txt?JSON.parse(txt):null;}catch(e){data=txt;}
+    if(!res.ok){
+      var msg=(data&&data.message)||String(txt||'Kunde inte återställa admin');
+      if(res.status===404 || /Could not find|schema cache|function/i.test(msg)){
+        msg='Databasfunktionen för admin-återställning saknas. Kör SQL-filen supabase_adminless_team_recovery_v344.sql i Supabase och försök igen.';
+      }
+      throw new Error(msg);
+    }
+    if(data && data.ok===false)throw new Error(data.message||'Kunde inte återställa admin');
+    return data;
+  }
+
   function renderNoAccountAccess323(box,team,mail,access){
     var role=(access&&access.is_admin)?'admin':((access&&access.is_member)?'member':'');
     updateSummaryRole320(role);
@@ -31065,12 +31095,16 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           tt339Confirm('Återställ admin','Laget '+team+' saknar admin.\n\nDu är medlem i laget och görs nu till admin så att laget kan administreras igen.','Gör mig till admin').then(function(ok){
             if(!ok)return;
             claimAdminBtn343.disabled=true;claimAdminBtn343.textContent='Uppdaterar...';
-            patchMember320(currentMember320,{role:'admin'}).then(function(){
+            claimAdminlessTeam344(team).then(function(){
               try{showToast('Du är nu admin i '+team);}catch(_e){}
-              tt339Notice('Admin återställd','Du är nu admin i '+team+'.\n\nDu kan lägga till medlemmar, ändra roller och administrera laget.').then(function(){renderMembers320(team);});
+              tt339Notice('Admin återställd','Du är nu admin i '+team+'.\n\nDu kan lägga till medlemmar, ändra roller och administrera laget.').then(function(){
+                renderMembers320(team);
+                try{renderMyTeams330();}catch(_e){}
+                setTimeout(function(){try{window.location.reload();}catch(_e){location.reload();}},450);
+              });
             }).catch(function(err){
               claimAdminBtn343.disabled=false;claimAdminBtn343.textContent='Gör mig till admin för detta lag';
-              var msg=err.message||'Kunde inte göra dig till admin';
+              var msg=err&&err.message?err.message:String(err||'Kunde inte göra dig till admin');
               try{showToast(msg,false);}catch(_e){}
               tt339Notice('Kunde inte återställa admin',msg,true);
             });
@@ -31143,7 +31177,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var modal=document.createElement('div');modal.id='tt320-account-modal';
     var box=document.createElement('div');box.id='tt320-account-box';
     box.innerHTML=''
-      +'<div class="tt332-modal-top"><div><h2>Konto och lag</h2><div class="tt332-modal-sub">Välj lag, kontrollera din roll och bjud in medlemmar.</div></div><span class="tt320-pill active">v343</span></div>'
+      +'<div class="tt332-modal-top"><div><h2>Konto och lag</h2><div class="tt332-modal-sub">Välj lag, kontrollera din roll och bjud in medlemmar.</div></div><span class="tt320-pill active">v344</span></div>'
       +'<div class="tt332-section primary"><div class="tt332-section-head"><div class="tt332-section-title">Översikt</div></div><div class="tt320-summary">'
       +'<div class="tt320-card"><div class="tt320-card-label">Inloggad som</div><div class="tt320-card-value">'+(mail?esc320(mail):'Inte inloggad')+'</div></div>'
       +'<div class="tt320-card"><div class="tt320-card-label">Din roll</div><div class="tt320-card-value"><span id="tt320-summary-role" class="tt320-pill '+(mail?'':'none')+'">'+(mail?'Laddar...':'Ingen åtkomst')+'</span></div></div>'
@@ -31268,7 +31302,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt342StrictFormationTeamScope)return;
   window.__tt342StrictFormationTeamScope=true;
-  var VERSION='343';
+  var VERSION='344';
 
   function setVersion342(){
     try{
@@ -31402,7 +31436,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Bas: v342. Fixar adminlösa lag: medlem i lag med noll admins kan återställa sig själv till admin.
    Behåller v342:s strikta Utgångslägen/Lagets-filter. */
 (function(){
-  var VERSION='343';
+  var VERSION='344';
   function setV343(){try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;});
@@ -31411,3 +31445,17 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   setTimeout(setV343,300);setTimeout(setV343,1200);
 })();
 /* === slut v343-adminless-team-recovery-version-note === */
+
+
+/* === v344-adminless-team-recovery-rpc-version-note ===
+   Bas: v343. Återställning av adminlöst lag använder säker Supabase-RPC så RLS inte blockerar medlemmen. */
+(function(){
+  var VERSION='344';
+  function setV344(){try{
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;});
+  }catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setV344);else setV344();
+  setTimeout(setV344,300);setTimeout(setV344,1200);setTimeout(setV344,3200);
+})();
+/* === slut v344-adminless-team-recovery-rpc-version-note === */
