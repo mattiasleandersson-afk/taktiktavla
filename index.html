@@ -1189,13 +1189,38 @@
   }
 </style>
 
+
+
+<style id="tt333-match-ios-single-scroll-css">
+  /* v338: iPhone/Safari: Match-lista och nedersta knappar ska kännas som samma yta.
+     Tar bort extra scroll i spelarlistan på mobil och låter hela Matcher-panelen scrolla. */
+  @media (max-width: 700px) {
+    body:has(.tab.on[data-panel="lag"]) #lag-match {
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+      box-sizing: border-box !important;
+    }
+
+    body:has(.tab.on[data-panel="lag"]) #lag-match #match-trupp-list {
+      max-height: none !important;
+      overflow: visible !important;
+      padding-bottom: 6px !important;
+      -webkit-overflow-scrolling: auto !important;
+    }
+
+    body:has(.tab.on[data-panel="lag"]) #lag-match div:has(> #btn-match-to-taktik) {
+      margin-top: 4px !important;
+      padding-bottom: calc(26px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px" id="app-version" class="app-version" data-version="app">323</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px" id="app-version" class="app-version" data-version="app">338</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1220,7 +1245,6 @@
   </label>
   <button class="btn" id="btn-daylight" title="Dagsljusl&#228;ge">&#9728; Dag</button>
   <button class="btn" id="btn-fs-topbar" style="color:#4ae87a;border-color:#4ae87a" title="Helsk\u00e4rm">&#x26F6;</button>
-  <button class="btn" id="btn-orientation-toggle" style="display:none;color:#4ae8e8;border-color:#4ae8e8" title="V&#228;xla liggande/st&#229;ende">&#8645;</button>
   </div>
 <div style="display:flex;gap:0;padding-top:3px;border-top:1px solid #1a3020;overflow-x:auto;flex-shrink:0">
     <button class="tab on" data-panel="formations" style="font-size:0.72rem;padding:3px 10px">Tavla</button>
@@ -1825,7 +1849,7 @@
         {x:72,w:72,label:"Inre korridor",fill:"rgba(160,120,255,0.18)",stroke:"rgba(160,120,255,0.85)"},
         {x:144,w:112,label:"Central korridor",fill:"rgba(74,232,122,0.16)",stroke:"rgba(74,232,122,0.85)"},
         {x:256,w:72,label:"Inre korridor",fill:"rgba(160,120,255,0.18)",stroke:"rgba(160,120,255,0.85)"},
-        {x:328,w:72,label:"Yttre korridor",fill:"rgba(74,232,232,0.18)",stroke:"rgba(74,232,232,0.85)"}
+        {x:329,w:72,label:"Yttre korridor",fill:"rgba(74,232,232,0.18)",stroke:"rgba(74,232,232,0.85)"}
       ];
 
       var all=document.createElementNS(ns,"g");
