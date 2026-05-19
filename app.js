@@ -31459,3 +31459,271 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   setTimeout(setV344,300);setTimeout(setV344,1200);setTimeout(setV344,3200);
 })();
 /* === slut v344-adminless-team-recovery-rpc-version-note === */
+
+
+/* === v345-formation-multi-team-sharing ===
+   Bas: stabil v344.
+   Modell B för Utgångslägen: samma egna fil i Mina kan delas till flera lag.
+   Originalfilen ligger kvar i Mina. Extra lagdelningar skapas som separata lagdelningsrader
+   med bevarad ägare och aktiv lagkod. Delningsknapp/status bedöms per aktivt lag.
+*/
+(function(){
+  if(window.__tt345FormationMultiTeamSharing)return;
+  window.__tt345FormationMultiTeamSharing=true;
+  var VERSION='345';
+
+  function setVersion345(){try{
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;});
+  }catch(e){}}
+  function clone(o){try{return JSON.parse(JSON.stringify(o||{}));}catch(e){return o||{};}}
+  function normTeam(v){return String(v||'').trim().toUpperCase().replace(/\s+/g,'-');}
+  function normEmail(v){return String(v||'').trim().toLowerCase();}
+  function session(){try{if(window.tt298GetAuthSession)return window.tt298GetAuthSession();}catch(e){}try{var raw=localStorage.getItem('tt_auth_session_v1');return raw?JSON.parse(raw):null;}catch(e){}return null;}
+  function authId(){try{if(window.tt298GetAuthUserId)return String(window.tt298GetAuthUserId()||'').trim();}catch(e){}var s=session();return String((s&&s.user&&s.user.id)||'').trim();}
+  function authEmail(){try{if(window.tt298GetAuthUserEmail)return normEmail(window.tt298GetAuthUserEmail());}catch(e){}var s=session();return normEmail(s&&s.user&&s.user.email);}
+  function profile(){try{if(typeof getUserProfile==='function'){var p=getUserProfile();if(p)return p;}}catch(e){}try{if(typeof getProfileSafeV10==='function'){var p2=getProfileSafeV10();if(p2)return p2;}}catch(e){}try{if(typeof ff93Profile==='function'){var p3=ff93Profile();if(p3)return p3;}}catch(e){}try{var raw=localStorage.getItem('tt_profile_v1');return raw?JSON.parse(raw):{};}catch(e){}return {};}
+  function activeTeamRaw(){var p=profile()||{};return String(p.teamCode||p.teamId||p.teamName||'').trim();}
+  function activeTeam(){return normTeam(activeTeamRaw());}
+  function stateOf(s){return (s&&s.state)||(s&&s.data)||s||{};}
+  function metaOf(s){var st=stateOf(s)||{};return (st&&st._meta)||(s&&s._meta)||(s&&s.meta)||{};}
+  function isTaktik(obj){return !!(obj&&(Array.isArray(obj.steps)||(obj.state&&Array.isArray(obj.state.steps))||obj.type==='taktikfilm'||metaOf(obj).kind==='taktikfilm'));}
+  function isFormation(obj){if(!obj||isTaktik(obj))return false;var st=stateOf(obj)||{};return !!(st.players||st.ball||st.arrows||st.labels||st.zones||obj.state||obj.data);}
+  function teamOf(s){var m=metaOf(s)||{},st=stateOf(s)||{};return normTeam(m.teamCode||m.teamId||m.teamName||st.teamCode||st.teamId||st.teamName||'');}
+  function isShareCopy(s){var m=metaOf(s)||{};return !!(m.tt345TeamShareCopy===true||m.teamShareCopy===true||m.isTeamShareCopy===true);}
+  function sourceId(s){var m=metaOf(s)||{};return String(m.sourceFormationId||m.originalFormationId||m.canonicalFormationId||m.parentFormationId||s.id||'');}
+  function canonicalId(s){return isShareCopy(s)?sourceId(s):String(s&&s.id||sourceId(s)||'');}
+  function ownerIds(m){var out=[];[m.ownerAuthId,m.authUserId,m.ownerId,m.createdByAuthId].forEach(function(v){v=String(v||'').trim();if(v&&out.indexOf(v)<0)out.push(v);});return out;}
+  function ownerEmails(m){var out=[];[m.ownerEmail,m.authEmail,m.createdByEmail].forEach(function(v){v=normEmail(v);if(v&&out.indexOf(v)<0)out.push(v);});return out;}
+  function formationMine(s){
+    if(!isFormation(s))return false;
+    if(isShareCopy(s))return false; // lagdelningsrader ska inte bli extra kopior i Mina
+    var m=metaOf(s)||{},aid=authId(),em=authEmail();
+    var ids=ownerIds(m),emails=ownerEmails(m);
+    if(ids.length||emails.length){
+      if(aid&&ids.indexOf(aid)>=0)return true;
+      if(em&&emails.indexOf(em)>=0)return true;
+      return false;
+    }
+    try{if(typeof window.tt316FormationMine==='function')return !!window.tt316FormationMine(s);}catch(e){}
+    try{if(typeof ff93IsMine==='function')return !!ff93IsMine(s);}catch(e){}
+    try{if(typeof isMineV10==='function')return !!isMineV10(s);}catch(e){}
+    return false;
+  }
+  function rowSharedToActive(s){
+    if(!isFormation(s))return false;
+    var m=metaOf(s)||{},a=activeTeam(),t=teamOf(s);
+    if(!a||!t||a!==t)return false;
+    return !!m.sharedWithTeam;
+  }
+  function hasShareCopyToActiveFor(canon){
+    var a=activeTeam();if(!a||!canon)return false;
+    return (savedFormations||[]).some(function(x){return isShareCopy(x)&&sourceId(x)===String(canon)&&teamOf(x)===a&&!!metaOf(x).sharedWithTeam;});
+  }
+  function findShareCopiesToActiveFor(canon){
+    var a=activeTeam();if(!a||!canon)return [];
+    return (savedFormations||[]).filter(function(x){return isShareCopy(x)&&sourceId(x)===String(canon)&&teamOf(x)===a&&!!metaOf(x).sharedWithTeam;});
+  }
+  function formationSharedToActive(s){
+    if(!isFormation(s))return false;
+    if(rowSharedToActive(s))return true;
+    if(formationMine(s))return hasShareCopyToActiveFor(canonicalId(s));
+    return false;
+  }
+  function formationVisible(s,scope){return scope==='team'?formationSharedToActive(s):formationMine(s);}
+
+  function headers(){try{return Object.assign({},supaHeaders(),{'Prefer':'return=representation'});}catch(e){return {'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+((typeof tt302AuthAccessToken==='function'&&tt302AuthAccessToken())||SUPA_KEY),'Prefer':'return=representation'};}}
+  function xhr(method,url,body){return new Promise(function(resolve,reject){try{var x=new XMLHttpRequest();x.open(method,url,true);var h=headers()||{};Object.keys(h).forEach(function(k){try{x.setRequestHeader(k,h[k]);}catch(e){}});if(!h['Content-Type']&&!h['content-type'])x.setRequestHeader('Content-Type','application/json');x.onload=function(){if(x.status>=200&&x.status<300){try{resolve(x.responseText?JSON.parse(x.responseText):null);}catch(e){resolve(null);}}else reject(new Error(x.responseText||('HTTP '+x.status)));};x.onerror=function(){reject(new Error('Nätverksfel'));};x.send(body?JSON.stringify(body):null);}catch(err){reject(err);}});}
+  function patchRow(id,state,name,folder){return xhr('PATCH',SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?id=eq.'+encodeURIComponent(id),{data:state,type:'uppstallning',name:name||'Utgångsläge',folder:folder||'Allmänt'});}
+  function postRow(state,name,folder){return xhr('POST',SUPA_URL+'/rest/v1/'+SUPA_TABLE,{data:state,type:'uppstallning',name:name||'Utgångsläge',folder:folder||'Allmänt'});}
+  function deleteRow(id){return xhr('DELETE',SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?id=eq.'+encodeURIComponent(id),null);}
+
+  function ensureOwnerMeta(st,srcMeta){
+    st=clone(st||{});st._meta=clone((st&&st._meta)||srcMeta||{});var m=st._meta,p=profile()||{};
+    var aid=authId(),em=authEmail();
+    if(aid){m.ownerAuthId=m.ownerAuthId||aid;m.authUserId=m.authUserId||aid;if(!m.ownerId)m.ownerId=aid;if(!m.createdByAuthId)m.createdByAuthId=aid;}
+    if(em){m.ownerEmail=m.ownerEmail||em;m.authEmail=m.authEmail||em;if(!m.createdByEmail)m.createdByEmail=em;}
+    if(p.ownerName&&!m.ownerName)m.ownerName=p.ownerName;
+    m.kind='uppstallning';m.schemaVersion=m.schemaVersion||2;m.teamCanEdit=false;m.updatedAt=new Date().toISOString();
+    return st;
+  }
+  function buildOriginalShareState(s,share){
+    var st=ensureOwnerMeta(stateOf(s),metaOf(s));var m=st._meta,p=profile()||{},raw=activeTeamRaw();
+    m.sharedWithTeam=!!share;m.teamCanEdit=false;m.kind='uppstallning';
+    // Sätt lag på originalet bara om det inte tydligt hör till annat lag. Då bevaras äldre originalrader.
+    if(share&&(!m.teamCode&&!m.teamId&&!m.teamName)){m.teamCode=raw;m.teamId=p.teamId||raw;m.teamName=p.teamName||raw;}
+    if(!share){m.unsharedFromTeamAt=new Date().toISOString();m.unsharedFromTeamBy=authEmail()||m.unsharedFromTeamBy||'';}
+    return st;
+  }
+  function buildShareCopyState(s){
+    var st=ensureOwnerMeta(stateOf(s),metaOf(s));var m=st._meta,p=profile()||{},raw=activeTeamRaw();
+    m.sharedWithTeam=true;m.teamCanEdit=false;m.kind='uppstallning';
+    m.teamCode=raw;m.teamId=p.teamId||raw;m.teamName=p.teamName||raw;
+    m.tt345TeamShareCopy=true;m.teamShareCopy=true;m.isTeamShareCopy=true;
+    m.sourceFormationId=canonicalId(s);m.originalFormationId=canonicalId(s);m.canonicalFormationId=canonicalId(s);
+    m.shareCreatedAt=m.shareCreatedAt||new Date().toISOString();m.shareUpdatedAt=new Date().toISOString();
+    m.shareUpdatedByAuthId=authId()||m.shareUpdatedByAuthId||'';m.shareUpdatedByEmail=authEmail()||m.shareUpdatedByEmail||'';
+    return st;
+  }
+  function canChange(s){
+    if(!s||!s.id)return false;
+    try{if(typeof saveScope!=='undefined'&&saveScope==='team')return false;}catch(e){}
+    return formationMine(s);
+  }
+  function updateLocalRow(id,state){try{(savedFormations||[]).forEach(function(x){if(String(x.id)===String(id)){x.state=state;x._meta=state._meta;}});}catch(e){}}
+  function patchFormationShare345(s,share){
+    if(!s||!s.id){showToast('Spara utgångsläget innan du delar det',false);return;}
+    if(typeof saveScope!=='undefined'&&saveScope==='team'){showToast('Delning ändras från Mina, inte från Lagets',false);return;}
+    if(!canChange(s)){showToast('Du kan bara ändra delning på egna filer',false);return;}
+    var a=activeTeam();if(!a){showToast('Välj aktivt lag först',false);return;}
+    var canon=canonicalId(s),name=s.name||'Utgångsläge',folder=s.folder||'Allmänt';
+
+    if(share){
+      if(formationSharedToActive(s)){showToast('Utgångsläget är redan delat med detta lag');return;}
+      cloudStatus('Delar utgångsläge med aktuellt lag...','#7aaa88');
+      if(!metaOf(s).sharedWithTeam && (!teamOf(s)||teamOf(s)===a)){
+        // Första delningen, eller originalet hör redan till aktiva laget: patcha originalraden.
+        var st=buildOriginalShareState(s,true);updateLocalRow(s.id,st);try{s.state=st;s._meta=st._meta;}catch(e){}
+        patchRow(s.id,st,name,folder).then(function(){showToast('Delad med detta lag');cloudStatus('✅ Delad med laget','#4ae87a');setTimeout(function(){try{cloudLoadSaves();}catch(e){}},300);}).catch(function(err){showToast('Kunde inte dela utgångsläget',false);cloudStatus('❌ '+(err.message||err),'#e84a4a');setTimeout(function(){try{cloudLoadSaves();}catch(e){}},300);});
+      }else{
+        // Filen är redan delad/skapad mot annat lag: skapa separat lagdelningsrad för aktiva laget.
+        var copyState=buildShareCopyState(s);
+        postRow(copyState,name,folder).then(function(data){
+          var row=(Array.isArray(data)&&data[0])?data[0]:null;
+          if(row&&row.id){try{savedFormations.push({id:row.id,name:name,state:copyState,folder:folder,_meta:copyState._meta});}catch(e){}}
+          showToast('Delad med detta lag');cloudStatus('✅ Delad med laget','#4ae87a');setTimeout(function(){try{cloudLoadSaves();}catch(e){}},300);
+        }).catch(function(err){showToast('Kunde inte dela utgångsläget',false);cloudStatus('❌ '+(err.message||err),'#e84a4a');setTimeout(function(){try{cloudLoadSaves();}catch(e){}},300);});
+      }
+      return;
+    }
+
+    // Ta bort delning endast för aktivt lag.
+    cloudStatus('Tar bort delning från aktuellt lag...','#7aaa88');
+    var jobs=[];
+    findShareCopiesToActiveFor(canon).forEach(function(x){if(x.id)jobs.push(deleteRow(x.id).then(function(){savedFormations=(savedFormations||[]).filter(function(y){return String(y.id)!==String(x.id);});}));});
+    if(rowSharedToActive(s)&&!isShareCopy(s)){
+      var st2=buildOriginalShareState(s,false);jobs.push(patchRow(s.id,st2,name,folder).then(function(){updateLocalRow(s.id,st2);try{s.state=st2;s._meta=st2._meta;}catch(e){}}));
+    }
+    if(!jobs.length){showToast('Utgångsläget var inte delat med detta lag');cloudStatus('Ingen delning att ta bort','#7aaa88');try{renderSavesList();}catch(e){}return;}
+    Promise.all(jobs).then(function(){showToast('Delning borttagen från detta lag');cloudStatus('✅ Delning borttagen','#4ae87a');setTimeout(function(){try{cloudLoadSaves();}catch(e){}},300);}).catch(function(err){showToast('Kunde inte ta bort delningen',false);cloudStatus('❌ '+(err.message||err),'#e84a4a');setTimeout(function(){try{cloudLoadSaves();}catch(e){}},300);});
+  }
+
+  // Sista ordet för Utgångslägens synlighet och delningsknappar.
+  try{
+    var prevMine=typeof isMineV10==='function'?isMineV10:null;
+    var prevTeam=typeof isSameTeamSharedV10==='function'?isSameTeamSharedV10:null;
+    var prevVisible=typeof isFileVisibleInScopeV10==='function'?isFileVisibleInScopeV10:null;
+    var prevReadOnly=typeof isReadOnlyFileV10==='function'?isReadOnlyFileV10:null;
+    isMineV10=function(obj){if(isTaktik(obj)&&prevMine)return prevMine(obj);return formationMine(obj);};
+    isSameTeamSharedV10=function(obj){if(isTaktik(obj)&&prevTeam)return prevTeam(obj);return formationSharedToActive(obj);};
+    isFileVisibleInScopeV10=function(obj,scope){if(isTaktik(obj)&&prevVisible)return prevVisible(obj,scope);return formationVisible(obj,scope);};
+    isReadOnlyFileV10=function(obj){if(isTaktik(obj)&&prevReadOnly)return prevReadOnly(obj);return !formationMine(obj);};
+    tt131IsMineFormation=formationMine;
+    tt131SharedToMyTeamFormation=formationSharedToActive;
+    tt131FormationVisible=function(s,scope){return formationVisible(s,scope);};
+    window.tt345FormationSharedToActive=formationSharedToActive;
+    window.tt345FormationMine=formationMine;
+    window.tt345PatchFormationShare=patchFormationShare345;
+  }catch(e){}
+  try{patchFormationShareV10=patchFormationShare345;}catch(e){}
+  try{patchFormationShareV26=patchFormationShare345;}catch(e){}
+  try{patchFormationShareV68=patchFormationShare345;}catch(e){}
+  try{tt131PatchFormationShare=patchFormationShare345;}catch(e){}
+
+  function visibleListForCurrentScope(){
+    var scope=(typeof saveScope!=='undefined'?saveScope:'mine');
+    var q=String(typeof searchQuery!=='undefined'?searchQuery:'').toLowerCase();
+    var seen={};
+    return (savedFormations||[]).filter(function(s){
+      if(!formationVisible(s,scope))return false;
+      var folderOk=(typeof currentFolder==='undefined'||currentFolder==='Alla'||(s.folder||'Allmänt')===currentFolder);
+      var searchOk=!q||String(s.name||'').toLowerCase().indexOf(q)>=0;
+      if(!folderOk||!searchOk)return false;
+      if(scope==='team'){
+        var key=canonicalId(s)||String(s.id||'');
+        if(seen[key])return false;seen[key]=true;
+      }
+      return true;
+    }).sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''),'sv');});
+  }
+  function fixRowsAfterRender(){try{
+    var list=document.getElementById('saves-list');if(!list)return;
+    var scope=(typeof saveScope!=='undefined'?saveScope:'mine');
+    var rows=Array.prototype.slice.call(list.querySelectorAll('.row'));
+    var visible=visibleListForCurrentScope();
+    if(scope==='team'){
+      rows.forEach(function(row,i){if(!visible[i]&&row&&row.parentNode)row.parentNode.removeChild(row);});
+    }
+    if(scope!=='mine')return;
+    rows=Array.prototype.slice.call(list.querySelectorAll('.row'));
+    rows.forEach(function(row,idx){
+      var s=visible[idx];
+      if(!s){
+        var nm=row.querySelector('.row-name');var name=nm?String(nm.textContent||'').trim():'';
+        s=visible.find(function(x){return String(x.name||'').trim()===name;});
+      }
+      if(!s||!formationMine(s))return;
+      var buttons=Array.prototype.slice.call(row.querySelectorAll('button.sa,button'));
+      var shareBtn=buttons.find(function(b){var title=String(b.title||'').toLowerCase();var txt=String(b.textContent||'');return title.indexOf('dela')>=0||title.indexOf('sluta dela')>=0||txt.indexOf('👥')>=0||txt.indexOf('🙈')>=0||txt==='Dela'||txt==='Dölj';});
+      if(!shareBtn)return;
+      var shared=formationSharedToActive(s);
+      var clone=shareBtn.cloneNode(true);
+      clone.dataset.tt345ShareBound='1';
+      clone.textContent=shared?'Dölj':'Dela';
+      clone.title=shared?'Sluta dela med aktuellt lag':'Dela med aktuellt lag';
+      try{clone.style.color='#4ae8e8';clone.style.borderColor='#4ae8e8';}catch(e){}
+      shareBtn.parentNode.replaceChild(clone,shareBtn);
+      clone.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();patchFormationShare345(s,!formationSharedToActive(s));return false;},true);
+    });
+  }catch(e){}}
+
+  if(typeof renderSavesList==='function'&&!renderSavesList._tt345Wrapped){
+    var oldRender=renderSavesList;
+    renderSavesList=function(){var r=oldRender.apply(this,arguments);setVersion345();setTimeout(fixRowsAfterRender,0);setTimeout(fixRowsAfterRender,140);return r;};
+    renderSavesList._tt345Wrapped=true;
+  }
+  if(typeof cloudLoadSaves==='function'&&!cloudLoadSaves._tt345Wrapped){
+    var oldLoad=cloudLoadSaves;
+    cloudLoadSaves=function(){return Promise.resolve(oldLoad.apply(this,arguments)).then(function(res){setVersion345();try{renderSavesList();}catch(e){}return res;});};
+    cloudLoadSaves._tt345Wrapped=true;
+  }
+
+  setVersion345();
+  setTimeout(function(){setVersion345();try{renderSavesList();}catch(e){}},400);
+  setTimeout(setVersion345,1500);
+})();
+/* === slut v345-formation-multi-team-sharing === */
+
+
+/* === v345-formation-share-copy-sync ===
+   Om ägaren sparar originalet uppdateras v345:s lagdelningsrader så delade lag ser samma innehåll. */
+(function(){
+  if(window.__tt345FormationShareCopySync)return;
+  window.__tt345FormationShareCopySync=true;
+  function clone(o){try{return JSON.parse(JSON.stringify(o||{}));}catch(e){return o||{};}}
+  function stateOf(s){return (s&&s.state)||(s&&s.data)||s||{};}
+  function metaOf(s){var st=stateOf(s)||{};return (st&&st._meta)||(s&&s._meta)||(s&&s.meta)||{};}
+  function isShareCopy(s){var m=metaOf(s)||{};return !!(m.tt345TeamShareCopy===true||m.teamShareCopy===true||m.isTeamShareCopy===true);}
+  function sourceId(s){var m=metaOf(s)||{};return String(m.sourceFormationId||m.originalFormationId||m.canonicalFormationId||m.parentFormationId||'');}
+  function headers(){try{return Object.assign({},supaHeaders(),{'Prefer':'return=representation'});}catch(e){return {'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+((typeof tt302AuthAccessToken==='function'&&tt302AuthAccessToken())||SUPA_KEY),'Prefer':'return=representation'};}}
+  function patchRow(id,state,name,folder){return new Promise(function(resolve,reject){try{var x=new XMLHttpRequest();x.open('PATCH',SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?id=eq.'+encodeURIComponent(id),true);var h=headers()||{};Object.keys(h).forEach(function(k){try{x.setRequestHeader(k,h[k]);}catch(e){}});if(!h['Content-Type']&&!h['content-type'])x.setRequestHeader('Content-Type','application/json');x.onload=function(){if(x.status>=200&&x.status<300)resolve();else reject(new Error(x.responseText||('HTTP '+x.status)));};x.onerror=function(){reject(new Error('Nätverksfel'));};x.send(JSON.stringify({data:state,type:'uppstallning',name:name||'Utgångsläge',folder:folder||'Allmänt'}));}catch(err){reject(err);}});}
+  function syncCopiesFor(originalId){
+    try{
+      originalId=String(originalId||'');if(!originalId)return;
+      var original=(savedFormations||[]).find(function(x){return String(x.id)===originalId&&!isShareCopy(x);});
+      if(!original)return;
+      var originalState=clone(stateOf(original));
+      var copies=(savedFormations||[]).filter(function(x){return isShareCopy(x)&&sourceId(x)===originalId&&x.id;});
+      if(!copies.length)return;
+      copies.forEach(function(c){
+        var st=clone(originalState);st._meta=clone(metaOf(c)||{});st._meta.updatedAt=new Date().toISOString();st._meta.shareSyncedAt=new Date().toISOString();
+        c.state=st;c._meta=st._meta;
+        patchRow(c.id,st,c.name||original.name, c.folder||original.folder).catch(function(){});
+      });
+    }catch(e){}
+  }
+  function delayedSync(){var id='';try{id=String(activeFormationId||'');}catch(e){} if(!id)return;setTimeout(function(){syncCopiesFor(id);},900);setTimeout(function(){syncCopiesFor(id);},1800);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('btn-save-over');if(b&&!b._tt345SyncBound){b._tt345SyncBound=true;b.addEventListener('click',delayedSync,false);}});
+  else{var b=document.getElementById('btn-save-over');if(b&&!b._tt345SyncBound){b._tt345SyncBound=true;b.addEventListener('click',delayedSync,false);}}
+})();
+/* === slut v345-formation-share-copy-sync === */
