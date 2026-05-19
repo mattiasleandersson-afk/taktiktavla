@@ -28544,7 +28544,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt301SoftTeamAccessGate)return;
   window.__tt301SoftTeamAccessGate=true;
 
-  var VERSION='348';
+  var VERSION='349';
   var MEMBER_TYPE='team_member';
   var cacheKey='';
   var cacheAt=0;
@@ -28763,7 +28763,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt302RlsReadyAuthToken)return;
   window.__tt302RlsReadyAuthToken=true;
-  var VERSION='348';
+  var VERSION='349';
   function setVersion302(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
@@ -28808,7 +28808,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt303NewTaktikDraftEditableGuard)return;
   window.__tt303NewTaktikDraftEditableGuard=true;
-  var VERSION='348';
+  var VERSION='349';
 
   function setVersion303(){
     try{
@@ -29098,7 +29098,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt310AuthIdentitySourceFix)return;
   window.__tt310AuthIdentitySourceFix=true;
 
-  var VERSION='348';
+  var VERSION='349';
   var ALIAS_KEY='tt310_display_name_aliases_v1';
 
   function setVersion310(){
@@ -29325,7 +29325,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt312AdminUnshareAndTeamRestore)return;
   window.__tt312AdminUnshareAndTeamRestore=true;
-  var VERSION='348';
+  var VERSION='349';
 
   function setVersion312(){
     try{
@@ -29527,7 +29527,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt313TeamListRestoreAfterViewExit)return;
   window.__tt313TeamListRestoreAfterViewExit=true;
-  var VERSION='348';
+  var VERSION='349';
   var lastTeamOpen=false;
   var lastFolder='Alla';
   var lastSearch='';
@@ -29654,7 +29654,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt316SafeFormationShareOwnerPreserve)return;
   window.__tt316SafeFormationShareOwnerPreserve=true;
-  var VERSION='348';
+  var VERSION='349';
 
   function setVersion316(){
     try{
@@ -29851,7 +29851,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt317AdminFormationUnshareFromTeamFix)return;
   window.__tt317AdminFormationUnshareFromTeamFix=true;
-  var VERSION='348';
+  var VERSION='349';
 
   function setVersion317(){
     try{
@@ -30044,7 +30044,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt318DeleteRefreshAndIconPolish)return;
   window.__tt318DeleteRefreshAndIconPolish=true;
-  var VERSION='348';
+  var VERSION='349';
 
   function setVersion318(){
     try{
@@ -30275,7 +30275,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt319DeleteFormationKeyAndCenteredIcon)return;
   window.__tt319DeleteFormationKeyAndCenteredIcon=true;
-  var VERSION='348';
+  var VERSION='349';
 
   function setVersion319(){
     try{
@@ -30445,7 +30445,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt322AccountTeamUiPolish)return;
   window.__tt322AccountTeamUiPolish=true;
-  var VERSION='348';
+  var VERSION='349';
 
   function setVersion323(){
     try{
@@ -31302,7 +31302,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt342StrictFormationTeamScope)return;
   window.__tt342StrictFormationTeamScope=true;
-  var VERSION='348';
+  var VERSION='349';
 
   function setVersion342(){
     try{
@@ -31436,7 +31436,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Bas: v342. Fixar adminlösa lag: medlem i lag med noll admins kan återställa sig själv till admin.
    Behåller v342:s strikta Utgångslägen/Lagets-filter. */
 (function(){
-  var VERSION='348';
+  var VERSION='349';
   function setV343(){try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;});
@@ -31450,7 +31450,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v344-adminless-team-recovery-rpc-version-note ===
    Bas: v343. Återställning av adminlöst lag använder säker Supabase-RPC så RLS inte blockerar medlemmen. */
 (function(){
-  var VERSION='348';
+  var VERSION='349';
   function setV344(){try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;});
@@ -31465,7 +31465,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Bas: stabil v344. Backar bort experimenten v345-v347 med Utgångslägen-dubbletter.
    Endast versionssynk, ingen ny delningslogik. */
 (function(){
-  var VERSION='348';
+  var VERSION='349';
   function setV348(){try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -31479,3 +31479,216 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   setTimeout(setV348,300);setTimeout(setV348,1200);setTimeout(setV348,3200);
 })();
 /* === slut v348-rollback-to-v344-stable-version-sync === */
+
+
+/* === v349-formation-mine-dedupe-and-delete-cleanup ===
+   Bas: v348/v344 stabil kedja. Stoppar Utgångslägen-dubbletter i Mina efter lagbyte.
+   - Mina visar en logisk fil per ägare + mapp + namn.
+   - Lagets visar bara filer delade till aktivt lag.
+   - Radering från Mina raderar alla synliga dubblettrader för samma logiska fil.
+   - Bygger inte vidare på v345-v347:s experiment med fler-lagsdelning.
+*/
+(function(){
+  if(window.__tt349FormationMineDedupeAndDeleteCleanup)return;
+  window.__tt349FormationMineDedupeAndDeleteCleanup=true;
+  var VERSION='349';
+
+  function setVersion349(){try{
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+
+  function norm(v){return String(v==null?'':v).trim().toLowerCase();}
+  function normTeam(v){return String(v==null?'':v).trim().toUpperCase().replace(/\s+/g,'-');}
+  function stateOf(x){return (x&&x.state)||(x&&x.data)||x||{};}
+  function metaOf(x){var st=stateOf(x)||{};return (st&&st._meta)||(st&&st.meta)||(x&&x._meta)||(x&&x.meta)||{};}
+  function rowId(x){return (x&&(x.id||x.dbId))||'';}
+  function profile(){
+    try{if(typeof getUserProfile==='function'){var p=getUserProfile();if(p)return p;}}catch(e){}
+    try{if(typeof getProfileSafeV10==='function'){var p2=getProfileSafeV10();if(p2)return p2;}}catch(e){}
+    try{var raw=localStorage.getItem('tt_profile_v1');return raw?JSON.parse(raw):null;}catch(e){}
+    return null;
+  }
+  function authEmail(){
+    try{if(window.tt298GetAuthUserEmail)return norm(window.tt298GetAuthUserEmail());}catch(e){}
+    try{var s=window.tt298GetAuthSession&&window.tt298GetAuthSession();return norm(s&&s.user&&s.user.email);}catch(e){}
+    return '';
+  }
+  function authId(){
+    try{if(window.tt298GetAuthUserId)return String(window.tt298GetAuthUserId()||'');}catch(e){}
+    try{var s=window.tt298GetAuthSession&&window.tt298GetAuthSession();return String(s&&s.user&&s.user.id||'');}catch(e){}
+    return '';
+  }
+  function activeTeam(){var p=profile()||{};return normTeam(p.teamCode||p.teamId||p.teamName||'');}
+  function ownerKey(x){
+    var m=metaOf(x)||{};
+    return norm(m.ownerAuthId||m.authUserId||m.createdByAuthId||m.ownerEmail||m.authEmail||m.createdByEmail||m.ownerId||m.ownerName||authId()||authEmail()||'legacy');
+  }
+  function logicalKey(x){
+    return ownerKey(x)+'|'+norm((x&&x.folder)||stateOf(x).folder||'Allmänt')+'|'+norm((x&&x.name)||stateOf(x).name||'');
+  }
+  function isFormation(x){
+    if(!x)return false;
+    var st=stateOf(x)||{};
+    if(String(x.type||'').toLowerCase()==='uppstallning'||String(x.type||'').toLowerCase()==='formation')return true;
+    if(Array.isArray(st.steps)||String(st.type||'').toLowerCase()==='taktikfilm')return false;
+    return !!(Array.isArray(st.players)||st.ball||st.format||st.formation||metaOf(x).kind==='uppstallning');
+  }
+  function isTaktik(x){var st=stateOf(x)||{};return !!(Array.isArray(st.steps)||String(x&&x.type||'').toLowerCase()==='taktikfilm'||metaOf(x).kind==='taktikfilm');}
+  function teamOf(x){var m=metaOf(x)||{}, st=stateOf(x)||{};return normTeam(m.teamCode||m.teamId||m.teamName||st.teamCode||st.teamId||st.teamName||'');}
+  function sharedToActiveTeam(x){var m=metaOf(x)||{};var a=activeTeam();return !!(isFormation(x)&&m.sharedWithTeam&&a&&teamOf(x)===a);}
+  function isMine(x){
+    if(isTaktik(x)){try{if(typeof isMineV10==='function')return !!isMineV10(x);}catch(e){} return false;}
+    try{if(typeof window.tt316FormationMine==='function')return !!window.tt316FormationMine(x);}catch(e){}
+    try{if(typeof tt131IsMineFormation==='function')return !!tt131IsMineFormation(x);}catch(e){}
+    try{if(typeof isMineV10==='function')return !!isMineV10(x);}catch(e){}
+    var m=metaOf(x)||{}, aid=authId(), email=authEmail();
+    if(aid && norm(m.ownerAuthId||m.authUserId||m.createdByAuthId)===norm(aid))return true;
+    if(email && norm(m.ownerEmail||m.authEmail||m.createdByEmail)===email)return true;
+    return false;
+  }
+
+  var DEL_KEY='tt349_deleted_formations_v1';
+  var deleted={ids:{},keys:{}};
+  try{var raw=localStorage.getItem(DEL_KEY);if(raw){var p=JSON.parse(raw);if(p&&p.ids)deleted.ids=p.ids;if(p&&p.keys)deleted.keys=p.keys;}}catch(e){}
+  function now(){return Date.now?Date.now():(new Date()).getTime();}
+  function ttl(){return now()+7*24*60*60*1000;}
+  function saveDeleted(){try{localStorage.setItem(DEL_KEY,JSON.stringify(deleted));}catch(e){}}
+  function markId(id){if(!id)return;deleted.ids[String(id)]=ttl();saveDeleted();try{if(typeof deletedFormationIdsV64!=='undefined')deletedFormationIdsV64[String(id)]=true;}catch(e){}}
+  function markKey(k){if(!k)return;deleted.keys[String(k)]=ttl();saveDeleted();}
+  function live(map,k){if(!k)return false;var t=map[String(k)];if(!t)return false;if(t<now()){delete map[String(k)];saveDeleted();return false;}return true;}
+  function isDeleted(x){return !!(x&&((rowId(x)&&live(deleted.ids,rowId(x)))||live(deleted.keys,logicalKey(x))));}
+
+  function rowToFormation(row){return {id:row&&row.id,dbId:row&&row.id,name:(row&&row.name)||((row&&row.data)&&row.data.name)||'Utgångsläge',folder:(row&&row.folder)||((row&&row.data)&&row.data.folder)||'Allmänt',state:(row&&row.data)||{},type:'uppstallning'};}
+  function scoreMineCandidate(x){
+    var m=metaOf(x)||{}, a=activeTeam(), t=teamOf(x), score=0;
+    if(!m.sharedWithTeam)score+=1000;
+    if(a && t===a)score+=100;
+    if(rowId(x))score+=Math.min(50, Number(rowId(x))||0);
+    return score;
+  }
+  function dedupeMine(list){
+    var by={}, order=[];
+    (list||[]).forEach(function(s){
+      if(!s||!isFormation(s)||isDeleted(s)||!isMine(s))return;
+      var k=logicalKey(s);if(!k)return;
+      if(!by[k]){by[k]=s;order.push(k);return;}
+      if(scoreMineCandidate(s)>scoreMineCandidate(by[k]))by[k]=s;
+    });
+    return order.map(function(k){return by[k];});
+  }
+  function teamOnly(list){
+    var seen={}, out=[];
+    (list||[]).forEach(function(s){
+      if(!s||!isFormation(s)||isDeleted(s)||!sharedToActiveTeam(s))return;
+      var k=rowId(s)||logicalKey(s);if(seen[k])return;seen[k]=1;out.push(s);
+    });
+    return out;
+  }
+  function displayListForScope(scope){
+    var base=(savedFormations||[]).filter(function(s){return s&&!isDeleted(s);});
+    return scope==='team'?teamOnly(base):dedupeMine(base);
+  }
+  function rebuildFolders349(list){
+    try{
+      var seen={'Allmänt':1};folders=['Allmänt'];
+      (list||savedFormations||[]).forEach(function(s){var f=s&&s.folder||'Allmänt';if(f&&!seen[f]){seen[f]=1;if(f!=='Allmänt')folders.push(f);}});
+      if(typeof updateFolderSelect==='function')updateFolderSelect();
+    }catch(e){}
+  }
+
+  // Gör de centrala synlighetsfunktionerna konsekventa för Utgångslägen utan att röra Taktikfilm.
+  try{
+    var prevVisible=typeof isFileVisibleInScopeV10==='function'?isFileVisibleInScopeV10:null;
+    var prevShared=typeof isSameTeamSharedV10==='function'?isSameTeamSharedV10:null;
+    var prevReadOnly=typeof isReadOnlyFileV10==='function'?isReadOnlyFileV10:null;
+    isSameTeamSharedV10=function(obj){if(isTaktik(obj)&&prevShared)return prevShared(obj);return sharedToActiveTeam(obj);};
+    isFileVisibleInScopeV10=function(obj,scope){if(isTaktik(obj)&&prevVisible)return prevVisible(obj,scope);return scope==='team'?sharedToActiveTeam(obj):isMine(obj);};
+    isReadOnlyFileV10=function(obj){if(isTaktik(obj)&&prevReadOnly)return prevReadOnly(obj);return !isMine(obj);};
+    tt131SharedToMyTeamFormation=sharedToActiveTeam;
+    tt131FormationVisible=function(s,scope){return scope==='team'?sharedToActiveTeam(s):isMine(s);};
+  }catch(e){}
+
+  if(typeof renderSavesList==='function'&&!renderSavesList._tt349Wrapped){
+    var oldRender=renderSavesList;
+    renderSavesList=function(){
+      setVersion349();
+      var original=savedFormations;
+      var scoped=displayListForScope(typeof saveScope!=='undefined'?saveScope:'mine');
+      try{savedFormations=scoped;rebuildFolders349(scoped);return oldRender.apply(this,arguments);}finally{savedFormations=original;setTimeout(setVersion349,0);}
+    };
+    renderSavesList._tt349Wrapped=true;
+  }
+
+  if(typeof cloudLoadSaves==='function'&&!cloudLoadSaves._tt349Wrapped){
+    var oldLoad=cloudLoadSaves;
+    cloudLoadSaves=function(){
+      setVersion349();
+      return Promise.resolve(oldLoad.apply(this,arguments)).then(function(res){
+        try{savedFormations=(savedFormations||[]).filter(function(s){return !isDeleted(s);});}catch(e){}
+        try{renderSavesList();}catch(e){}
+        setTimeout(setVersion349,0);setTimeout(setVersion349,600);return res;
+      });
+    };
+    cloudLoadSaves._tt349Wrapped=true;
+  }
+
+  function deleteIds(ids){
+    var seen={}, clean=[];
+    (ids||[]).forEach(function(id){var k=String(id||'');if(!k||seen[k])return;seen[k]=1;clean.push(k);});
+    if(!clean.length)return Promise.resolve(true);
+    var inList=clean.map(function(id){return encodeURIComponent(id);}).join(',');
+    return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?id=in.('+inList+')',{method:'DELETE',headers:Object.assign({},supaHeaders(),{'Prefer':'return=representation'})})
+      .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return true;});
+  }
+
+  cloudDelete=function(id){
+    var target=null;
+    try{target=(savedFormations||[]).find(function(s){return s&&String(rowId(s))===String(id);});}catch(e){}
+    if(target&&!isMine(target)){showToast('Du kan inte radera någon annans fil',false);return Promise.resolve(false);}
+    var key=target?logicalKey(target):'';
+    if(!key&&target)key=logicalKey(target);
+    var localIds=[];
+    try{(savedFormations||[]).forEach(function(s){if(!s)return;if((id&&String(rowId(s))===String(id))||(key&&logicalKey(s)===key)){if(rowId(s))localIds.push(rowId(s));}});}catch(e){}
+    if(id&&localIds.map(String).indexOf(String(id))<0)localIds.push(id);
+    localIds.forEach(markId);if(key)markKey(key);
+    try{savedFormations=(savedFormations||[]).filter(function(s){return !((id&&String(rowId(s))===String(id))||(key&&logicalKey(s)===key));});}catch(e){}
+    try{renderSavesList();}catch(e){}
+    if(!id){showToast('Raderat!');return Promise.resolve(true);}
+
+    return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?select=id,type,name,folder,data&order=id.desc',{headers:supaHeaders()})
+      .then(function(r){return r.ok?r.json():[];})
+      .then(function(rows){
+        var ids=localIds.slice();
+        if(key&&Array.isArray(rows)){
+          rows.forEach(function(row){
+            if(!row||(row.type!=='uppstallning'&&row.type!=='formation'))return;
+            var s=rowToFormation(row);
+            if(logicalKey(s)===key||String(row.id)===String(id))ids.push(row.id);
+          });
+        }
+        ids.forEach(markId);if(key)markKey(key);
+        return deleteIds(ids);
+      })
+      .then(function(){
+        showToast('Raderat!');
+        try{savedFormations=(savedFormations||[]).filter(function(s){return !isDeleted(s);});renderSavesList();updateFolderSelect();}catch(e){}
+        setTimeout(function(){try{cloudLoadSaves();}catch(e){}},300);
+        return true;
+      })
+      .catch(function(err){
+        try{cloudStatus('❌ Raderingsfel: '+err.message,'#e84a4a');}catch(e){}
+        showToast('Kunde inte radera',false);
+        try{cloudLoadSaves();}catch(e){}
+        return false;
+      });
+  };
+  window.cloudDelete=cloudDelete;
+
+  setVersion349();setTimeout(setVersion349,300);setTimeout(setVersion349,1200);setTimeout(setVersion349,3200);
+  try{if(typeof renderSavesList==='function')renderSavesList();}catch(e){}
+})();
+/* === slut v349-formation-mine-dedupe-and-delete-cleanup === */
