@@ -133,7 +133,7 @@ function renderSavesList(){
   if(!filtered.length){var empty=document.createElement("span");empty.style.cssText="color:#7aaa88;font-size:0.8rem";empty.textContent=searchQuery?"Inga tr\u00e4ffar":"Inga uppst\u00e4llningar"+(currentFolder!=="Alla"?" i denna mapp":"");list.appendChild(empty);return;}
   var sorted=filtered.slice().sort(function(a,b){return a.name.localeCompare(b.name,"sv");});
   for(var i=0;i<sorted.length;i++){
-    (function(s){var row=document.createElement("div");row.className="row";var nm=document.createElement("span");nm.className="row-name";nm.textContent=s.name;var fl=document.createElement("span");fl.className="row-sub";fl.textContent=s.folder||"Allm\u00e4nt";var ld=document.createElement("button");ld.className="sa load";ld.textContent="Ladda";var toTk=document.createElement("button");toTk.className="sa";toTk.style.cssText="color:#4ae8e8;border-color:#4ae8e8";toTk.textContent="Till taktik";var mv=document.createElement("button");mv.className="sa";mv.style.cssText="color:#e8c84a;border-color:#e8c84a";mv.textContent="\u21c6 Flytta";var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";ld.addEventListener("click",function(){applyState(JSON.parse(JSON.stringify(s.state)));activeFormationId=s.id;activeFormationName=s.name;updateSaveButtons();});toTk.addEventListener("click",function(){sendSavedFormationToTaktik(s);});mv.addEventListener("click",function(){openMoveFolder(s);});dl.addEventListener("click",function(){if(!confirm("Radera utgångsläget \""+(s.name||"utan namn")+"\"?"))return;if(s.id)cloudDelete(s.id);else{savedFormations=savedFormations.filter(function(x){return x.id!==s.id;});renderSavesList();}});row.appendChild(nm);row.appendChild(fl);row.appendChild(mv);row.appendChild(ld);row.appendChild(toTk);row.appendChild(dl);list.appendChild(row);})(sorted[i]);
+    (function(s){var row=document.createElement("div");row.className="row";var nm=document.createElement("span");nm.className="row-name";nm.textContent=s.name;var fl=document.createElement("span");fl.className="row-sub";fl.textContent=s.folder||"Allm\u00e4nt";var ld=document.createElement("button");ld.className="sa load";ld.textContent="Ladda";var toTk=document.createElement("button");toTk.className="sa";toTk.style.cssText="color:#4ae8e8;border-color:#4ae8e8";toTk.textContent="Till taktikfilm";var mv=document.createElement("button");mv.className="sa";mv.style.cssText="color:#e8c84a;border-color:#e8c84a";mv.textContent="\u21c6 Flytta";var dl=document.createElement("button");dl.className="sa del";dl.textContent="\u00d7";ld.addEventListener("click",function(){applyState(JSON.parse(JSON.stringify(s.state)));activeFormationId=s.id;activeFormationName=s.name;updateSaveButtons();});toTk.addEventListener("click",function(){sendSavedFormationToTaktik(s);});mv.addEventListener("click",function(){openMoveFolder(s);});dl.addEventListener("click",function(){if(!confirm("Radera taktiktavlan \""+(s.name||"utan namn")+"\"?"))return;if(s.id)cloudDelete(s.id);else{savedFormations=savedFormations.filter(function(x){return x.id!==s.id;});renderSavesList();}});row.appendChild(nm);row.appendChild(fl);row.appendChild(mv);row.appendChild(ld);row.appendChild(toTk);row.appendChild(dl);list.appendChild(row);})(sorted[i]);
   }
 }
 
@@ -762,7 +762,7 @@ function switchWorkspacePanel(nextPanel){
   restoreWorkspaceState(workspaceStates[nextKey],nextKey);
 }
 
-// ===== Koppla sparade utgångslägen till taktik =====
+// ===== Koppla sparade taktiktavlor till taktik =====
 function workspaceFromSavedFormation(saved){
   var st=cloneObj(saved.state||{});
   return {
@@ -784,7 +784,7 @@ function workspaceFromSavedFormation(saved){
     activeVariantIdx:0,
     activeFormationId:null,
     activeFormationName:null,
-    sourceFormationName:saved.name||"Utgångsläge"
+    sourceFormationName:saved.name||"Taktiktavla"
   };
 }
 function openPanelByName(panelName){
@@ -802,7 +802,7 @@ function sendSavedFormationToTaktik(saved){
   }else{
     openPanelByName("taktik");
   }
-  showToast("Utgångsläge kopierat till taktik: "+(saved.name||"Namnlös"));
+  showToast("Taktiktavla kopierad till taktikfilm: "+(saved.name||"Namnlös"));
 }
 function openTaktikImportStartModal(){
   var old=document.getElementById("modal-taktik-import-start");
@@ -815,12 +815,12 @@ function openTaktikImportStartModal(){
   box.style.maxHeight="80vh";
   box.style.overflow="auto";
   var title=document.createElement("h2");
-  title.textContent="Hämta utgångsläge till taktik";
+  title.textContent="Hämta taktiktavla till taktikfilm";
   box.appendChild(title);
   if(!savedFormations.length){
     var empty=document.createElement("p");
     empty.style.color="#7aaa88";
-    empty.textContent="Inga sparade utgångslägen hittades.";
+    empty.textContent="Inga sparade taktiktavlor hittades.";
     box.appendChild(empty);
   }else{
     var list=document.createElement("div");
@@ -859,7 +859,7 @@ function ensureTaktikImportButton(){
   var btn=document.createElement("button");
   btn.className="btn";
   btn.id="btn-import-start-taktik";
-  btn.textContent="Hämta utgångsläge";
+  btn.textContent="Hämta taktiktavla";
   btn.style.color="#e8c84a";
   btn.style.borderColor="#e8c84a";
   btn.addEventListener("click",openTaktikImportStartModal);
@@ -1040,8 +1040,8 @@ function saveCurrentTaktikStepAsFormation(){
   var tk=taktikFilmer[editingTaktikIdx];
   if(!tk){showToast("Ingen aktiv taktikfilm",false);return;}
   var stepLabel=editingStepIdx===0?"Start":"Steg "+editingStepIdx;
-  var defaultName="Utgångsläge från "+tk.name+" – "+stepLabel;
-  var name=window.prompt("Namn på nytt utgångsläge:",defaultName);
+  var defaultName="Taktiktavla från "+tk.name+" – "+stepLabel;
+  var name=window.prompt("Namn på ny taktiktavla:",defaultName);
   if(name===null)return;
   name=(name||defaultName).trim()||defaultName;
   var snap=currentSnap();
@@ -1058,15 +1058,15 @@ function saveCurrentTaktikStepAsFormation(){
     zones:cloneObj(snap.zones||[]),
     movementPaths:[]
   };
-  cloudStatus("Sparar utgångsläge...","#7aaa88");
+  cloudStatus("Sparar taktiktavla...","#7aaa88");
   fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE,{method:"POST",headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),body:JSON.stringify({name:name,data:data,type:"uppstallning",folder:"Allmänt"})})
     .then(function(r){return r.json();})
     .then(function(res){
-      cloudStatus("✅ Utgångsläge sparat: "+name,"#4ae87a");
-      showToast("Steget sparades som utgångsläge!");
+      cloudStatus("✅ Taktiktavla sparad: "+name,"#4ae87a");
+      showToast("Steget sparades som taktiktavla!");
       cloudLoadSaves();
     })
-    .catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");showToast("Kunde inte spara utgångsläge",false);});
+    .catch(function(err){cloudStatus("❌ Fel: "+err.message,"#e84a4a");showToast("Kunde inte spara taktiktavla",false);});
 }
 function ensureExportStepAsFormationButton(){
   var ref=document.getElementById("btn-edit-update-step2")||document.getElementById("btn-edit-update-step");
@@ -1074,8 +1074,8 @@ function ensureExportStepAsFormationButton(){
   var b=document.createElement("button");
   b.className="btn";
   b.id="btn-export-step-formation";
-  b.textContent="⇩ Utgångsläge";
-  b.title="Spara aktuellt taktiksteg som utgångsläge";
+  b.textContent="⇩ Taktiktavla";
+  b.title="Spara aktuellt taktiksteg som taktiktavla";
   b.style.cssText="padding:3px 7px;font-size:0.65rem;color:#e8c84a;border-color:#e8c84a";
   b.addEventListener("click",saveCurrentTaktikStepAsFormation);
   ref.parentNode.insertBefore(b,ref.nextSibling);
@@ -2100,9 +2100,9 @@ function patchFormationShareV10(s,share){
 
   /*
     v126 kirurgisk fix:
-    Rör bara Utgångsläge-delning.
+    Rör bara Taktiktavla-delning.
     Ändrar inte isMineV10 globalt, renderTaktikList eller Taktik/Mina.
-    Orsak: äldre utgångslägen kan ligga i "Mina" men ha gammalt ownerId.
+    Orsak: äldre taktiktavlor kan ligga i "Mina" men ha gammalt ownerId.
   */
   function norm(v){return String(v||"").trim().toLowerCase();}
   function profile(){
@@ -2197,7 +2197,7 @@ function patchFormationShareV10(s,share){
 function copyFormationToMineV10(s){
   if(!s)return;
   var p=getProfileSafeV10();
-  var name="Kopia av "+(s.name||"utgångsläge");
+  var name="Kopia av "+(s.name||"taktiktavla");
   var state=JSON.parse(JSON.stringify(s.state||{}));
   if(typeof addMetaToData==="function")state=addMetaToData(state);
   else state=updateShareMetaV10(state,false,false);
@@ -2274,7 +2274,7 @@ function renderSavesList(){
   list.appendChild(filterRow);
 
   var filtered=visibleAll.filter(function(s){var inFolder=currentFolder==="Alla"||(s.folder||"Allmänt")===currentFolder;var inSearch=!searchQuery||s.name.toLowerCase().indexOf(searchQuery)>=0;return inFolder&&inSearch;});
-  if(!filtered.length){var empty=document.createElement("span");empty.style.cssText="color:#7aaa88;font-size:0.8rem";empty.textContent=saveScope==="team"?"Inga delade lagfiler":"Inga uppställningar";list.appendChild(empty);return;}
+  if(!filtered.length){var empty=document.createElement("span");empty.style.cssText="color:#7aaa88;font-size:0.8rem";empty.textContent=saveScope==="team"?"Inga delade lagfiler":"Inga taktiktavlor";list.appendChild(empty);return;}
   var sorted=filtered.slice().sort(function(a,b){return a.name.localeCompare(b.name,"sv");});
   for(var i=0;i<sorted.length;i++){
     (function(s){
@@ -2297,9 +2297,9 @@ function renderSavesList(){
         var share=document.createElement("button");share.className="sa";share.style.cssText="color:#4ae8e8;border-color:#4ae8e8";share.textContent=fileMetaV10(s).sharedWithTeam?"Dölj":"Dela";
         share.title=fileMetaV10(s).sharedWithTeam?"Sluta dela med laget":"Dela med laget";
         share.addEventListener("click",function(){patchFormationShareV10(s,!fileMetaV10(s).sharedWithTeam);});
-        var toTk=document.createElement("button");toTk.className="sa";toTk.style.cssText="color:#4ae8e8;border-color:#4ae8e8";toTk.textContent="Till taktik";toTk.addEventListener("click",function(){sendSavedFormationToTaktik(s);});
+        var toTk=document.createElement("button");toTk.className="sa";toTk.style.cssText="color:#4ae8e8;border-color:#4ae8e8";toTk.textContent="Till taktikfilm";toTk.addEventListener("click",function(){sendSavedFormationToTaktik(s);});
         var mv=document.createElement("button");mv.className="sa";mv.style.cssText="color:#e8c84a;border-color:#e8c84a";mv.textContent="⇆ Flytta";mv.addEventListener("click",function(){openMoveFolder(s);});
-        var dl=document.createElement("button");dl.className="sa del";dl.textContent="×";dl.addEventListener("click",function(){if(!confirm("Radera utgångsläget \""+(s.name||"utan namn")+"\"?"))return;if(s.id)cloudDelete(s.id);});
+        var dl=document.createElement("button");dl.className="sa del";dl.textContent="×";dl.addEventListener("click",function(){if(!confirm("Radera taktiktavlan \""+(s.name||"utan namn")+"\"?"))return;if(s.id)cloudDelete(s.id);});
         row.appendChild(share);row.appendChild(mv);row.appendChild(ld);row.appendChild(toTk);row.appendChild(dl);
       }else{
         var cp=document.createElement("button");cp.className="sa";cp.style.cssText="color:#4ae8e8;border-color:#4ae8e8";cp.textContent="Kopiera";cp.addEventListener("click",function(){copyFormationToMineV10(s);});
@@ -3672,7 +3672,7 @@ deleteTaktik = function(idx){
 };
 window.deleteTaktik=deleteTaktik;
 
-// Radering av utgångslägen ska blockeras för Lagets.
+// Radering av taktiktavlor ska blockeras för Lagets.
 var _cloudDelete_v24 = cloudDelete;
 cloudDelete = function(id){
   if(isTeamScopeV24()){
@@ -3741,7 +3741,7 @@ copyTaktikToMineV10 = function(tk){
   cloudSaveTaktik(copy);
 };
 
-// Utgångslägen i Lagets: blockera delning/radering/flytt efter render.
+// Taktiktavlor i Lagets: blockera delning/radering/flytt efter render.
 var _renderSavesList_v24 = renderSavesList;
 renderSavesList = function(){
   _renderSavesList_v24.apply(this,arguments);
@@ -3775,7 +3775,7 @@ if(typeof renderSavesList==="function")renderSavesList();
 /* === slut v24 === */
 
 
-/* === v25: samma dela-UI för utgångslägen som taktik === */
+/* === v25: samma dela-UI för taktiktavlor som taktik === */
 function formationShareIconV25(s){
   try{
     var meta=(typeof fileMetaV10==="function")?fileMetaV10(s):((s&&s._meta)||{});
@@ -3842,7 +3842,7 @@ renderSavesList = function(){
 
 
 
-/* === v26: korrekt readonly/kopiera/dela-UI för utgångslägen === */
+/* === v26: korrekt readonly/kopiera/dela-UI för taktiktavlor === */
 function clearTeamReadonlyFlagsV26(obj){
   if(!obj)return obj;
   if(typeof saveScope!=="undefined" && saveScope==="mine"){
@@ -3860,7 +3860,7 @@ function isFormationReadonlyV26(s){
 
 function copyFormationToMineV26(s){
   if(!s)return;
-  var name="Kopia av "+(s.name||"utgångsläge");
+  var name="Kopia av "+(s.name||"taktiktavla");
   var state=JSON.parse(JSON.stringify(s.state||{}));
   delete state._readOnly;
   delete state._openedFromTeam;
@@ -4008,7 +4008,7 @@ function renderSavesListV26(){
   if(!filtered.length){
     var empty=document.createElement("span");
     empty.style.cssText="color:#7aaa88;font-size:0.8rem";
-    empty.textContent=saveScope==="team"?"Inga delade utgångslägen":"Inga uppställningar";
+    empty.textContent=saveScope==="team"?"Inga delade taktiktavlor":"Inga taktiktavlor";
     list.appendChild(empty);
     return;
   }
@@ -4062,7 +4062,7 @@ function renderSavesListV26(){
       var share=iconBtn(meta&&meta.sharedWithTeam?"🙈":"👥",meta&&meta.sharedWithTeam?"Sluta dela med laget":"Dela med laget","#4ae8e8");
       share.addEventListener("click",function(){patchFormationShareV26(s,!(meta&&meta.sharedWithTeam));});
 
-      var toTk=iconBtn("↗","Till taktik","#4ae8e8");
+      var toTk=iconBtn("↗","Till taktikfilm","#4ae8e8");
       toTk.addEventListener("click",function(){sendSavedFormationToTaktik(s);});
 
       var mv=iconBtn("⇆","Flytta till mapp","#e8c84a");
@@ -4071,7 +4071,7 @@ function renderSavesListV26(){
       var dl=iconBtn("×","Radera","#e84a4a");
       dl.className+=" del";
       dl.addEventListener("click",function(){
-        if(!confirm("Radera utgångsläget \""+(s.name||"utan namn")+"\"?"))return;
+        if(!confirm("Radera taktiktavlan \""+(s.name||"utan namn")+"\"?"))return;
         if(s.id)cloudDelete(s.id);
       });
 
@@ -4089,7 +4089,7 @@ if(typeof renderSavesList==="function")renderSavesList();
 
 
 
-/* === v27: single-source för utgångslägen, stoppa dubbla filer === */
+/* === v27: single-source för taktiktavlor, stoppa dubbla filer === */
 function formationMetaV27(state){
   return (state&&state._meta) ? state._meta : {};
 }
@@ -4140,7 +4140,7 @@ function cloudLoadSaves(){
         }
       });
 
-      cloudStatus(savedFormations.length+" uppställningar ✅","#4ae87a");
+      cloudStatus(savedFormations.length+" taktiktavlor ✅","#4ae87a");
       renderSavesList();
       updateFolderSelect();
     })
@@ -4168,7 +4168,7 @@ function cloudSaveWithName(name){
     });
   }
 
-  // Om aktivt utgångsläge redan har id: uppdatera samma rad.
+  // Om aktivt taktiktavla redan har id: uppdatera samma rad.
   if(typeof activeFormationId!=="undefined" && activeFormationId){
     patchExisting(activeFormationId).catch(function(err){
       cloudStatus("❌ Fel: "+err.message,"#e84a4a");
@@ -4216,7 +4216,7 @@ function cloudSaveWithName(name){
 // Kopiera från Lagets ska skapa en ny egen rad men aldrig lägga lokal dublett.
 function copyFormationToMineV26(s){
   if(!s)return;
-  var name="Kopia av "+(s.name||"utgångsläge");
+  var name="Kopia av "+(s.name||"taktiktavla");
   var state=JSON.parse(JSON.stringify(s.state||{}));
   delete state._readOnly;
   delete state._openedFromTeam;
@@ -4252,7 +4252,7 @@ if(typeof cloudLoadSaves==="function")cloudLoadSaves();
 
 
 
-/* === v37: btn-cloud-refresh är Ny uppställning, ingen extra knapp === */
+/* === v37: btn-cloud-refresh är Ny taktiktavla, ingen extra knapp === */
 function newFormationFromStandardV37(){
   // Samma visuella reset som Standard
   if(typeof resetCurrentWorkspaceToDefault==="function"){
@@ -4284,8 +4284,8 @@ function newFormationFromStandardV37(){
 
   if(typeof updateSaveButtons==="function")updateSaveButtons();
 
-  showToast("Ny uppställning – nästa sparning skapar ny fil");
-  cloudStatus("Ny uppställning. Spara som ny fil när du är klar.","#7aaa88");
+  showToast("Ny taktiktavla – nästa sparning skapar ny fil");
+  cloudStatus("Ny taktiktavla. Spara som ny fil när du är klar.","#7aaa88");
 }
 
 function bindNewFormationButtonV37(){
@@ -4295,8 +4295,8 @@ function bindNewFormationButtonV37(){
   var btn=old.cloneNode(true);
   btn.id="btn-cloud-refresh";
   btn.textContent="Ny";
-  btn.title="Ny uppställning";
-  btn.setAttribute("aria-label","Ny uppställning");
+  btn.title="Ny taktiktavla";
+  btn.setAttribute("aria-label","Ny taktiktavla");
   btn.style.color="#4ae8e8";
   btn.style.borderColor="#4ae8e8";
 
@@ -4341,7 +4341,7 @@ setTimeout(cleanupTopbarDuplicatesV44,200);
 })();
 
 
-/* === v50: utgångsläge skapar ny taktikfilm direkt === */
+/* === v50: taktiktavla skapar ny taktikfilm direkt === */
 function openNewTaktikFromSavedFormationModalV50(saved){
   if(!saved)return;
 
@@ -4356,12 +4356,12 @@ function openNewTaktikFromSavedFormationModalV50(saved){
   box.className="modal-box";
 
   var h=document.createElement("h2");
-  h.textContent="Ny taktikfilm från utgångsläge";
+  h.textContent="Ny taktikfilm från taktiktavla";
   box.appendChild(h);
 
   var p=document.createElement("p");
   p.style.cssText="font-size:0.78rem;color:#7aaa88;line-height:1.35;margin:4px 0 10px";
-  p.textContent="Utgångsläget blir startsteget i en ny film. Du kommer direkt in i redigeringsläget.";
+  p.textContent="Taktiktavlan blir startsteget i en ny film. Du kommer direkt in i redigeringsläget.";
   box.appendChild(p);
 
   var inp=document.createElement("input");
@@ -4425,7 +4425,7 @@ function createTaktikFilmFromSavedFormationV50(saved,name){
     folder:"Taktik",
     steps:[snap],
     _isDraft:true,
-    _sourceFormationName:saved.name||"Utgångsläge"
+    _sourceFormationName:saved.name||"Taktiktavla"
   };
 
   taktikFilmer.push(newFilm);
@@ -4440,7 +4440,7 @@ function createTaktikFilmFromSavedFormationV50(saved,name){
   renderTaktikList();
   startPlayback(idx);
 
-  showToast("Ny film skapad från utgångsläge");
+  showToast("Ny film skapad från taktiktavla");
   cloudStatus("Utkast: "+name+" – lägg till steg och spara filmen","#7aaa88");
 }
 
@@ -4455,18 +4455,18 @@ sendSavedFormationToTaktik=function(saved){
   function relabelImportButtonsV50(){
     var b=document.getElementById("btn-import-start-taktik");
     if(b){
-      b.textContent="Ny film från utgångsläge";
-      b.title="Välj ett utgångsläge och skapa en ny taktikfilm";
+      b.textContent="Ny film från taktiktavla";
+      b.title="Välj en taktiktavla och skapa en ny taktikfilm";
     }
 
-    // I listan med utgångslägen heter gamla knappen "Till taktik".
+    // I listan med taktiktavlor heter gamla knappen "Till taktik".
     // Den får behålla samma funktion men bättre text när listan renderas om.
     var savesList=document.getElementById("saves-list");
     if(savesList){
       Array.prototype.slice.call(savesList.querySelectorAll("button")).forEach(function(btn){
         if((btn.textContent||"").trim()==="Till taktik"){
           btn.textContent="Ny film";
-          btn.title="Skapa ny taktikfilm från detta utgångsläge";
+          btn.title="Skapa ny taktikfilm från denna taktiktavla";
         }
       });
     }
@@ -4511,7 +4511,7 @@ function mergeFormationListsV51(oldList,newList){
   return Object.keys(by).map(function(k){return by[k];});
 }
 
-// Hindra att en misslyckad/tom reload rensar gamla filmer eller utgångslägen i UI.
+// Hindra att en misslyckad/tom reload rensar gamla filmer eller taktiktavlor i UI.
 var _cloudLoadTaktik_v51=cloudLoadTaktik;
 cloudLoadTaktik=function(){
   var before=(taktikFilmer||[]).slice();
@@ -4560,7 +4560,7 @@ cloudLoadSaves=function(){
     .then(function(data){
       if(!Array.isArray(data)){
         savedFormations=before;
-        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        cloudStatus("❌ Kunde inte läsa taktiktavlor","#e84a4a");
         return;
       }
 
@@ -4575,7 +4575,7 @@ cloudLoadSaves=function(){
         var f=savedFormations[i].folder;
         if(f&&!seen[f]){seen[f]=true;if(f!=="Allmänt")folders.push(f);}
       }
-      cloudStatus(savedFormations.length+" uppställningar ✅","#4ae87a");
+      cloudStatus(savedFormations.length+" taktiktavlor ✅","#4ae87a");
       renderSavesList();
       updateFolderSelect();
     })
@@ -4587,7 +4587,7 @@ cloudLoadSaves=function(){
 };
 
 // Spara-knappen i redigeringsläget ska alltid använda cloudSaveTaktik,
-// även för nya filmer från utgångsläge. Den gamla knappen sparade nya utkast bara lokalt.
+// även för nya filmer från taktiktavla. Den gamla knappen sparade nya utkast bara lokalt.
 (function(){
   var btn=document.getElementById("btn-edit-taktik-save");
   if(!btn)return;
@@ -4738,7 +4738,7 @@ if(typeof cloudSaveTaktik==="function"){
   };
 }
 
-// Fixa sparning av utgångslägen så även "Spara som" sätter metadata på nya/gamla lägen.
+// Fixa sparning av taktiktavlor så även "Spara som" sätter metadata på nya/gamla lägen.
 if(typeof cloudSave==="function"){
   var _cloudSave_v52=cloudSave;
   cloudSave=function(name){
@@ -4834,7 +4834,7 @@ cloudLoadSaves=function(){
   return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=id.desc",{headers:supaHeaders()})
     .then(function(r){return r.json();})
     .then(function(data){
-      if(!Array.isArray(data)){savedFormations=before;renderSavesList();cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");return;}
+      if(!Array.isArray(data)){savedFormations=before;renderSavesList();cloudStatus("❌ Kunde inte läsa taktiktavlor","#e84a4a");return;}
 
       var by={};
       before.forEach(function(s){by[legacyKeyV53("s",s)]=s;});
@@ -4851,7 +4851,7 @@ cloudLoadSaves=function(){
         if(f&&!seen[f]){seen[f]=true;if(f!=="Allmänt")folders.push(f);}
       });
       renderSavesList();updateFolderSelect();
-      cloudStatus(savedFormations.length+" uppställningar ✅","#4ae87a");
+      cloudStatus(savedFormations.length+" taktiktavlor ✅","#4ae87a");
     })
     .catch(function(err){savedFormations=before;renderSavesList();cloudStatus("❌ Fel: "+err.message,"#e84a4a");});
 };
@@ -5253,7 +5253,7 @@ setTimeout(function(){
    Säker idé:
    - körs bara när tränaren trycker på knappen
    - ändrar bara rader som saknar data._meta
-   - taktik/utgångslägen får ownerId och team
+   - taktik/taktiktavlor får ownerId och team
    - matcher får teamId/teamCode och blir laggemensamma
 */
 
@@ -5367,12 +5367,12 @@ function runAdoptLegacyFilesV56(){
     rows.forEach(function(r){counts[r.type]=(counts[r.type]||0)+1;});
 
     var msg="Jag hittade omärkta äldre filer:\n\n"+
-      "Utgångslägen: "+counts.uppstallning+"\n"+
+      "Taktiktavlor: "+counts.uppstallning+"\n"+
       "Taktikfilmer: "+counts.taktikfilm+"\n"+
       "Matcher: "+counts.match+"\n\n"+
       "De märks med:\n"+
       p.ownerName+" · "+p.teamCode+"\n\n"+
-      "Utgångslägen/taktik blir dina filer. Matcher blir lagets filer.\n\n"+
+      "Taktiktavlor/taktikfilmer blir dina filer. Matcher blir lagets filer.\n\n"+
       "Vill du fortsätta?";
 
     if(!confirm(msg)){
@@ -5469,7 +5469,7 @@ function classifyRowV57(row){
     return "uppstallning";
   }
 
-  // Utgångslägen kan se lite olika ut i äldre versioner.
+  // Taktiktavlor kan se lite olika ut i äldre versioner.
   // Vanliga tecken: players-array, ball, arrows/freehand/zones, format, formation.
   if(
     (Array.isArray(d.players) && !Array.isArray(d.steps)) ||
@@ -5536,7 +5536,7 @@ function defaultNameV57(row,kind,d){
   if(row.name)return row.name;
   if(d.name)return d.name;
   if(kind==="taktikfilm")return "Äldre taktikfilm "+row.id;
-  if(kind==="uppstallning")return "Äldre utgångsläge "+row.id;
+  if(kind==="uppstallning")return "Äldre taktiktavla "+row.id;
   if(kind==="match")return (d.datum||"Match")+" "+(d.motstand||d.motstånd||"");
   return "Äldre fil "+row.id;
 }
@@ -5610,7 +5610,7 @@ function runAdoptLegacyFilesV57(){
     items.forEach(function(x){counts[x.kind]=(counts[x.kind]||0)+1;});
 
     var msg="Jag hittade äldre/omärkta rader att fixa:\n\n"+
-      "Utgångslägen: "+counts.uppstallning+"\n"+
+      "Taktiktavlor: "+counts.uppstallning+"\n"+
       "Taktikfilmer: "+counts.taktikfilm+"\n"+
       "Matcher: "+counts.match+"\n\n"+
       "Jag sätter också rätt typ/folder/namn om det saknas.\n\n"+
@@ -5741,7 +5741,7 @@ function nameV58(row,kind){
   if(row.name)return row.name;
   if(d.name)return d.name;
   if(kind==="taktikfilm")return "Äldre taktikfilm "+row.id;
-  if(kind==="uppstallning")return "Äldre utgångsläge "+row.id;
+  if(kind==="uppstallning")return "Äldre taktiktavla "+row.id;
   if(kind==="match")return (d.datum||"Match")+" "+(d.motstand||d.motstånd||"");
   return "Fil "+row.id;
 }
@@ -5772,7 +5772,7 @@ function needsClaimV58(row,p,kind){
     return String(m.teamId||m.teamCode||"")!==String(p.teamId||p.teamCode||"") || row.type!=="match";
   }
 
-  // Taktik/utgångsläge: ta över om ownerId saknas/är annat eller om type/folder/name saknas.
+  // Taktik/taktiktavla: ta över om ownerId saknas/är annat eller om type/folder/name saknas.
   if(String(m.ownerId||"")!==String(p.ownerId||""))return true;
   if(row.type!==kind)return true;
   if(!row.name && !d.name)return true;
@@ -5861,7 +5861,7 @@ function runClaimInvisibleV58(){
     }).join("\n");
 
     var msg="Jag hittade filer som kan vara märkta men inte kopplade till din nuvarande profil/lag:\n\n"+
-      "Utgångslägen: "+counts.uppstallning+"\n"+
+      "Taktiktavlor: "+counts.uppstallning+"\n"+
       "Taktikfilmer: "+counts.taktikfilm+"\n"+
       "Matcher: "+counts.match+"\n\n"+
       "Exempel:\n"+preview+(items.length>8?"\n…":"")+"\n\n"+
@@ -6254,7 +6254,7 @@ function moveProfileButtonToTabRowV61(){
   var topbar=document.getElementById("topbar");
   if(!topbar)return;
 
-  // Hitta raden där Formation/Utgångsläge/Taktik/Lag ligger.
+  // Hitta raden där Formation/Taktiktavla/Taktik/Lag ligger.
   var lagTab=document.querySelector('.tab[data-panel="lag"]');
   var tabRow=lagTab ? lagTab.parentNode : null;
   if(!tabRow)return;
@@ -6701,7 +6701,7 @@ cloudLoadSaves=function(){
   return fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?type=eq.uppstallning&order=folder.asc,id.desc",{headers:supaHeaders()})
     .then(function(r){return r.json();})
     .then(function(data){
-      if(!Array.isArray(data)){cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");return;}
+      if(!Array.isArray(data)){cloudStatus("❌ Kunde inte läsa taktiktavlor","#e84a4a");return;}
       var loaded=data.filter(function(row){return row.type==="uppstallning";}).map(function(row){
         return {id:row.id,name:row.name,state:row.data,folder:row.folder||"Allmänt"};
       }).filter(function(s){return !s.id || !deletedFormationIdsV64[String(s.id)];})
@@ -6711,7 +6711,7 @@ cloudLoadSaves=function(){
       rebuildFoldersV64();
       renderSavesList();
       updateFolderSelect();
-      cloudStatus(savedFormations.length+" uppställningar ✅","#4ae87a");
+      cloudStatus(savedFormations.length+" taktiktavlor ✅","#4ae87a");
     }).catch(function(err){
       cloudStatus("❌ Fel: "+err.message,"#e84a4a");
     });
@@ -7010,7 +7010,7 @@ document.querySelectorAll(".tab").forEach(function(tab){
 /* === slut v66-fullscreen-bottombar === */
 
 
-/* === v67-dedupe-unsaved: hårdare dedupe utgångslägen + sparat nollställer varning === */
+/* === v67-dedupe-unsaved: hårdare dedupe taktiktavlor + sparat nollställer varning === */
 
 function metaForV67(obj){
   try{
@@ -7050,7 +7050,7 @@ function saveDedupeKeyV67(s){
   var folder=normalizeFolderV67(s.folder,"Allmänt");
   var sig=formationContentSignatureV67(s);
 
-  // För utgångslägen vill vi inte visa samma fil två gånger bara för att den fått nytt id vid migrering.
+  // För taktiktavlor vill vi inte visa samma fil två gånger bara för att den fått nytt id vid migrering.
   // Namn+mapp+ägare räcker i normalfallet. Om namn saknas använder vi innehållet.
   if(name)return "nf:"+owner+"|"+folder+"|"+name;
   if(sig)return "sig:"+owner+"|"+folder+"|"+sig;
@@ -7108,7 +7108,7 @@ cloudLoadSaves=function(){
     .then(function(r){return r.json();})
     .then(function(data){
       if(!Array.isArray(data)){
-        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        cloudStatus("❌ Kunde inte läsa taktiktavlor","#e84a4a");
         return;
       }
       var loaded=data.filter(function(row){return row.type==="uppstallning";}).map(function(row){
@@ -7125,7 +7125,7 @@ cloudLoadSaves=function(){
       savedFormations=dedupeFormationsHardV67(loaded);
       rebuildFormationFoldersV67();
       renderSavesList();
-      cloudStatus(savedFormations.length+" uppställningar ✅","#4ae87a");
+      cloudStatus(savedFormations.length+" taktiktavlor ✅","#4ae87a");
     }).catch(function(err){
       cloudStatus("❌ Fel: "+err.message,"#e84a4a");
     });
@@ -11902,8 +11902,8 @@ setTimeout(function(){
 /* === slut v90-fix-false-legacy-label === */
 
 
-/* === v91-new-film-from-formation-taktik-modal: öppna "ny film från utgångsläge" i Taktik ===
-   Buggen: knappen i Taktik öppnade/visade rutan i Utgångsläge-fliken.
+/* === v91-new-film-from-formation-taktik-modal: öppna "ny film från taktiktavla" i Taktik ===
+   Buggen: knappen i Taktik öppnade/visade rutan i Taktiktavla-fliken.
    Fix: fånga klicket, håll Taktik-panelen aktiv och visa en egen enkel modal/lista.
 */
 
@@ -11928,7 +11928,7 @@ function tt91CloseFormationPicker(){
 }
 
 function tt91SavedFormationName(s){
-  return String((s && s.name) || "Utgångsläge");
+  return String((s && s.name) || "Taktiktavla");
 }
 
 function tt91SavedFormationFolder(s){
@@ -11952,13 +11952,13 @@ function tt91SnapFromSavedFormation(s){
 
 function tt91CreateFilmFromFormation(s){
   if(!s){
-    showToast("Kunde inte läsa utgångsläget",false);
+    showToast("Kunde inte läsa taktiktavlan",false);
     return;
   }
 
   var snap=tt91SnapFromSavedFormation(s);
   if(!snap || !snap.players || !snap.players.length){
-    showToast("Utgångsläget saknar spelare",false);
+    showToast("Taktiktavlan saknar spelare",false);
     return;
   }
 
@@ -12019,7 +12019,7 @@ function tt91CreateFilmFromFormation(s){
     if(typeof tt88CaptureSavedSnapshot==="function")tt88CaptureSavedSnapshot();
   }catch(e){}
 
-  showToast("Ny film skapad från utgångsläge");
+  showToast("Ny film skapad från taktiktavla");
 }
 
 function tt91OpenFormationPickerInTaktik(){
@@ -12037,7 +12037,7 @@ function tt91OpenFormationPickerInTaktik(){
   top.style.cssText="display:flex;align-items:center;gap:8px;margin-bottom:10px";
 
   var title=document.createElement("div");
-  title.textContent="Ny film från utgångsläge";
+  title.textContent="Ny film från taktiktavla";
   title.style.cssText="font-weight:900;color:#edf5ee;font-size:1rem;flex:1";
 
   var close=document.createElement("button");
@@ -12050,7 +12050,7 @@ function tt91OpenFormationPickerInTaktik(){
   box.appendChild(top);
 
   var hint=document.createElement("div");
-  hint.textContent="Välj ett sparat utgångsläge. Filmen skapas i Taktik och sparas först när du trycker Spara.";
+  hint.textContent="Välj en sparad taktiktavla. Filmen skapas i Taktikfilm och sparas först när du trycker Spara.";
   hint.style.cssText="font-size:.76rem;color:#7aaa88;margin-bottom:10px;line-height:1.3";
   box.appendChild(hint);
 
@@ -12063,7 +12063,7 @@ function tt91OpenFormationPickerInTaktik(){
 
   if(!items.length){
     var empty=document.createElement("div");
-    empty.textContent="Inga sparade utgångslägen hittades.";
+    empty.textContent="Inga sparade taktiktavlor hittades.";
     empty.style.cssText="color:#7aaa88;font-size:.85rem;padding:12px;border:1px dashed #2d4a35;border-radius:8px";
     list.appendChild(empty);
   }else{
@@ -12417,8 +12417,8 @@ setTimeout(function(){
 /* === slut v92-team-share-cross-device === */
 
 
-/* === v93-formation-share-cross-device: delade utgångslägen ska synas på andra enheter ===
-   Motsvarande v92, men för Utgångslägen/Uppställningar.
+/* === v93-formation-share-cross-device: delade taktiktavlor ska synas på andra enheter ===
+   Motsvarande v92, men för Taktiktavlor/Uppställningar.
 */
 
 function ff93NormTeam(v){
@@ -12541,7 +12541,7 @@ function ff93ApplyShareMeta(s,share,canEdit){
 
 patchFormationShareV10=function(s,share){
   if(!s || !s.id){
-    showToast("Spara utgångsläget innan du delar det",false);
+    showToast("Spara taktiktavlan innan du delar den",false);
     return;
   }
   if(!ff93IsMine(s)){
@@ -12553,7 +12553,7 @@ patchFormationShareV10=function(s,share){
   ff93ApplyShareMeta(copy,share,false);
   var data=ff93State(copy);
 
-  cloudStatus(share?"Delar utgångsläge med laget...":"Tar bort delning...","#7aaa88");
+  cloudStatus(share?"Delar taktiktavla med laget...":"Tar bort delning...","#7aaa88");
 
   fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
     method:"PATCH",
@@ -12569,7 +12569,7 @@ patchFormationShareV10=function(s,share){
   .then(function(){
     s.state=data;
     s._meta=data._meta;
-    showToast(share?"Utgångsläge delat med laget":"Utgångsläge inte längre delat");
+    showToast(share?"Taktiktavla delad med laget":"Taktiktavla inte längre delad");
     cloudStatus(share?"✅ Delat med laget":"✅ Delning borttagen","#4ae87a");
     setTimeout(function(){try{cloudLoadSaves();}catch(e){}},350);
   })
@@ -12585,7 +12585,7 @@ patchFormationShareV68=patchFormationShareV10;
 function ff93NormalizeLoadedFormation(row){
   var s={
     id:row.id,
-    name:row.name || (row.data && row.data.name) || "Namnlöst utgångsläge",
+    name:row.name || (row.data && row.data.name) || "Namnlös taktiktavla",
     state:row.data || {},
     folder:row.folder || (row.data && row.data.folder) || "Allmänt"
   };
@@ -12620,7 +12620,7 @@ cloudLoadSaves=function(){
     .then(function(r){return r.json();})
     .then(function(data){
       if(!Array.isArray(data)){
-        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        cloudStatus("❌ Kunde inte läsa taktiktavlor","#e84a4a");
         return;
       }
 
@@ -12637,7 +12637,7 @@ cloudLoadSaves=function(){
       ff93RebuildFolders();
 
       try{renderSavesList();}catch(e){}
-      cloudStatus(savedFormations.length+" utgångslägen laddade ✅","#4ae87a");
+      cloudStatus(savedFormations.length+" taktiktavlor laddade ✅","#4ae87a");
     })
     .catch(function(err){
       cloudStatus("❌ Fel: "+err.message,"#e84a4a");
@@ -12646,7 +12646,7 @@ cloudLoadSaves=function(){
 
 function ff93CopyFormationToMine(s){
   if(!s){
-    showToast("Kunde inte kopiera utgångsläge",false);
+    showToast("Kunde inte kopiera taktiktavla",false);
     return;
   }
 
@@ -12668,7 +12668,7 @@ function ff93CopyFormationToMine(s){
     kind:"uppstallning"
   };
 
-  var name="Kopia av "+(s.name||"utgångsläge");
+  var name="Kopia av "+(s.name||"taktiktavla");
   var folder=s.folder||"Allmänt";
 
   cloudStatus("Skapar kopia...","#7aaa88");
@@ -12705,7 +12705,7 @@ function ff93CopyFormationToMine(s){
     }
   })
   .catch(function(err){
-    showToast("Kunde inte kopiera utgångsläge",false);
+    showToast("Kunde inte kopiera taktiktavla",false);
     cloudStatus("❌ "+err.message,"#e84a4a");
   });
 }
@@ -12853,7 +12853,7 @@ function ff94FormationVisible(s,scope){
   return ff94IsMineFormation(s);
 }
 
-// Behåll v92-taktiklogiken för taktikfilmer, men använd ny formationslogik för utgångslägen.
+// Behåll v92-taktiklogiken för taktikfilmer, men använd ny formationslogik för taktiktavlor.
 isMineV10=function(obj){
   if(obj && obj.steps && typeof tt92IsMine==="function")return tt92IsMine(obj);
   if(ff94IsFormation(obj))return ff94IsMineFormation(obj);
@@ -12887,7 +12887,7 @@ cloudLoadSaves=function(){
     .then(function(r){return r.json();})
     .then(function(data){
       if(!Array.isArray(data)){
-        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        cloudStatus("❌ Kunde inte läsa taktiktavlor","#e84a4a");
         return;
       }
 
@@ -12899,7 +12899,7 @@ cloudLoadSaves=function(){
         if(typeof ff93NormalizeLoadedFormation==="function"){
           s=ff93NormalizeLoadedFormation(row);
         }else{
-          s={id:row.id,name:row.name||"Namnlöst utgångsläge",state:row.data||{},folder:row.folder||"Allmänt"};
+          s={id:row.id,name:row.name||"Namnlös taktiktavla",state:row.data||{},folder:row.folder||"Allmänt"};
           if(s.state && s.state._meta)s._meta=s.state._meta;
         }
 
@@ -12919,7 +12919,7 @@ cloudLoadSaves=function(){
       else if(typeof updateFolderSelect==="function")updateFolderSelect();
 
       try{renderSavesList();}catch(e){}
-      cloudStatus(savedFormations.length+" utgångslägen laddade ✅","#4ae87a");
+      cloudStatus(savedFormations.length+" taktiktavlor laddade ✅","#4ae87a");
     })
     .catch(function(err){
       cloudStatus("❌ Fel: "+err.message,"#e84a4a");
@@ -12998,12 +12998,12 @@ setTimeout(function(){
 /* === slut v94-formation-owner-mine-and-team-label === */
 
 
-/* === v95-formation-ownername-fallback: gamla utgångslägen med gammalt ownerId ska visas i Mina ===
+/* === v95-formation-ownername-fallback: gamla taktiktavlor med gammalt ownerId ska visas i Mina ===
    Bakgrund:
-   Äldre utgångslägen kan ha ownerId från en tidigare lokal profil.
+   Äldre taktiktavlor kan ha ownerId från en tidigare lokal profil.
    Då syns de i Lagets eftersom team/shared stämmer, men inte i Mina eftersom ownerId inte matchar.
    Fix:
-   - För utgångslägen räknas filen som min om ownerId matchar
+   - För taktiktavlor räknas filen som min om ownerId matchar
    - eller om ownerName + teamCode/teamId matchar aktuell profil
    - eller om ownerId saknas men ownerName/team matchar.
 */
@@ -13067,7 +13067,7 @@ function ff95IsMineFormation(s){
   // Primär modern jämförelse.
   if(m.ownerId && p.ownerId && String(m.ownerId)===String(p.ownerId))return true;
 
-  // Viktig fallback för äldre utgångslägen:
+  // Viktig fallback för äldre taktiktavlor:
   // samma ägarnamn + samma lag = min fil, även om ownerId skapats om.
   var sameName = !!m.ownerName && !!p.ownerName && ff95CleanName(m.ownerName)===ff95CleanName(p.ownerName);
   var sameTeam = ff95SameTeamFormation(s);
@@ -13123,7 +13123,7 @@ cloudLoadSaves=function(){
     .then(function(r){return r.json();})
     .then(function(data){
       if(!Array.isArray(data)){
-        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        cloudStatus("❌ Kunde inte läsa taktiktavlor","#e84a4a");
         return;
       }
 
@@ -13135,7 +13135,7 @@ cloudLoadSaves=function(){
         if(typeof ff93NormalizeLoadedFormation==="function"){
           s=ff93NormalizeLoadedFormation(row);
         }else{
-          s={id:row.id,name:row.name||"Namnlöst utgångsläge",state:row.data||{},folder:row.folder||"Allmänt"};
+          s={id:row.id,name:row.name||"Namnlös taktiktavla",state:row.data||{},folder:row.folder||"Allmänt"};
           if(s.state && s.state._meta)s._meta=s.state._meta;
         }
 
@@ -13155,7 +13155,7 @@ cloudLoadSaves=function(){
       else if(typeof updateFolderSelect==="function")updateFolderSelect();
 
       try{renderSavesList();}catch(e){}
-      cloudStatus(savedFormations.length+" utgångslägen laddade ✅","#4ae87a");
+      cloudStatus(savedFormations.length+" taktiktavlor laddade ✅","#4ae87a");
     })
     .catch(function(err){
       cloudStatus("❌ Fel: "+err.message,"#e84a4a");
@@ -13208,7 +13208,7 @@ setTimeout(function(){
 /* === slut v95-formation-ownername-fallback === */
 
 
-/* === v98-formation-compact-css-only: försiktig layoutkompaktning för Utgångslägen ===
+/* === v98-formation-compact-css-only: försiktig layoutkompaktning för Taktiktavlor ===
    Viktigt: flyttar inte Mina/Lagets, duplicerar inga kontroller.
 */
 
@@ -13226,8 +13226,8 @@ function ui98SavesList(panel){
 
 function ui98LooksLoadedInfo(txt){
   txt=String(txt||"").trim().toLowerCase();
-  return /^(\d+\s+)?(utgångslägen|uppställningar)\s+laddade/.test(txt) ||
-         /^(\d+\s+)?(utgångslägen|uppställningar)\s+laddade\s*✅?$/.test(txt);
+  return /^(\d+\s+)?(taktiktavlor|uppställningar)\s+laddade/.test(txt) ||
+         /^(\d+\s+)?(taktiktavlor|uppställningar)\s+laddade\s*✅?$/.test(txt);
 }
 
 function ui98HideLoadedInfo(panel){
@@ -13339,7 +13339,7 @@ setTimeout(ui98Apply,1600);
 /* === slut v98-formation-compact-css-only === */
 
 
-/* === v99-formation-top-align-icons: toppjustera Utgångslägen + ikonknappar === */
+/* === v99-formation-top-align-icons: toppjustera Taktiktavlor + ikonknappar === */
 
 function ui99FormationPanel(){
   return document.getElementById("panel-saves") ||
@@ -13370,7 +13370,7 @@ function ui99ShortenFormationButtons(panel){
         b.title=b.title||"Ladda";
       }else if(txt.indexOf("till taktik")>=0 || txt==="taktik"){
         b.textContent="↗";
-        b.title=b.title||"Till taktik";
+        b.title=b.title||"Till taktikfilm";
       }else if(txt.indexOf("kopiera")>=0 || txt==="copy"){
         b.textContent="⧉";
         b.title=b.title||"Kopiera";
@@ -13836,7 +13836,7 @@ function tt102OpenProfileModal(){
 
   var info=document.createElement("div");
   info.style.cssText="font-size:.72rem;color:#7aaa88;line-height:1.3;margin-top:8px";
-  info.textContent="Samma lagkod används för att dela taktik, utgångslägen och matcher mellan tränare.";
+  info.textContent="Samma lagkod används för att dela taktik, taktiktavlor och matcher mellan tränare.";
   box.appendChild(info);
 
   var actions=document.createElement("div");
@@ -14098,7 +14098,7 @@ function tt103StartDesktopPlayerDrag(ev,p){
     return true;
   }
 
-  // Vanligt utgångsläge/taktik: flytta själva spelartoken.
+  // Vanligt taktiktavla/taktik: flytta själva spelartoken.
   var pt=svgPt(ev.clientX,ev.clientY);
   dragging={type:"player",id:p.id,ox:p.x-pt.x,oy:p.y-pt.y};
 
@@ -15150,7 +15150,7 @@ setTimeout(tt125ApplyFilmMenuFix,1200);
 /* === slut v125-iphone-film-menu-scroll === */
 
 
-/* v126: kirurgisk fix endast i patchFormationShareV10 för Utgångsläge. */
+/* v126: kirurgisk fix endast i patchFormationShareV10 för Taktiktavla. */
 
 
 /* === v127-iphone-taktik-scroll-hard: återställ scrollbar meny i taktikfilm på iPhone === */
@@ -15357,11 +15357,11 @@ document.addEventListener("click",function(e){
 /* === slut v128-single-unsaved-confirm === */
 
 
-/* === v129-final-formation-share-surgical: sista ordet för Utgångsläge Dela/Dölj ===
+/* === v129-final-formation-share-surgical: sista ordet för Taktiktavla Dela/Dölj ===
    Bas: v128.
    Orsak till v126-problemet:
    patchFormationShareV10 skrevs över senare i filen av äldre ff93/ff94-lager.
-   Denna patch ligger sist och rör endast Utgångsläge-delning.
+   Denna patch ligger sist och rör endast Taktiktavla-delning.
 */
 
 function tt129Norm(v){return String(v||"").trim().toLowerCase();}
@@ -15456,7 +15456,7 @@ function tt129BuildFormationState(s,share){
 
 function tt129PatchFormationShare(s,share){
   if(!s||!s.id){
-    showToast("Spara utgångsläget innan du delar det",false);
+    showToast("Spara taktiktavlan innan du delar den",false);
     return;
   }
 
@@ -15478,20 +15478,20 @@ function tt129PatchFormationShare(s,share){
       savedFormations[idx].state=newState;
       savedFormations[idx]._meta=newState._meta;
       savedFormations[idx].folder=savedFormations[idx].folder || s.folder || "Allmänt";
-      savedFormations[idx].name=savedFormations[idx].name || s.name || "Utgångsläge";
+      savedFormations[idx].name=savedFormations[idx].name || s.name || "Taktiktavla";
     }
   }catch(e){}
 
   try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
 
-  cloudStatus(share?"Delar utgångsläge med laget...":"Tar bort delning...","#7aaa88");
+  cloudStatus(share?"Delar taktiktavla med laget...":"Tar bort delning...","#7aaa88");
 
   fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
     method:"PATCH",
     headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
     body:JSON.stringify({
       data:newState,
-      name:s.name||"Utgångsläge",
+      name:s.name||"Taktiktavla",
       type:"formation",
       folder:s.folder||"Allmänt"
     })
@@ -15520,7 +15520,7 @@ patchFormationShareV10=tt129PatchFormationShare;
 try{patchFormationShareV26=tt129PatchFormationShare;}catch(e){}
 try{patchFormationShareV68=tt129PatchFormationShare;}catch(e){}
 
-// Efter render: säkerställ att Dela/Dölj-knapparna i Utgångsläge går till sista patchen.
+// Efter render: säkerställ att Dela/Dölj-knapparna i Taktiktavla går till sista patchen.
 function tt129RebindFormationShareButtons(){
   try{
     var list=document.getElementById("saves-list");
@@ -15574,12 +15574,12 @@ setTimeout(tt129RebindFormationShareButtons,1000);
 /* === slut v129-final-formation-share-surgical === */
 
 
-/* === v130-formation-share-type-and-visibility: reparera Utgångsläge-delning ===
+/* === v130-formation-share-type-and-visibility: reparera Taktiktavla-delning ===
    Bas: v129.
    Huvudfel: v129 PATCH:ade type:"formation", medan cloudLoadSaves laddade type:"uppstallning".
    Resultat: filen försvann efter delning.
    Fix:
-   - PATCH:a alltid Utgångsläge som type:"uppstallning".
+   - PATCH:a alltid Taktiktavla som type:"uppstallning".
    - Ladda tillbaka både uppstallning och formation, så redan feltypade filer räddas.
    - Mina visar egna filer även om de är delade.
    - Lagets visar delade filer i samma lag, även ägarens egna delade filer.
@@ -15679,7 +15679,7 @@ function tt130BuildState(s,share){
 }
 
 function tt130NormalizeLoadedFormation(row){
-  var s={id:row.id,name:row.name||(row.data&&row.data.name)||"Namnlöst utgångsläge",state:row.data||{},folder:row.folder||(row.data&&row.data.folder)||"Allmänt"};
+  var s={id:row.id,name:row.name||(row.data&&row.data.name)||"Namnlös taktiktavla",state:row.data||{},folder:row.folder||(row.data&&row.data.folder)||"Allmänt"};
   if(s.state&&s.state._meta)s._meta=s.state._meta;
   return s;
 }
@@ -15702,7 +15702,7 @@ function tt130RebuildFolders(){
 
 function tt130PatchFormationShare(s,share){
   if(!s||!s.id){
-    showToast("Spara utgångsläget innan du delar det",false);
+    showToast("Spara taktiktavlan innan du delar den",false);
     return;
   }
 
@@ -15721,7 +15721,7 @@ function tt130PatchFormationShare(s,share){
   s.state=newState;
   s._meta=newState._meta;
   s.folder=s.folder||"Allmänt";
-  s.name=s.name||"Utgångsläge";
+  s.name=s.name||"Taktiktavla";
 
   try{
     var idx=(savedFormations||[]).findIndex(function(x){return String(x.id)===String(s.id);});
@@ -15729,21 +15729,21 @@ function tt130PatchFormationShare(s,share){
       savedFormations[idx].state=newState;
       savedFormations[idx]._meta=newState._meta;
       savedFormations[idx].folder=savedFormations[idx].folder||s.folder||"Allmänt";
-      savedFormations[idx].name=savedFormations[idx].name||s.name||"Utgångsläge";
+      savedFormations[idx].name=savedFormations[idx].name||s.name||"Taktiktavla";
     }
   }catch(e){}
 
   try{saveScope="mine";currentFolder="Alla";}catch(e){}
   try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
 
-  cloudStatus(share?"Delar utgångsläge med laget...":"Tar bort delning...","#7aaa88");
+  cloudStatus(share?"Delar taktiktavla med laget...":"Tar bort delning...","#7aaa88");
 
   fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
     method:"PATCH",
     headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
     body:JSON.stringify({
       data:newState,
-      name:s.name||"Utgångsläge",
+      name:s.name||"Taktiktavla",
       type:"uppstallning",
       folder:s.folder||"Allmänt"
     })
@@ -15768,7 +15768,7 @@ cloudLoadSaves=function(){
     .then(function(r){return r.json();})
     .then(function(data){
       if(!Array.isArray(data)){
-        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        cloudStatus("❌ Kunde inte läsa taktiktavlor","#e84a4a");
         return;
       }
 
@@ -15788,7 +15788,7 @@ cloudLoadSaves=function(){
       tt130RebuildFolders();
 
       try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
-      cloudStatus(savedFormations.length+" utgångslägen laddade ✅","#4ae87a");
+      cloudStatus(savedFormations.length+" taktiktavlor laddade ✅","#4ae87a");
     })
     .catch(function(err){
       cloudStatus("❌ Fel: "+err.message,"#e84a4a");
@@ -15877,7 +15877,7 @@ setTimeout(function(){try{cloudLoadSaves();}catch(e){}},500);
    Bas: v130.
    Problem i v130: räddningsfallbacken kunde göra att person 1:s Mina-filer syntes i person 2:s Mina.
    Fix:
-   - Mina för Utgångsläge kräver nu ägarmatch: ownerId eller ownerName + team.
+   - Mina för Taktiktavla kräver nu ägarmatch: ownerId eller ownerName + team.
    - Lagets visar sharedWithTeam i samma lag, även egna delade filer.
    - Filer utan metadata räknas inte längre som "mina" för alla användare.
    - Taktik lämnas till v120/tt120.
@@ -15975,7 +15975,7 @@ function tt131BuildState(s,share){
 }
 
 function tt131NormalizeLoadedFormation(row){
-  var s={id:row.id,name:row.name||(row.data&&row.data.name)||"Namnlöst utgångsläge",state:row.data||{},folder:row.folder||(row.data&&row.data.folder)||"Allmänt"};
+  var s={id:row.id,name:row.name||(row.data&&row.data.name)||"Namnlös taktiktavla",state:row.data||{},folder:row.folder||(row.data&&row.data.folder)||"Allmänt"};
   if(s.state&&s.state._meta)s._meta=s.state._meta;
   return s;
 }
@@ -15998,7 +15998,7 @@ function tt131RebuildFolders(){
 
 function tt131PatchFormationShare(s,share){
   if(!s||!s.id){
-    showToast("Spara utgångsläget innan du delar det",false);
+    showToast("Spara taktiktavlan innan du delar den",false);
     return;
   }
 
@@ -16031,7 +16031,7 @@ function tt131PatchFormationShare(s,share){
   s.state=newState;
   s._meta=newState._meta;
   s.folder=s.folder||"Allmänt";
-  s.name=s.name||"Utgångsläge";
+  s.name=s.name||"Taktiktavla";
 
   try{
     var idx=(savedFormations||[]).findIndex(function(x){return String(x.id)===String(s.id);});
@@ -16039,21 +16039,21 @@ function tt131PatchFormationShare(s,share){
       savedFormations[idx].state=newState;
       savedFormations[idx]._meta=newState._meta;
       savedFormations[idx].folder=savedFormations[idx].folder||s.folder||"Allmänt";
-      savedFormations[idx].name=savedFormations[idx].name||s.name||"Utgångsläge";
+      savedFormations[idx].name=savedFormations[idx].name||s.name||"Taktiktavla";
     }
   }catch(e){}
 
   try{saveScope="mine";currentFolder="Alla";}catch(e){}
   try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
 
-  cloudStatus(share?"Delar utgångsläge med laget...":"Tar bort delning...","#7aaa88");
+  cloudStatus(share?"Delar taktiktavla med laget...":"Tar bort delning...","#7aaa88");
 
   fetch(SUPA_URL+"/rest/v1/"+SUPA_TABLE+"?id=eq."+s.id,{
     method:"PATCH",
     headers:Object.assign({},supaHeaders(),{"Prefer":"return=representation"}),
     body:JSON.stringify({
       data:newState,
-      name:s.name||"Utgångsläge",
+      name:s.name||"Taktiktavla",
       type:"uppstallning",
       folder:s.folder||"Allmänt"
     })
@@ -16077,7 +16077,7 @@ cloudLoadSaves=function(){
     .then(function(r){return r.json();})
     .then(function(data){
       if(!Array.isArray(data)){
-        cloudStatus("❌ Kunde inte läsa utgångslägen","#e84a4a");
+        cloudStatus("❌ Kunde inte läsa taktiktavlor","#e84a4a");
         return;
       }
 
@@ -16098,7 +16098,7 @@ cloudLoadSaves=function(){
       tt131RebuildFolders();
 
       try{if(typeof renderSavesList==="function")renderSavesList();}catch(e){}
-      cloudStatus(savedFormations.length+" utgångslägen laddade ✅","#4ae87a");
+      cloudStatus(savedFormations.length+" taktiktavlor laddade ✅","#4ae87a");
     })
     .catch(function(err){
       cloudStatus("❌ Fel: "+err.message,"#e84a4a");
@@ -17654,7 +17654,7 @@ setTimeout(tt148BindFullscreenControls,1600);
 
 /* === v150-iphone-exact-tactic-icons: exakt knappfix från v148 ===
    Rör bara kända taktikknappar.
-   Ingen textsökning. Huvudmenyns Utgångsläge påverkas inte.
+   Ingen textsökning. Huvudmenyns Taktiktavla påverkas inte.
 */
 
 function tt150IsIphoneWidth(){
@@ -17666,16 +17666,16 @@ function tt150PatchExactTacticIcons(){
   var small=tt150IsIphoneWidth();
 
   // Detta är knappen som skapas i taktikbarens rad nära pilar/Loop:
-  // "⇩ Utgångsläge" -> endast pil.
+  // "⇩ Taktiktavla" -> endast pil.
   var exportBtn=document.getElementById("btn-export-step-formation");
   if(exportBtn){
     if(small){
       exportBtn.textContent="⇩";
-      exportBtn.title="Spara aktuellt steg som utgångsläge";
-      exportBtn.setAttribute("aria-label","Spara som utgångsläge");
+      exportBtn.title="Spara aktuellt steg som taktiktavla";
+      exportBtn.setAttribute("aria-label","Spara som taktiktavla");
       exportBtn.classList.add("tt150-start-arrow-only");
     }else{
-      exportBtn.textContent="⇩ Utgångsläge";
+      exportBtn.textContent="⇩ Taktiktavla";
       exportBtn.classList.remove("tt150-start-arrow-only");
     }
   }
@@ -18375,7 +18375,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v176-taktik-filesystem-like-formations ===
    Bas: v175/v159.
-   Mål: Låt Taktikfilm följa samma filsystemsmodell som fungerande Utgångsläge.
+   Mål: Låt Taktikfilm följa samma filsystemsmodell som fungerande Taktiktavla.
    Rör:
    - cloudSaveTaktik
    - cloudLoadTaktik
@@ -18605,7 +18605,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return oldReadOnlyV10 ? oldReadOnlyV10(obj) : false;
   };
 
-  // Save enligt samma idé som Utgångsläge: data innehåller metadata.
+  // Save enligt samma idé som Taktiktavla: data innehåller metadata.
   cloudSaveTaktik=function(tk){
     if(!tk){
       try{
@@ -18699,7 +18699,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     });
   };
 
-  // Load efter Utgångsläge-modell: hämta alla, välj taktikrader, filtrera lokalt.
+  // Load efter Taktiktavla-modell: hämta alla, välj taktikrader, filtrera lokalt.
   cloudLoadTaktik=function(){
     try{cloudStatus("Laddar taktik...","#7aaa88");}catch(e){}
 
@@ -18763,7 +18763,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       return;
     }
 
-    // Följ Utgångsläge: om filen ligger i Mina tillåter vi delningsklicket att reparera metadata.
+    // Följ Taktiktavla: om filen ligger i Mina tillåter vi delningsklicket att reparera metadata.
     var canPatch=isMine(tk);
     if(!canPatch){
       try{
@@ -19708,7 +19708,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v186-saves-scroll-keep-pitch ===
    Bas: 181.
-   185 gav fungerande scroll men dolde planen. Det vill vi inte i Utgångsläge.
+   185 gav fungerande scroll men dolde planen. Det vill vi inte i Taktiktavla.
    Fix:
    - Scroll endast på #saves-list.
    - Planen/pitch-wrapper döljs aldrig.
@@ -19726,7 +19726,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -19737,7 +19737,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var style=document.createElement("style");
     style.id="tt186-saves-scroll-keep-pitch-css";
     style.textContent=[
-      "/* v186: scroll i Utgångsläge men behåll planen */",
+      "/* v186: scroll i Taktiktavla men behåll planen */",
 
       "body.tt186-saves-open #pitch-wrapper {",
       "  display:block !important;",
@@ -19888,7 +19888,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Bas: 186.
    186: planen syns och scroll fungerar, men planen hamnar till vänster.
    Fix:
-   - centrera planen när Utgångsläge är öppet.
+   - centrera planen när Taktiktavla är öppet.
    - behåll scrollen från 186.
    - rör inte Taktik, Formation, Lag, save/load eller delning.
    Endast app.js behöver bytas.
@@ -19903,7 +19903,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -19914,7 +19914,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var style=document.createElement("style");
     style.id="tt187-center-pitch-with-saves-scroll-css";
     style.textContent=[
-      "/* v187: centrera planen igen när Utgångsläge-listan scrollar */",
+      "/* v187: centrera planen igen när Taktiktavla-listan scrollar */",
 
       "body.tt186-saves-open #pitch-wrapper,",
       "body.tt187-saves-open #pitch-wrapper {",
@@ -20006,12 +20006,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v188-ios-saves-list-scroll ===
    Bas: 187.
-   Fel: Utgångsläge-scroll fungerar på dator men inte på iPhone/iPad.
+   Fel: Taktiktavla-scroll fungerar på dator men inte på iPhone/iPad.
    Fix:
    - ge #saves-list tydlig pixelhöjd på iOS/mobil
    - lås touch-scroll till #saves-list
    - stoppa inte planen/andra paneler
-   - rör endast Utgångsläge-listan
+   - rör endast Taktiktavla-listan
    Endast app.js behöver bytas.
 */
 
@@ -20024,7 +20024,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -20049,7 +20049,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var style=document.createElement("style");
     style.id="tt188-ios-saves-list-scroll-css";
     style.textContent=[
-      "/* v188: iOS-scroll endast i Utgångslägets fillista */",
+      "/* v188: iOS-scroll endast i taktiktavlans fillista */",
 
       "body.tt188-saves-ios-open #panel-saves.on {",
       "  min-height:0 !important;",
@@ -20207,7 +20207,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    1) Listor ska gå att nå längst ner utan gummibands-problem.
    2) Loop-knapparna i taktikfilm döljs visuellt.
    3) Samma användare på annan enhet kan se sina taktikfilmer i Mina via ownerName + team.
-   Rör inte ritlogik, steglogik, save/load i övrigt eller Utgångsläge-namnbyte.
+   Rör inte ritlogik, steglogik, save/load i övrigt eller Taktiktavla-namnbyte.
    Endast app.js behöver bytas.
 */
 
@@ -20220,7 +20220,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -20312,7 +20312,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return !mineCrossDevice(tk);
   }
 
-  // Uppdatera bara taktikfilmsbehörighet. Utgångsläge lämnas till befintlig logik.
+  // Uppdatera bara taktikfilmsbehörighet. Taktiktavla lämnas till befintlig logik.
   var prevIsMine = (typeof isMineV10==="function") ? isMineV10 : null;
   isMineV10=function(obj){
     if(isTaktik(obj))return mineCrossDevice(obj);
@@ -20481,14 +20481,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v192-taktik-cross-device-load ===
    Bas: 191.
-   Fel: samma användare på olika enheter ser Utgångsläge men inte egna Taktikfilmer.
+   Fel: samma användare på olika enheter ser Taktiktavla men inte egna Taktikfilmer.
    Orsak: gamla cloudLoadTaktik filtrerar sannolikt bort taktikfilmer innan de nya Mina-reglerna används.
    Fix:
    - Override endast cloudLoadTaktik.
    - Hämta alla taktikfilmer från molnet.
    - Mina = ownerName + team matchar aktuell profil, även om ownerId skiljer mellan enheter.
    - Lagets = sharedWithTeam=true + team matchar.
-   Rör inte save, editorn, steg, ritningar, animation eller Utgångsläge.
+   Rör inte save, editorn, steg, ritningar, animation eller Taktiktavla.
    Endast app.js behöver bytas.
 */
 
@@ -20501,7 +20501,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -20761,7 +20761,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Override endast cloudLoadTaktik.
    - Egna taktikfilmer visas om ownerName + team matchar, även om steps bara har 0/1 steg.
    - Delade taktikfilmer visas i Lagets om sharedWithTeam + team matchar.
-   - Rör inte save, editorn, steglogik, animation eller Utgångsläge.
+   - Rör inte save, editorn, steglogik, animation eller Taktiktavla.
    Endast app.js behöver bytas.
 */
 
@@ -20774,7 +20774,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -21017,7 +21017,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Fallback: läs profilknappens text, t.ex. "Mattias · MUNKA-IF-P2013".
    - Mina = ownerName + team matchar.
    - Lagets = sharedWithTeam + team matchar.
-   Rör inte Utgångsläge, save, redigering, steg eller animation.
+   Rör inte Taktiktavla, save, redigering, steg eller animation.
    Endast app.js behöver bytas.
 */
 
@@ -21030,7 +21030,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -21326,7 +21326,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -21537,9 +21537,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v205-quick-formation-in-saves ===
    Bas: 204.
    Syfte:
-   - Göra formationsval åtkomligt även inne i Utgångsläge.
+   - Göra formationsval åtkomligt även inne i Taktiktavla.
    - Inte flytta hela formationspanelen.
-   - Lägga en kompakt, hopfälld väljare i panelen Utgångsläge.
+   - Lägga en kompakt, hopfälld väljare i panelen Taktiktavla.
    - När den öppnas visas format + formationer.
    - Använder samma FORMATIONS/initPlayers/buildFormationBtns som vanliga Formation-fliken.
    Rör inte Taktikfilm, spara/ladda, Mina/Lagets, steg eller animation.
@@ -21555,7 +21555,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -21747,7 +21747,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     wrap.appendChild(head);
     wrap.appendChild(body);
 
-    // Lägg överst i Utgångsläge-panelen, precis ovanför Spara/Spara som-raden.
+    // Lägg överst i Taktiktavla-panelen, precis ovanför Spara/Spara som-raden.
     inner.insertBefore(wrap,inner.firstChild);
 
     renderButtons();
@@ -21789,7 +21789,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v206-quick-formation-desktop-width ===
    Bas: 205.
    Fix:
-   - Den nya formationsväljaren i Utgångsläge blev för smal/ihoptryckt på dator.
+   - Den nya formationsväljaren i Taktiktavla blev för smal/ihoptryckt på dator.
    - Ändrar bara CSS/layout för snabbväljaren.
    - Rör inte funktion, spara/ladda, Taktikfilm, Mina/Lagets eller steg.
    Endast app.js behöver bytas.
@@ -21804,7 +21804,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -21859,7 +21859,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v207-desktop-saves-panel-width ===
    Bas: 206.
    Problem:
-   - På dator känns hela Utgångsläge-menyn för smal, nästan som mobilbredd.
+   - På dator känns hela Taktiktavla-menyn för smal, nästan som mobilbredd.
    - Telefon och iPad är bra och ska inte påverkas.
    Fix:
    - Endast desktop-CSS.
@@ -21877,7 +21877,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -21965,10 +21965,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v208-delete-formation-duplicates ===
    Bas: 207.
    Problem:
-   - Utgångsläge behöver ibland raderas två gånger.
+   - Taktiktavla behöver ibland raderas två gånger.
    - Orsak: det finns troligen flera Supabase-rader som appen dedupar till en synlig fil.
    Fix:
-   - När ett utgångsläge raderas tas alla molnrader bort som har samma dedupe-nyckel
+   - När ett taktiktavla raderas tas alla molnrader bort som har samma dedupe-nyckel
      som den synliga filen: ägare + mapp + namn.
    - Lokalt tas samma dubbletter bort direkt.
    - Rör inte Taktikfilm, Formation, spara, ladda, Mina/Lagets, steg eller animation.
@@ -21984,7 +21984,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -22154,7 +22154,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Ändringar:
    - Namnlistan i Match/Matcher sorteras alfabetiskt efter spelarnamn.
    - Huvudmenyns "Lag" döps om till "Matcher".
-   Rör inte Utgångsläge, Taktikfilm, spara/ladda, Mina/Lagets, steg eller animation.
+   Rör inte Taktiktavla, Taktikfilm, spara/ladda, Mina/Lagets, steg eller animation.
    Endast app.js behöver bytas.
 */
 
@@ -22167,7 +22167,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -22291,7 +22291,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Kräver endast datum. Motstånd får vara tomt och sparas då som "Okänd".
    - startade/avbytare sparas som tomma listor om inga spelare valts.
    - Senare kan matchen öppnas och spelare kan läggas till.
-   Rör inte Utgångsläge, Taktikfilm, Formation, steg, animation eller laguppställningsplanen.
+   Rör inte Taktiktavla, Taktikfilm, Formation, steg, animation eller laguppställningsplanen.
    Endast app.js behöver bytas.
 */
 
@@ -22304,7 +22304,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -22514,7 +22514,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
      inte de synliga matchformulärfälten om dessa är tomma/fel.
    - Spara stannar i laguppställningsläget.
    - Avsluta går till Matcher → Sparade matcher.
-   - Rör inte Utgångsläge, Taktikfilm, trupp-id, statistik eller formationslogik.
+   - Rör inte Taktiktavla, Taktikfilm, trupp-id, statistik eller formationslogik.
    Endast app.js behöver bytas.
 */
 
@@ -22527,7 +22527,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -22857,7 +22857,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -23172,7 +23172,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -23418,7 +23418,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - En match är giltig om den har datum + motstånd.
    - 0 spelare är tillåtet.
    - Dedupe använder dbId i första hand.
-   - Rör inte truppredigering, statistik-id, laguppställningssparning, Utgångsläge eller Taktikfilm.
+   - Rör inte truppredigering, statistik-id, laguppställningssparning, Taktiktavla eller Taktikfilm.
    Endast app.js behöver bytas.
 */
 
@@ -23431,7 +23431,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -23546,7 +23546,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
      * truppredigering/id/statistik från 216
      * match med 0 spelare från 217/218
      * laguppställning/sparade matcher-fixen från 214
-     * taktik/utgångsläge-fixar från tidigare bas
+     * taktik/taktiktavla-fixar från tidigare bas
    Rör inte funktioner i övrigt.
    Endast app.js behöver bytas.
 */
@@ -23560,7 +23560,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -23592,7 +23592,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Ingen MutationObserver.
    - Ingen tung efterhandssortering.
    - Trupp-listan lämnas alfabetisk från v216.
-   Rör inte data, statistik-id, matchsparning, laguppställning, Utgångsläge eller Taktikfilm.
+   Rör inte data, statistik-id, matchsparning, laguppställning, Taktiktavla eller Taktikfilm.
    Endast app.js behöver bytas.
 */
 
@@ -23605,7 +23605,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -23738,7 +23738,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Endast visuell spelarsymbol i laguppställningsläget.
    - Val: Cirkel/Tröja.
    - Val: Nummer på/av.
-   - Rör inte data, id, positioner, drag/drop, statistik, spara/ladda, Utgångsläge eller Taktikfilm.
+   - Rör inte data, id, positioner, drag/drop, statistik, spara/ladda, Taktiktavla eller Taktikfilm.
    - Cirkeln finns kvar som osynlig klick-/dragyta. Tröjan är bara visuell.
    Endast app.js behöver bytas.
 */
@@ -23782,7 +23782,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -24045,7 +24045,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Endast iPhone/små touchskärmar.
    - Gör bench-bar synlig, scrollbar och ovanför planen/overlays.
    - Gör den inte för hög; avbytare kan scrollas.
-   - Rör inte data, statistik, spara/ladda, Utgångsläge eller Taktikfilm.
+   - Rör inte data, statistik, spara/ladda, Taktiktavla eller Taktikfilm.
    Endast app.js behöver bytas.
 */
 
@@ -24058,7 +24058,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -24205,14 +24205,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v226-iphone-second-menu-horizontal-scroll ===
    Bas: 225.
    Problem:
-   - På iPhone blir andra menyraden, t.ex. Formation / Utgångsläge / ... / Användare,
+   - På iPhone blir andra menyraden, t.ex. Formation / Taktiktavla / ... / Användare,
      bredare än skärmen men går inte att scrolla i sidled.
    - Översta raden fungerar redan.
    Fix:
    - Endast mobil/små touchskärmar.
    - Gör andra tab-/panelraden horisontellt scrollbar.
    - Tvingar knapparna att ligga på en rad och inte krympa sönder.
-   - Rör inte funktion, data, statistik, spara/ladda, Utgångsläge eller Taktikfilm.
+   - Rör inte funktion, data, statistik, spara/ladda, Taktiktavla eller Taktikfilm.
    Endast app.js behöver bytas.
 */
 
@@ -24225,7 +24225,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -24237,7 +24237,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     st.id="tt226-style";
     st.textContent=[
       "@media (max-width: 760px), (pointer: coarse) and (max-width: 900px){",
-      "  /* Andra huvudmenyraden: Formation / Utgångsläge / Taktikfilm / Matcher / Användare */",
+      "  /* Andra huvudmenyraden: Formation / Taktiktavla / Taktikfilm / Matcher / Användare */",
       "  .tabs,",
       "  .tabbar,",
       "  #tabs,",
@@ -24357,7 +24357,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -24469,7 +24469,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -24629,7 +24629,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Färg-/linjebredd-/streckvalen i fullscreen låg lite för långt ner på planen.
    - Flyttar dem närmare ritverktygsraden.
    - Endast placering/styling i body.fullscreen-portrait.
-   - Rör inte ritfunktioner, data, spara/ladda, Utgångsläge, Taktikfilm eller Matcher.
+   - Rör inte ritfunktioner, data, spara/ladda, Taktiktavla, Taktikfilm eller Matcher.
    Endast app.js behöver bytas.
 */
 
@@ -24642,7 +24642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -24781,7 +24781,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Flyttar färg-/linjebredd-/streckvalen ännu högre upp i fullscreen.
    - Lägger dem nästan dikt an under ritverktygsraden.
    - Endast placering/styling i body.fullscreen-portrait.
-   - Rör inte ritfunktioner, data, spara/ladda, Utgångsläge, Taktikfilm eller Matcher.
+   - Rör inte ritfunktioner, data, spara/ladda, Taktiktavla, Taktikfilm eller Matcher.
    Endast app.js behöver bytas.
 */
 
@@ -24794,7 +24794,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -24943,7 +24943,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -25146,7 +25146,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -25155,11 +25155,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll("button,.tab,[role='tab'],a,span,label").forEach(function(el){
         var txt=(el.textContent||"").trim();
-        if(txt==="Formation")el.textContent="Tavla";
+        if(txt==="Formation")el.textContent="Snabbtavla";
         var title=(el.getAttribute("title")||"").trim();
-        if(title==="Formation")el.setAttribute("title","Tavla");
+        if(title==="Formation")el.setAttribute("title","Snabbtavla");
         var aria=(el.getAttribute("aria-label")||"").trim();
-        if(aria==="Formation")el.setAttribute("aria-label","Tavla");
+        if(aria==="Formation")el.setAttribute("aria-label","Snabbtavla");
       });
     }catch(e){}
   }
@@ -25426,7 +25426,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -25527,7 +25527,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -25648,7 +25648,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -25853,7 +25853,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -25894,7 +25894,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v252-ipad-own-rita-row ===
    Byggd från fungerande v251.
    På iPad/tablet flyttas Tavla-ritverktygen till en egen rad mellan översta menyraden
-   och flikraden (Tavla/Utgångsläge/Taktikfilm/Matcher).
+   och flikraden (Tavla/Taktiktavla/Taktikfilm/Matcher).
    Rör inte ritfunktionerna, taktikfilm eller sparning. */
 (function(){
   if(window.__tt252IpadOwnRitaRow)return;
@@ -25906,7 +25906,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -26089,7 +26089,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -26169,7 +26169,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -26231,7 +26231,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=String(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -26336,7 +26336,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(/^(v?\d+|v3\.)$/i.test(t))nodes.push(spans[j]);
     }
     for(var k=0;k<nodes.length;k++){
-      if(nodes[k] && (nodes[k].textContent||'').trim()!=='360')nodes[k].textContent='376';
+      if(nodes[k] && (nodes[k].textContent||'').trim()!=='360')nodes[k].textContent='377';
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion256);
@@ -26361,10 +26361,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function setVersion257(){
     try{
       var ids=['version','app-version','version-label','app-version-label'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='376';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='377';});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='376';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='377';
       });
     }catch(e){}
   }
@@ -26449,11 +26449,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var ids=['version','app-version','version-label','app-version-label'];
     for(var i=0;i<ids.length;i++){
       var el=document.getElementById(ids[i]);
-      if(el)el.textContent='376';
+      if(el)el.textContent='377';
     }
     var nodes=document.querySelectorAll('[data-version], .version, .app-version, .version-label, .app-version-label');
     for(var j=0;j<nodes.length;j++){
-      nodes[j].textContent='376';
+      nodes[j].textContent='377';
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion268);
@@ -26482,10 +26482,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function setVersion268(){
     try{
       var ids=['app-version','version','version-label','ver','build-version'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='376';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='377';});
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -26612,10 +26612,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function setVersion269(){
     try{
       var ids=['app-version','version','version-label','ver','build-version'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='376';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='377';});
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent='377';
       });
     }catch(e){}
   }
@@ -26652,12 +26652,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       ['version','version-label','app-version','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
-        if(el)el.textContent='376';
+        if(el)el.textContent='377';
       });
       var spans=document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version');
       for(var i=0;i<spans.length;i++){
         var t=(spans[i].textContent||'').trim();
-        if(/^(v?\d+|v3\.)/i.test(t))spans[i].textContent='376';
+        if(/^(v?\d+|v3\.)/i.test(t))spans[i].textContent='377';
       }
     }catch(e){}
   }
@@ -26685,10 +26685,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function setVersion275(){
     try{
       var ids=['version','app-version','version-label','app-version-label'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='376';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='377';});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='376';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='377';
       });
     }catch(e){}
   }
@@ -26818,10 +26818,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function setVersion276(){
     try{
       var ids=['version','app-version','version-label','app-version-label','ver','build-version'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='376';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='377';});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='376';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='377';
       });
     }catch(e){}
   }
@@ -27053,10 +27053,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function setVersion(){
     try{
       var ids=['version','app-version','version-label','app-version-label','ver','build-version'];
-      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='376';});
+      ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='377';});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='376';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='377';
       });
     }catch(e){}
   }
@@ -27205,11 +27205,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function setVersion291(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
-        var el=document.getElementById(id); if(el)el.textContent='376';
+        var el=document.getElementById(id); if(el)el.textContent='377';
       });
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='376';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='377';
       });
     }catch(e){}
   }
@@ -27415,11 +27415,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
-        if(el)el.textContent='376';
+        if(el)el.textContent='377';
       });
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='376';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='377';
       });
     }catch(e){}
   }
@@ -27631,7 +27631,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Förvalet är standard/favorituppställningen från Taktiktavla (_defaultFormat/_defaultFormation).
    - Valet gäller bara den nya filmen och ändrar inte standard/favorit.
    - Återanvänder befintlig startlogik: initPlayers + currentSnap + startPlaybackByObjectV22.
-   - Rör inte gamla filmer, filmer från utgångsläge, Matcher, Trupp eller lagkoppling.
+   - Rör inte gamla filmer, filmer från taktiktavla, Matcher, Trupp eller lagkoppling.
 */
 (function(){
   if(window.__tt294NewTaktikFormationDialog)return;
@@ -27641,11 +27641,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
-        if(el)el.textContent='376';
+        if(el)el.textContent='377';
       });
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='376';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='377';
       });
     }catch(e){}
   }
@@ -27868,11 +27868,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
-        if(el)el.textContent='376';
+        if(el)el.textContent='377';
       });
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='376';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='377';
       });
     }catch(e){}
   }
@@ -28551,7 +28551,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt301SoftTeamAccessGate)return;
   window.__tt301SoftTeamAccessGate=true;
 
-  var VERSION='376';
+  var VERSION='377';
   var MEMBER_TYPE='team_member';
   var cacheKey='';
   var cacheAt=0;
@@ -28770,7 +28770,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt302RlsReadyAuthToken)return;
   window.__tt302RlsReadyAuthToken=true;
-  var VERSION='376';
+  var VERSION='377';
   function setVersion302(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
@@ -28815,7 +28815,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt303NewTaktikDraftEditableGuard)return;
   window.__tt303NewTaktikDraftEditableGuard=true;
-  var VERSION='376';
+  var VERSION='377';
 
   function setVersion303(){
     try{
@@ -28949,7 +28949,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var nodes=document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version');
     Array.prototype.forEach.call(nodes,function(el){
       var t=(el.textContent||'').trim();
-      if(/^(v?\d+|v3\.)/i.test(t))el.textContent='376';
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent='377';
     });
     try{if(typeof tt304InitSpeedControls==='function')tt304InitSpeedControls();}catch(e){}
   }
@@ -28970,7 +28970,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var nodes=document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version');
     Array.prototype.forEach.call(nodes,function(el){
       var t=(el.textContent||'').trim();
-      if(/^(v?\d+|v3\.)/i.test(t))el.textContent='376';
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent='377';
     });
     try{if(typeof tt304InitSpeedControls==='function')tt304InitSpeedControls();}catch(e){}
   }
@@ -29081,7 +29081,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var nodes=document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version');
     Array.prototype.forEach.call(nodes,function(el){
       var t=(el.textContent||'').trim();
-      if(/^(v?\d+|v3\.)/i.test(t))el.textContent='376';
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent='377';
     });
     try{if(typeof tt304InitSpeedControls==='function')tt304InitSpeedControls();else tt306BindSpeedGuards();}catch(e){tt306BindSpeedGuards();}
   }
@@ -29097,7 +29097,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Bas: stabil 306.
    Syfte:
    - Visningsnamn ska inte vara användaridentitet.
-   - Alla nya/uppdaterade taktikfilmer och utgångslägen får authUserId/ownerEmail innan de skickas till Supabase.
+   - Alla nya/uppdaterade taktikfilmer och taktiktavlor får authUserId/ownerEmail innan de skickas till Supabase.
    - Vid laddning justeras in-memory ownerId/ownerName för egna auth-filer så gamla renderfunktioner som fortfarande kräver ownerName inte gömmer "Mina" efter namnbyte.
    - Rör inte RLS/policies, Matcher, Trupp, ritpaneler eller Taktikfilm-hastighet.
 */
@@ -29105,7 +29105,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt310AuthIdentitySourceFix)return;
   window.__tt310AuthIdentitySourceFix=true;
 
-  var VERSION='376';
+  var VERSION='377';
   var ALIAS_KEY='tt310_display_name_aliases_v1';
 
   function setVersion310(){
@@ -29198,7 +29198,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var id=rowId(obj);if(!id||(!authId()&&!authEmail()))return Promise.resolve(null);
     var data=isFormation(obj)&&obj.state?obj.state:obj;
     try{applyAuthMeta(data,{kind:type});if(data!==obj)applyAuthMeta(obj,{kind:type});}catch(e){}
-    var body={data:data,type:type||((isTaktik(obj))?'taktikfilm':'uppstallning'),name:obj.name||data.name||(isTaktik(obj)?'Taktikfilm':'Utgångsläge'),folder:obj.folder||data.folder||(isTaktik(obj)?'Taktik':'Allmänt')};
+    var body={data:data,type:type||((isTaktik(obj))?'taktikfilm':'uppstallning'),name:obj.name||data.name||(isTaktik(obj)?'Taktikfilm':'Taktiktavla'),folder:obj.folder||data.folder||(isTaktik(obj)?'Taktik':'Allmänt')};
     return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:Object.assign({},supaHeaders(),{'Prefer':'return=minimal'}),body:JSON.stringify(body)}).catch(function(){return null;});
   }
 
@@ -29226,7 +29226,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function normalizeTaktikRow(row){var tk=clone((row&&row.data)||{});if(!tk||typeof tk!=='object')tk={};if(!Array.isArray(tk.steps))tk.steps=[];tk.dbId=row&&row.id;tk.id=row&&row.id;tk.name=tk.name||(row&&row.name)||'Taktikfilm';tk.folder=tk.folder||(row&&row.folder)||'Taktik';tk.type='taktikfilm';if(!tk._meta)tk._meta=meta(tk);return tk;}
-  function normalizeFormationRow(row){var state=clone((row&&row.data)||{});var s={id:row&&row.id,dbId:row&&row.id,name:(row&&row.name)||state.name||'Utgångsläge',folder:(row&&row.folder)||state.folder||'Allmänt',state:state,type:'uppstallning'};s._meta=meta(state);return s;}
+  function normalizeFormationRow(row){var state=clone((row&&row.data)||{});var s={id:row&&row.id,dbId:row&&row.id,name:(row&&row.name)||state.name||'Taktiktavla',folder:(row&&row.folder)||state.folder||'Allmänt',state:state,type:'uppstallning'};s._meta=meta(state);return s;}
   function dedupe(list){var seen={},out=[];(list||[]).forEach(function(x){var key=(x.dbId||x.id)?'id:'+String(x.dbId||x.id):'nf:'+norm(x.name)+'|'+norm(x.folder);if(seen[key])return;seen[key]=1;out.push(x);});return out;}
   function rebuildTaktikFolders(){try{var seen={'Taktik':1,'Träning':1};taktikFolders=['Taktik','Träning'];(taktikFilmer||[]).forEach(function(tk){var f=tk.folder||'Taktik';if(f&&!seen[f]){seen[f]=1;taktikFolders.push(f);}});}catch(e){}}
   function rebuildFormationFolders(){try{var seen={'Allmänt':1};folders=['Allmänt'];(savedFormations||[]).forEach(function(s){var f=s.folder||'Allmänt';if(f&&!seen[f]){seen[f]=1;folders.push(f);}});if(typeof updateFolderSelect==='function')updateFolderSelect();}catch(e){}}
@@ -29307,7 +29307,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           if(!hasStable(s)&&legacyMine(s)){applyAuthMeta(s,{kind:'uppstallning'});if(s.state)applyAuthMeta(s.state,{kind:'uppstallning'});makeMineRenderCompatible(s);patchRow(s,'uppstallning');loaded.push(s);return;}
           if(isTeamShared310(s))loaded.push(s);
         });
-        savedFormations=dedupe(loaded);rebuildFormationFolders();installGlobals();try{renderSavesList();}catch(e){} try{cloudStatus(savedFormations.length+' utgångslägen laddade ✅','#4ae87a');}catch(e){}
+        savedFormations=dedupe(loaded);rebuildFormationFolders();installGlobals();try{renderSavesList();}catch(e){} try{cloudStatus(savedFormations.length+' taktiktavlor laddade ✅','#4ae87a');}catch(e){}
         return savedFormations;
       }).catch(function(err){try{cloudStatus('❌ Fel: '+err.message,'#e84a4a');}catch(e){}throw err;});
   };
@@ -29332,7 +29332,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt312AdminUnshareAndTeamRestore)return;
   window.__tt312AdminUnshareAndTeamRestore=true;
-  var VERSION='376';
+  var VERSION='377';
 
   function setVersion312(){
     try{
@@ -29422,10 +29422,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   function unshareFormation(s){
     if(!isAdmin()){showToast('Endast admin kan ta bort lagdelning',false);return;}
-    if(!s||!s.id){showToast('Saknar databas-id för utgångsläget',false);return;}
-    if(!confirm('Ta bort "'+(s.name||'utgångsläge')+'" från Lagets lista?\n\nFilen raderas inte för skaparen.'))return;
+    if(!s||!s.id){showToast('Saknar databas-id för taktiktavlan',false);return;}
+    if(!confirm('Ta bort "'+(s.name||'taktiktavla')+'" från Lagets lista?\n\nFilen raderas inte för skaparen.'))return;
     var state=unsharePayload(s.state||{});
-    patchRow(s.id,state,'uppstallning',s.name||state.name||'Utgångsläge',s.folder||state.folder||'Allmänt').then(function(){
+    patchRow(s.id,state,'uppstallning',s.name||state.name||'Taktiktavla',s.folder||state.folder||'Allmänt').then(function(){
       showToast('Togs bort från laget');
       try{s.state=state;s._meta=state._meta;}catch(e){}
       try{cloudLoadSaves();}catch(e){try{renderSavesList();}catch(err){}}
@@ -29534,7 +29534,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt313TeamListRestoreAfterViewExit)return;
   window.__tt313TeamListRestoreAfterViewExit=true;
-  var VERSION='376';
+  var VERSION='377';
   var lastTeamOpen=false;
   var lastFolder='Alla';
   var lastSearch='';
@@ -29643,7 +29643,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 (function(){
   if(window.__tt315VersionMarker)return;window.__tt315VersionMarker=true;
-  function setV(){try{['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='376';});document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent='376';});}catch(e){}}
+  function setV(){try{['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='377';});document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent='377';});}catch(e){}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setV);else setV();
   setTimeout(setV,0);setTimeout(setV,600);setTimeout(setV,1600);
 })();
@@ -29652,16 +29652,16 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v316-safe-formation-share-owner-preserve ===
    Bas: stabil 315.
-   Fix: Utgångslägen fick ibland fel ägare när delning togs bort från Mina.
+   Fix: Taktiktavlor fick ibland fel ägare när delning togs bort från Mina.
    Orsak: äldre patchFormationShare för uppställningar använde fetch/PATCH och gick då genom
    v310:s auth-meta-wrapper, som kunde skriva aktuell användares ägarinfo på raden.
-   Lösning: sista ordet för Utgångsläge Dela/Dölj. Kontrollera strikt ägarskap,
+   Lösning: sista ordet för Taktiktavla Dela/Dölj. Kontrollera strikt ägarskap,
    använd XHR förbi fetch-wrappern och ändra endast delningsfält/uppdateringsfält.
 */
 (function(){
   if(window.__tt316SafeFormationShareOwnerPreserve)return;
   window.__tt316SafeFormationShareOwnerPreserve=true;
-  var VERSION='376';
+  var VERSION='377';
 
   function setVersion316(){
     try{
@@ -29755,12 +29755,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           else reject(new Error(xhr.responseText||('HTTP '+xhr.status)));
         };
         xhr.onerror=function(){reject(new Error('Nätverksfel'));};
-        xhr.send(JSON.stringify({data:state,type:'uppstallning',name:name||'Utgångsläge',folder:folder||'Allmänt'}));
+        xhr.send(JSON.stringify({data:state,type:'uppstallning',name:name||'Taktiktavla',folder:folder||'Allmänt'}));
       }catch(err){reject(err);}
     });
   }
   function safePatchFormationShare316(s,share){
-    if(!s||!s.id){showToast('Spara utgångsläget innan du delar det',false);return;}
+    if(!s||!s.id){showToast('Spara taktiktavlan innan du delar den',false);return;}
     if(typeof saveScope!=='undefined'&&saveScope==='team'){
       showToast('Delning ändras från Mina, inte från Lagets',false);return;
     }
@@ -29771,7 +29771,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }
 
     var newState=buildShareOnlyState(s,share);
-    var name=s.name||newState.name||'Utgångsläge';
+    var name=s.name||newState.name||'Taktiktavla';
     var folder=s.folder||newState.folder||'Allmänt';
 
     // Uppdatera bara aktuell rad lokalt, inte någon annan rad i savedFormations.
@@ -29791,7 +29791,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
     try{saveScope='mine';currentFolder='Alla';}catch(e){}
     try{if(typeof renderSavesList==='function')renderSavesList();}catch(e){}
-    try{cloudStatus(share?'Delar utgångsläge med laget...':'Tar bort delning...','#7aaa88');}catch(e){}
+    try{cloudStatus(share?'Delar taktiktavla med laget...':'Tar bort delning...','#7aaa88');}catch(e){}
 
     patchFormationRowXHR(s.id,newState,name,folder).then(function(){
       showToast(share?'Delad med laget':'Inte längre delad');
@@ -29804,7 +29804,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     });
   }
 
-  // Gör Mina-filter för utgångslägen strikt så en annan användares lagdelade fil inte kan räknas som min.
+  // Gör Mina-filter för taktiktavlor strikt så en annan användares lagdelade fil inte kan räknas som min.
   try{
     var prevIsMine=typeof isMineV10==='function'?isMineV10:null;
     isMineV10=function(obj){return isTaktikObj(obj)&&prevIsMine?prevIsMine(obj):formationMine316(obj);};
@@ -29848,7 +29848,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v317-admin-formation-unshare-from-team-fix ===
    Bas: fungerande 316.
-   Fixar Utgångslägen:
+   Fixar Taktiktavlor:
    - Admin ska kunna ta bort lagdelning från Lagets även när filen skapats av annan användare.
    - Mina-flödets ägarskydd från 316 behålls.
    - Klick i Lagets fångas i capture-fas så gamla Dela/Dölj-knappar inte hinner ropa på
@@ -29858,7 +29858,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt317AdminFormationUnshareFromTeamFix)return;
   window.__tt317AdminFormationUnshareFromTeamFix=true;
-  var VERSION='376';
+  var VERSION='377';
 
   function setVersion317(){
     try{
@@ -29937,17 +29937,17 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           else reject(new Error(xhr.responseText||('HTTP '+xhr.status)));
         };
         xhr.onerror=function(){reject(new Error('Nätverksfel'));};
-        xhr.send(JSON.stringify({data:state,type:'uppstallning',name:name||'Utgångsläge',folder:folder||'Allmänt'}));
+        xhr.send(JSON.stringify({data:state,type:'uppstallning',name:name||'Taktiktavla',folder:folder||'Allmänt'}));
       }catch(err){reject(err);}
     });
   }
   function adminUnshareFormation317(s){
     if(!isAdmin()){showToast('Endast admin kan ta bort lagdelning',false);return false;}
     if(!(typeof saveScope!=='undefined'&&saveScope==='team')){showToast('Ta bort lagdelning görs från Lagets',false);return false;}
-    if(!s||!s.id){showToast('Saknar databas-id för utgångsläget',false);return false;}
+    if(!s||!s.id){showToast('Saknar databas-id för taktiktavlan',false);return false;}
     if(!isSharedTeam(s)){showToast('Filen är inte delad med detta lag',false);return false;}
-    if(!confirm('Ta bort "'+(s.name||'utgångsläge')+'" från Lagets lista?\n\nFilen raderas inte och finns kvar hos skaparen under Mina.'))return false;
-    var st=unshareStateOnly(s), name=s.name||st.name||'Utgångsläge', folder=s.folder||st.folder||'Allmänt';
+    if(!confirm('Ta bort "'+(s.name||'taktiktavla')+'" från Lagets lista?\n\nFilen raderas inte och finns kvar hos skaparen under Mina.'))return false;
+    var st=unshareStateOnly(s), name=s.name||st.name||'Taktiktavla', folder=s.folder||st.folder||'Allmänt';
     try{cloudStatus('Tar bort lagdelning...','#7aaa88');}catch(e){}
     patchFormationRowXHR(s.id,st,name,folder).then(function(){
       showToast('Togs bort från laget');
@@ -30045,13 +30045,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v318-delete-refresh-and-icon-polish ===
    Bas: v317. Funktionerna i 317 fungerar, men:
-   1) Ta bort lagdelning-ikonen i Utgångslägen ska vara enbart överstruken gruppikon, ingen text.
+   1) Ta bort lagdelning-ikonen i Taktiktavlor ska vara enbart överstruken gruppikon, ingen text.
    2) Radering ska slå igenom direkt efter första klicket och inte kunna dyka upp igen vid snabb omladdning.
 */
 (function(){
   if(window.__tt318DeleteRefreshAndIconPolish)return;
   window.__tt318DeleteRefreshAndIconPolish=true;
-  var VERSION='376';
+  var VERSION='377';
 
   function setVersion318(){
     try{
@@ -30276,13 +30276,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Bas: fungerande v318.
    Fixar två saker:
    1) Ta bort lagdelning-ikonen centreras och innehåller enbart överstruken gruppsymbol.
-   2) Radering av utgångsläge raderar alla rader som appen dedupar till samma fil, inte bara första id:t.
+   2) Radering av taktiktavla raderar alla rader som appen dedupar till samma fil, inte bara första id:t.
       Därför ska filen inte behöva raderas två gånger.
 */
 (function(){
   if(window.__tt319DeleteFormationKeyAndCenteredIcon)return;
   window.__tt319DeleteFormationKeyAndCenteredIcon=true;
-  var VERSION='376';
+  var VERSION='377';
 
   function setVersion319(){
     try{
@@ -30452,7 +30452,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt322AccountTeamUiPolish)return;
   window.__tt322AccountTeamUiPolish=true;
-  var VERSION='376';
+  var VERSION='377';
 
   function setVersion323(){
     try{
@@ -30768,7 +30768,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       +'<div class="tt339-confirm-title">Ta bort laget permanent</div>'
       +'<div class="tt339-confirm-text">Detta tar bort laget <strong>'+esc320(team)+'</strong> för alla medlemmar.<br><br>'
       +'Medlemslistan, truppen och matcher tas bort permanent.<br>'
-      +'Lagdelade utgångslägen och taktikfilmer tas bort från Lagets lista, men skaparnas egna filer i Mina raderas inte.<br><br>'
+      +'Lagdelade taktiktavlor och taktikfilmer tas bort från Lagets lista, men skaparnas egna filer i Mina raderas inte.<br><br>'
       +'<strong>Detta kan inte ångras.</strong><br><br>'
       +'Skriv exakt lagkod för att bekräfta:</div>'
       +'<input id="tt340-delete-team-confirm" autocomplete="off" placeholder="Skriv '+esc320(team)+'">'
@@ -31303,13 +31303,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v342-strict-formation-team-scope ===
    Bas: stabil v341.
-   Fixar Utgångslägen/Lagets: en fil som delats till lag 1 ska inte synas i lag 2.
+   Fixar Taktiktavlor/Lagets: en fil som delats till lag 1 ska inte synas i lag 2.
    Taktikfilm fungerar sedan tidigare och lämnas orörd.
 */
 (function(){
   if(window.__tt342StrictFormationTeamScope)return;
   window.__tt342StrictFormationTeamScope=true;
-  var VERSION='376';
+  var VERSION='377';
 
   function setVersion342(){
     try{
@@ -31350,7 +31350,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var m=meta342(obj)||{};
     var active=activeTeam342();
     var fileTeam=formationTeam342(obj);
-    // Viktigt: lagdelade utgångslägen måste ha både sharedWithTeam och exakt aktiv lagkod.
+    // Viktigt: lagdelade taktiktavlor måste ha både sharedWithTeam och exakt aktiv lagkod.
     return !!(m.sharedWithTeam && active && fileTeam && active===fileTeam);
   }
   function formationMine342(obj){
@@ -31360,7 +31360,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return false;
   }
 
-  // Ersätt bara Utgångslägens lagfilter. Taktikfilm lämnas till sin tidigare fungerande logik.
+  // Ersätt bara Taktiktavlors lagfilter. Taktikfilm lämnas till sin tidigare fungerande logik.
   var previousTeamShared342=(typeof isSameTeamSharedV10==='function')?isSameTeamSharedV10:null;
   var previousVisible342=(typeof isFileVisibleInScopeV10==='function')?isFileVisibleInScopeV10:null;
   var previousReadOnly342=(typeof isReadOnlyFileV10==='function')?isReadOnlyFileV10:null;
@@ -31441,9 +31441,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v343-adminless-team-recovery-version-note ===
    Bas: v342. Fixar adminlösa lag: medlem i lag med noll admins kan återställa sig själv till admin.
-   Behåller v342:s strikta Utgångslägen/Lagets-filter. */
+   Behåller v342:s strikta Taktiktavlor/Lagets-filter. */
 (function(){
-  var VERSION='376';
+  var VERSION='377';
   function setV343(){try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;});
@@ -31457,7 +31457,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v344-adminless-team-recovery-rpc-version-note ===
    Bas: v343. Återställning av adminlöst lag använder säker Supabase-RPC så RLS inte blockerar medlemmen. */
 (function(){
-  var VERSION='376';
+  var VERSION='377';
   function setV344(){try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;});
@@ -31468,10 +31468,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v344-adminless-team-recovery-rpc-version-note === */
 
 
-/* v367: SAFE READ-ONLY probe for future Utgångslägen team-share table.
+/* v367: SAFE READ-ONLY probe for future Taktiktavlor team-share table.
    Built from stable v360. This block must not modify formations, sharing, lists or database data. */
 (function(){
-  var VERSION='376';
+  var VERSION='377';
   function setVersion364(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -31535,13 +31535,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* v367: SAVE-enabled share modal for Utgångslägen.
+/* v367: SAVE-enabled share modal for Taktiktavlor.
    Built from stable v367. Opens a modal from Dela/Dölj, lists the logged-in user's teams,
    and saves checkbox changes to formation_team_shares only.
    This block must not modify original saves rows, create duplicate formations, delete formations,
    or change Lagets rendering yet. */
 (function(){
-  var VERSION='376';
+  var VERSION='377';
 
   function setVersion364(){
     try{
@@ -31600,8 +31600,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(modal)return modal;
     modal=document.createElement('div');modal.id='tt364-share-modal';modal.className='hidden';
     modal.innerHTML='<div id="tt364-share-card" role="dialog" aria-modal="true" aria-labelledby="tt364-share-title">'
-      +'<h2 id="tt364-share-title">Dela Utgångsläge <span class="tt364-save-pill">v371</span></h2>'
-      +'<p id="tt364-share-sub">Markera vilka lag Utgångsläget ska vara delat till. Detta sparas i den nya delningstabellen och ändrar inte originalfilen.</p>'
+      +'<h2 id="tt364-share-title">Dela taktiktavla <span class="tt364-save-pill">v377</span></h2>'
+      +'<p id="tt364-share-sub">Markera vilka lag taktiktavlan ska vara delat till. Detta sparas i den nya delningstabellen och ändrar inte originalfilen.</p>'
       +'<div id="tt364-share-file"></div>'
       +'<div id="tt364-share-status">Laddar...</div>'
       +'<div id="tt364-team-list"></div>'
@@ -31677,7 +31677,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var list=document.getElementById('tt364-team-list');
     var save=document.getElementById('tt364-save');
     if(save){save.disabled=true;save.textContent='Spara delning';}
-    fileBox.innerHTML='<strong>'+esc364(s&&s.name||'Utgångsläge')+'</strong><div style="font-size:.7rem;color:#7aaa88;margin-top:2px">ID: '+esc364(s&&s.id||'saknas')+'</div>';
+    fileBox.innerHTML='<strong>'+esc364(s&&s.name||'Taktiktavla')+'</strong><div style="font-size:.7rem;color:#7aaa88;margin-top:2px">ID: '+esc364(s&&s.id||'saknas')+'</div>';
     status.textContent='Laddar lag och delningar...';
     list.innerHTML='';
     modal.classList.remove('hidden');
@@ -31687,7 +31687,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       return;
     }
     if(!s||!s.id){
-      status.textContent='Spara Utgångsläget innan delningsrutan kan användas.';
+      status.textContent='Spara taktiktavlan innan delningsrutan kan användas.';
       return;
     }
 
@@ -31795,7 +31795,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
             var clone=btn.cloneNode(true);
             clone.dataset.tt364ShareModal='1';
             clone.textContent='Dela';
-            clone.title='Välj vilka lag Utgångsläget delas till';
+            clone.title='Välj vilka lag taktiktavlan delas till';
             btn.parentNode.replaceChild(clone,btn);
             clone.addEventListener('click',function(e){
               e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
@@ -31829,8 +31829,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v367-formation-delete-and-save-as-clean ===
    Bas: stabil v363.
-   Syfte: stabilisera Utgångslägen innan Lagets kopplas till nya delningstabellen.
-   - Spara som ska alltid skapa ny rad när inget aktivt utgångsläge är öppet.
+   Syfte: stabilisera Taktiktavlor innan Lagets kopplas till nya delningstabellen.
+   - Spara som ska alltid skapa ny rad när inget aktivt taktiktavla är öppet.
      Den får inte leta upp och återanvända en gammal raderad/dold rad med samma namn.
    - Radera ska radera faktisk ägd rad och dess nya formation_team_shares-delningar.
    - Om SQL-funktionen tt_delete_owned_formation_v364 finns används den; annars faller appen tillbaka
@@ -31928,7 +31928,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
     removeLocalFormation364(id);
     clearActiveIfDeleted364(id);
-    cloudStatus('Raderar utgångsläge...','#7aaa88');
+    cloudStatus('Raderar taktiktavla...','#7aaa88');
 
     return rpcDeleteFormation364(id,name,folder)
       .catch(function(){return restDeleteFormation364(id);})
@@ -31982,16 +31982,16 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }
 
     // Viktigt i v367: ingen sökning på samma namn här.
-    // Ett raderat/dolt gammalt utgångsläge ska aldrig kunna väckas genom Spara som.
+    // Ett raderat/dolt gammalt taktiktavla ska aldrig kunna väckas genom Spara som.
     return postFresh().catch(function(err){cloudStatus('❌ Fel: '+err.message,'#e84a4a');showToast('Kunde inte spara',false);});
   };
 
   function setVersion364(){
     try{
-      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='376';});
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='377';});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
         var t=String(el.textContent||'').trim();
-        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='376';
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='377';
       });
     }catch(e){}
   }
@@ -32010,7 +32010,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt367FormationTeamViewClean)return;
   window.__tt367FormationTeamViewClean=true;
-  var VERSION='376';
+  var VERSION='377';
   var lastLoadedTeam='';
   var lastLoadedAt=0;
   var loading=false;
@@ -32034,7 +32034,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function ownerLabel(s){var m=meta(s)||{};return m.ownerName||m.ownerEmail||m.createdByEmail||m.authEmail||'annan tränare';}
   function normalizeRow(row){
     row=row||{}; var st=row.data||row.state||{};
-    var s={id:row.id,name:row.name||(st&&st.name)||'Namnlöst utgångsläge',state:st,folder:row.folder||(st&&st.folder)||'Allmänt'};
+    var s={id:row.id,name:row.name||(st&&st.name)||'Namnlös taktiktavla',state:st,folder:row.folder||(st&&st.folder)||'Allmänt'};
     if(s.state&&s.state._meta)s._meta=s.state._meta;
     s._tt367SharedToActiveTeam=true;
     return s;
@@ -32085,7 +32085,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }).sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''),'sv');});
   }
   function makeBtn(icon,title,fn){var b=document.createElement('button');b.className='sa tt367-action tt367-icon-action';b.type='button';b.textContent=icon;b.title=title||icon;b.setAttribute('aria-label',title||icon);b.style.cssText='color:#4ae8e8;border-color:#4ae8e8;min-width:30px;width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:1rem;overflow:hidden;white-space:nowrap;flex:0 0 30px';b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fn&&fn();});return b;}
-  function openFormation(s,readonly){try{applyState(JSON.parse(JSON.stringify(s.state||{})));activeFormationId=readonly?null:s.id;activeFormationName=readonly?null:s.name;if(typeof updateSaveButtons==='function')updateSaveButtons();showToast(readonly?'Öppnad skrivskyddat – kopiera för att redigera':'Utgångsläge laddat');}catch(e){showToast('Kunde inte öppna utgångsläget',false);}}
+  function openFormation(s,readonly){try{applyState(JSON.parse(JSON.stringify(s.state||{})));activeFormationId=readonly?null:s.id;activeFormationName=readonly?null:s.name;if(typeof updateSaveButtons==='function')updateSaveButtons();showToast(readonly?'Öppnad skrivskyddat – kopiera för att redigera':'Taktiktavla laddad');}catch(e){showToast('Kunde inte öppna taktiktavlan',false);}}
   function renderTeamView366(){
     try{
       var list=document.getElementById('saves-list'); if(!list)return false;
@@ -32107,7 +32107,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       items.forEach(function(s){
         var isMine=mine(s), ro=!isMine;
         var row=document.createElement('div');row.className='row tt367-team-row';row.dataset.formationId=String(s.id||'');
-        var nm=document.createElement('span');nm.className='row-name';nm.textContent=s.name||'Utgångsläge';
+        var nm=document.createElement('span');nm.className='row-name';nm.textContent=s.name||'Taktiktavla';
         var fl=document.createElement('span');fl.className='row-sub';fl.textContent=(s.folder||'Allmänt')+(isMine?'':' · '+ownerLabel(s)+' · skrivskyddad');
         row.appendChild(nm);row.appendChild(fl);
         row.appendChild(makeBtn(ro?'📂':'📋',ro?'Öppna skrivskyddat':'Ladda',function(){openFormation(s,ro);}));
@@ -32177,7 +32177,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Built from stable v367. Safe read-only probe for future Taktikfilm team-share table.
    This block must not modify films, sharing, lists, buttons or database data. */
 (function(){
-  var VERSION='376';
+  var VERSION='377';
   function setVersion371(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -32246,7 +32246,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Built from working v370. Opens a team-share modal for Taktikfilmer and saves checkbox rows to taktikfilm_team_shares.
    This block must not modify saves rows or change Lagets rendering yet. */
 (function(){
-  var VERSION='376';
+  var VERSION='377';
   function setVersion371(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -32519,12 +32519,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v374-taktikfilm-team-icons-compact ===
    Bas: fungerande v371. Kopplar bara Taktikfilm → Lagets till taktikfilm_team_shares.
-   v374 använder tolerant RPC tt_list_team_shared_taktikfilmer_v373 och rör inte Utgångslägen.
+   v374 använder tolerant RPC tt_list_team_shared_taktikfilmer_v373 och rör inte Taktiktavlor.
 */
 (function(){
   if(window.__tt374TaktikfilmTeamView)return;
   window.__tt374TaktikfilmTeamView=true;
-  var VERSION='376';
+  var VERSION='377';
   var lastLoadedTeam='';
   var lastLoadedAt=0;
   var loading=false;
@@ -32723,7 +32723,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v375-menu-labels-only ===
    Endast synliga huvudmenynamn:
    - gamla Tavla -> Snabbtavla
-   - gamla Utgångsläge -> Taktiktavla
+   - gamla Taktiktavla -> Taktiktavla
    Ingen funktions-/panel-/databaslogik ändras. */
 (function(){
   if(window.__tt375MenuLabelsOnly)return;
@@ -32733,8 +32733,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(quick) quick.textContent='Snabbtavla';
     var board=document.querySelector('.tab[data-panel="saves"]');
     if(board) board.textContent='Taktiktavla';
-    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='376';});
-    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='376';});
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='377';});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)$/i.test(t))el.textContent='377';});
   }catch(e){}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply375MenuLabels);else apply375MenuLabels();
   window.addEventListener('load',function(){setTimeout(apply375MenuLabels,0);setTimeout(apply375MenuLabels,400);setTimeout(apply375MenuLabels,1200);});
