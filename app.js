@@ -33419,3 +33419,276 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt383ApplyMobileLineupLayout=apply383;
 })();
 /* === slut v384-mobile-lineup-lift-pitch-and-fs-button === */
+
+
+/* === v385-taktikfilm-step-reorder-test ===
+   Testversion: flytta vanliga taktikfilmsteg upp/ned utan att flytta utgångsläget.
+   Ingen drag-and-drop ännu. Efter flytt görs en försiktig kontinuitetsomräkning:
+   - varje stegs egna ritningar/text/rörelser följer med steget
+   - rörelsebanans målpunkt behålls
+   - rörelsebanans startpunkt sätts till aktuell position efter den nya ordningen
+   - positioner förs vidare steg för steg enligt den nya ordningen
+*/
+(function(){
+  'use strict';
+  var VERSION='385';
+
+  function setVersion385(){
+    try{
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id); if(el)el.textContent=VERSION;
+      });
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent=VERSION;
+      });
+    }catch(e){}
+  }
+
+  function clone385(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+  function currentTaktik385(){
+    try{
+      if(editingTaktikIdx===null || typeof editingTaktikIdx==='undefined')return null;
+      return taktikFilmer && taktikFilmer[editingTaktikIdx] ? taktikFilmer[editingTaktikIdx] : null;
+    }catch(e){return null;}
+  }
+  function isPresent385(){
+    try{return document.body.classList.contains('fullscreen-portrait') || document.body.classList.contains('landscape');}
+    catch(e){return false;}
+  }
+  function isReadOnly385(tk){
+    try{
+      if(!tk)tk=currentTaktik385();
+      if(!tk)return false;
+      if(tk._readOnly)return true;
+      if(typeof isReadOnlyFileV10==='function')return !!isReadOnlyFileV10(tk);
+    }catch(e){}
+    return false;
+  }
+  function label385(i){return i===0?'Startläge':'Steg '+i;}
+  function isAutoLabel385(x){
+    var s=String(x||'').trim();
+    return !s || s==='Start' || s==='Startläge' || /^Steg\s+\d+$/i.test(s);
+  }
+  function normalizeLabels385(tk){
+    if(!tk||!Array.isArray(tk.steps))return;
+    tk.steps.forEach(function(st,i){if(st&&isAutoLabel385(st.label))st.label=label385(i);});
+  }
+  function samePos385(a,b){
+    if(!a||!b)return false;
+    var dx=(a.x||0)-(b.x||0),dy=(a.y||0)-(b.y||0);
+    return dx*dx+dy*dy<1;
+  }
+  function getPos385(step,id){
+    if(!step)return null;
+    if(id==='ball')return step.ball?{x:step.ball.x,y:step.ball.y}:null;
+    var p=(step.players||[]).find(function(x){return x.id===id;});
+    return p?{x:p.x,y:p.y}:null;
+  }
+  function setPos385(step,id,pos){
+    if(!step||!pos)return;
+    if(id==='ball'){
+      if(!step.ball)step.ball={x:pos.x,y:pos.y};
+      step.ball.x=pos.x; step.ball.y=pos.y;
+      return;
+    }
+    var p=(step.players||[]).find(function(x){return x.id===id;});
+    if(p){p.x=pos.x;p.y=pos.y;}
+  }
+  function movementFor385(step,id){
+    if(!step||!Array.isArray(step.movementPaths))return null;
+    for(var i=0;i<step.movementPaths.length;i++){
+      var mp=step.movementPaths[i];
+      if(mp&&mp.playerId===id&&mp.pts&&mp.pts.length)return mp;
+    }
+    return null;
+  }
+  function endpoint385(mp){
+    if(!mp||!mp.pts||!mp.pts.length)return null;
+    var p=mp.pts[mp.pts.length-1];
+    return {x:p.x,y:p.y};
+  }
+  function ids385(tk){
+    var out={ball:true};
+    (tk.steps||[]).forEach(function(st){
+      (st.players||[]).forEach(function(p){if(p&&p.id)out[p.id]=true;});
+      (st.movementPaths||[]).forEach(function(mp){if(mp&&mp.playerId)out[mp.playerId]=true;});
+    });
+    return Object.keys(out);
+  }
+
+  function rebuildContinuity385(tk){
+    if(!tk||!Array.isArray(tk.steps)||tk.steps.length<2)return;
+    normalizeLabels385(tk);
+    ids385(tk).forEach(function(id){
+      var cur=getPos385(tk.steps[0],id);
+      if(!cur)return;
+
+      for(var i=0;i<tk.steps.length;i++){
+        var step=tk.steps[i];
+        if(!step)continue;
+
+        if(i>0){
+          var prev=tk.steps[i-1];
+          var prevMv=movementFor385(prev,id);
+          if(prevMv){
+            var ep=endpoint385(prevMv);
+            if(ep){cur=ep;setPos385(step,id,cur);}
+          }else{
+            var here=getPos385(step,id);
+            if(here && !samePos385(here,cur)){
+              // Steget har en egen absolut positionsändring. Den får följa med steget.
+              cur={x:here.x,y:here.y};
+            }else{
+              setPos385(step,id,cur);
+            }
+          }
+        }else{
+          setPos385(step,id,cur);
+        }
+
+        // En rörelsebana hör till steget och ska följa med, men startpunkten ska passa ny ordning.
+        var mv=movementFor385(step,id);
+        if(mv&&mv.pts&&mv.pts.length){
+          mv.pts[0]={x:cur.x,y:cur.y};
+        }
+      }
+    });
+  }
+
+  function saveOpenStep385(){
+    if(editingTaktikIdx===null || isPresent385())return;
+    try{
+      if(typeof saveCurrentStepV74==='function')saveCurrentStepV74({allowAutoCreate:false});
+      else if(typeof saveCurrentStepV73==='function')saveCurrentStepV73({allowAutoCreate:false});
+      else if(typeof saveCurrentStepV70==='function')saveCurrentStepV70({autoCreateNext:false});
+    }catch(e){console.error('saveOpenStep385',e);}
+  }
+
+  function afterReorder385(tk,newIdx){
+    normalizeLabels385(tk);
+    rebuildContinuity385(tk);
+    editingStepIdx=newIdx;
+    if(playback){playback.tk=tk;playback.stepIndex=newIdx;playback.animating=false;}
+    try{taktikDirtyV17=true;}catch(e){}
+    try{window.taktikDirtyV17=true;}catch(e){}
+    movementPaths=[];selectedId=null;
+    try{restoreSnap(tk.steps[newIdx]);render();}catch(e){}
+    try{if(typeof updateEditStepUI==='function')updateEditStepUI();}catch(e){}
+    try{if(typeof updatePlaybar==='function')updatePlaybar();}catch(e){}
+    try{if(typeof updateAllStepLabelsV73==='function')updateAllStepLabelsV73();}catch(e){}
+  }
+
+  function moveStep385(idx,dir){
+    var tk=currentTaktik385();
+    if(!tk||!Array.isArray(tk.steps))return;
+    if(isReadOnly385(tk)){try{showToast('Filen är skrivskyddad. Kopiera den först.',false);}catch(e){} return;}
+    if(idx<=0)return; // utgångsläget är låst
+    var to=idx+dir;
+    if(to<=0 || to>=tk.steps.length)return;
+
+    saveOpenStep385();
+    tk=currentTaktik385();
+    if(!tk||!Array.isArray(tk.steps))return;
+    try{if(typeof saveTaktikUndo==='function')saveTaktikUndo();}catch(e){}
+
+    var moved=tk.steps.splice(idx,1)[0];
+    tk.steps.splice(to,0,moved);
+    afterReorder385(tk,to);
+    try{showToast('Steg flyttat');}catch(e){}
+  }
+
+  function inputForStep385(step,idx){
+    var inp=document.createElement('input');
+    inp.type='text';
+    inp.value=(step&&step.label)?step.label:label385(idx);
+    inp.style.cssText='flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 6px;font-size:0.78rem;min-width:70px';
+    inp.addEventListener('change',function(){
+      if(step)step.label=inp.value;
+      try{taktikDirtyV17=true;}catch(e){}
+    });
+    return inp;
+  }
+
+  function smallBtn385(txt,title,disabled,handler){
+    var b=document.createElement('button');
+    b.className='sa';
+    b.textContent=txt;
+    b.title=title||'';
+    b.disabled=!!disabled;
+    b.style.opacity=disabled?'0.25':'1';
+    b.style.minWidth='28px';
+    b.style.padding='4px 6px';
+    b.addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      if(!disabled)handler();
+      return false;
+    },true);
+    return b;
+  }
+
+  function renderEditSteps385(tk){
+    var list=document.getElementById('edit-taktik-steps');
+    if(!list)return;
+    tk=tk||currentTaktik385();
+    list.innerHTML='';
+    if(!tk||!Array.isArray(tk.steps))return;
+    normalizeLabels385(tk);
+
+    for(var i=0;i<tk.steps.length;i++){
+      (function(idx){
+        var s=tk.steps[idx]||{};
+        var row=document.createElement('div');
+        row.className='row'+(idx===editingStepIdx?' on':'');
+        row.dataset.idx=idx;
+        row.style.cursor='pointer';
+        row.title=idx===0?'Utgångsläget ligger alltid först':'Klicka för att öppna steget. Använd pilarna för att flytta.';
+
+        row.addEventListener('click',function(e){
+          var tag=e.target&&e.target.tagName?e.target.tagName.toLowerCase():'';
+          if(tag==='button'||tag==='input')return;
+          try{if(typeof goToStepV73==='function')goToStepV73(idx,{animate:false});else{editingStepIdx=idx;updateEditStepUI();}}catch(err){}
+        });
+
+        var num=document.createElement('span');
+        num.style.cssText='font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px;text-align:center';
+        num.textContent=idx===0?'►':String(idx);
+
+        var nameInp=inputForStep385(s,idx);
+        var up=smallBtn385('↑','Flytta steget uppåt',idx<=1,function(){moveStep385(idx,-1);});
+        var dn=smallBtn385('↓','Flytta steget nedåt',idx===0||idx>=tk.steps.length-1,function(){moveStep385(idx,1);});
+        var del=smallBtn385('×','Radera steget',idx===0,function(){
+          if(idx===0)return;
+          saveOpenStep385();
+          try{if(typeof saveTaktikUndo==='function')saveTaktikUndo();}catch(e){}
+          tk.steps.splice(idx,1);
+          var ni=Math.min(idx,tk.steps.length-1);
+          afterReorder385(tk,ni);
+        });
+        del.className+=' del';
+        del.style.display=idx===0?'none':'';
+
+        row.appendChild(num);
+        row.appendChild(nameInp);
+        row.appendChild(up);
+        row.appendChild(dn);
+        row.appendChild(del);
+        list.appendChild(row);
+      })(i);
+    }
+  }
+
+  var _renderEditSteps385=typeof renderEditSteps==='function'?renderEditSteps:null;
+  renderEditSteps=function(tk){
+    return renderEditSteps385(tk||currentTaktik385());
+  };
+  window.renderEditSteps=renderEditSteps;
+  window.tt385MoveTaktikStep=moveStep385;
+  window.tt385RebuildTaktikContinuity=rebuildContinuity385;
+
+  setVersion385();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion385);
+  setTimeout(setVersion385,300);
+  setTimeout(setVersion385,1000);
+})();
+/* === slut v385-taktikfilm-step-reorder-test === */
