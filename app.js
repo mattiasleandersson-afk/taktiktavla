@@ -35028,3 +35028,200 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt399RenderSquadPanel=renderSquadPanel;
 })();
 /* === slut v399-squad-panel-taktiktavla-first === */
+
+/* === v400-tavla-truppvisning-controls ===
+   Bas: v399 fungerade ganska bra.
+   Förbättringar i Snabbtavla/Taktiktavla:
+   - Truppkopplade spelares namn visas som etikett under symbolen, likt laguppställning.
+   - Val för Cirkel/Tröja och namnstorlek läggs i Spelare-modalens inställningar.
+   - Drag av placerad spelare visar själva symbolen/tröjan, inte namnet inne i cirkeln.
+   - Återställ-knapp rensar alla truppkopplingar så vanliga standardnummer visas igen.
+   - Rör inte Taktikfilm, Matcher, Truppdata, Supabase/RLS eller steglogik.
+*/
+(function(){
+  if(window.__tt400TavlaTruppVisning)return;
+  window.__tt400TavlaTruppVisning=true;
+  var VERSION='400';
+  var LS_SYMBOL='tt223_match_symbol';
+  var LS_NUMBERS='tt223_match_numbers';
+  var LS_NAME_SIZE='tt400_tavla_name_size';
+
+  function setVersion400(){
+    try{
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
+      document.body.setAttribute('data-app-version',VERSION);
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+    }catch(e){}
+  }
+
+  function getSymbol400(){try{return localStorage.getItem(LS_SYMBOL)||'circle';}catch(e){return 'circle';}}
+  function setSymbol400(v){try{localStorage.setItem(LS_SYMBOL,v);}catch(e){}}
+  function getNumbers400(){try{var v=localStorage.getItem(LS_NUMBERS);return v===null?true:v!=='off';}catch(e){return true;}}
+  function setNumbers400(on){try{localStorage.setItem(LS_NUMBERS,on?'on':'off');}catch(e){}}
+  function getNameSize400(){try{return Math.max(7,Math.min(22,parseInt(localStorage.getItem(LS_NAME_SIZE),10)||11));}catch(e){return 11;}}
+  function setNameSize400(v){try{localStorage.setItem(LS_NAME_SIZE,String(Math.max(7,Math.min(22,v))));}catch(e){}}
+
+  function getSquadId400(p){return p&&(p.squadPlayerId||p.truppId||p.squadId||null);}
+  function defaultNumber400(p){
+    if(!p||!p.id)return '';
+    var m=String(p.id).match(/^[ha](\d+)$/);
+    if(m)return parseInt(m[1],10)+1;
+    return p.number||'';
+  }
+  function squadById400(id){try{return (trupp||[]).find(function(sp){return String(sp.id)===String(id);})||null;}catch(e){return null;}}
+  function syncFromTrupp400(p){
+    var id=getSquadId400(p); if(!id)return null;
+    var sp=squadById400(id);
+    if(sp){p.name=sp.namn||p.name||'';p.number=sp.nr||p.number;}
+    return sp;
+  }
+  function clearOne400(p){
+    if(!p)return;
+    delete p.squadPlayerId;delete p.truppId;delete p.squadId;
+    p.name='';p.number=defaultNumber400(p);
+  }
+  function isTavlaWorkspace400(){
+    try{var on=document.querySelector('.tab.on');var panel=on?on.getAttribute('data-panel'):'';return panel==='formations'||panel==='saves';}catch(e){return false;}
+  }
+  function isMatchLineup400(){try{return !!((matchRoster||[]).length&&document.getElementById('bench-bar')&&document.getElementById('bench-bar').classList.contains('active'));}catch(e){return false;}}
+  function shouldApply400(){return isTavlaWorkspace400()&&!isMatchLineup400()&&!window.isEditingTaktik&&!window.activeTaktik;}
+
+  function jerseyD400(x,y){return ['M',x-18,y-12,'L',x-9,y-22,'L',x-3,y-16,'L',x+3,y-16,'L',x+9,y-22,'L',x+18,y-12,'L',x+13,y-3,'L',x+10,y-6,'L',x+10,y+18,'L',x-10,y+18,'L',x-10,y-6,'L',x-13,y-3,'Z'].join(' ');}
+
+  function injectStyle400(){
+    if(document.getElementById('tt400-style'))return;
+    var st=document.createElement('style');st.id='tt400-style';
+    st.textContent=[
+      '#tt400-tavla-controls{border:1px solid #203a27;background:rgba(74,232,122,.045);border-radius:9px;padding:7px;margin:8px 0;display:flex;flex-direction:column;gap:6px}',
+      '#tt400-tavla-controls .tt400-title{color:#4ae87a;font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.45px}',
+      '#tt400-tavla-controls .tt400-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap}',
+      '#tt400-tavla-controls .tt400-mini,#tt400-panel-reset{background:transparent;border:1px solid #2d4a35;border-radius:6px;color:#7aaa88;padding:3px 7px;font-size:.65rem;font-weight:800;cursor:pointer}',
+      '#tt400-tavla-controls .tt400-mini.on{border-color:#4ae87a;color:#4ae87a;background:rgba(74,232,122,.09)}',
+      '#tt400-tavla-controls .tt400-danger,#tt400-panel-reset{border-color:#6b3b38;color:#ff9f8f}',
+      '#tt400-tavla-controls .tt400-size{color:#edf5ee;font-size:.72rem;font-weight:900;min-width:24px;text-align:center}',
+      '.tt400-squad-name-label{pointer-events:none;font-family:Arial Narrow,Arial,sans-serif;font-weight:800;paint-order:stroke}',
+      '#tt400-panel-reset{margin-left:4px;padding:1px 6px;font-size:.66rem}',
+      '@media(max-width:760px){#tt400-tavla-controls .tt400-mini,#tt400-panel-reset{font-size:.6rem;padding:3px 6px}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function updateControls400(){
+    try{
+      var wrap=document.getElementById('tt400-tavla-controls'); if(!wrap)return;
+      var sym=getSymbol400(), nums=getNumbers400(), sz=getNameSize400();
+      wrap.querySelectorAll('[data-tt400-symbol]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-tt400-symbol')===sym);});
+      var n=wrap.querySelector('[data-tt400-numbers]'); if(n){n.classList.toggle('on',nums);n.textContent=nums?'Nr på':'Nr av';}
+      var sl=wrap.querySelector('.tt400-size'); if(sl)sl.textContent=String(sz);
+    }catch(e){}
+  }
+
+  function injectControls400(){
+    injectStyle400();
+    var modal=document.getElementById('modal-setup'); if(!modal)return;
+    if(document.getElementById('tt400-tavla-controls')){updateControls400();return;}
+    var anchor=document.getElementById('setup-home');
+    var box=document.createElement('div');box.id='tt400-tavla-controls';
+    box.innerHTML='<div class="tt400-title">Truppvisning på tavla</div><div class="tt400-row"><button type="button" class="tt400-mini" data-tt400-symbol="circle">Cirkel</button><button type="button" class="tt400-mini" data-tt400-symbol="jersey">Tröja</button><button type="button" class="tt400-mini" data-tt400-numbers="1">Nr på</button></div><div class="tt400-row"><span style="color:#7aaa88;font-size:.7rem">Namnstorlek</span><button type="button" class="tt400-mini" data-tt400-size="down">−</button><span class="tt400-size">11</span><button type="button" class="tt400-mini" data-tt400-size="up">+</button></div><div class="tt400-row"><button type="button" class="tt400-mini tt400-danger" id="tt400-reset-all">Återställ truppkopplingar</button></div>';
+    if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(box,anchor);else modal.querySelector('.modal').appendChild(box);
+    box.querySelectorAll('[data-tt400-symbol]').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();setSymbol400(b.getAttribute('data-tt400-symbol'));updateControls400();try{render();}catch(err){applyVisuals400();}});});
+    var nb=box.querySelector('[data-tt400-numbers]'); if(nb)nb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();setNumbers400(!getNumbers400());updateControls400();try{render();}catch(err){applyVisuals400();}});
+    box.querySelectorAll('[data-tt400-size]').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var sz=getNameSize400();setNameSize400(sz+(b.getAttribute('data-tt400-size')==='up'?1:-1));updateControls400();applyVisuals400();});});
+    var rb=box.querySelector('#tt400-reset-all'); if(rb)rb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();resetAllSquad400();});
+    updateControls400();
+  }
+
+  function ensurePanelReset400(){
+    try{
+      var p=document.getElementById('tt399-squad-panel'); if(!p)return;
+      var head=p.querySelector('.tt399-head'); if(!head||document.getElementById('tt400-panel-reset'))return;
+      var b=document.createElement('button');b.type='button';b.id='tt400-panel-reset';b.title='Återställ truppkopplingar';b.textContent='Rensa';
+      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();resetAllSquad400();});
+      head.appendChild(b);
+    }catch(e){}
+  }
+
+  function resetAllSquad400(){
+    try{saveUndo();}catch(e){}
+    var n=0;
+    try{(players||[]).forEach(function(p){if(p.team==='home'&&getSquadId400(p)){clearOne400(p);n++;}});}catch(e){}
+    try{render();}catch(e){applyVisuals400();}
+    try{if(window.tt399RenderSquadPanel)window.tt399RenderSquadPanel();}catch(e){}
+    ensurePanelReset400();
+    try{showToast(n?('Truppkopplingar återställda ('+n+')'):'Inga truppkopplingar att återställa');}catch(e){}
+  }
+
+  function applyVisuals400(){
+    setVersion400();injectStyle400();
+    try{
+      if(!shouldApply400()){
+        document.querySelectorAll('.tt400-squad-name-label').forEach(function(x){x.remove();});
+        document.querySelectorAll('path.tt400-jersey,path.tt399-jersey').forEach(function(x){x.remove();});
+        return;
+      }
+      var symbol=getSymbol400(), showNr=getNumbers400(), nameSize=getNameSize400();
+      (players||[]).forEach(function(p){
+        if(p.team!=='home')return;
+        var g=document.querySelector('.player-token[data-id="'+p.id+'"]'); if(!g)return;
+        var c=g.querySelector('circle'), t=g.querySelector('text.token-text');
+        var sid=getSquadId400(p); if(sid)syncFromTrupp400(p);
+        // Symbolens text ska vara nummer/standardnummer, inte namnet. Namnet ritas under.
+        if(t){
+          t.textContent=(showNr?(p.number||defaultNumber400(p)):'');
+          t.style.display=showNr?'':'none';
+          t.setAttribute('x',p.x);t.setAttribute('y',p.y+(symbol==='jersey'?1:0));
+          t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','central');
+          t.setAttribute('font-size',symbol==='jersey'?'13':'14');t.setAttribute('font-weight','900');
+          t.setAttribute('paint-order','stroke');t.setAttribute('stroke','rgba(0,0,0,.75)');t.setAttribute('stroke-width','1.2');
+        }
+        var jersey=g.querySelector('path.tt399-jersey')||g.querySelector('path.tt400-jersey');
+        if(symbol==='jersey'){
+          if(!jersey){jersey=document.createElementNS('http://www.w3.org/2000/svg','path');jersey.setAttribute('class','tt400-jersey');jersey.setAttribute('pointer-events','none');if(t)g.insertBefore(jersey,t);else g.appendChild(jersey);} 
+          jersey.setAttribute('d',jerseyD400(p.x,p.y));jersey.setAttribute('fill',(c&&c.getAttribute('fill'))||homeColor);jersey.setAttribute('stroke',(c&&c.getAttribute('stroke'))||'#fff');jersey.setAttribute('stroke-width','2');jersey.setAttribute('stroke-linejoin','round');
+          if(c){c.style.opacity='0.01';c.setAttribute('pointer-events','all');}
+        }else{
+          if(jersey)jersey.remove();
+          if(c){c.style.opacity='';c.setAttribute('pointer-events','all');}
+        }
+        var nl=g.querySelector('text.tt400-squad-name-label');
+        if(sid&&p.name){
+          if(!nl){nl=document.createElementNS('http://www.w3.org/2000/svg','text');nl.setAttribute('class','tt400-squad-name-label');g.appendChild(nl);} 
+          nl.setAttribute('x',p.x);nl.setAttribute('y',p.y+(symbol==='jersey'?31:28));nl.setAttribute('text-anchor','middle');nl.setAttribute('dominant-baseline','central');nl.setAttribute('fill',daylightMode?'#111':'#fff');nl.setAttribute('font-size',String(nameSize));nl.setAttribute('stroke',daylightMode?'rgba(255,255,255,.88)':'rgba(0,0,0,.88)');nl.setAttribute('stroke-width','1.5');nl.textContent=p.name||'';
+        }else if(nl){nl.remove();}
+      });
+    }catch(e){console.warn('tt400 visuals',e);} 
+    updateControls400();ensurePanelReset400();
+  }
+
+  if(typeof openSetup==='function'&&!openSetup.__tt400Wrapped){
+    var oldOpenSetup400=openSetup;
+    openSetup=function(){var r=oldOpenSetup400.apply(this,arguments);setTimeout(function(){injectControls400();updateControls400();},0);return r;};
+    openSetup.__tt400Wrapped=true;window.openSetup=openSetup;
+  }
+  if(typeof render==='function'&&!render.__tt400Wrapped){
+    var oldRender400=render;
+    render=function(){var r=oldRender400.apply(this,arguments);setTimeout(applyVisuals400,0);return r;};
+    render.__tt400Wrapped=true;window.render=render;
+  }
+  if(typeof moveDrag==='function'&&!moveDrag.__tt400Wrapped){
+    var oldMoveDrag400=moveDrag;
+    moveDrag=function(){var r=oldMoveDrag400.apply(this,arguments);applyVisuals400();return r;};
+    moveDrag.__tt400Wrapped=true;window.moveDrag=moveDrag;
+  }
+  if(typeof loadTrupp==='function'&&!loadTrupp.__tt400Wrapped){
+    var oldLoadTrupp400=loadTrupp;
+    loadTrupp=function(){var r=oldLoadTrupp400.apply(this,arguments);setTimeout(applyVisuals400,400);return r;};
+    loadTrupp.__tt400Wrapped=true;window.loadTrupp=loadTrupp;
+  }
+
+  document.addEventListener('click',function(){setTimeout(function(){setVersion400();injectControls400();applyVisuals400();},0);},true);
+  function apply400(){setVersion400();injectStyle400();injectControls400();applyVisuals400();ensurePanelReset400();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply400);else apply400();
+  [80,250,700,1200,2500,5000,8000,12000].forEach(function(ms){setTimeout(apply400,ms);});
+  window.tt400ResetTavlaSquad=resetAllSquad400;
+  window.tt400ApplyTavlaSquadVisuals=applyVisuals400;
+})();
+/* === slut v400-tavla-truppvisning-controls === */
