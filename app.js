@@ -34060,3 +34060,242 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt392MoveTaktikStepTo=moveDirect392;
 })();
 /* === slut v392-taktikfilm-step-drag-drop-direct-move === */
+
+/* === v394-taktikfilm-edit-draw-undo-clear-reset ===
+   Bas: fungerande v392 från Arkiv 2.zip.
+   Mål: Lägg till Taktikfilm-knappar i befintlig nedersta rit-rad:
+   - 🧽 Sudda ritningar/rörelsepilar i aktuellt steg
+   - ↶ Ångra senaste rit-/positionsändring i aktuell arbetsyta
+   - ↻ Återställ spelare/boll till filmens utgångsläge och rensa ritningar/rörelsepilar
+   Rör inte stegordning, drag-and-drop, upp-/nedknappar, Taktiktavla-delning eller andra vyer.
+*/
+(function(){
+  if(window.__tt394TaktikfilmEditTools)return;
+  window.__tt394TaktikfilmEditTools=true;
+  var VERSION='394';
+
+  function setVersion394(){
+    try{
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id); if(el)el.textContent=VERSION;
+      });
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+      });
+    }catch(e){}
+  }
+
+  function currentFilm394(){
+    try{
+      if(typeof tt76Current==='function')return tt76Current();
+    }catch(e){}
+    try{
+      if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null && taktikFilmer && taktikFilmer[editingTaktikIdx])return taktikFilmer[editingTaktikIdx];
+    }catch(e){}
+    return null;
+  }
+
+  function isReadonly394(tk){
+    try{ if(typeof tt76IsReadOnly==='function' && tt76IsReadOnly(tk))return true; }catch(e){}
+    try{ if(document.body && (document.body.classList.contains('tt-v76-readonly') || document.body.classList.contains('v74-readonly-taktik')))return true; }catch(e){}
+    return false;
+  }
+
+  function isEditingFilm394(){
+    try{
+      var tk=currentFilm394();
+      if(!tk || isReadonly394(tk))return false;
+      if(typeof editingStepIdx==='undefined' || editingStepIdx===null)return false;
+      if(!Array.isArray(tk.steps) || !tk.steps[editingStepIdx])return false;
+      var bar=document.getElementById('taktikbar');
+      var ui=document.getElementById('edit-taktik-ui');
+      return !!((bar && bar.style.display!=='none') || (ui && ui.style.display!=='none') || (typeof isEditingTaktik!=='undefined' && isEditingTaktik));
+    }catch(e){return false;}
+  }
+
+  function clone394(obj){
+    try{return JSON.parse(JSON.stringify(obj));}catch(e){return obj;}
+  }
+
+  function markDirty394(){
+    try{ if(typeof tt76MarkDirty==='function')tt76MarkDirty(); else taktikDirtyV17=true; }catch(e){}
+    try{ window.taktikDirtyV17=true; }catch(e){}
+  }
+
+  function stepLabel394(idx){
+    try{
+      var inp=document.getElementById('edit-step-name-inp');
+      var lbl=inp ? String(inp.value||'').trim() : '';
+      if(lbl)return lbl;
+    }catch(e){}
+    return idx===0?'Startläge':'Steg '+idx;
+  }
+
+  function commitCurrentCanvasToStep394(){
+    try{
+      var tk=currentFilm394();
+      if(!tk || !Array.isArray(tk.steps) || typeof editingStepIdx==='undefined' || editingStepIdx===null || !tk.steps[editingStepIdx])return;
+      var snap=(typeof currentSnap==='function') ? currentSnap() : clone394(tk.steps[editingStepIdx]);
+      if(!snap)return;
+      snap.label=stepLabel394(editingStepIdx);
+      tk.steps[editingStepIdx]=clone394(snap);
+      if(typeof playback!=='undefined' && playback){
+        playback.tk=tk;
+        playback.stepIndex=editingStepIdx;
+      }
+      markDirty394();
+      try{ if(typeof tt76UpdateEditUI==='function')tt76UpdateEditUI(); }catch(e){}
+      try{ if(typeof renderEditSteps==='function')renderEditSteps(tk); }catch(e){}
+    }catch(e){console.error('commitCurrentCanvasToStep394',e);}
+  }
+
+  function saveBeforeTool394(){
+    try{ if(typeof saveUndo==='function')saveUndo(); }catch(e){}
+    try{ if(typeof saveTaktikUndo==='function')saveTaktikUndo(); }catch(e){}
+  }
+
+  function clearDrawingState394(){
+    try{ arrows=[]; }catch(e){}
+    try{ labels=[]; }catch(e){}
+    try{ freehandPaths=[]; }catch(e){}
+    try{ zones=[]; }catch(e){}
+    try{ movementPaths=[]; }catch(e){}
+    try{ selectedId=null; arrowStart=null; arrowCurrent=null; freehandCurrent=null; freehandDrawing=false; zoneStart=null; zonePreview=null; movementCurrent=null; }catch(e){}
+    try{ if(typeof setMode==='function')setMode('move'); }catch(e){}
+  }
+
+  function clearCurrentStepDrawings394(){
+    if(!isEditingFilm394())return;
+    saveBeforeTool394();
+    clearDrawingState394();
+    try{ if(typeof render==='function')render(); }catch(e){}
+    commitCurrentCanvasToStep394();
+    try{ showToast('Ritningar och rörelsepilar rensade'); }catch(e){}
+  }
+
+  function undoCurrentStep394(){
+    if(!isEditingFilm394())return;
+    try{
+      if(typeof doUndo==='function'){
+        doUndo();
+        commitCurrentCanvasToStep394();
+        try{showToast('Ångrat');}catch(e){}
+        return;
+      }
+    }catch(e){console.error('undoCurrentStep394',e);}
+  }
+
+  function copyPositionsFromStart394(){
+    var tk=currentFilm394();
+    if(!tk || !Array.isArray(tk.steps) || !tk.steps[0])return false;
+    var start=tk.steps[0];
+    try{
+      var byId={};
+      (start.players||[]).forEach(function(p){ if(p && p.id!=null)byId[String(p.id)]={x:p.x,y:p.y}; });
+      (players||[]).forEach(function(p){
+        var sp=byId[String(p.id)];
+        if(sp){ p.x=sp.x; p.y=sp.y; }
+      });
+    }catch(e){}
+    try{
+      if(start.ball){ ball={x:start.ball.x,y:start.ball.y}; }
+    }catch(e){}
+    return true;
+  }
+
+  function resetCurrentStepToStart394(){
+    if(!isEditingFilm394())return;
+    saveBeforeTool394();
+    copyPositionsFromStart394();
+    clearDrawingState394();
+    try{ if(typeof render==='function')render(); }catch(e){}
+    commitCurrentCanvasToStep394();
+    try{ showToast('Steget återställt till utgångsläget'); }catch(e){}
+  }
+
+  function makeBtn394(id,txt,title,handler,extraClass){
+    var b=document.getElementById(id);
+    if(!b){
+      b=document.createElement('button');
+      b.type='button';
+      b.id=id;
+    }
+    b.className='btn tt394-taktik-tool '+(extraClass||'');
+    b.textContent=txt;
+    b.title=title;
+    b.setAttribute('aria-label',title);
+    b.style.cssText='padding:2px 6px;font-size:0.78rem;min-width:30px;height:26px;line-height:1;display:inline-flex;align-items:center;justify-content:center';
+    if(!b.dataset.tt394Bound){
+      b.dataset.tt394Bound='1';
+      b.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+        handler(e);
+        return false;
+      },true);
+    }
+    return b;
+  }
+
+  function ensureButtons394(){
+    try{
+      setVersion394();
+      var mv=document.getElementById('btn-tb-movement');
+      var row=mv&&mv.parentNode ? mv.parentNode : null;
+      if(!row)return;
+      row.classList.add('tt394-taktik-tools-row');
+      var clear=makeBtn394('btn-tb-clear-drawings','🧽','Sudda ritningar och rörelsepilar i aktuellt steg',clearCurrentStepDrawings394,'tt394-clear');
+      var undo=makeBtn394('btn-tb-undo','↶','Ångra senaste rit-/positionsändring i aktuellt steg',undoCurrentStep394,'tt394-undo');
+      var reset=makeBtn394('btn-tb-reset-start','↻','Återställ spelare/boll till utgångsläget och rensa ritningar',resetCurrentStepToStart394,'tt394-reset');
+      if(clear.parentNode!==row)row.insertBefore(clear,mv.nextSibling);
+      if(undo.parentNode!==row)row.insertBefore(undo,clear.nextSibling);
+      if(reset.parentNode!==row)row.insertBefore(reset,undo.nextSibling);
+    }catch(e){console.error('ensureButtons394',e);}
+  }
+
+  function injectStyle394(){
+    if(document.getElementById('tt394-taktikfilm-tools-style'))return;
+    var st=document.createElement('style');
+    st.id='tt394-taktikfilm-tools-style';
+    st.textContent=[
+      '#taktikbar .tt394-taktik-tools-row{overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;flex-wrap:nowrap!important;max-width:100%!important}',
+      '#taktikbar .tt394-taktik-tool{flex:0 0 auto!important;border-color:#2d4a35}',
+      '#taktikbar #btn-tb-clear-drawings{color:#e8c84a!important;border-color:#e8c84a!important}',
+      '#taktikbar #btn-tb-undo{color:#4ae87a!important;border-color:#4ae87a!important}',
+      '#taktikbar #btn-tb-reset-start{color:#e8c84a!important;border-color:#e8c84a!important}',
+      '@media(max-width:760px){#taktikbar .tt394-taktik-tool{min-width:28px!important;height:24px!important;padding:2px 5px!important;font-size:.72rem!important}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  var oldSetMode394=typeof setMode==='function'?setMode:null;
+  if(oldSetMode394 && !oldSetMode394.__tt394Wrapped){
+    var wrappedSetMode394=function(){
+      var r=oldSetMode394.apply(this,arguments);
+      setTimeout(ensureButtons394,0);
+      return r;
+    };
+    wrappedSetMode394.__tt394Wrapped=true;
+    setMode=wrappedSetMode394;
+    window.setMode=wrappedSetMode394;
+  }
+
+  function apply394(){
+    setVersion394();
+    injectStyle394();
+    ensureButtons394();
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply394);
+  else apply394();
+  document.addEventListener('click',function(){setTimeout(apply394,0);},true);
+  [80,250,700,1200,2500,5000,8000].forEach(function(ms){setTimeout(apply394,ms);});
+
+  window.tt394ApplyTaktikfilmEditTools=apply394;
+  window.tt394ClearCurrentTaktikStepDrawings=clearCurrentStepDrawings394;
+  window.tt394UndoCurrentTaktikStep=undoCurrentStep394;
+  window.tt394ResetCurrentTaktikStepToStart=resetCurrentStepToStart394;
+})();
+/* === slut v394-taktikfilm-edit-draw-undo-clear-reset === */
