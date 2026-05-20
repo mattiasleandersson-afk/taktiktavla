@@ -33730,3 +33730,171 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.ttSetStableVersion386=setVersion386;
 })();
 /* === slut v386-version-stabilizer-after-step-reorder === */
+
+
+/* === v387-taktikfilm-step-reorder-visible-buttons ===
+   Korrigering av v385/v386: den synliga steglistan byggs i den nyare tt76-renderaren,
+   inte i äldre renderEditSteps. Därför syntes inte flyttknapparna. Denna patch lägger
+   upp/ned-knappar direkt i tt76RenderStepList och återanvänder v385:s flytt-/omräkningslogik.
+*/
+(function(){
+  'use strict';
+  var VERSION='387';
+
+  function setVersion387(){
+    try{
+      ['app-version','version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id); if(el)el.textContent=VERSION;
+      });
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent=VERSION;
+      });
+    }catch(e){}
+  }
+
+  function btn387(txt,title,disabled,handler){
+    var b=document.createElement('button');
+    b.type='button';
+    b.className='sa tt-step-order-btn';
+    b.textContent=txt;
+    b.title=title||'';
+    b.disabled=!!disabled;
+    b.style.opacity=disabled?'0.28':'1';
+    b.style.minWidth='26px';
+    b.style.height='24px';
+    b.style.padding='2px 6px';
+    b.style.lineHeight='1';
+    b.style.fontWeight='900';
+    b.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      if(!disabled && typeof handler==='function')handler();
+      return false;
+    },true);
+    return b;
+  }
+
+  function move387(idx,dir){
+    if(typeof window.tt385MoveTaktikStep==='function'){
+      window.tt385MoveTaktikStep(idx,dir);
+      return;
+    }
+    // Enkel reserv om v385-helpern av någon anledning inte finns.
+    try{
+      var tk=(typeof tt76Current==='function')?tt76Current():null;
+      if(!tk||!Array.isArray(tk.steps))return;
+      if(typeof tt76IsReadOnly==='function' && tt76IsReadOnly(tk))return;
+      if(idx<=0)return;
+      var to=idx+dir;
+      if(to<=0||to>=tk.steps.length)return;
+      if(typeof tt76SaveCurrentStep==='function')tt76SaveCurrentStep({allowAutoCreate:false});
+      if(typeof saveTaktikUndo==='function')saveTaktikUndo();
+      var moved=tk.steps.splice(idx,1)[0];
+      tk.steps.splice(to,0,moved);
+      editingStepIdx=to;
+      if(typeof tt76NormalizeFilm==='function')tt76NormalizeFilm(tk);
+      if(typeof tt76LoadStep==='function')tt76LoadStep(to,{animate:false,skipSave:true});
+      if(typeof tt76MarkDirty==='function')tt76MarkDirty();
+      try{showToast('Steg flyttat');}catch(e){}
+    }catch(err){console.error('move387',err);}
+  }
+
+  function renderStepList387(tk){
+    try{
+      tk=(typeof tt76NormalizeFilm==='function')?tt76NormalizeFilm(tk||tt76Current()):(tk||null);
+      var list=document.getElementById('edit-taktik-steps');
+      if(!list||!tk||!Array.isArray(tk.steps))return;
+      list.innerHTML='';
+      var readOnly=(typeof tt76IsReadOnly==='function')?tt76IsReadOnly(tk):false;
+      for(var i=0;i<tk.steps.length;i++){
+        (function(idx){
+          var s=(typeof tt76SafeStep==='function')?tt76SafeStep(tk.steps[idx],idx):(tk.steps[idx]||{});
+          var row=document.createElement('div');
+          row.className='row'+(idx===editingStepIdx?' on':'');
+          row.dataset.idx=idx;
+          row.style.cursor='pointer';
+          row.title=idx===0?'Utgångsläget ligger alltid först':'Klicka för att öppna steget. Använd pilarna för att flytta.';
+
+          var num=document.createElement('span');
+          num.style.cssText='font-weight:900;font-size:0.85rem;color:#4ae87a;min-width:20px;text-align:center';
+          num.textContent=idx===0?'►':String(idx);
+
+          var name=document.createElement('input');
+          name.type='text';
+          name.value=s.label||((typeof tt76Label==='function')?tt76Label(idx):(idx===0?'Startläge':'Steg '+idx));
+          name.disabled=readOnly;
+          name.style.cssText='flex:1;background:#111a14;color:#edf5ee;border:1px solid #2d4a35;border-radius:4px;padding:3px 6px;font-size:0.78rem;min-width:68px';
+          name.addEventListener('input',function(e){
+            e.stopPropagation();
+            if(readOnly)return;
+            s.label=name.value.trim()||((typeof tt76Label==='function')?tt76Label(idx):(idx===0?'Startläge':'Steg '+idx));
+            if(typeof tt76MarkDirty==='function')tt76MarkDirty();
+          },true);
+
+          var up=btn387('↑','Flytta steget uppåt',readOnly||idx<=1,function(){move387(idx,-1);});
+          var down=btn387('↓','Flytta steget nedåt',readOnly||idx===0||idx>=tk.steps.length-1,function(){move387(idx,1);});
+
+          var del=btn387('×','Radera steget',readOnly||idx===0,function(){
+            if(readOnly||idx===0)return;
+            try{
+              if(typeof tt76SaveCurrentStep==='function')tt76SaveCurrentStep({allowAutoCreate:false});
+              if(typeof saveTaktikUndo==='function')saveTaktikUndo();
+              tk.steps.splice(idx,1);
+              editingStepIdx=Math.max(0,Math.min(idx,tk.steps.length-1));
+              if(typeof tt76NormalizeFilm==='function')tt76NormalizeFilm(tk);
+              if(typeof tt76LoadStep==='function')tt76LoadStep(editingStepIdx,{animate:false,skipSave:true});
+              if(typeof tt76MarkDirty==='function')tt76MarkDirty();
+            }catch(e){console.error('deleteStep387',e);}
+          });
+          del.className+=' del';
+          del.style.display=(idx===0||readOnly)?'none':'';
+
+          row.addEventListener('click',function(e){
+            var tag=e.target&&e.target.tagName?e.target.tagName.toLowerCase():'';
+            if(tag==='button'||tag==='input')return;
+            if(typeof tt76LoadStep==='function')tt76LoadStep(idx,{animate:false});
+          },true);
+
+          row.appendChild(num);
+          row.appendChild(name);
+          row.appendChild(up);
+          row.appendChild(down);
+          row.appendChild(del);
+          list.appendChild(row);
+        })(i);
+      }
+    }catch(err){console.error('renderStepList387',err);}
+  }
+
+  try{
+    tt76RenderStepList=renderStepList387;
+    window.tt76RenderStepList=renderStepList387;
+  }catch(e){}
+  try{
+    renderEditSteps=function(tk){renderStepList387(tk||((typeof tt76Current==='function')?tt76Current():null));};
+    window.renderEditSteps=renderEditSteps;
+  }catch(e){}
+  try{
+    if(typeof tt76UpdateEditUI==='function'){
+      var _oldUpdate387=tt76UpdateEditUI;
+      tt76UpdateEditUI=function(){
+        var r=_oldUpdate387.apply(this,arguments);
+        try{renderStepList387((typeof tt76Current==='function')?tt76Current():null);}catch(e){}
+        return r;
+      };
+      window.tt76UpdateEditUI=tt76UpdateEditUI;
+    }
+  }catch(e){}
+
+  function start387(){
+    setVersion387();
+    try{renderStepList387((typeof tt76Current==='function')?tt76Current():null);}catch(e){}
+    [80,250,700,1200,2500,5000].forEach(function(ms){setTimeout(setVersion387,ms);});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start387); else start387();
+  window.tt387RenderTaktikStepList=renderStepList387;
+  window.tt387MoveTaktikStep=move387;
+})();
+/* === slut v387-taktikfilm-step-reorder-visible-buttons === */
