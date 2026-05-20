@@ -1220,7 +1220,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">406</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">407</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1609,12 +1609,17 @@
 <div class="modal-bg hidden" id="modal-text">
   <div class="modal">
     <h2>L&#228;gg till text</h2>
-    <input type="text" class="minput wide" id="text-inp" placeholder="Press h&#228;r!" style="margin-bottom:10px;width:100%">
-    <div style="display:flex;gap:5px;margin-bottom:13px" id="size-btns">
+    <textarea class="minput wide" id="text-inp" placeholder="Press h&#228;r!" rows="4" style="margin-bottom:10px;width:100%;resize:vertical;line-height:1.25"></textarea>
+    <div style="display:flex;gap:5px;margin-bottom:8px" id="size-btns">
       <button class="btn" data-sz="10">S</button>
       <button class="btn on" data-sz="13">M</button>
       <button class="btn" data-sz="18">L</button>
       <button class="btn" data-sz="24">XL</button>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:13px" id="align-btns">
+      <button class="btn" data-align="left">V&#228;nster</button>
+      <button class="btn on" data-align="center">Centrera</button>
+      <button class="btn" data-align="right">H&#246;ger</button>
     </div>
     <div class="mactions">
       <button class="btn" id="text-cancel">Avbryt</button>
@@ -1627,12 +1632,17 @@
 <div class="modal-bg hidden" id="modal-edit-text">
   <div class="modal">
     <h2>Redigera text</h2>
-    <input type="text" class="minput wide" id="edit-text-inp" style="margin-bottom:10px;width:100%">
-    <div style="display:flex;gap:5px;margin-bottom:13px" id="edit-size-btns">
+    <textarea class="minput wide" id="edit-text-inp" rows="4" style="margin-bottom:10px;width:100%;resize:vertical;line-height:1.25"></textarea>
+    <div style="display:flex;gap:5px;margin-bottom:8px" id="edit-size-btns">
       <button class="btn" data-sz="10">S</button>
       <button class="btn on" data-sz="13">M</button>
       <button class="btn" data-sz="18">L</button>
       <button class="btn" data-sz="24">XL</button>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:13px" id="edit-align-btns">
+      <button class="btn" data-align="left">V&#228;nster</button>
+      <button class="btn on" data-align="center">Centrera</button>
+      <button class="btn" data-align="right">H&#246;ger</button>
     </div>
     <div class="mactions">
       <button class="btn danger" id="edit-text-del">Radera</button>
@@ -1799,7 +1809,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=406"></script>
+<script src="app.js?v=407"></script>
 
 <script>
 (function(){
