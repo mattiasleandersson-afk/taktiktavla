@@ -36655,3 +36655,122 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [50,150,400,900,1600,2600,4200,6500].forEach(function(ms){setTimeout(setVersion418,ms);});
 })();
 /* === slut v418-version-stabilizer-rollback-from-v415 === */
+
+
+/* === v419-taktikfilm-squad-name-live-drag ===
+   Bas: v418 stabil (v415-funktionalitet). Smal fix:
+   - När en truppkopplad spelare flyttas i Taktikfilm ska namn/nummer/tröja följa med visuellt direkt under drag.
+   - Inga nya visningsval, ingen ändring av stegdata, sparning eller Taktikfilm-logik.
+*/
+(function(){
+  if(window.__tt419TaktikfilmNameLiveDrag)return;
+  window.__tt419TaktikfilmNameLiveDrag=true;
+  var VERSION='419';
+  var LS_SYMBOL='tt404_tavla_symbol';
+  var LS_NUMBERS='tt404_tavla_numbers';
+  var LS_NAME_SIZE='tt400_tavla_name_size';
+
+  function setVersion419(){
+    try{
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id);
+        if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+      if(document.body)document.body.setAttribute('data-app-version',VERSION);
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+    }catch(e){}
+  }
+  function isEditingFilm419(){
+    try{return typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null && !!isEditingTaktik && !!taktikFilmer && !!taktikFilmer[editingTaktikIdx];}catch(e){return false;}
+  }
+  function squadId419(p){return p&&(p.squadPlayerId||p.truppId||p.squadId||null);}
+  function squadById419(id){
+    try{return (trupp||[]).find(function(sp){return String(sp.id)===String(id);})||null;}catch(e){return null;}
+  }
+  function defaultNumber419(p){
+    if(!p||!p.id)return '';
+    var m=String(p.id).match(/^[ha](\d+)$/);
+    if(m)return parseInt(m[1],10)+1;
+    return p.number||'';
+  }
+  function symbol419(){try{return localStorage.getItem(LS_SYMBOL)||'circle';}catch(e){return 'circle';}}
+  function showNr419(){try{var v=localStorage.getItem(LS_NUMBERS);return v===null?true:v!=='off';}catch(e){return true;}}
+  function nameSize419(){try{return Math.max(7,Math.min(22,parseInt(localStorage.getItem(LS_NAME_SIZE),10)||11));}catch(e){return 11;}}
+  function jerseyD419(x,y){return ['M',x-18,y-12,'L',x-9,y-22,'L',x-3,y-16,'L',x+3,y-16,'L',x+9,y-22,'L',x+18,y-12,'L',x+13,y-3,'L',x+10,y-6,'L',x+10,y+18,'L',x-10,y+18,'L',x-10,y-6,'L',x-13,y-3,'Z'].join(' ');}
+
+  function updateOneLive419(pid){
+    if(!isEditingFilm419()||!pid)return;
+    try{
+      var p=(players||[]).find(function(x){return String(x.id)===String(pid);});
+      if(!p||p.team!=='home')return;
+      var g=document.querySelector('.player-token[data-id="'+p.id+'"]');
+      if(!g)return;
+      var sid=squadId419(p), sp=sid?squadById419(sid):null;
+      if(sp){p.name=sp.namn||p.name||'';p.number=sp.nr||p.number;}
+      var sym=symbol419(), showNr=showNr419();
+      var c=g.querySelector('circle');
+      var token=g.querySelector('text.token-text');
+      if(c){c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);}
+      if(token){
+        token.textContent=showNr?(p.number||defaultNumber419(p)):'';
+        token.style.display=showNr?'':'none';
+        token.setAttribute('x',p.x);token.setAttribute('y',p.y+(sym==='jersey'?1:0));
+        token.setAttribute('text-anchor','middle');token.setAttribute('dominant-baseline','central');
+      }
+      var jersey=g.querySelector('path.tt415-jersey');
+      if(sym==='jersey'){
+        if(!jersey){
+          jersey=document.createElementNS('http://www.w3.org/2000/svg','path');
+          jersey.setAttribute('class','tt415-jersey');
+          jersey.setAttribute('pointer-events','none');
+          if(token)g.insertBefore(jersey,token);else g.appendChild(jersey);
+        }
+        jersey.setAttribute('d',jerseyD419(p.x,p.y));
+        jersey.setAttribute('fill',(c&&c.getAttribute('fill'))||(p.team==='home'?homeColor:awayColor));
+        jersey.setAttribute('stroke',(c&&c.getAttribute('stroke'))||'#fff');
+        jersey.setAttribute('stroke-width','2');jersey.setAttribute('stroke-linejoin','round');
+        if(c){c.style.opacity='0.01';c.setAttribute('pointer-events','all');}
+      }else{
+        if(jersey)jersey.remove();
+        if(c){c.style.opacity='';c.setAttribute('pointer-events','all');}
+      }
+      var nl=g.querySelector('text.tt415-squad-name-label');
+      if(sid&&p.name){
+        if(!nl){nl=document.createElementNS('http://www.w3.org/2000/svg','text');nl.setAttribute('class','tt415-squad-name-label');g.appendChild(nl);}
+        nl.setAttribute('x',p.x);
+        nl.setAttribute('y',p.y+(sym==='jersey'?31:28));
+        nl.setAttribute('text-anchor','middle');
+        nl.setAttribute('dominant-baseline','central');
+        nl.setAttribute('fill',daylightMode?'#111':'#fff');
+        nl.setAttribute('font-size',String(nameSize419()));
+        nl.setAttribute('font-weight','800');
+        nl.setAttribute('font-family','Arial Narrow,Arial,sans-serif');
+        nl.setAttribute('stroke',daylightMode?'rgba(255,255,255,.88)':'rgba(0,0,0,.88)');
+        nl.setAttribute('stroke-width','1.5');
+        nl.setAttribute('paint-order','stroke');
+        nl.textContent=p.name||'';
+      }else if(nl){nl.remove();}
+    }catch(e){console.warn('tt419 live name drag',e);}
+  }
+
+  if(typeof moveDrag==='function' && !moveDrag.__tt419Wrapped){
+    var oldMoveDrag419=moveDrag;
+    moveDrag=function(nx,ny){
+      var dragId=null;
+      try{if(dragging&&dragging.type==='player')dragId=dragging.id;}catch(e){}
+      var r=oldMoveDrag419.apply(this,arguments);
+      if(dragId)updateOneLive419(dragId);
+      setVersion419();
+      return r;
+    };
+    moveDrag.__tt419Wrapped=true;
+    window.moveDrag=moveDrag;
+  }
+  window.tt419UpdateTaktikfilmSquadDrag=updateOneLive419;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion419);else setVersion419();
+  [60,160,420,900,1700,3000,5000,8000].forEach(function(ms){setTimeout(setVersion419,ms);});
+})();
+/* === slut v419-taktikfilm-squad-name-live-drag === */
