@@ -1220,7 +1220,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px" id="app-version" class="app-version" data-version="app">395</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px" id="app-version" class="app-version" data-version="app">396</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1359,6 +1359,15 @@
     <button class="btn" id="btn-prev" style="font-size:0.85rem;padding:3px 8px">&#9664;</button>
     <span id="play-counter" style="color:#7aaa88;font-weight:700;font-size:0.78rem;min-width:40px;text-align:center">Start</span>
     <button class="btn" id="btn-next" style="font-size:0.85rem;padding:3px 8px">&#9654;</button>
+    <button class="btn" id="btn-play-all" style="padding:3px 7px;font-size:0.65rem;color:#4ae87a;border-color:#4ae87a;white-space:nowrap" title="Spela hela taktikfilmen automatiskt från aktuell position">&#9654; Spela hela</button>
+    <select class="btn" id="play-all-pause" style="padding:3px 12px 3px 5px;font-size:0.65rem;color:#7aaa88;border-color:#2d4a35;max-width:92px" title="Paus mellan steg vid Spela hela">
+      <option value="0">0 s paus</option>
+      <option value="300">0,3 s</option>
+      <option value="700" selected>0,7 s</option>
+      <option value="1000">1 s</option>
+      <option value="1500">1,5 s</option>
+      <option value="2000">2 s</option>
+    </select>
     <select class="btn" id="play-speed" style="padding:3px 12px 3px 5px;font-size:0.65rem" title="Uppspelningshastighet">
       <option value="1">1 Extra sakta</option>
       <option value="2">2</option>
@@ -1790,7 +1799,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=395"></script>
+<script src="app.js?v=396"></script>
 
 <script>
 (function(){
