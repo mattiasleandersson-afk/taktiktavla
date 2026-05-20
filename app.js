@@ -35726,3 +35726,351 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [50,250,900,2500,6000].forEach(function(ms){setTimeout(apply409,ms);});
 })();
 /* === slut v409-taktikfilm-fullscreen-stepbar-layout === */
+
+/* === v410-admin-match-trupp-soft-guard ===
+   Bas: v409.
+   Mjuk appspärr utan SQL/RLS-ändringar.
+   - Admin kan ändra Trupp och matchernas grundstruktur.
+   - Medlem kan se allt, se statistik och ändra/spara laguppställning + resultat i befintlig match.
+   - Medlem kan inte ändra Trupp, skapa/ta bort/byta grunddata för matcher eller ändra uttag/spelarurval.
+*/
+(function(){
+  if(window.__tt410AdminMatchTruppSoftGuard)return;
+  window.__tt410AdminMatchTruppSoftGuard=true;
+  var VERSION='411';
+
+  function setVersion410(){
+    try{
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id); if(el)el.textContent=VERSION;
+      });
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)$/i.test(t))el.textContent=VERSION;
+      });
+      var spans=document.querySelectorAll('span[style*="font-size:0.6rem"],span[style*="letter-spacing"]');
+      spans.forEach(function(s){
+        var t=String(s.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t))s.textContent=VERSION;
+      });
+    }catch(e){}
+  }
+
+  function isAdmin(){
+    try{var st=window.tt301GetAccessState&&window.tt301GetAccessState(); if(st&&st.allowed&&st.isAdmin)return true;}catch(e){}
+    return false;
+  }
+  function isNonAdminMember(){
+    try{var st=window.tt301GetAccessState&&window.tt301GetAccessState(); if(st&&st.allowed&&!st.isAdmin)return true;}catch(e){}
+    return false;
+  }
+  function toast(msg){try{showToast(msg,false);}catch(e){try{alert(msg);}catch(_){}}}
+  function block(e,msg){
+    try{if(e){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();}}catch(err){}
+    if(msg)toast(msg);
+    return false;
+  }
+  function disableEl(el,disabled){
+    if(!el)return;
+    try{el.disabled=!!disabled;}catch(e){}
+    try{el.classList.toggle('tt410-admin-only-disabled',!!disabled);}catch(e){}
+    try{el.setAttribute('aria-disabled',disabled?'true':'false');}catch(e){}
+  }
+  function hideEl(el,hide){
+    if(!el)return;
+    try{el.classList.toggle('tt410-admin-only-hidden',!!hide);}catch(e){}
+  }
+  function ensureStyle(){
+    if(document.getElementById('tt410-admin-guard-style'))return;
+    var st=document.createElement('style');
+    st.id='tt410-admin-guard-style';
+    st.textContent=[
+      '.tt410-admin-only-hidden{display:none!important}',
+      '.tt410-admin-only-disabled{opacity:.45!important;filter:grayscale(.35);cursor:not-allowed!important}',
+      '.tt410-readonly-note{margin:6px 0 8px;padding:7px 9px;border:1px solid rgba(74,232,122,.32);background:rgba(74,232,122,.07);border-radius:9px;color:#bff5c8;font-size:.72rem;line-height:1.35}',
+      '.tt410-readonly-note strong{color:#4ae87a}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+  function ensureNote(containerId,text){
+    var c=document.getElementById(containerId); if(!c)return;
+    var id='tt410-note-'+containerId;
+    var old=document.getElementById(id);
+    if(!isNonAdminMember()){if(old)old.remove();return;}
+    if(old){old.innerHTML=text;return;}
+    var n=document.createElement('div');
+    n.id=id;
+    n.className='tt410-readonly-note';
+    n.innerHTML=text;
+    c.insertBefore(n,c.firstChild);
+  }
+
+  function applyTruppGuard(){
+    var ro=isNonAdminMember();
+    ensureNote('lag-trupp','<strong>Medlemsläge:</strong> du kan se truppen, men bara admin kan lägga till, ändra eller ta bort spelare.');
+    ['ny-spelare-nr','ny-spelare-namn','btn-add-trupp'].forEach(function(id){disableEl(document.getElementById(id),ro);});
+    try{
+      document.querySelectorAll('#trupp-list button,.trupp-list button').forEach(function(b){hideEl(b,ro);disableEl(b,ro);});
+    }catch(e){}
+  }
+
+  function applyMatchGuard(){
+    var ro=isNonAdminMember();
+    ensureNote('lag-match','<strong>Medlemsläge:</strong> du kan öppna befintliga matcher och ändra laguppställning/resultat. Bara admin kan skapa match, ändra uttag eller matchens grunddata.');
+    ['btn-ny-match','btn-stat-to-match'].forEach(function(id){disableEl(document.getElementById(id),ro);});
+    // Matchens grunddata/uttag låses för medlem. Laguppställning sparas via bench-save i befintlig match.
+    ['match-datum','match-motstand'].forEach(function(id){disableEl(document.getElementById(id),ro);});
+    try{document.querySelectorAll('#match-trupp-list button').forEach(function(b){disableEl(b,ro);});}catch(e){}
+    try{
+      var toTaktik=document.getElementById('btn-match-to-taktik');
+      if(toTaktik)disableEl(toTaktik,ro&&!window._editingMatchId);
+    }catch(e){}
+  }
+
+  function applySavedMatchesGuard(){
+    var ro=isNonAdminMember();
+    ensureNote('lag-sparade','<strong>Medlemsläge:</strong> du kan ladda laguppställning och ändra resultat/uppställning. Bara admin kan redigera grunddata eller ta bort matcher.');
+    if(!ro)return;
+    try{
+      document.querySelectorAll('#sparade-match-list button').forEach(function(b){
+        var txt=String(b.textContent||'').trim();
+        if(txt==='✏' || txt==='×' || b.classList.contains('del')){hideEl(b,true);disableEl(b,true);}
+      });
+    }catch(e){}
+  }
+
+  function applyAll(){
+    ensureStyle();
+    setVersion410();
+    applyTruppGuard();
+    applyMatchGuard();
+    applySavedMatchesGuard();
+  }
+
+  // Stoppa farliga åtgärder innan äldre handlers hinner köra.
+  document.addEventListener('click',function(e){
+    try{
+      if(!isNonAdminMember())return;
+      var btn=e.target&&e.target.closest?e.target.closest('button,.btn,.sa'):null;
+      if(!btn)return;
+      var id=String(btn.id||'');
+      var txt=String(btn.textContent||'').trim();
+
+      if(id==='btn-add-trupp' || btn.closest('#trupp-list')){
+        return block(e,'Endast admin kan ändra truppen.');
+      }
+      if(id==='btn-ny-match' || id==='btn-stat-to-match'){
+        return block(e,'Endast admin kan skapa nya matcher eller ta ut lag.');
+      }
+      if(btn.closest('#match-trupp-list')){
+        return block(e,'Endast admin kan ändra matchens uttagna spelare.');
+      }
+      if(id==='btn-match-to-taktik' && !window._editingMatchId){
+        return block(e,'Endast admin kan ta ut lag till en ny match. Ladda en befintlig match för att ändra laguppställningen.');
+      }
+      if(btn.closest('#sparade-match-list') && (txt==='✏' || txt==='×' || btn.classList.contains('del'))){
+        return block(e,'Endast admin kan redigera grunddata eller ta bort matcher.');
+      }
+      if(id==='bench-save-btn'){
+        if(!window._editingMatchId)return block(e,'Medlem kan bara spara laguppställning/resultat i en befintlig match.');
+        window.__tt410BenchSaveInProgress=true;
+        setTimeout(function(){window.__tt410BenchSaveInProgress=false;},1800);
+        return;
+      }
+      if(id==='btn-spara-match'){
+        if(window.__tt410BenchSaveInProgress && window._editingMatchId)return;
+        return block(e,'Endast admin kan spara matchens grunddata. Använd Spara i laguppställningen för befintlig match.');
+      }
+    }catch(err){}
+  },true);
+
+  document.addEventListener('keydown',function(e){
+    try{
+      if(!isNonAdminMember())return;
+      if(e.key!=='Enter')return;
+      var el=e.target&&e.target.closest?e.target.closest('#ny-spelare-nr,#ny-spelare-namn'):null;
+      if(el)return block(e,'Endast admin kan ändra truppen.');
+    }catch(err){}
+  },true);
+
+  // Skydd även om någon gammal funktion anropas direkt.
+  try{
+    if(typeof saveTrupp==='function' && !saveTrupp._tt410Wrapped){
+      var _saveTrupp410=saveTrupp;
+      saveTrupp=function(){if(isNonAdminMember()){toast('Endast admin kan ändra truppen.');return Promise.resolve(null);}return _saveTrupp410.apply(this,arguments);};
+      saveTrupp._tt410Wrapped=true; window.saveTrupp=saveTrupp;
+    }
+  }catch(e){}
+  try{
+    if(typeof openEditMatch==='function' && !openEditMatch._tt410Wrapped){
+      var _openEditMatch410=openEditMatch;
+      openEditMatch=function(){if(isNonAdminMember()){toast('Endast admin kan redigera matchens grunddata. Använd Ladda uppst. för laguppställning/resultat.');return false;}return _openEditMatch410.apply(this,arguments);};
+      openEditMatch._tt410Wrapped=true; window.openEditMatch=openEditMatch;
+    }
+  }catch(e){}
+  try{
+    if(typeof renderTruppList==='function' && !renderTruppList._tt410Wrapped){
+      var _renderTruppList410=renderTruppList;
+      renderTruppList=function(){var r=_renderTruppList410.apply(this,arguments);setTimeout(applyTruppGuard,0);return r;};
+      renderTruppList._tt410Wrapped=true; window.renderTruppList=renderTruppList;
+    }
+  }catch(e){}
+  try{
+    if(typeof renderMatchTruppList==='function' && !renderMatchTruppList._tt410Wrapped){
+      var _renderMatchTruppList410=renderMatchTruppList;
+      renderMatchTruppList=function(){var r=_renderMatchTruppList410.apply(this,arguments);setTimeout(applyMatchGuard,0);return r;};
+      renderMatchTruppList._tt410Wrapped=true; window.renderMatchTruppList=renderMatchTruppList;
+    }
+  }catch(e){}
+  try{
+    if(typeof renderSparadeMatcherList==='function' && !renderSparadeMatcherList._tt410Wrapped){
+      var _renderSparadeMatcherList410=renderSparadeMatcherList;
+      renderSparadeMatcherList=function(){var r=_renderSparadeMatcherList410.apply(this,arguments);setTimeout(applySavedMatchesGuard,0);return r;};
+      renderSparadeMatcherList._tt410Wrapped=true; window.renderSparadeMatcherList=renderSparadeMatcherList;
+    }
+  }catch(e){}
+
+  document.addEventListener('click',function(e){
+    try{if(e.target&&e.target.closest&&e.target.closest('[data-lag]'))setTimeout(applyAll,30);}catch(err){}
+  },true);
+  document.addEventListener('DOMContentLoaded',applyAll);
+  if(document.readyState!=='loading')applyAll();
+  [100,400,900,1600,2600,4200].forEach(function(ms){setTimeout(applyAll,ms);});
+  window.tt410ApplyAdminMatchTruppGuard=applyAll;
+})();
+/* === slut v410-admin-match-trupp-soft-guard === */
+
+/* === v411-share-auth-token-repair ===
+   Bas: v410.
+   Smal fix: delningsrutor för Taktiktavla/Taktikfilm ska läsa med inloggad Supabase access_token.
+   Återställer inte gamla felsökningstoasts och ändrar inte delningsdata, RLS eller adminspärren.
+*/
+(function(){
+  if(window.__tt411ShareAuthTokenRepair)return;
+  window.__tt411ShareAuthTokenRepair=true;
+  var VERSION='411';
+  var AUTH_KEY='tt_auth_session_v1';
+
+  function setVersion411(){
+    try{
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id); if(el)el.textContent=VERSION;
+      });
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+      });
+      document.querySelectorAll('span[style*="font-size:0.6rem"],span[style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+      });
+    }catch(e){}
+  }
+
+  function readSession411(){
+    try{ if(window.tt298GetAuthSession)return window.tt298GetAuthSession(); }catch(e){}
+    try{ var raw=localStorage.getItem(AUTH_KEY); return raw?JSON.parse(raw):null; }catch(e){}
+    return null;
+  }
+  function saveSession411(s){
+    try{ if(s)localStorage.setItem(AUTH_KEY,JSON.stringify(s)); else localStorage.removeItem(AUTH_KEY); }catch(e){}
+  }
+  function tokenExpiredSoon411(s){
+    try{ return !!(s && s.expires_at && (Date.now()/1000) > (Number(s.expires_at)-90)); }catch(e){return false;}
+  }
+  function token411(){
+    try{ var s=readSession411(); return String(s&&s.access_token||''); }catch(e){return '';}
+  }
+  function authHeaders411(token){
+    return {'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+(token||SUPA_KEY)};
+  }
+  function refreshSession411(){
+    var s=readSession411();
+    if(!s || !s.refresh_token || !tokenExpiredSoon411(s))return Promise.resolve(s||null);
+    return fetch(SUPA_URL+'/auth/v1/token?grant_type=refresh_token',{
+      method:'POST',headers:authHeaders411(),body:JSON.stringify({refresh_token:s.refresh_token})
+    }).then(function(r){return r.text().then(function(txt){
+      var data={}; try{data=txt?JSON.parse(txt):{};}catch(e){data={message:txt};}
+      if(!r.ok)throw new Error(data.error_description||data.msg||data.message||('Auth-fel '+r.status));
+      saveSession411(data); return data;
+    });}).catch(function(err){
+      try{console.warn('[v411] Kunde inte förnya session inför delning:',err);}catch(e){}
+      return null;
+    });
+  }
+
+  // Gör supaHeaders tydlig igen för delnings-/REST-anrop: finns inloggad token ska den alltid användas.
+  try{
+    window.supaHeaders=function(extra){
+      var h={'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+(token411()||SUPA_KEY)};
+      if(extra)Object.keys(extra).forEach(function(k){h[k]=extra[k];});
+      return h;
+    };
+  }catch(e){}
+
+  // Extra säkerhet för äldre fetch-anrop mot delningstabellerna: byt anon Authorization mot aktuell access_token.
+  try{
+    if(!window.__tt411OriginalFetch){
+      window.__tt411OriginalFetch=window.fetch;
+      window.fetch=function(input,init){
+        try{
+          var url=(typeof input==='string')?input:(input&&input.url)||'';
+          var isShare=url.indexOf('/rest/v1/formation_team_shares')>=0 || url.indexOf('/rest/v1/taktikfilm_team_shares')>=0;
+          if(isShare){
+            init=init?Object.assign({},init):{};
+            var h=new Headers(init.headers || (input&&input.headers) || {});
+            var tok=token411();
+            if(!h.has('apikey') && typeof SUPA_KEY==='string')h.set('apikey',SUPA_KEY);
+            if(tok)h.set('Authorization','Bearer '+tok);
+            init.headers=h;
+          }
+        }catch(e){}
+        return window.__tt411OriginalFetch.call(this,input,init);
+      };
+    }
+  }catch(e){}
+
+  function showNeedLogin411(){
+    try{showToast('Logga in igen för att dela filer.',false);}catch(e){try{alert('Logga in igen för att dela filer.');}catch(_){} }
+  }
+  function ensureShareAuth411(){
+    return refreshSession411().then(function(s){
+      var tok=token411();
+      if(!tok){showNeedLogin411();return false;}
+      return true;
+    });
+  }
+
+  function wrapShareOpeners411(){
+    try{
+      if(window.tt364OpenFormationShareModal && !window.tt364OpenFormationShareModal._tt411Wrapped){
+        var oldF=window.tt364OpenFormationShareModal;
+        var wrappedF=function(file){
+          setVersion411();
+          return ensureShareAuth411().then(function(ok){ if(ok)return oldF(file); });
+        };
+        wrappedF._tt411Wrapped=true;
+        window.tt364OpenFormationShareModal=wrappedF;
+        window.tt367OpenFormationShareModal=wrappedF;
+      }
+    }catch(e){}
+    try{
+      if(window.tt371OpenTaktikfilmShareModal && !window.tt371OpenTaktikfilmShareModal._tt411Wrapped){
+        var oldT=window.tt371OpenTaktikfilmShareModal;
+        var wrappedT=function(file){
+          setVersion411();
+          return ensureShareAuth411().then(function(ok){ if(ok)return oldT(file); });
+        };
+        wrappedT._tt411Wrapped=true;
+        window.tt371OpenTaktikfilmShareModal=wrappedT;
+        window.tt370OpenTaktikfilmShareModal=wrappedT;
+      }
+    }catch(e){}
+  }
+
+  function apply411(){setVersion411();wrapShareOpeners411();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply411);else apply411();
+  [80,300,900,1800,3500,6500].forEach(function(ms){setTimeout(apply411,ms);});
+  window.tt411ApplyShareAuthRepair=apply411;
+})();
+/* === slut v411-share-auth-token-repair === */
