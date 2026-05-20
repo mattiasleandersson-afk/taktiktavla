@@ -31570,14 +31570,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           window._tt364FormationSharesSample=Array.isArray(rows)?rows:[];
           try{localStorage.setItem('tt_formation_team_shares_read_v367',JSON.stringify({ok:true,count:Array.isArray(rows)?rows.length:0,checkedAt:new Date().toISOString()}));}catch(e){}
           try{console.log('[Taktiktavla v367] formation_team_shares läsbar',rows);}catch(e){}
-          try{if(typeof showToast==='function')showToast('Delningstabell läsbar ✓');}catch(e){}
         })
         .catch(function(err){
           window._tt364FormationSharesReadOk=false;
           window._tt364FormationSharesReadError=String(err&&err.message||err||'okänt fel');
           try{localStorage.setItem('tt_formation_team_shares_read_v367',JSON.stringify({ok:false,error:window._tt364FormationSharesReadError,checkedAt:new Date().toISOString()}));}catch(e){}
           try{console.warn('[Taktiktavla v367] formation_team_shares kunde inte läsas:',err);}catch(e){}
-          try{if(typeof showToast==='function')showToast('Delningstabell kunde inte läsas',false);}catch(e){}
         });
     }catch(e){}
   }
@@ -31586,9 +31584,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     setVersion364();
     setTimeout(setVersion364,400);
     setTimeout(setVersion364,1600);
-    setTimeout(readFormationTeamShares364,1500);
-    setTimeout(readFormationTeamShares364,3500);
-    setTimeout(readFormationTeamShares364,6500);
+    // v402: gammal diagnostisk läsning/toast av formation_team_shares är avstängd.
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule364);else schedule364();
 })();
@@ -32276,14 +32272,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           window._tt371TaktikfilmSharesSample=Array.isArray(rows)?rows:[];
           try{localStorage.setItem('tt_taktikfilm_team_shares_read_v371',JSON.stringify({ok:true,count:Array.isArray(rows)?rows.length:0,checkedAt:new Date().toISOString()}));}catch(e){}
           try{console.log('[Taktiktavla v371] taktikfilm_team_shares läsbar',rows);}catch(e){}
-          try{if(typeof showToast==='function')showToast('Taktikfilm-delningstabell läsbar ✓');}catch(e){}
         })
         .catch(function(err){
           window._tt371TaktikfilmSharesReadOk=false;
           window._tt371TaktikfilmSharesReadError=String(err&&err.message||err||'okänt fel');
           try{localStorage.setItem('tt_taktikfilm_team_shares_read_v371',JSON.stringify({ok:false,error:window._tt371TaktikfilmSharesReadError,checkedAt:new Date().toISOString()}));}catch(e){}
           try{console.warn('[Taktiktavla v371] taktikfilm_team_shares kunde inte läsas:',err);}catch(e){}
-          try{if(typeof showToast==='function')showToast('Taktikfilm-delningstabell kunde inte läsas',false);}catch(e){}
         });
     }catch(e){}
   }
@@ -32293,9 +32287,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     setTimeout(setVersion371,400);
     setTimeout(setVersion371,1600);
     setTimeout(setVersion371,3200);
-    setTimeout(readTaktikfilmTeamShares371,1500);
-    setTimeout(readTaktikfilmTeamShares371,3500);
-    setTimeout(readTaktikfilmTeamShares371,6500);
+    // v402: gammal diagnostisk läsning/toast av taktikfilm_team_shares är avstängd.
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule371);else schedule371();
 })();
@@ -35423,3 +35415,51 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt401OpenTavlaSquadPicker=openPicker401;
 })();
 /* === slut v401-tavla-truppval-tap-contextmenu === */
+
+
+/* === v402-versionfix-clean-debug-toast ===
+   Bas: v401. Endast två städningar:
+   1) Lås synlig version till 402 så äldre sena versionssättare från 399/400/401 inte skriver över.
+   2) Stäng av gammal diagnostisk taktikfilm_team_shares-toast från v371.
+   Rör inte truppval, Taktikfilm, steglogik, drag/drop, sparning eller Supabase/RLS.
+*/
+(function(){
+  if(window.__tt402VersionFix)return;
+  window.__tt402VersionFix=true;
+  var VERSION='402';
+  function setVersion402(){
+    try{
+      var selectors='[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]';
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id);
+        if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+      if(document.body)document.body.setAttribute('data-app-version',VERSION);
+      document.querySelectorAll(selectors).forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(!t || /^(v?\d+|v3\.|v4\.)/i.test(t)){
+          el.textContent=VERSION;
+          el.setAttribute('data-version',VERSION);
+        }
+      });
+    }catch(e){}
+  }
+  function disableOldShareProbe402(){
+    try{
+      window._tt371TaktikfilmSharesProbeStarted=true;
+      window._tt371TaktikfilmSharesReadOk=true;
+      window._tt364FormationSharesProbeStarted=true;
+      window._tt364FormationSharesReadOk=true;
+    }catch(e){}
+  }
+  function apply402(){disableOldShareProbe402();setVersion402();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply402);else apply402();
+  [0,80,250,500,1000,1600,2400,4000,7000,12000,20000].forEach(function(ms){setTimeout(apply402,ms);});
+  try{
+    var mo=new MutationObserver(function(){setVersion402();});
+    if(document.documentElement)mo.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+    window.__tt402VersionObserver=mo;
+  }catch(e){}
+  window.tt402SetVersion=setVersion402;
+})();
+/* === slut v402-versionfix-clean-debug-toast === */
