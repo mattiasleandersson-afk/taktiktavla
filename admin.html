@@ -717,6 +717,65 @@
       <textarea id="handoff-v483-text" readonly placeholder="Överlämningen skapas här när du trycker på Bygg överlämningspaket."></textarea>
     </section>
 
+
+    <section class="card" id="testadmin-v484-card">
+      <div class="row" style="align-items:center;justify-content:space-between;gap:10px">
+        <div>
+          <h2 style="margin:0">Testadmin/testapp-förberedelse</h2>
+          <p class="muted">Förbereder vad som måste ändras när en separat testadmin/testapp ska peka mot test-Supabase. Skapar bara lokal text. Ingen SQL, ingen restore och inget skickas till Supabase.</p>
+        </div>
+        <button id="btn-testadmin-v484" class="primary right" type="button">Bygg testadmin-plan</button>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label for="testadmin-v484-prod-url">Produktions-Supabase URL, endast jämförelse</label>
+          <input id="testadmin-v484-prod-url" type="text" readonly>
+        </div>
+        <div>
+          <label for="testadmin-v484-test-url">Test-Supabase URL</label>
+          <input id="testadmin-v484-test-url" type="text" placeholder="https://ditt-testprojekt.supabase.co">
+        </div>
+        <div>
+          <label for="testadmin-v484-test-anon">Test-Supabase public anon key, valfri anteckning</label>
+          <input id="testadmin-v484-test-anon" type="text" placeholder="eyJ...  OBS: aldrig service-role key">
+        </div>
+        <div>
+          <label for="testadmin-v484-test-admin">Planerad testadmin-URL</label>
+          <input id="testadmin-v484-test-admin" type="text" placeholder="https://taktiktavla-restore-test.vercel.app/admin.html">
+        </div>
+        <div>
+          <label for="testadmin-v484-test-app">Planerad testapp-URL</label>
+          <input id="testadmin-v484-test-app" type="text" placeholder="https://taktiktavla-restore-test.vercel.app">
+        </div>
+        <div>
+          <label for="testadmin-v484-note">Kort notering, valfri</label>
+          <input id="testadmin-v484-note" type="text" placeholder="Ex: lokalt test först, därefter Vercel testdeploy">
+        </div>
+      </div>
+
+      <label for="testadmin-v484-file">Backupfil som senare ska testas i testadmin</label>
+      <input id="testadmin-v484-file" type="file" accept="application/json,.json">
+
+      <div class="checklist" aria-label="Testadmin/testapp-förberedelse v484">
+        <label class="checkline"><input id="testadmin-v484-check-separate" type="checkbox"><span>Testadmin/testapp ska peka mot separat test-Supabase, inte produktion.</span></label>
+        <label class="checkline"><input id="testadmin-v484-check-anon" type="checkbox"><span>Endast public anon key får användas i webbläsaren/admin.html, aldrig service-role key.</span></label>
+        <label class="checkline"><input id="testadmin-v484-check-visible" type="checkbox"><span>Testmiljön ska märkas tydligt så den inte blandas ihop med produktionsadmin.</span></label>
+        <label class="checkline"><input id="testadmin-v484-check-sql" type="checkbox"><span>Test-Supabase ska ha grundschema/RLS/RPC innan skrivande restore byggs.</span></label>
+        <label class="checkline"><input id="testadmin-v484-check-readonly" type="checkbox"><span>Den här planen gör ingen restore och får inte ersätta riktig testkörning.</span></label>
+      </div>
+
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button id="btn-copy-testadmin-v484" class="small" type="button">Kopiera testadmin-plan</button>
+        <button id="btn-clear-testadmin-v484" class="small" type="button">Rensa</button>
+      </div>
+      <div id="testadmin-v484-status" class="status" style="margin-top:10px">Ingen testadmin-plan byggd ännu.</div>
+      <div id="testadmin-v484-grid" class="statusgrid" aria-label="Testadmin-plan status"></div>
+      <div id="testadmin-v484-details" class="statusnote"></div>
+      <label for="testadmin-v484-text">Kopierbar testadmin/testapp-plan</label>
+      <textarea id="testadmin-v484-text" readonly placeholder="Planen skapas här när du trycker på Bygg testadmin-plan."></textarea>
+    </section>
+
   </main>
 </div>
 
@@ -2774,6 +2833,141 @@
   ['handoff-v483-test-url','handoff-v483-test-admin','handoff-v483-note'].forEach(function(id){if($(id))$(id).addEventListener('input',hv483SetDirty);});
   if($('handoff-v483-file'))$('handoff-v483-file').addEventListener('change',hv483SetDirty);
   hv483Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',hv483SetDirty);});
+
+
+  // v484: Testadmin/testapp-förberedelse. Read-only och isolerad.
+  function ta484Norm(u){return String(u||'').trim().replace(/\/+$/,'').toLowerCase();}
+  function ta484Checks(){return [
+    {id:'testadmin-v484-check-separate',txt:'Testadmin/testapp pekar mot separat test-Supabase, inte produktion.'},
+    {id:'testadmin-v484-check-anon',txt:'Endast public anon key används i webbläsaren/admin.html, aldrig service-role key.'},
+    {id:'testadmin-v484-check-visible',txt:'Testmiljön märks tydligt så den inte blandas ihop med produktionsadmin.'},
+    {id:'testadmin-v484-check-sql',txt:'Test-Supabase har grundschema/RLS/RPC innan skrivande restore byggs.'},
+    {id:'testadmin-v484-check-readonly',txt:'Planen gör ingen restore och ersätter inte riktig testkörning.'}
+  ];}
+  function ta484SetDirty(){
+    var st=$('testadmin-v484-status');
+    if(st){st.textContent='Ändringar gjorda. Tryck Bygg testadmin-plan för att skapa/uppdatera planen.';st.className='status';}
+  }
+  function ta484Clear(){
+    ['testadmin-v484-test-url','testadmin-v484-test-anon','testadmin-v484-test-admin','testadmin-v484-test-app','testadmin-v484-note'].forEach(function(id){if($(id))$(id).value='';});
+    if($('testadmin-v484-file'))$('testadmin-v484-file').value='';
+    ta484Checks().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    if($('testadmin-v484-grid'))$('testadmin-v484-grid').innerHTML='';
+    if($('testadmin-v484-details'))$('testadmin-v484-details').innerHTML='';
+    if($('testadmin-v484-text'))$('testadmin-v484-text').value='';
+    if($('testadmin-v484-status')){$('testadmin-v484-status').textContent='Ingen testadmin-plan byggd ännu.';$('testadmin-v484-status').className='status';}
+  }
+  function ta484BuildText(info,reasons){
+    var lines=[];
+    lines.push('Taktiktavla – testadmin/testapp-förberedelse v484');
+    lines.push('Syfte: förbereda separat testadmin/testapp som pekar mot test-Supabase innan skrivande restore byggs. Ingen restore/import/SQL har körts.');
+    lines.push('');
+    lines.push('STABIL BAS');
+    lines.push('- Huvudapp: v455');
+    lines.push('- Admin: v484');
+    lines.push('- Använd inte v466, v470, v472, v474 eller v481. v483 var fungerande bas före v484.');
+    lines.push('');
+    lines.push('KONFIGURATION SOM SKA ÄNDRAS I TESTKOPIAN');
+    lines.push('- Produktions-Supabase URL: '+(info.prodRaw||'[saknas]'));
+    lines.push('- Test-Supabase URL: '+(info.testRaw||'[saknas]'));
+    lines.push('- Test-Supabase anon key antecknad: '+(info.hasAnon?'ja, kontrollera att det är anon key och inte service-role':'nej/senare'));
+    lines.push('- Testadmin-URL: '+(info.testAdmin||'[saknas/senare]'));
+    lines.push('- Testapp-URL: '+(info.testApp||'[saknas/senare]'));
+    if(info.note)lines.push('- Notering: '+info.note);
+    lines.push('');
+    lines.push('BACKUP SOM SKA TESTAS SENARE');
+    lines.push('- Fil: '+(info.fileName||'[saknas]'));
+    lines.push('- backupVersion: '+(info.backupVersion==null?'[saknas]':info.backupVersion));
+    lines.push('- adminExportVersion: '+(info.adminExportVersion==null?'[saknas]':info.adminExportVersion));
+    lines.push('- appVersion: '+(info.appVersion==null?'[saknas]':info.appVersion));
+    lines.push('- saves: '+(info.saves==null?'[saknas]':info.saves));
+    lines.push('- lagkoder: '+(info.teamCodes&&info.teamCodes.length?info.teamCodes.join(', '):'[saknas/inga]'));
+    lines.push('');
+    lines.push('CHECKLISTA');
+    lines.push('- Markerade punkter: '+info.checked+'/'+info.total);
+    ta484Checks().forEach(function(x){lines.push((info.checkedIds[x.id]?'[x] ':'[ ] ')+x.txt);});
+    lines.push('');
+    if(reasons.length){lines.push('STOPP före testadmin/testapp-fasen:');reasons.forEach(function(r){lines.push('- '+r);});}
+    else{lines.push('STATUS: Planen är redo. Nästa steg är att skapa/kopiera admin/testapp och byta Supabase URL + public anon key i TESTKOPIAN.');}
+    lines.push('');
+    lines.push('PRAKTISK ORDNING');
+    lines.push('1. Skapa eller öppna separat Supabase-testprojekt.');
+    lines.push('2. Kopiera admin.html till separat testadmin-fil/deploy.');
+    lines.push('3. Byt bara testkopians SUPA_URL och public anon key till testprojektet.');
+    lines.push('4. Lägg tydlig märkning i testadmin/testapp, t.ex. TESTMILJÖ.');
+    lines.push('5. Kör schema/RLS/RPC i testprojektet enligt SQL-checklistan.');
+    lines.push('6. Lägg till minst en app_admin i testprojektet.');
+    lines.push('7. Logga in i testadmin och kör systemstatus/backupkontroll där.');
+    lines.push('8. Först därefter byggs skrivande restore, endast i testmiljön.');
+    lines.push('');
+    lines.push('HÅRDA STOPP');
+    lines.push('- Ingen service-role-nyckel i admin.html eller annan webbläsarkod.');
+    lines.push('- Ingen restore mot produktions-Supabase.');
+    lines.push('- Om test-URL matchar produktion: stoppa direkt.');
+    return lines.join('\n');
+  }
+  async function ta484Render(){
+    var st=$('testadmin-v484-status'), grid=$('testadmin-v484-grid'), details=$('testadmin-v484-details'), text=$('testadmin-v484-text');
+    if(!st||!grid||!details||!text)return;
+    grid.innerHTML='';details.innerHTML='';text.value='';st.textContent='Testadmin-plan: kontrollerar val...';st.className='status';
+    try{
+      var prodRaw=SUPA_URL||'', prod=ta484Norm(prodRaw);
+      var testRaw=(($('testadmin-v484-test-url')&&$('testadmin-v484-test-url').value)||'').trim();
+      var test=ta484Norm(testRaw);
+      var anon=(($('testadmin-v484-test-anon')&&$('testadmin-v484-test-anon').value)||'').trim();
+      var testAdmin=(($('testadmin-v484-test-admin')&&$('testadmin-v484-test-admin').value)||'').trim();
+      var testApp=(($('testadmin-v484-test-app')&&$('testadmin-v484-test-app').value)||'').trim();
+      var note=(($('testadmin-v484-note')&&$('testadmin-v484-note').value)||'').trim();
+      var file=$('testadmin-v484-file')&&$('testadmin-v484-file').files&&$('testadmin-v484-file').files[0];
+      var checks=ta484Checks(), checkedIds={}, checked=0, total=checks.length;
+      checks.forEach(function(x){var ok=!!($(x.id)&&$(x.id).checked);checkedIds[x.id]=ok;if(ok)checked++;});
+      var reasons=[];
+      if(!testRaw)reasons.push('Test-Supabase URL saknas.');
+      if(testRaw&&!/^https:\/\/[^\s]+\.supabase\.co\/?$/i.test(testRaw))reasons.push('Test-Supabase URL ser inte ut som en Supabase Project URL.');
+      if(testRaw&&prod&&test===prod)reasons.push('Test-Supabase URL är samma som produktions-URL. Stoppa här.');
+      if(anon&&/service[_-]?role/i.test(anon))reasons.push('Anon key-fältet verkar innehålla texten service-role. Använd aldrig service-role i webbläsaren.');
+      if(!file)reasons.push('Backupfil saknas.');
+      if(checked<total)reasons.push('Alla säkerhetspunkter är inte markerade.');
+      var data=null,tables={},teamCodes=[];
+      if(file){
+        data=await readLocalJsonFile(file);
+        tables=backupTables(data);
+        teamCodes=(data&&Array.isArray(data.teamCodesInSaves))?data.teamCodesInSaves:[];
+        if(!data||data.backupType!=='full-disaster-backup')reasons.push('Backupfilen har inte backupType full-disaster-backup.');
+        if(Number(data&&data.backupVersion)!==1)reasons.push('Backupversion är inte 1.');
+        if(Number((data&&data.adminExportVersion)||0)<460)reasons.push('Adminexport är äldre än 460.');
+        if(!Array.isArray(tables.saves)||!tables.saves.length)reasons.push('Backupen innehåller inga saves/appdata.');
+      }
+      var info={prodRaw:prodRaw,testRaw:testRaw,hasAnon:!!anon,testAdmin:testAdmin,testApp:testApp,note:note,fileName:file&&file.name,checked:checked,total:total,checkedIds:checkedIds,
+        backupVersion:data&&data.backupVersion,adminExportVersion:data&&data.adminExportVersion,appVersion:data&&data.appVersion,saves:Array.isArray(tables.saves)?tables.saves.length:null,teamCodes:teamCodes};
+      var ready=!reasons.length;
+      grid.innerHTML=''
+        +statusCard('Test-Supabase',testRaw?testRaw.replace(/^https?:\/\//,''):'saknas',(!testRaw||test===prod)?'bad':'')
+        +statusCard('Anon key',anon?'antecknad':'senare',anon?'':'warn')
+        +statusCard('Backup',file?file.name:'saknas',file?'':'bad')
+        +statusCard('Checklistan',checked+'/'+total,checked===total?'':'warn')
+        +statusCard('Plan',ready?'REDO':'STOPP',ready?'':'bad');
+      var html='<p><strong>Detta är bara en plan för testadmin/testapp.</strong> Den gör ingen SQL, ingen restore och ingen Supabase-skrivning.</p>';
+      if(reasons.length)html+='<div class="warntext"><strong>Inte redo ännu:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
+      else html+='<p class="oktext"><strong>Redo att användas som underlag för separat testadmin/testapp.</strong> Nästa arbete ska ske i kopia/testdeploy, inte i produktionsadmin.</p>';
+      html+='<p><strong>Viktig gräns:</strong> bara public anon key får användas i webbläsarkod. Service-role-nyckel får aldrig in i admin.html.</p>';
+      details.innerHTML=html;
+      text.value=ta484BuildText(info,reasons);
+      st.textContent=(ready?'Testadmin-plan: REDO. ':'Testadmin-plan: STOPP/KONTROLL. ')+(reasons[0]||'')+' Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.';
+      st.className=ready?'status ok':'status warn';
+    }catch(e){
+      st.textContent='Testadmin-plan: tekniskt fel i rutan: '+(e&&e.message?e.message:e);
+      st.className='status bad';
+      details.innerHTML='<div class="badtext"><strong>Tekniskt fel:</strong> '+esc(e&&e.message?e.message:e)+'</div>';
+    }
+  }
+  if($('testadmin-v484-prod-url'))$('testadmin-v484-prod-url').value=SUPA_URL||'';
+  if($('btn-testadmin-v484'))$('btn-testadmin-v484').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();ta484Render();});
+  if($('btn-clear-testadmin-v484'))$('btn-clear-testadmin-v484').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();ta484Clear();});
+  if($('btn-copy-testadmin-v484'))$('btn-copy-testadmin-v484').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('testadmin-v484-text')&&$('testadmin-v484-text').value)||'');});
+  ['testadmin-v484-test-url','testadmin-v484-test-anon','testadmin-v484-test-admin','testadmin-v484-test-app','testadmin-v484-note'].forEach(function(id){if($(id))$(id).addEventListener('input',ta484SetDirty);});
+  if($('testadmin-v484-file'))$('testadmin-v484-file').addEventListener('change',ta484SetDirty);
+  ta484Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',ta484SetDirty);});
 
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
