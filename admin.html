@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v467</title>
+<title>Taktiktavla admin v468</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -156,7 +156,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Restore-skydd / skarp checklista</h2>
-          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v467 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
+          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v468 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Ingen återställning görs här.</strong> Riktig restore ska inte byggas/startas förrän checklistan är grön och du uttryckligen väljer att gå vidare i en separat framtida version.</div>
@@ -183,7 +183,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-plan för riktig restore</h2>
-          <p>Detta steg hjälper dig planera en separat testmiljö innan någon riktig återställningskod byggs. v467 skriver fortfarande ingenting till Supabase. Den läser bara en backupfil lokalt och visar exakt vad som bör skapas/testas utanför den riktiga appen.</p>
+          <p>Detta steg hjälper dig planera en separat testmiljö innan någon riktig återställningskod byggs. v468 skriver fortfarande ingenting till Supabase. Den läser bara en backupfil lokalt och visar exakt vad som bör skapas/testas utanför den riktiga appen.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Mål:</strong> kunna testa framtida restore mot en tom testdatabas/testapp, inte mot din riktiga Taktiktavla-miljö.</div>
@@ -202,7 +202,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-checklista / startpaket</h2>
-          <p>Detta steg gör planen mer praktisk: välj backupfilen och bygg en kopierbar checklista för separat Supabase-testprojekt och separat testadmin/testapp. v467 skriver fortfarande ingenting och gör ingen restore.</p>
+          <p>Detta steg gör planen mer praktisk: välj backupfilen och bygg en kopierbar checklista för separat Supabase-testprojekt och separat testadmin/testapp. v468 skriver fortfarande ingenting och gör ingen restore.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Säkerhetsidé:</strong> den här checklistan ska hjälpa oss att hålla produktion och test helt åtskilda innan någon skrivande restore ens byggs.</div>
@@ -240,7 +240,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-konfiguration</h2>
-          <p>Detta steg gör testmiljön mer konkret: fyll i test-Supabase och test-URL:er och bygg en kopierbar konfigurationsplan. v467 skriver fortfarande ingenting, skapar inget projekt och gör ingen restore.</p>
+          <p>Detta steg gör testmiljön mer konkret: fyll i test-Supabase och test-URL:er och bygg en kopierbar konfigurationsplan. v468 skriver fortfarande ingenting, skapar inget projekt och gör ingen restore.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Syfte:</strong> minska risken att testadmin/testapp råkar peka mot produktion när vi senare testar en skrivande restore.</div>
@@ -982,7 +982,7 @@
     html+='<div style="margin-top:8px"><strong>Backupen som checklistan bygger på:</strong> '+esc(fileName)+' · backupType: '+esc((data&&data.backupType)||'–')+' · exportedAt: '+esc((data&&data.exportedAt)||'–')+'</div>';
     if(validation.errors.length)html+='<div class="badtext" style="margin-top:8px"><strong>Fel:</strong><ul><li>'+validation.errors.map(esc).join('</li><li>')+'</li></ul></div>';
     if(validation.warnings.length)html+='<div class="warntext" style="margin-top:8px"><strong>Varningar:</strong><ul><li>'+validation.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
-    html+='<div class="helpbox">Den kopierbara checklistan är tänkt som arbetsunderlag när test-Supabase/testadmin skapas. v467 gör fortfarande ingen återställning.</div>';
+    html+='<div class="helpbox">Den kopierbara checklistan är tänkt som arbetsunderlag när test-Supabase/testadmin skapas. v468 gör fortfarande ingen återställning.</div>';
     details.innerHTML=html;
     if(text)text.value=buildTestEnvChecklistText(data,fileName);
   }
@@ -1023,7 +1023,7 @@
   function normalizeUrlForCompare(v){return String(v||'').trim().replace(/\/+$/,'').toLowerCase();}
   function isProbablySupabaseUrl(v){return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(String(v||'').trim());}
   function buildTestEnvConfigText(){
-    var prod=($('prod-supabase-url-view')&&$('prod-supabase-url-view').value)||SUPABASE_URL||'';
+    var prod=($('prod-supabase-url-view')&&$('prod-supabase-url-view').value)||SUPA_URL||'';
     var test=($('test-supabase-url')&&$('test-supabase-url').value.trim())||'';
     var app=($('test-app-url')&&$('test-app-url').value.trim())||'';
     var admin=($('test-admin-url')&&$('test-admin-url').value.trim())||'';
@@ -1058,8 +1058,8 @@
   }
   function renderTestEnvConfig(){
     var st=$('test-env-config-status'), grid=$('test-env-config-grid'), details=$('test-env-config-details'), text=$('test-env-config-text');
-    if($('prod-supabase-url-view'))$('prod-supabase-url-view').value=SUPABASE_URL||'';
-    var prod=normalizeUrlForCompare(SUPABASE_URL);
+    if($('prod-supabase-url-view'))$('prod-supabase-url-view').value=SUPA_URL||'';
+    var prod=normalizeUrlForCompare(SUPA_URL);
     var testRaw=($('test-supabase-url')&&$('test-supabase-url').value.trim())||'';
     var test=normalizeUrlForCompare(testRaw);
     var checked=testEnvConfigChecklistItems().filter(function(x){return testEnvConfigChecked(x.id);}).length;
@@ -1078,7 +1078,7 @@
     if(st){st.textContent=(ready?'Testmiljö-konfiguration: FÖRBEREDD. ':'Testmiljö-konfiguration: STOPP/KONTROLL. ')+'Ingen restore har gjorts och inget har skickats till Supabase.';st.className='status '+(ready?'ok':(errors.length?'bad':'warn'));}
     var html='';
     html+='<div><strong>Detta är bara en konfigurationsplan.</strong> Inga projekt skapas, inga rader skrivs och ingen restore görs.</div>';
-    html+='<div style="margin-top:8px"><strong>Produktions-URL:</strong> <span class="mono">'+esc(SUPABASE_URL||'–')+'</span></div>';
+    html+='<div style="margin-top:8px"><strong>Produktions-URL:</strong> <span class="mono">'+esc(SUPA_URL||'–')+'</span></div>';
     html+='<div><strong>Test-URL:</strong> <span class="mono">'+esc(testRaw||'–')+'</span></div>';
     html+='<div style="margin-top:8px"><strong>Checklistestatus:</strong><ul>';
     testEnvConfigChecklistItems().forEach(function(x){html+='<li class="'+(testEnvConfigChecked(x.id)?'oktext':'warntext')+'">'+(testEnvConfigChecked(x.id)?'✓ ':'○ ')+esc(x.label)+'</li>';});
@@ -1094,7 +1094,7 @@
     if($('test-app-url'))$('test-app-url').value='';
     if($('test-admin-url'))$('test-admin-url').value='';
     testEnvConfigChecklistItems().forEach(function(x){if($(x.id))$(x.id).checked=false;});
-    if($('prod-supabase-url-view'))$('prod-supabase-url-view').value=SUPABASE_URL||'';
+    if($('prod-supabase-url-view'))$('prod-supabase-url-view').value=SUPA_URL||'';
     if($('test-env-config-status')){$('test-env-config-status').textContent='Ingen konfigurationsplan byggd ännu.';$('test-env-config-status').className='status';}
     if($('test-env-config-grid'))$('test-env-config-grid').innerHTML='';
     if($('test-env-config-details'))$('test-env-config-details').textContent='';
@@ -1168,10 +1168,19 @@
   testEnvChecklistItems().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',function(){if($('test-env-checklist-file')&&$('test-env-checklist-file').files&&$('test-env-checklist-file').files[0])showTestEnvChecklist();});});
   if($('test-env-name'))$('test-env-name').addEventListener('input',function(){if($('test-env-checklist-file')&&$('test-env-checklist-file').files&&$('test-env-checklist-file').files[0])showTestEnvChecklist();});
   if($('test-env-note'))$('test-env-note').addEventListener('input',function(){if($('test-env-checklist-file')&&$('test-env-checklist-file').files&&$('test-env-checklist-file').files[0])showTestEnvChecklist();});
-  if($('prod-supabase-url-view'))$('prod-supabase-url-view').value=SUPABASE_URL||'';
-  if($('btn-test-env-config'))$('btn-test-env-config').onclick=function(){renderTestEnvConfig();};
-  if($('btn-clear-test-env-config'))$('btn-clear-test-env-config').onclick=function(){clearTestEnvConfig();};
-  if($('btn-copy-test-env-config'))$('btn-copy-test-env-config').onclick=function(){copyText(($('test-env-config-text')&&$('test-env-config-text').value)||'');};
+  function safeRenderTestEnvConfig(){
+    try{renderTestEnvConfig();}
+    catch(e){
+      var st=$('test-env-config-status');
+      if(st){st.textContent='Testmiljö-konfiguration: tekniskt fel i rutan: '+(e&&e.message?e.message:e);st.className='status bad';}
+      var d=$('test-env-config-details');
+      if(d)d.innerHTML='<div class="badtext"><strong>Tekniskt fel:</strong> '+esc(e&&e.message?e.message:e)+'</div>';
+    }
+  }
+  if($('prod-supabase-url-view'))$('prod-supabase-url-view').value=SUPA_URL||'';
+  if($('btn-test-env-config'))$('btn-test-env-config').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();safeRenderTestEnvConfig();};
+  if($('btn-clear-test-env-config'))$('btn-clear-test-env-config').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();clearTestEnvConfig();};
+  if($('btn-copy-test-env-config'))$('btn-copy-test-env-config').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('test-env-config-text')&&$('test-env-config-text').value)||'');};
   ['test-supabase-url','test-app-url','test-admin-url'].forEach(function(id){if($(id))$(id).addEventListener('input',function(){if($('test-env-config-text')&&$('test-env-config-text').value)renderTestEnvConfig();});});
   testEnvConfigChecklistItems().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',function(){if($('test-env-config-text')&&$('test-env-config-text').value)renderTestEnvConfig();});});
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
