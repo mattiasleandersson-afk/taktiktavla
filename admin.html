@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v459</title>
+<title>Taktiktavla admin v460</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -108,7 +108,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Full backup-export</h2>
-          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
+          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v460 lägger även till tydligare metadata och logiska counts för data som ligger inne i saves. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
         </div>
         <button id="btn-download-backup" class="primary right">Ladda ner full backup</button>
       </div>
@@ -318,7 +318,7 @@
       renderSystemStatus(data||{});
     }catch(e){
       if(summary){summary.textContent='Kunde inte läsa systemstatus: '+e.message;summary.className='status bad';}
-      if(note)note.textContent='Kör SQL-filen supabase_admin_systemstatus_v458.sql och supabase_admin_full_backup_v459.sql först om funktionen saknas.';
+      if(note)note.textContent='Kör SQL-filen supabase_admin_systemstatus_v458.sql och supabase_admin_full_backup_v460.sql först om funktionen saknas.';
     }
   }
   function safeFilenameDate(){
@@ -336,11 +336,19 @@
   }
   function backupSummaryText(data,bytes){
     var c=(data&&data.counts)||{};
-    return 'Backup skapad: '
-      +(c.saves||0)+' saves, '
-      +(c.allowed_users||0)+' allowed_users, '
-      +(c.formation_team_shares||0)+' taktiktavle-delningar, '
-      +(c.taktikfilm_team_shares||0)+' taktikfilm-delningar. Filstorlek cirka '+Math.round((bytes||0)/1024)+' kB.';
+    var lc=(data&&data.logicalCounts)||{};
+    var parts=[
+      (c.saves||0)+' saves',
+      (lc.matches_in_saves||0)+' matcher i saves',
+      (lc.trupp_in_saves||0)+' trupper i saves',
+      (lc.team_members_in_saves||0)+' lagmedlemskap i saves',
+      (lc.uppstallningar_in_saves||0)+' utgångslägen i saves',
+      (lc.taktikfilmer_in_saves||0)+' taktikfilmer i saves',
+      (c.allowed_users||0)+' allowed_users',
+      (c.formation_team_shares||0)+' taktiktavle-delningar',
+      (c.taktikfilm_team_shares||0)+' taktikfilm-delningar'
+    ];
+    return 'Backup skapad: '+parts.join(', ')+'. Filstorlek cirka '+Math.round((bytes||0)/1024)+' kB. Metadata: appVersion '+((data&&data.appVersion)||'–')+', adminExportVersion '+((data&&data.adminExportVersion)||'–')+'.';
   }
   async function downloadFullBackup(){
     var st=$('backup-export-status');
