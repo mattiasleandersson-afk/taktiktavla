@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v456</title>
+<title>Taktiktavla admin v457</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -19,9 +19,9 @@
   .card{background:rgba(16,24,18,.96);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:14px;margin:12px 0}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid .card{margin:0}
   label{display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;font-weight:800;letter-spacing:.5px;margin:9px 0 4px}
-  input,textarea{width:100%;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:.96rem;font-family:inherit;outline:none}
+  input,textarea,select{width:100%;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:.96rem;font-family:inherit;outline:none}
   textarea{min-height:84px;resize:vertical}
-  input:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(74,232,122,.15)}
+  input:focus,textarea:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(74,232,122,.15)}
   button{background:#0b140e;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-family:inherit;font-weight:800;cursor:pointer;min-height:36px}
   button:hover{border-color:var(--green);color:var(--green)}
   button.primary{color:#07110a;background:var(--green);border-color:var(--green)}
@@ -87,6 +87,17 @@
         <input id="new-email" type="email" placeholder="ny.anvandare@example.com">
         <label for="new-note">Anteckning, frivilligt</label>
         <input id="new-note" type="text" placeholder="Ex. P12 tränare, testkonto, förening">
+        <div class="helpbox">Valfritt: välj lag och roll om personen ska ligga i ett lag direkt när den loggar in. Detta ändrar inte appens vanliga roller; det lägger bara till personen i lagets medlemslista.</div>
+        <div class="grid" style="margin-top:8px">
+          <div>
+            <label for="new-team">Lägg även till i lag, frivilligt</label>
+            <select id="new-team"><option value="">Endast global åtkomst</option></select>
+          </div>
+          <div>
+            <label for="new-team-role">Roll i laget</label>
+            <select id="new-team-role"><option value="member">Medlem</option><option value="admin">Admin</option></select>
+          </div>
+        </div>
         <div class="row" style="margin-top:12px">
           <button id="btn-add" class="primary">Lägg till åtkomst</button>
           <button id="btn-add-mail" class="warn">Lägg till + öppna mejl</button>
@@ -95,7 +106,7 @@
 
       <section class="card">
         <h2>Inbjudningsmejl</h2>
-        <p>Mejlet skickas inte automatiskt. Du kan öppna det i ditt mejlprogram eller kopiera texten och justera innan du skickar.</p><div class="helpbox">Tips: personen måste använda exakt den e-postadress du lägger till här. Lägg sedan till personen i rätt lag inne i appen om den ska komma åt ett lag.</div>
+        <p>Mejlet skickas inte automatiskt. Du kan öppna det i ditt mejlprogram eller kopiera texten och justera innan du skickar.</p><div class="helpbox">Tips: personen måste använda exakt den e-postadress du lägger till här. Om du väljer lag i formuläret läggs personen redan in i laget. Annars kan lag-admin lägga till personen i appen senare.</div>
         <label for="app-url">App-länk</label>
         <input id="app-url" type="url">
         <div class="row" style="margin-top:12px">
@@ -151,16 +162,53 @@
   async function authFetch(path,opts){var res=await fetch(SUPA_URL+path,opts||{});return readJson(res);}
   async function rpc(name,body){var res=await fetch(SUPA_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:headers(),body:JSON.stringify(body||{})});return readJson(res);}
   function appUrl(){var inp=$('app-url');var v=(inp&&inp.value||'').trim();if(v)return v;try{return new URL('./',location.href).href.replace(/\/$/,'');}catch(e){return 'https://taktiktavla.vercel.app';}}
-  function buildMail(to){
+  function buildMail(to,teamInfo){
     var email=(to||'').trim();
-    return 'Hej!\n\nDu har fått åtkomst till Taktiktavla. Det är en webbapp för taktiktavla, taktikfilm, trupp och matcher.\n\nÖppna appen här:\n'+appUrl()+'\n\nSkapa konto eller logga in med denna e-postadress:\n'+(email||'[e-postadress]')+'\n\nViktigt: använd just e-postadressen ovan, annars släpps kontot inte in.\n\nFör bästa upplevelse: lägg appen på hemskärmen och starta den därifrån. Då öppnas den mer som en vanlig app och fungerar bättre i helskärm.\n\niPhone/iPad:\n1. Öppna länken i Safari.\n2. Tryck på dela-symbolen.\n3. Välj ”Lägg till på hemskärmen”.\n4. Starta sedan Taktiktavla från ikonen på hemskärmen.\n\nAndroid:\n1. Öppna länken i Chrome.\n2. Tryck på menyn med tre prickar.\n3. Välj ”Lägg till på startskärmen” eller ”Installera app”.\n4. Starta sedan Taktiktavla från ikonen på startskärmen.\n\nNär du är inne i appen kan du välja lag eller använda den lagkod du fått.\n';
+    teamInfo=teamInfo||selectedTeamInfo();
+    var teamText='';
+    if(teamInfo && teamInfo.team){
+      teamText='\nDu är redan tillagd i laget '+teamInfo.team+' som '+(teamInfo.role==='admin'?'admin':'medlem')+'. När du loggar in ska laget synas under Mina lag.\n';
+    }else{
+      teamText='\nNär du är inne i appen kan en lag-admin lägga till dig i rätt lag, eller så kan du använda en lagkod/inbjudan du fått separat.\n';
+    }
+    return 'Hej!\n\nDu har fått åtkomst till Taktiktavla. Det är en webbapp för taktiktavla, taktikfilm, trupp och matcher.\n\nÖppna appen här:\n'+appUrl()+'\n\nSkapa konto eller logga in med denna e-postadress:\n'+(email||'[e-postadress]')+'\n\nViktigt: använd just e-postadressen ovan, annars släpps kontot inte in.\n'+teamText+'\nFör bästa upplevelse: lägg appen på hemskärmen och starta den därifrån. Då öppnas den mer som en vanlig app och fungerar bättre i helskärm.\n\niPhone/iPad:\n1. Öppna länken i Safari.\n2. Tryck på dela-symbolen.\n3. Välj ”Lägg till på hemskärmen”.\n4. Starta sedan Taktiktavla från ikonen på hemskärmen.\n\nAndroid:\n1. Öppna länken i Chrome.\n2. Tryck på menyn med tre prickar.\n3. Välj ”Lägg till på startskärmen” eller ”Installera app”.\n4. Starta sedan Taktiktavla från ikonen på startskärmen.\n';
   }
   function setMailPreview(to){var text=buildMail(to);$('mail-preview').value=text;return text;}
-  function openMail(to){var subject='Inbjudan till Taktiktavla';var body=setMailPreview(to);var href='mailto:'+(to?encodeURIComponent(to):'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);location.href=href;}
+  function openMail(to,teamInfo){var subject='Inbjudan till Taktiktavla';var body=buildMail(to,teamInfo);$('mail-preview').value=body;var href='mailto:'+(to?encodeURIComponent(to):'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);location.href=href;}
   async function copyText(text){try{await navigator.clipboard.writeText(text);setStatus('Kopierat till urklipp.');}catch(e){setStatus('Kunde inte kopiera automatiskt. Markera texten och kopiera manuellt.',true);}}
   function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function fmt(d){if(!d)return '';try{return new Date(d).toLocaleDateString('sv-SE');}catch(e){return String(d).slice(0,10);}}
   var allUsers=[];
+  var allTeams=[];
+  function selectedTeamInfo(){
+    var sel=$('new-team');
+    var team=(sel&&sel.value||'').trim();
+    var role=(($('new-team-role')&&$('new-team-role').value)||'member').toLowerCase()==='admin'?'admin':'member';
+    return {team:team,role:role};
+  }
+  function renderTeams(){
+    var sel=$('new-team');if(!sel)return;
+    var cur=sel.value;
+    sel.innerHTML='<option value="">Endast global åtkomst</option>';
+    allTeams.forEach(function(t){
+      var code=String(t.team_code||t.teamCode||'').trim();if(!code)return;
+      var opt=document.createElement('option');opt.value=code;
+      var members=Number(t.member_count||0), admins=Number(t.admin_count||0);
+      opt.textContent=code+' ('+members+' medlemmar, '+admins+' admin)';
+      sel.appendChild(opt);
+    });
+    if(cur)sel.value=cur;
+  }
+  async function loadTeams(){
+    try{
+      var rows=await rpc('tt_admin_list_teams',{});
+      allTeams=Array.isArray(rows)?rows:[];
+      renderTeams();
+    }catch(e){
+      allTeams=[];renderTeams();
+      setStatus('Kunde inte ladda laglista: '+e.message,true);
+    }
+  }
   function updateCounts(rows){
     var active=(rows||[]).filter(function(u){return !!u.is_active;}).length;
     if($('active-count'))$('active-count').textContent=String(active);
@@ -207,7 +255,7 @@
     if(!s||!s.access_token){$('login-card').classList.remove('hidden');$('admin-area').classList.add('hidden');return;}
     try{
       var ok=await rpc('tt_is_app_admin',{});
-      if(ok===true){$('login-card').classList.add('hidden');$('admin-area').classList.remove('hidden');setStatus('Inloggad som global admin.');loadUsers();setMailPreview('');}
+      if(ok===true){$('login-card').classList.add('hidden');$('admin-area').classList.remove('hidden');setStatus('Inloggad som global admin.');loadUsers();loadTeams();setMailPreview('');}
       else{$('admin-area').classList.add('hidden');$('login-card').classList.add('hidden');setStatus('Du är inloggad men saknar behörighet till adminsidan.',true);}
     }catch(e){$('admin-area').classList.add('hidden');setStatus('Admin-kontroll misslyckades: '+e.message,true);}
   }
@@ -220,17 +268,30 @@
   $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';setStatus('Utloggad.');};
   async function addUser(openAfter){
     var email=$('new-email').value.trim();var note=$('new-note').value.trim();
+    var teamInfo=selectedTeamInfo();
     if(!email){setStatus('Skriv en e-postadress.',true);return;}
-    try{await rpc('tt_admin_upsert_allowed_user',{p_email:email,p_note:note});setStatus('Åtkomst tillagd för '+email);$('new-email').value='';$('new-note').value='';await loadUsers();setMailPreview(email);if(openAfter)openMail(email);}catch(e){setStatus('Fel: '+e.message,true);}
+    try{
+      await rpc('tt_admin_upsert_allowed_user',{p_email:email,p_note:note});
+      var msg='Åtkomst tillagd för '+email;
+      if(teamInfo.team){
+        await rpc('tt_admin_add_user_to_team',{p_email:email,p_team_code:teamInfo.team,p_role:teamInfo.role,p_display_name:note});
+        msg+=' och personen är tillagd i '+teamInfo.team+' som '+(teamInfo.role==='admin'?'admin':'medlem');
+      }
+      setStatus(msg);
+      $('new-email').value='';$('new-note').value='';$('new-team').value='';$('new-team-role').value='member';
+      await loadUsers();await loadTeams();setMailPreview(email);if(openAfter)openMail(email,teamInfo);
+    }catch(e){setStatus('Fel: '+e.message,true);}
   }
   $('btn-add').onclick=function(){addUser(false);};
   $('btn-add-mail').onclick=function(){addUser(true);};
   $('btn-refresh').onclick=function(){loadUsers().catch(function(e){setStatus('Fel: '+e.message,true);});};
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
+  if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
+  if($('new-team-role'))$('new-team-role').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
   $('btn-copy-template').onclick=function(){copyText(buildMail(''));};
   $('btn-open-template').onclick=function(){openMail('');};
   $('btn-copy-current').onclick=function(){copyText($('mail-preview').value||buildMail(''));};
-  try{$('app-url').value=new URL('./',location.href).href.replace(/\/$/,'');}catch(e){$('app-url').value='https://taktiktavla.vercel.app';}
+  $('app-url').value='https://taktiktavla.vercel.app';
   checkAdmin();
 })();
 </script>
