@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v462</title>
+<title>Taktiktavla admin v463</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -46,7 +46,8 @@
   @media(max-width:900px){.statusgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media(max-width:520px){.statusgrid{grid-template-columns:1fr}}
   .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px}.toolbar input{max-width:320px}
-  .status.ok{color:var(--green);border-color:rgba(74,232,122,.45)}.status.bad{color:#ff9a9a;border-color:rgba(232,74,74,.55)}
+  .status.ok{color:var(--green);border-color:rgba(74,232,122,.45)}.status.bad{color:#ff9a9a;border-color:rgba(232,74,74,.55)}.status.warn{color:var(--yellow);border-color:rgba(255,211,107,.55)}
+  .checklist{display:grid;gap:8px;margin-top:10px}.checkline{display:flex;gap:9px;align-items:flex-start;background:rgba(7,17,10,.58);border:1px solid var(--line);border-radius:12px;padding:9px}.checkline input{width:auto;margin-top:2px}.checkline span{line-height:1.28;font-size:.9rem}.warntext{color:#ffe1a3}.badtext{color:#ff9a9a}.oktext{color:var(--green)}
   table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{border-bottom:1px solid rgba(45,74,53,.8);padding:9px 8px;text-align:left;vertical-align:middle}th{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.45px}td.actions{white-space:nowrap}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:.76rem;font-weight:800}.pill.on{background:rgba(74,232,122,.12);color:var(--green);border:1px solid rgba(74,232,122,.38)}.pill.off{background:rgba(232,74,74,.11);color:#ff9a9a;border:1px solid rgba(232,74,74,.42)}
   .hidden{display:none!important}.muted{color:var(--muted)}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem}.right{margin-left:auto}.split{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}.split>div{flex:1 1 300px}.kbd{border:1px solid var(--line);border-radius:7px;padding:1px 6px;color:var(--green);background:#07110a}
   @media(max-width:760px){body{padding:10px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}table{font-size:.8rem}th:nth-child(3),td:nth-child(3),th:nth-child(4),td:nth-child(4){display:none}.card{padding:12px}.row .grow{flex-basis:100%}}
@@ -108,7 +109,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Full backup-export</h2>
-          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v462 bygger vidare på v460:s tydliga metadata och logiska counts. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
+          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v463 bygger vidare på v460:s tydliga metadata och logiska counts. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
         </div>
         <button id="btn-download-backup" class="primary right">Ladda ner full backup</button>
       </div>
@@ -120,7 +121,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Kontrollera backupfil</h2>
-          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v462 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
+          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v463 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
         </div>
       </div>
       <input id="backup-validate-file" type="file" accept="application/json,.json">
@@ -137,7 +138,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Restore-plan / dry-run</h2>
-          <p>Välj en backupfil för att se exakt vad en framtida katastrofåterställning skulle behöva göra. v462 gör ingen återställning, skickar inget till Supabase och skriver ingenting. Den visar bara plan, ordning, counts och varningar lokalt i webbläsaren.</p>
+          <p>Välj en backupfil för att se exakt vad en framtida katastrofåterställning skulle behöva göra. v463 gör ingen återställning, skickar inget till Supabase och skriver ingenting. Den visar bara plan, ordning, counts och varningar lokalt i webbläsaren.</p>
         </div>
       </div>
       <div class="helpbox">Den här planen är avsedd för återställning till en tom/förberedd databas. Supabase Auth-konton/lösenord ingår inte i backupen; användare behöver kunna logga in/skapas igen med samma e-post.</div>
@@ -149,6 +150,33 @@
       <div id="restore-plan-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
       <div id="restore-plan-grid" class="statusgrid" aria-label="Restore-plan"></div>
       <div id="restore-plan-details" class="statusnote"></div>
+    </section>
+
+    <section class="card" id="restore-guard-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Restore-skydd / skarp checklista</h2>
+          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v463 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
+        </div>
+      </div>
+      <div class="helpbox"><strong>Ingen återställning görs här.</strong> Riktig restore ska inte byggas/startas förrän checklistan är grön och du uttryckligen väljer att gå vidare i en separat framtida version.</div>
+      <input id="restore-guard-file" type="file" accept="application/json,.json" style="margin-top:10px">
+      <div class="checklist" aria-label="Restore-checklista">
+        <label class="checkline"><input id="guard-empty-db" type="checkbox"><span>Jag har kontrollerat att mål-databasen är tom eller särskilt förberedd för katastrofåterställning.</span></label>
+        <label class="checkline"><input id="guard-extra-backup" type="checkbox"><span>Jag har sparat minst en extra kopia av backupfilen på en säker plats innan jag går vidare.</span></label>
+        <label class="checkline"><input id="guard-sql-ready" type="checkbox"><span>Jag har rätt SQL/funktioner på plats för den appversion som backupen avser.</span></label>
+        <label class="checkline"><input id="guard-auth-understood" type="checkbox"><span>Jag förstår att Supabase Auth-användare/lösenord inte ingår och att användare behöver logga in/skapas igen med samma e-post.</span></label>
+        <label class="checkline"><input id="guard-no-merge" type="checkbox"><span>Jag förstår att detta inte är en merge in i aktiv databas, utan en katastrofåterställning till tom/förberedd miljö.</span></label>
+      </div>
+      <label for="restore-guard-confirm">Bekräftelsetext</label>
+      <input id="restore-guard-confirm" type="text" placeholder="Skriv: JAG FÖRSTÅR - INGEN ÅTERSTÄLLNING GÖRS">
+      <div class="row" style="margin-top:10px">
+        <button id="btn-restore-guard" class="warn">Kontrollera restore-skydd</button>
+        <button id="btn-clear-restore-guard" class="small">Rensa restore-skydd</button>
+      </div>
+      <div id="restore-guard-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
+      <div id="restore-guard-grid" class="statusgrid" aria-label="Restore-skydd"></div>
+      <div id="restore-guard-details" class="statusnote"></div>
     </section>
     <div class="grid">
       <section class="card">
@@ -601,6 +629,83 @@
     if($('restore-plan-details'))$('restore-plan-details').textContent='';
   }
 
+  function restoreGuardChecked(id){var el=$(id);return !!(el&&el.checked);}
+  function restoreGuardChecklist(){
+    return [
+      {id:'guard-empty-db',label:'Mål-databasen är tom/förberedd'},
+      {id:'guard-extra-backup',label:'Extra säker backupkopia finns'},
+      {id:'guard-sql-ready',label:'Rätt SQL/funktioner är på plats'},
+      {id:'guard-auth-understood',label:'Auth-begränsningen är förstådd'},
+      {id:'guard-no-merge',label:'Ingen merge i aktiv databas'}
+    ];
+  }
+  function renderRestoreGuard(data,fileName,bytes){
+    var st=$('restore-guard-status'), grid=$('restore-guard-grid'), details=$('restore-guard-details');
+    if(!st||!grid||!details)return;
+    var validation=validateBackupData(data);
+    var c=(data&&data.counts)||{}, lc=(data&&data.logicalCounts)||{};
+    var checks=restoreGuardChecklist();
+    var missing=checks.filter(function(x){return !restoreGuardChecked(x.id);});
+    var confirmText=(($('restore-guard-confirm')&&$('restore-guard-confirm').value)||'').trim();
+    var expected='JAG FÖRSTÅR - INGEN ÅTERSTÄLLNING GÖRS';
+    var confirmOk=confirmText===expected;
+    var versionOk=String(data&&data.backupType||'')==='full-disaster-backup' && Number(data&&data.backupVersion)===1;
+    var exportOk=Number(data&&data.adminExportVersion)>=460;
+    var hasData=((c.saves||0)>0 || ((data&&data.tables&&Array.isArray(data.tables.saves))?data.tables.saves.length:0)>0);
+    var canPrepare=validation.errors.length===0 && missing.length===0 && confirmOk && versionOk && exportOk && hasData;
+    grid.innerHTML=''
+      +statusCard('Backupversion',data&&data.backupVersion,versionOk?'':'bad')
+      +statusCard('Adminexport',data&&data.adminExportVersion,exportOk?'':'warn')
+      +statusCard('Appversion',data&&data.appVersion)
+      +statusCard('Saves',c.saves,hasData?'':'bad')
+      +statusCard('Matcher i saves',lc.matches_in_saves)
+      +statusCard('Taktikfilmer i saves',lc.taktikfilmer_in_saves)
+      +statusCard('Checklistan',checks.length-missing.length+'/'+checks.length,missing.length?'warn':'')
+      +statusCard('Bekräftelse',confirmOk?'OK':'STOPP',confirmOk?'':'bad');
+    if(canPrepare){st.textContent='Restore-skydd: FÖRBEREDD för nästa steg. Ingen återställning har gjorts. Fil: '+fileName+', cirka '+Math.round((bytes||0)/1024)+' kB.';st.className='status ok';}
+    else{st.textContent='Restore-skydd: STOPP. Ingen återställning har gjorts. Åtgärda punkterna nedan innan riktig restore ens övervägs.';st.className='status bad';}
+    var html='';
+    html+='<div><strong>Detta är en spärr/checklista, inte restore.</strong> Inga rader har skapats, importerats, ändrats eller raderats.</div>';
+    html+='<div style="margin-top:8px"><strong>Fil:</strong> '+esc(fileName)+' · <strong>backupType:</strong> '+esc(data&&data.backupType||'–')+' · <strong>exportedAt:</strong> '+esc(data&&data.exportedAt||'–')+'</div>';
+    html+='<div style="margin-top:10px"><strong>Checklistestatus:</strong><ul>';
+    checks.forEach(function(x){html+='<li class="'+(restoreGuardChecked(x.id)?'oktext':'badtext')+'">'+(restoreGuardChecked(x.id)?'✓ ':'✗ ')+esc(x.label)+'</li>';});
+    html+='</ul></div>';
+    html+='<div style="margin-top:10px"><strong>Hårda spärrar:</strong><ul>';
+    html+='<li class="'+(versionOk?'oktext':'badtext')+'">'+(versionOk?'✓':'✗')+' backupType/backupVersion är rätt.</li>';
+    html+='<li class="'+(exportOk?'oktext':'badtext')+'">'+(exportOk?'✓':'✗')+' adminExportVersion är minst 460.</li>';
+    html+='<li class="'+(hasData?'oktext':'badtext')+'">'+(hasData?'✓':'✗')+' backupen innehåller saves/appdata.</li>';
+    html+='<li class="'+(confirmOk?'oktext':'badtext')+'">'+(confirmOk?'✓':'✗')+' exakt bekräftelsetext är ifylld.</li>';
+    html+='</ul></div>';
+    if(validation.errors.length)html+='<div class="badtext" style="margin-top:8px"><strong>Fel från backupkontroll:</strong><ul><li>'+validation.errors.map(esc).join('</li><li>')+'</li></ul></div>';
+    if(validation.warnings.length)html+='<div class="warntext" style="margin-top:8px"><strong>Varningar från backupkontroll:</strong><ul><li>'+validation.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+    if(missing.length)html+='<div class="badtext" style="margin-top:8px"><strong>Saknade checkpunkter:</strong><ul><li>'+missing.map(function(x){return esc(x.label);}).join('</li><li>')+'</li></ul></div>';
+    if(!confirmOk)html+='<div class="helpbox">För att passera spärren måste bekräftelsefältet innehålla exakt: <span class="mono">'+esc(expected)+'</span></div>';
+    html+='<div class="helpbox">Även om allt är grönt här gör v463 fortfarande ingen återställning. En framtida riktig restore ska ligga i separat version, med ytterligare bekräftelse och helst först testas i tom testmiljö.</div>';
+    details.innerHTML=html;
+  }
+  async function checkRestoreGuard(){
+    var input=$('restore-guard-file'), st=$('restore-guard-status'), grid=$('restore-guard-grid'), details=$('restore-guard-details');
+    if(!input||!input.files||!input.files[0]){if(st){st.textContent='Välj en JSON-backupfil först.';st.className='status bad';}return;}
+    var file=input.files[0];
+    if(st){st.textContent='Läser backupfil lokalt och kontrollerar restore-skydd...';st.className='status';}
+    if(grid)grid.innerHTML=''; if(details)details.textContent='';
+    try{
+      var txt=await file.text();
+      var data=JSON.parse(txt);
+      renderRestoreGuard(data,file.name,txt.length);
+    }catch(e){
+      if(st){st.textContent='Kunde inte läsa/parse:a JSON-filen: '+e.message;st.className='status bad';}
+    }
+  }
+  function clearRestoreGuard(){
+    if($('restore-guard-file'))$('restore-guard-file').value='';
+    restoreGuardChecklist().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    if($('restore-guard-confirm'))$('restore-guard-confirm').value='';
+    if($('restore-guard-status')){$('restore-guard-status').textContent='Ingen backupfil vald ännu.';$('restore-guard-status').className='status';}
+    if($('restore-guard-grid'))$('restore-guard-grid').innerHTML='';
+    if($('restore-guard-details'))$('restore-guard-details').textContent='';
+  }
+
   async function loadUsers(){
     var body=$('users-body');body.innerHTML='<tr><td colspan="5" class="muted">Laddar...</td></tr>';
     var rows=await rpc('tt_admin_list_allowed_users',{});
@@ -624,7 +729,7 @@
     try{setStatus('Loggar in...');var data=await authFetch('/auth/v1/token?grant_type=password',{method:'POST',headers:headers(),body:JSON.stringify({email:email,password:pass})});saveSession(data);await checkAdmin();}
     catch(e){setStatus('Inloggning misslyckades: '+e.message,true);}
   };
-  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';if($('system-status-grid'))$('system-status-grid').innerHTML='';if($('system-status-summary'))$('system-status-summary').textContent='Logga in för att läsa systemstatus.';clearBackupValidation();setStatus('Utloggad.');};
+  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';if($('system-status-grid'))$('system-status-grid').innerHTML='';if($('system-status-summary'))$('system-status-summary').textContent='Logga in för att läsa systemstatus.';clearBackupValidation();clearRestorePlan();clearRestoreGuard();setStatus('Utloggad.');};
   async function addUser(openAfter){
     var email=$('new-email').value.trim();var note=$('new-note').value.trim();
     var teamInfo=selectedTeamInfo();
@@ -652,6 +757,11 @@
   if($('btn-restore-plan'))$('btn-restore-plan').onclick=function(){showRestorePlan();};
   if($('btn-clear-restore-plan'))$('btn-clear-restore-plan').onclick=function(){clearRestorePlan();};
   if($('restore-plan-file'))$('restore-plan-file').addEventListener('change',function(){showRestorePlan();});
+  if($('btn-restore-guard'))$('btn-restore-guard').onclick=function(){checkRestoreGuard();};
+  if($('btn-clear-restore-guard'))$('btn-clear-restore-guard').onclick=function(){clearRestoreGuard();};
+  if($('restore-guard-file'))$('restore-guard-file').addEventListener('change',function(){checkRestoreGuard();});
+  restoreGuardChecklist().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',function(){if($('restore-guard-file')&&$('restore-guard-file').files&&$('restore-guard-file').files[0])checkRestoreGuard();});});
+  if($('restore-guard-confirm'))$('restore-guard-confirm').addEventListener('input',function(){if($('restore-guard-file')&&$('restore-guard-file').files&&$('restore-guard-file').files[0])checkRestoreGuard();});
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
   if($('new-team-role'))$('new-team-role').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
