@@ -1531,97 +1531,13 @@
   }
 </style>
 
-
-
-<style id="v447-taktikfilm-camera-hardlock-css">
-  /* v447: Visning endast. Kameraknappen ritas som ikon även om äldre JS tillfälligt skriver gammal text. */
-  @media (max-width: 760px){
-    #btn-play-all[data-tt447-camera-lock="1"]{
-      position: relative !important;
-      width: 31px !important;
-      min-width: 31px !important;
-      max-width: 31px !important;
-      height: 27px !important;
-      min-height: 27px !important;
-      padding: 2px 3px !important;
-      font-size: 0 !important;
-      line-height: 1 !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      overflow: hidden !important;
-      white-space: nowrap !important;
-      color: #4ae87a !important;
-      border-color: #4ae87a !important;
-    }
-    #btn-play-all[data-tt447-camera-lock="1"]::before{
-      content: "🎥" !important;
-      display: block !important;
-      font-size: .94rem !important;
-      line-height: 1 !important;
-      color: currentColor !important;
-      text-shadow: 0 0 6px rgba(74,232,122,.35) !important;
-    }
-    #btn-play-all[data-tt447-camera-lock="1"]::after{
-      content: "" !important;
-      display: none !important;
-    }
-    #btn-play-all.on[data-tt447-camera-lock="1"]::after,
-    #btn-play-all.tt447-camera-playing[data-tt447-camera-lock="1"]::after{
-      display: block !important;
-      position: absolute !important;
-      left: 5px !important;
-      right: 5px !important;
-      top: 50% !important;
-      height: 2px !important;
-      border-radius: 999px !important;
-      background: currentColor !important;
-      box-shadow: 0 0 5px rgba(232,200,74,.55) !important;
-      transform: rotate(-35deg) !important;
-      transform-origin: center !important;
-      pointer-events: none !important;
-    }
-  }
-  #fs-play-all-btn[data-tt447-camera-lock="1"]{
-    position: relative !important;
-    font-size: 0 !important;
-    color: #4ae87a !important;
-    border-color: #4ae87a !important;
-  }
-  #fs-play-all-btn[data-tt447-camera-lock="1"]::before{
-    content: "🎥" !important;
-    display: block !important;
-    font-size: .9rem !important;
-    line-height: 1 !important;
-    color: currentColor !important;
-  }
-  #fs-play-all-btn[data-tt447-camera-lock="1"]::after{
-    content: "" !important;
-    display: none !important;
-  }
-  #fs-play-all-btn.active[data-tt447-camera-lock="1"]::after,
-  #fs-play-all-btn.tt447-camera-playing[data-tt447-camera-lock="1"]::after{
-    display: block !important;
-    position: absolute !important;
-    left: 5px !important;
-    right: 5px !important;
-    top: 50% !important;
-    height: 2px !important;
-    border-radius: 999px !important;
-    background: currentColor !important;
-    box-shadow: 0 0 5px rgba(232,200,74,.55) !important;
-    transform: rotate(-35deg) !important;
-    pointer-events: none !important;
-  }
-</style>
-
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">447</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">448</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2223,7 +2139,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=445"></script>
+<script src="app.js?v=448"></script>
 
 <script>
 (function(){
