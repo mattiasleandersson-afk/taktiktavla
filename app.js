@@ -38123,3 +38123,101 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt445ApplyTaktikfilmIphoneToprowPrune=apply445;
 })();
 /* === slut v445-taktikfilm-iphone-toprow-prune-camera-off === */
+
+
+/* === v446-taktikfilm-camera-stable-and-fullscreen-stopfix ===
+   Bas: v445. Två smala saker:
+   1) På iPhone/små skärmar ska Spela hela-knappen alltid visa kameran, även när äldre kod
+      uppdaterar knappen vid stegbläddring. Aktivt läge markeras med klass + överstrykning.
+   2) I Taktikfilm helskärm ska samma knapp kunna stoppa autouppspelning igen. Tidigare
+      fullscreen-koden avgjorde aktivt läge genom att leta efter texten "Stoppa", men v445
+      bytte texten till kamera. Vi läser nu huvudknappens .on-klass i stället.
+   Rör inte animation, steg, ritlogik, import, data eller sparning.
+*/
+(function(){
+  if(window.__tt446TaktikfilmCameraStableStopfix)return;
+  window.__tt446TaktikfilmCameraStableStopfix=true;
+  var VERSION='446';
+
+  function small446(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
+  function setVersion446(){
+    try{
+      window.TAKTIKTAVLA_VERSION=VERSION;
+      if(document.body)document.body.setAttribute('data-app-version',VERSION);
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+    }catch(e){}
+  }
+
+  function mainPlayAll446(){return document.getElementById('btn-play-all');}
+  function isMainPlaying446(){var b=mainPlayAll446();return !!(b&&(b.classList.contains('on')||/Stoppa/i.test(b.textContent||'')));}
+
+  function stabilizeMainCamera446(){
+    setVersion446();
+    try{
+      var b=mainPlayAll446(); if(!b)return;
+      if(small446()){
+        b.textContent='🎥';
+        b.setAttribute('data-tt446-camera-only','1');
+        b.setAttribute('data-tt445-camera-only','1');
+        b.setAttribute('aria-label',isMainPlaying446()?'Stoppa spela hela':'Spela hela');
+        b.title=isMainPlaying446()?'Stoppa Spela hela':'Spela hela taktikfilmen automatiskt från aktuell position';
+      }else{
+        b.removeAttribute('data-tt446-camera-only');
+      }
+    }catch(e){}
+  }
+
+  function syncFsButton446(){
+    setVersion446();
+    try{
+      var fs=document.getElementById('fs-play-all-btn'); if(!fs)return;
+      var playing=isMainPlaying446();
+      fs.textContent='🎥';
+      fs.setAttribute('aria-label',playing?'Stoppa spela hela':'Spela hela');
+      fs.title=playing?'Stoppa automatisk uppspelning':'Spela hela taktikfilmen automatiskt';
+      fs.classList.toggle('active',playing);
+      fs.style.color=playing?'#e8c84a':'#4ae87a';
+      fs.style.borderColor=playing?'#e8c84a':'#4ae87a';
+    }catch(e){}
+  }
+
+  function apply446(){stabilizeMainCamera446();syncFsButton446();}
+
+  // Fånga fullscreen-knappen före äldre target-lyssnare. De gamla lyssnarna tittade på texten
+  // och kunde därför starta om i stället för att stoppa när texten inte längre var "Stoppa".
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    var fs=t&&t.closest?t.closest('#fs-play-all-btn'):null;
+    if(!fs)return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    try{
+      if(isMainPlaying446()){
+        if(typeof window.tt396StopAutoPlayAll==='function')window.tt396StopAutoPlayAll(false);
+        else{var main=mainPlayAll446();if(main)main.click();}
+      }else{
+        if(typeof window.tt396StartAutoPlayAll==='function')window.tt396StartAutoPlayAll();
+        else{var main2=mainPlayAll446();if(main2)main2.click();}
+      }
+    }catch(err){console.warn('tt446 fullscreen play/stop',err);}
+    setTimeout(apply446,0);setTimeout(apply446,80);setTimeout(apply446,220);
+    return false;
+  },true);
+
+  ['click','touchend','pointerup','change','resize'].forEach(function(ev){
+    try{window.addEventListener(ev,function(){setTimeout(apply446,0);setTimeout(apply446,80);setTimeout(apply446,220);},true);}catch(e){}
+    try{document.addEventListener(ev,function(){setTimeout(apply446,0);setTimeout(apply446,80);setTimeout(apply446,220);},true);}catch(e){}
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply446);else apply446();
+  [0,40,120,300,700,1200,2500,5000,9000].forEach(function(ms){setTimeout(apply446,ms);});
+  setInterval(apply446,700);
+  window.tt446ApplyTaktikfilmCameraStableStopfix=apply446;
+})();
+/* === slut v446-taktikfilm-camera-stable-and-fullscreen-stopfix === */
