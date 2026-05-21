@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v461</title>
+<title>Taktiktavla admin v462</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -108,7 +108,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Full backup-export</h2>
-          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v461 bygger vidare på v460:s tydliga metadata och logiska counts. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
+          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v462 bygger vidare på v460:s tydliga metadata och logiska counts. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
         </div>
         <button id="btn-download-backup" class="primary right">Ladda ner full backup</button>
       </div>
@@ -120,7 +120,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Kontrollera backupfil</h2>
-          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v461 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
+          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v462 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
         </div>
       </div>
       <input id="backup-validate-file" type="file" accept="application/json,.json">
@@ -131,6 +131,24 @@
       <div id="backup-validate-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
       <div id="backup-validate-grid" class="statusgrid" aria-label="Backupkontroll"></div>
       <div id="backup-validate-details" class="statusnote"></div>
+    </section>
+
+    <section class="card" id="restore-plan-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Restore-plan / dry-run</h2>
+          <p>Välj en backupfil för att se exakt vad en framtida katastrofåterställning skulle behöva göra. v462 gör ingen återställning, skickar inget till Supabase och skriver ingenting. Den visar bara plan, ordning, counts och varningar lokalt i webbläsaren.</p>
+        </div>
+      </div>
+      <div class="helpbox">Den här planen är avsedd för återställning till en tom/förberedd databas. Supabase Auth-konton/lösenord ingår inte i backupen; användare behöver kunna logga in/skapas igen med samma e-post.</div>
+      <input id="restore-plan-file" type="file" accept="application/json,.json" style="margin-top:10px">
+      <div class="row" style="margin-top:10px">
+        <button id="btn-restore-plan" class="primary">Visa restore-plan / dry-run</button>
+        <button id="btn-clear-restore-plan" class="small">Rensa plan</button>
+      </div>
+      <div id="restore-plan-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
+      <div id="restore-plan-grid" class="statusgrid" aria-label="Restore-plan"></div>
+      <div id="restore-plan-details" class="statusnote"></div>
     </section>
     <div class="grid">
       <section class="card">
@@ -503,6 +521,86 @@
     if($('backup-validate-details'))$('backup-validate-details').textContent='';
   }
 
+  function restoreStepHtml(n,title,count,note,critical){
+    var cls=critical?'warn':'';
+    return '<li class="'+cls+'"><strong>'+n+'. '+esc(title)+'</strong> — '+esc(String(count==null?0:count))+' rad(er). <span class="muted">'+esc(note||'')+'</span></li>';
+  }
+  function buildRestorePlan(data){
+    var validation=validateBackupData(data);
+    var tables=(data&&data.tables)||{}, counts=(data&&data.counts)||{}, lc=(data&&data.logicalCounts)||{};
+    var saves=Array.isArray(tables.saves)?tables.saves:[];
+    var steps=[];
+    steps.push({title:'allowed_users',count:(counts.allowed_users!=null?counts.allowed_users:(tables.allowed_users||[]).length),note:'Global åtkomst återskapas först så rätt e-post kan släppas in.'});
+    steps.push({title:'app_admins',count:(counts.app_admins!=null?counts.app_admins:(tables.app_admins||[]).length),note:'Globala systemadmins återskapas tidigt.'});
+    steps.push({title:'teams',count:(counts.teams!=null?counts.teams:(tables.teams||[]).length),note:'Separat teams-tabell om den finns/används.'});
+    steps.push({title:'team_members',count:(counts.team_members!=null?counts.team_members:(tables.team_members||[]).length),note:'Separat team_members-tabell om den finns/används.'});
+    steps.push({title:'players',count:(counts.players!=null?counts.players:(tables.players||[]).length),note:'Separat players-tabell om den finns/används.'});
+    steps.push({title:'matches',count:(counts.matches!=null?counts.matches:(tables.matches||[]).length),note:'Separat matches-tabell om den finns/används.'});
+    steps.push({title:'saves',count:(counts.saves!=null?counts.saves:saves.length),note:'Huvuddatan i nuvarande app: matcher, trupp, lagmedlemskap, utgångslägen och taktikfilmer.'});
+    steps.push({title:'formation_team_shares',count:(counts.formation_team_shares!=null?counts.formation_team_shares:(tables.formation_team_shares||[]).length),note:'Återställs efter saves eftersom raderna pekar på sparade utgångslägen.'});
+    steps.push({title:'taktikfilm_team_shares',count:(counts.taktikfilm_team_shares!=null?counts.taktikfilm_team_shares:(tables.taktikfilm_team_shares||[]).length),note:'Återställs efter saves eftersom raderna pekar på sparade taktikfilmer.'});
+    var warnings=[];
+    if(validation.errors.length)warnings.push('Backupkontrollen har fel. En riktig återställning ska inte startas innan de är lösta.');
+    if(validation.warnings.length)warnings.push('Backupkontrollen har varningar som behöver granskas före återställning.');
+    if(!saves.length)warnings.push('Backupen saknar saves. Det kan vara rätt för en tom app men är ovanligt.');
+    if((counts.teams||0)===0 && (lc.teams_referenced_in_saves||0)>0)warnings.push('Separat teams-tabell är 0, men saves refererar till lagkoder. Det är väntat i nuvarande datamodell men viktigt för framtida restore-logik.');
+    if((counts.team_members||0)===0 && (lc.team_members_in_saves||0)>0)warnings.push('Separat team_members-tabell är 0, men lagmedlemskap finns i saves. Restore måste återskapa dessa som saves-rader om nuvarande datamodell används.');
+    warnings.push('Restore ska göras mot tom/förberedd databas, inte merge in i aktiv databas.');
+    warnings.push('Supabase Auth-användare/lösenord ingår inte. Användare behöver logga in/skapas igen med samma e-post.');
+    return {validation:validation,steps:steps,warnings:warnings};
+  }
+  function renderRestorePlan(data,fileName,bytes){
+    var st=$('restore-plan-status'), grid=$('restore-plan-grid'), details=$('restore-plan-details');
+    if(!st||!grid||!details)return;
+    var plan=buildRestorePlan(data), c=(data&&data.counts)||{}, lc=(data&&data.logicalCounts)||{};
+    grid.innerHTML=''
+      +statusCard('Backupversion',data&&data.backupVersion)
+      +statusCard('Adminexport',data&&data.adminExportVersion)
+      +statusCard('Appversion',data&&data.appVersion)
+      +statusCard('Saves',c.saves)
+      +statusCard('Matcher i saves',lc.matches_in_saves)
+      +statusCard('Taktikfilmer i saves',lc.taktikfilmer_in_saves)
+      +statusCard('Trupper i saves',lc.trupp_in_saves)
+      +statusCard('Lagmedlemskap i saves',lc.team_members_in_saves)
+      +statusCard('Allowed users',c.allowed_users)
+      +statusCard('App admins',c.app_admins)
+      +statusCard('Taveldelningar',c.formation_team_shares)
+      +statusCard('Filmdelningar',c.taktikfilm_team_shares);
+    if(plan.validation.errors.length){st.textContent='Restore dry-run: STOPP. Backupen har fel och ska inte användas för återställning ännu.';st.className='status bad';}
+    else{st.textContent='Restore dry-run: OK att planera. Ingen återställning har gjorts. Fil: '+fileName+', cirka '+Math.round((bytes||0)/1024)+' kB.';st.className=plan.validation.warnings.length?'status warn':'status ok';}
+    var html='';
+    html+='<div><strong>Detta är bara en plan.</strong> Inga rader har skapats, ändrats, importerats eller raderats.</div>';
+    html+='<div style="margin-top:8px"><strong>Avsedd återställningsmodell:</strong> tom/förberedd databas → återställ appdata → användare loggar in/skapas igen med samma e-post → teamkoppling sker via e-post/medlemsdata.</div>';
+    html+='<div style="margin-top:10px"><strong>Föreslagen återställningsordning:</strong><ol>';
+    plan.steps.forEach(function(s,i){html+=restoreStepHtml(i+1,s.title,s.count,s.note,(s.title==='saves'||s.title.indexOf('shares')>=0));});
+    html+='</ol></div>';
+    if(plan.warnings.length)html+='<div class="warn" style="margin-top:8px"><strong>Viktiga varningar/krav före riktig restore:</strong><ul><li>'+plan.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+    if(plan.validation.errors.length)html+='<div class="bad" style="margin-top:8px"><strong>Fel från backupkontroll:</strong><ul><li>'+plan.validation.errors.map(esc).join('</li><li>')+'</li></ul></div>';
+    if(plan.validation.warnings.length)html+='<div class="warn" style="margin-top:8px"><strong>Varningar från backupkontroll:</strong><ul><li>'+plan.validation.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+    html+='<div class="helpbox" style="margin-top:10px">Nästa möjliga steg efter detta är en ännu säkrare restore-dry-run som jämför backupen mot nuvarande databas och tydligt stoppar om databasen inte är tom. Fortfarande utan att skriva.</div>';
+    details.innerHTML=html;
+  }
+  async function showRestorePlan(){
+    var input=$('restore-plan-file'), st=$('restore-plan-status'), grid=$('restore-plan-grid'), details=$('restore-plan-details');
+    if(!input||!input.files||!input.files[0]){if(st){st.textContent='Välj en JSON-backupfil först.';st.className='status bad';}return;}
+    var file=input.files[0];
+    if(st){st.textContent='Läser backupfil lokalt och bygger restore-plan...';st.className='status';}
+    if(grid)grid.innerHTML=''; if(details)details.textContent='';
+    try{
+      var txt=await file.text();
+      var data=JSON.parse(txt);
+      renderRestorePlan(data,file.name,txt.length);
+    }catch(e){
+      if(st){st.textContent='Kunde inte läsa/parse:a JSON-filen: '+e.message;st.className='status bad';}
+    }
+  }
+  function clearRestorePlan(){
+    if($('restore-plan-file'))$('restore-plan-file').value='';
+    if($('restore-plan-status')){$('restore-plan-status').textContent='Ingen backupfil vald ännu.';$('restore-plan-status').className='status';}
+    if($('restore-plan-grid'))$('restore-plan-grid').innerHTML='';
+    if($('restore-plan-details'))$('restore-plan-details').textContent='';
+  }
+
   async function loadUsers(){
     var body=$('users-body');body.innerHTML='<tr><td colspan="5" class="muted">Laddar...</td></tr>';
     var rows=await rpc('tt_admin_list_allowed_users',{});
@@ -551,6 +649,9 @@
   if($('btn-validate-backup'))$('btn-validate-backup').onclick=function(){validateSelectedBackup();};
   if($('backup-validate-file'))$('backup-validate-file').addEventListener('change',function(){validateSelectedBackup();});
   if($('btn-clear-validation'))$('btn-clear-validation').onclick=function(){clearBackupValidation();};
+  if($('btn-restore-plan'))$('btn-restore-plan').onclick=function(){showRestorePlan();};
+  if($('btn-clear-restore-plan'))$('btn-clear-restore-plan').onclick=function(){clearRestorePlan();};
+  if($('restore-plan-file'))$('restore-plan-file').addEventListener('change',function(){showRestorePlan();});
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
   if($('new-team-role'))$('new-team-role').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
