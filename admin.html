@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v463</title>
+<title>Taktiktavla admin v464</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -109,7 +109,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Full backup-export</h2>
-          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v463 bygger vidare på v460:s tydliga metadata och logiska counts. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
+          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v464 bygger vidare på v460:s tydliga metadata och logiska counts. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
         </div>
         <button id="btn-download-backup" class="primary right">Ladda ner full backup</button>
       </div>
@@ -121,7 +121,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Kontrollera backupfil</h2>
-          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v463 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
+          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v464 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
         </div>
       </div>
       <input id="backup-validate-file" type="file" accept="application/json,.json">
@@ -138,7 +138,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Restore-plan / dry-run</h2>
-          <p>Välj en backupfil för att se exakt vad en framtida katastrofåterställning skulle behöva göra. v463 gör ingen återställning, skickar inget till Supabase och skriver ingenting. Den visar bara plan, ordning, counts och varningar lokalt i webbläsaren.</p>
+          <p>Välj en backupfil för att se exakt vad en framtida katastrofåterställning skulle behöva göra. v464 gör ingen återställning, skickar inget till Supabase och skriver ingenting. Den visar bara plan, ordning, counts och varningar lokalt i webbläsaren.</p>
         </div>
       </div>
       <div class="helpbox">Den här planen är avsedd för återställning till en tom/förberedd databas. Supabase Auth-konton/lösenord ingår inte i backupen; användare behöver kunna logga in/skapas igen med samma e-post.</div>
@@ -156,7 +156,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Restore-skydd / skarp checklista</h2>
-          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v463 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
+          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v464 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Ingen återställning görs här.</strong> Riktig restore ska inte byggas/startas förrän checklistan är grön och du uttryckligen väljer att gå vidare i en separat framtida version.</div>
@@ -177,6 +177,24 @@
       <div id="restore-guard-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
       <div id="restore-guard-grid" class="statusgrid" aria-label="Restore-skydd"></div>
       <div id="restore-guard-details" class="statusnote"></div>
+    </section>
+
+    <section class="card" id="test-env-plan-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Testmiljö-plan för riktig restore</h2>
+          <p>Detta steg hjälper dig planera en separat testmiljö innan någon riktig återställningskod byggs. v464 skriver fortfarande ingenting till Supabase. Den läser bara en backupfil lokalt och visar exakt vad som bör skapas/testas utanför den riktiga appen.</p>
+        </div>
+      </div>
+      <div class="helpbox"><strong>Mål:</strong> kunna testa framtida restore mot en tom testdatabas/testapp, inte mot din riktiga Taktiktavla-miljö.</div>
+      <input id="test-env-plan-file" type="file" accept="application/json,.json" style="margin-top:10px">
+      <div class="row" style="margin-top:10px">
+        <button id="btn-test-env-plan" class="primary">Bygg testmiljö-plan</button>
+        <button id="btn-clear-test-env-plan" class="small">Rensa testmiljö-plan</button>
+      </div>
+      <div id="test-env-plan-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
+      <div id="test-env-plan-grid" class="statusgrid" aria-label="Testmiljö-plan"></div>
+      <div id="test-env-plan-details" class="statusnote"></div>
     </section>
     <div class="grid">
       <section class="card">
@@ -680,7 +698,7 @@
     if(validation.warnings.length)html+='<div class="warntext" style="margin-top:8px"><strong>Varningar från backupkontroll:</strong><ul><li>'+validation.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
     if(missing.length)html+='<div class="badtext" style="margin-top:8px"><strong>Saknade checkpunkter:</strong><ul><li>'+missing.map(function(x){return esc(x.label);}).join('</li><li>')+'</li></ul></div>';
     if(!confirmOk)html+='<div class="helpbox">För att passera spärren måste bekräftelsefältet innehålla exakt: <span class="mono">'+esc(expected)+'</span></div>';
-    html+='<div class="helpbox">Även om allt är grönt här gör v463 fortfarande ingen återställning. En framtida riktig restore ska ligga i separat version, med ytterligare bekräftelse och helst först testas i tom testmiljö.</div>';
+    html+='<div class="helpbox">Även om allt är grönt här gör v464 fortfarande ingen återställning. En framtida riktig restore ska ligga i separat version, med ytterligare bekräftelse och helst först testas i tom testmiljö.</div>';
     details.innerHTML=html;
   }
   async function checkRestoreGuard(){
@@ -706,6 +724,85 @@
     if($('restore-guard-details'))$('restore-guard-details').textContent='';
   }
 
+  function renderTestEnvPlan(data,fileName,bytes){
+    var st=$('test-env-plan-status'), grid=$('test-env-plan-grid'), details=$('test-env-plan-details');
+    if(!st||!grid||!details)return;
+    var validation=validateBackupData(data);
+    var c=(data&&data.counts)||{};
+    var tables=(data&&data.tables)||{};
+    var saves=Array.isArray(tables.saves)?tables.saves:[];
+    var lc=Object.assign({},recomputeLogicalCounts(saves),(data&&data.logicalCounts)||{});
+    var teamCodes=Array.isArray(data&&data.teamCodesInSaves)?data.teamCodesInSaves:(lc.teamCodes||[]);
+    var ready=validation.errors.length===0 && String(data&&data.backupType||'')==='full-disaster-backup' && Number(data&&data.backupVersion)===1 && saves.length>0;
+    grid.innerHTML=''
+      +statusCard('Backupversion',data&&data.backupVersion,Number(data&&data.backupVersion)===1?'':'bad')
+      +statusCard('Adminexport',data&&data.adminExportVersion,Number(data&&data.adminExportVersion)>=460?'':'warn')
+      +statusCard('Appversion',data&&data.appVersion)
+      +statusCard('Saves',saves.length, saves.length?'':'bad')
+      +statusCard('Matcher i saves',lc.matches_in_saves)
+      +statusCard('Taktikfilmer i saves',lc.taktikfilmer_in_saves)
+      +statusCard('Trupper i saves',lc.trupp_in_saves)
+      +statusCard('Lagmedlemskap i saves',lc.team_members_in_saves)
+      +statusCard('Allowed users',c.allowed_users)
+      +statusCard('App admins',c.app_admins)
+      +statusCard('Taveldelningar',c.formation_team_shares)
+      +statusCard('Filmdelningar',c.taktikfilm_team_shares)
+      +statusCard('Lagkoder i saves',teamCodes.length);
+    st.textContent=(ready?'Testmiljö-plan: OK att gå vidare med separat testmiljö. ':'Testmiljö-plan: STOPP/varning. Kontrollera punkterna nedan. ')+'Ingen restore har gjorts. Fil: '+fileName+', cirka '+Math.round((bytes||0)/1024)+' kB.';
+    st.className='status '+(ready?'ok':'warn');
+    var html='';
+    html+='<div><strong>Detta är bara en plan.</strong> v464 skapar ingen testmiljö, skickar inte filen till Supabase och skriver ingenting.</div>';
+    html+='<div style="margin-top:8px"><strong>Rekommenderad separation:</strong><ul>';
+    html+='<li><strong>Produktion:</strong> behåll nuvarande app och nuvarande Supabase orörda.</li>';
+    html+='<li><strong>Test:</strong> skapa separat Supabase-projekt och separat testadmin/testapp innan riktig restore testas.</li>';
+    html+='<li><strong>Restore-test:</strong> kör bara mot tom/förberedd testdatabas.</li>';
+    html+='</ul></div>';
+    html+='<div style="margin-top:10px"><strong>Förbered testmiljön i denna ordning:</strong><ol>';
+    html+='<li>Skapa nytt Supabase-testprojekt, exempelvis <span class="mono">taktiktavla-restore-test</span>.</li>';
+    html+='<li>Kör samma grundläggande SQL/schema som produktionen behöver innan appen används.</li>';
+    html+='<li>Kör admin-/säkerhets-SQL: v452 global allowlist, v457 lagmedlemskap, v458 systemstatus och v460 full backup-export.</li>';
+    html+='<li>Skapa minst ett app_admin-konto i testprojektet så att adminpanelen kan öppnas.</li>';
+    html+='<li>Lägg upp en separat testversion av admin/html som pekar på test-Supabase, inte produktion.</li>';
+    html+='<li>När riktig restore byggs senare: låt den först stoppa om databasen inte är tom.</li>';
+    html+='<li>Efter restore i test: öppna separat testapp och kontrollera trupp, matcher, utgångslägen, taktikfilmer och delningar.</li>';
+    html+='</ol></div>';
+    html+='<div style="margin-top:10px"><strong>Backupen som ska testas innehåller:</strong><ul>';
+    html+='<li>'+esc(saves.length)+' saves totalt.</li>';
+    html+='<li>'+esc(lc.matches_in_saves||0)+' matcher, '+esc(lc.uppstallningar_in_saves||0)+' utgångslägen, '+esc(lc.taktikfilmer_in_saves||0)+' taktikfilmer, '+esc(lc.trupp_in_saves||0)+' trupper.</li>';
+    html+='<li>'+esc(lc.team_members_in_saves||0)+' lagmedlemskap i saves, '+esc(c.allowed_users||0)+' allowed users och '+esc(c.app_admins||0)+' app admins.</li>';
+    html+='<li>Lagkoder: '+(teamCodes.length?teamCodes.map(esc).join(', '):'–')+'</li>';
+    html+='</ul></div>';
+    html+='<div style="margin-top:10px"><strong>Saker som absolut inte ska göras i produktion:</strong><ul>';
+    html+='<li>Lägg inte in en skrivande restore-knapp i riktiga adminpanelen ännu.</li>';
+    html+='<li>Kör inte insert/upsert/delete mot den riktiga databasen.</li>';
+    html+='<li>Testa inte restore som merge i en databas som redan innehåller riktig data.</li>';
+    html+='</ul></div>';
+    if(validation.errors.length)html+='<div class="badtext" style="margin-top:8px"><strong>Fel från backupkontroll:</strong><ul><li>'+validation.errors.map(esc).join('</li><li>')+'</li></ul></div>';
+    if(validation.warnings.length)html+='<div class="warntext" style="margin-top:8px"><strong>Varningar från backupkontroll:</strong><ul><li>'+validation.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+    html+='<div class="helpbox">Nästa kodsteg bör vara en separat testadmin/testapp-konfiguration för test-Supabase. Först därefter är det rimligt att bygga en skrivande restore-funktion — och då bara i testmiljön.</div>';
+    details.innerHTML=html;
+  }
+  async function showTestEnvPlan(){
+    var input=$('test-env-plan-file'), st=$('test-env-plan-status'), grid=$('test-env-plan-grid'), details=$('test-env-plan-details');
+    if(!input||!input.files||!input.files[0]){if(st){st.textContent='Välj en JSON-backupfil först.';st.className='status bad';}return;}
+    var file=input.files[0];
+    if(st){st.textContent='Läser backupfil lokalt och bygger testmiljö-plan...';st.className='status';}
+    if(grid)grid.innerHTML=''; if(details)details.textContent='';
+    try{
+      var txt=await file.text();
+      var data=JSON.parse(txt);
+      renderTestEnvPlan(data,file.name,txt.length);
+    }catch(e){
+      if(st){st.textContent='Kunde inte läsa/parse:a JSON-filen: '+e.message;st.className='status bad';}
+    }
+  }
+  function clearTestEnvPlan(){
+    if($('test-env-plan-file'))$('test-env-plan-file').value='';
+    if($('test-env-plan-status')){$('test-env-plan-status').textContent='Ingen backupfil vald ännu.';$('test-env-plan-status').className='status';}
+    if($('test-env-plan-grid'))$('test-env-plan-grid').innerHTML='';
+    if($('test-env-plan-details'))$('test-env-plan-details').textContent='';
+  }
+
   async function loadUsers(){
     var body=$('users-body');body.innerHTML='<tr><td colspan="5" class="muted">Laddar...</td></tr>';
     var rows=await rpc('tt_admin_list_allowed_users',{});
@@ -729,7 +826,7 @@
     try{setStatus('Loggar in...');var data=await authFetch('/auth/v1/token?grant_type=password',{method:'POST',headers:headers(),body:JSON.stringify({email:email,password:pass})});saveSession(data);await checkAdmin();}
     catch(e){setStatus('Inloggning misslyckades: '+e.message,true);}
   };
-  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';if($('system-status-grid'))$('system-status-grid').innerHTML='';if($('system-status-summary'))$('system-status-summary').textContent='Logga in för att läsa systemstatus.';clearBackupValidation();clearRestorePlan();clearRestoreGuard();setStatus('Utloggad.');};
+  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';if($('system-status-grid'))$('system-status-grid').innerHTML='';if($('system-status-summary'))$('system-status-summary').textContent='Logga in för att läsa systemstatus.';clearBackupValidation();clearRestorePlan();clearRestoreGuard();clearTestEnvPlan();setStatus('Utloggad.');};
   async function addUser(openAfter){
     var email=$('new-email').value.trim();var note=$('new-note').value.trim();
     var teamInfo=selectedTeamInfo();
@@ -762,6 +859,9 @@
   if($('restore-guard-file'))$('restore-guard-file').addEventListener('change',function(){checkRestoreGuard();});
   restoreGuardChecklist().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',function(){if($('restore-guard-file')&&$('restore-guard-file').files&&$('restore-guard-file').files[0])checkRestoreGuard();});});
   if($('restore-guard-confirm'))$('restore-guard-confirm').addEventListener('input',function(){if($('restore-guard-file')&&$('restore-guard-file').files&&$('restore-guard-file').files[0])checkRestoreGuard();});
+  if($('btn-test-env-plan'))$('btn-test-env-plan').onclick=function(){showTestEnvPlan();};
+  if($('btn-clear-test-env-plan'))$('btn-clear-test-env-plan').onclick=function(){clearTestEnvPlan();};
+  if($('test-env-plan-file'))$('test-env-plan-file').addEventListener('change',function(){showTestEnvPlan();});
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
   if($('new-team-role'))$('new-team-role').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
