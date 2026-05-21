@@ -667,6 +667,56 @@
       <textarea id="next-phase-v482-text" readonly placeholder="Guiden skapas här när du trycker på Bygg nästa-fas-guide."></textarea>
     </section>
 
+
+    <section class="card" id="handoff-v483-card">
+      <div class="row" style="align-items:center;justify-content:space-between;gap:10px">
+        <div>
+          <h2 style="margin:0">Testmiljö-överlämningspaket</h2>
+          <p class="muted">Samlar en kopierbar överlämning för nästa arbetsfas: skapa separat testmiljö och förbereda testrestore. Ingen SQL, ingen restore och inget skickas till Supabase.</p>
+        </div>
+        <button id="btn-handoff-v483" class="primary right" type="button">Bygg överlämningspaket</button>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label for="handoff-v483-prod-url">Produktions-Supabase URL, endast jämförelse</label>
+          <input id="handoff-v483-prod-url" type="text" readonly>
+        </div>
+        <div>
+          <label for="handoff-v483-test-url">Planerad test-Supabase URL</label>
+          <input id="handoff-v483-test-url" type="text" placeholder="https://ditt-testprojekt.supabase.co">
+        </div>
+        <div>
+          <label for="handoff-v483-test-admin">Planerad testadmin-URL</label>
+          <input id="handoff-v483-test-admin" type="text" placeholder="https://taktiktavla-restore-test.vercel.app/admin.html">
+        </div>
+        <div>
+          <label for="handoff-v483-note">Kort notering, valfri</label>
+          <input id="handoff-v483-note" type="text" placeholder="Ex: testprojekt skapas innan skrivande restore byggs">
+        </div>
+      </div>
+
+      <label for="handoff-v483-file">Backupfil som överlämningen ska bygga på</label>
+      <input id="handoff-v483-file" type="file" accept="application/json,.json">
+
+      <div class="checklist" aria-label="Testmiljö-överlämning v483">
+        <label class="checkline"><input id="handoff-v483-check-readonly" type="checkbox"><span>Jag förstår att denna ruta bara skapar text/överlämning och inte gör restore.</span></label>
+        <label class="checkline"><input id="handoff-v483-check-test" type="checkbox"><span>Nästa skrivande steg ska bara göras i separat test-Supabase, inte produktion.</span></label>
+        <label class="checkline"><input id="handoff-v483-check-empty" type="checkbox"><span>Restoretest ska utgå från tom/förberedd testdatabas, inte merge i aktiv data.</span></label>
+        <label class="checkline"><input id="handoff-v483-check-auth" type="checkbox"><span>Supabase Auth/lösenord ingår inte i backupen och måste hanteras separat via inloggning/e-post.</span></label>
+      </div>
+
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button id="btn-copy-handoff-v483" class="small" type="button">Kopiera överlämningspaket</button>
+        <button id="btn-clear-handoff-v483" class="small" type="button">Rensa</button>
+      </div>
+      <div id="handoff-v483-status" class="status" style="margin-top:10px">Inget överlämningspaket byggt ännu.</div>
+      <div id="handoff-v483-grid" class="statusgrid" aria-label="Överlämningspaket status"></div>
+      <div id="handoff-v483-details" class="statusnote"></div>
+      <label for="handoff-v483-text">Kopierbart överlämningspaket</label>
+      <textarea id="handoff-v483-text" readonly placeholder="Överlämningen skapas här när du trycker på Bygg överlämningspaket."></textarea>
+    </section>
+
   </main>
 </div>
 
@@ -2579,6 +2629,151 @@
   ['next-phase-v482-test-url','next-phase-v482-test-app','next-phase-v482-test-admin'].forEach(function(id){if($(id))$(id).addEventListener('input',np482SetDirty);});
   if($('next-phase-v482-file'))$('next-phase-v482-file').addEventListener('change',np482SetDirty);
   np482Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',np482SetDirty);});
+
+
+  // v483: Testmiljö-överlämningspaket. Read-only och isolerad från login/adminflöde.
+  function hv483Checks(){return [
+    {id:'handoff-v483-check-readonly',txt:'Överlämningen är bara text/read-only och gör ingen restore.'},
+    {id:'handoff-v483-check-test',txt:'Skrivande restore får bara testas i separat test-Supabase, inte produktion.'},
+    {id:'handoff-v483-check-empty',txt:'Restoretest ska ske mot tom/förberedd testdatabas, inte merge i aktiv data.'},
+    {id:'handoff-v483-check-auth',txt:'Supabase Auth/lösenord ingår inte i backupen och hanteras separat.'}
+  ];}
+  function hv483Norm(u){return String(u||'').trim().replace(/\/+$/,'').toLowerCase();}
+  function hv483SetDirty(){
+    var st=$('handoff-v483-status'), grid=$('handoff-v483-grid'), details=$('handoff-v483-details'), text=$('handoff-v483-text');
+    if(st){st.textContent='Ändringar gjorda. Tryck Bygg överlämningspaket för att skapa/uppdatera texten.';st.className='status';}
+    if(grid)grid.innerHTML=''; if(details)details.innerHTML=''; if(text)text.value='';
+  }
+  function hv483Clear(){
+    ['handoff-v483-test-url','handoff-v483-test-admin','handoff-v483-note'].forEach(function(id){if($(id))$(id).value='';});
+    if($('handoff-v483-file'))$('handoff-v483-file').value='';
+    hv483Checks().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    if($('handoff-v483-status')){$('handoff-v483-status').textContent='Inget överlämningspaket byggt ännu.';$('handoff-v483-status').className='status';}
+    if($('handoff-v483-grid'))$('handoff-v483-grid').innerHTML='';
+    if($('handoff-v483-details'))$('handoff-v483-details').innerHTML='';
+    if($('handoff-v483-text'))$('handoff-v483-text').value='';
+  }
+  function hv483BuildText(info,reasons){
+    var lines=[];
+    lines.push('Taktiktavla – överlämningspaket inför restore-testmiljö');
+    lines.push('Skapad från admin v483. Detta är en read-only-plan; ingen restore/import/SQL har körts.');
+    lines.push('');
+    lines.push('STABIL BAS');
+    lines.push('- Huvudapp: v455');
+    lines.push('- Admin: v483');
+    lines.push('- v466, v470, v472, v474 och v481 ska inte användas.');
+    lines.push('');
+    lines.push('MILJÖER');
+    lines.push('- Produktions-Supabase: '+(info.prodRaw||'[saknas]'));
+    lines.push('- Planerad test-Supabase: '+(info.testRaw||'[saknas]'));
+    lines.push('- Planerad testadmin: '+(info.testAdmin||'[saknas]'));
+    if(info.note)lines.push('- Notering: '+info.note);
+    lines.push('');
+    lines.push('BACKUP');
+    lines.push('- Fil: '+(info.fileName||'[saknas]'));
+    lines.push('- backupVersion: '+(info.backupVersion==null?'[saknas]':info.backupVersion));
+    lines.push('- adminExportVersion: '+(info.adminExportVersion==null?'[saknas]':info.adminExportVersion));
+    lines.push('- appVersion: '+(info.appVersion==null?'[saknas]':info.appVersion));
+    lines.push('- exportedAt: '+(info.exportedAt||'[saknas]'));
+    lines.push('- saves: '+(info.saves==null?'[saknas]':info.saves));
+    lines.push('- matcher i saves: '+(info.logical.matches_in_saves==null?'[saknas]':info.logical.matches_in_saves));
+    lines.push('- utgångslägen i saves: '+(info.logical.uppstallningar_in_saves==null?'[saknas]':info.logical.uppstallningar_in_saves));
+    lines.push('- taktikfilmer i saves: '+(info.logical.taktikfilmer_in_saves==null?'[saknas]':info.logical.taktikfilmer_in_saves));
+    lines.push('- trupper i saves: '+(info.logical.trupp_in_saves==null?'[saknas]':info.logical.trupp_in_saves));
+    lines.push('- lagmedlemskap i saves: '+(info.logical.team_members_in_saves==null?'[saknas]':info.logical.team_members_in_saves));
+    lines.push('- allowed_users: '+(info.allowedUsers==null?'[saknas]':info.allowedUsers));
+    lines.push('- app_admins: '+(info.appAdmins==null?'[saknas]':info.appAdmins));
+    lines.push('- formation_team_shares: '+(info.formationShares==null?'[saknas]':info.formationShares));
+    lines.push('- taktikfilm_team_shares: '+(info.filmShares==null?'[saknas]':info.filmShares));
+    lines.push('- lagkoder: '+(info.teamCodes&&info.teamCodes.length?info.teamCodes.join(', '):'[saknas/inga]'));
+    lines.push('');
+    lines.push('CHECKLISTA');
+    lines.push('- Markerade punkter: '+info.checked+'/'+info.total);
+    hv483Checks().forEach(function(x){lines.push((info.checkedIds[x.id]?'[x] ':'[ ] ')+x.txt);});
+    lines.push('');
+    if(reasons.length){lines.push('STOPP före nästa fas:'); reasons.forEach(function(r){lines.push('- '+r);});}
+    else{lines.push('STATUS: Överlämningspaketet är redo att användas för att skapa separat testmiljö.');}
+    lines.push('');
+    lines.push('NÄSTA PRAKTISKA STEG');
+    lines.push('1. Skapa nytt separat Supabase-testprojekt.');
+    lines.push('2. Kör appens grundschema/RLS/policies i testprojektet.');
+    lines.push('3. Kör admin-SQL i testprojektet: v452, v457, v458 och v460.');
+    lines.push('4. Lägg in minst en app_admin i testprojektet.');
+    lines.push('5. Gör en separat testadmin/testapp som pekar mot testprojektets URL/anon key.');
+    lines.push('6. Kör systemstatus i testadmin.');
+    lines.push('7. Validera backupfilen i testadmin.');
+    lines.push('8. Först därefter byggs skrivande restore, endast för testmiljön.');
+    lines.push('');
+    lines.push('HÅRDA STOPP');
+    lines.push('- Ingen restore mot produktionsdatabas.');
+    lines.push('- Ingen merge in i databas med riktig befintlig data.');
+    lines.push('- Ingen service-role-nyckel i admin.html/webbläsare.');
+    lines.push('- Om test-URL är samma som produktion: stoppa direkt.');
+    return lines.join('\n');
+  }
+  async function hv483Render(){
+    var st=$('handoff-v483-status'), grid=$('handoff-v483-grid'), details=$('handoff-v483-details'), text=$('handoff-v483-text');
+    if(!st||!grid||!details||!text)return;
+    grid.innerHTML=''; details.innerHTML=''; text.value=''; st.textContent='Överlämningspaket: kontrollerar val...'; st.className='status';
+    try{
+      var prodRaw=SUPA_URL||'', prod=hv483Norm(prodRaw);
+      var testRaw=(($('handoff-v483-test-url')&&$('handoff-v483-test-url').value)||'').trim();
+      var test=hv483Norm(testRaw);
+      var testAdmin=(($('handoff-v483-test-admin')&&$('handoff-v483-test-admin').value)||'').trim();
+      var note=(($('handoff-v483-note')&&$('handoff-v483-note').value)||'').trim();
+      var file=$('handoff-v483-file')&&$('handoff-v483-file').files&&$('handoff-v483-file').files[0];
+      var checks=hv483Checks(), checkedIds={}, checked=0, total=checks.length;
+      checks.forEach(function(x){var ok=!!($(x.id)&&$(x.id).checked); checkedIds[x.id]=ok; if(ok)checked++;});
+      var reasons=[];
+      if(!testRaw)reasons.push('Planerad test-Supabase URL saknas.');
+      if(testRaw&&!/^https:\/\/[^\s]+\.supabase\.co\/?$/i.test(testRaw))reasons.push('Test-Supabase URL ser inte ut som en Supabase Project URL.');
+      if(testRaw&&prod&&test===prod)reasons.push('Test-Supabase URL är samma som produktions-URL. Stoppa här.');
+      if(!file)reasons.push('Backupfil saknas.');
+      if(checked<total)reasons.push('Alla överlämningspunkter är inte markerade.');
+      var data=null,tables={},logical={},teamCodes=[];
+      if(file){
+        data=await readLocalJsonFile(file);
+        tables=backupTables(data);
+        logical=(data&&data.logicalCounts)||{};
+        teamCodes=(data&&Array.isArray(data.teamCodesInSaves))?data.teamCodesInSaves:[];
+        if(!data||data.backupType!=='full-disaster-backup')reasons.push('Backupfilen har inte backupType full-disaster-backup.');
+        if(Number(data&&data.backupVersion)!==1)reasons.push('Backupversion är inte 1.');
+        if(Number((data&&data.adminExportVersion)||0)<460)reasons.push('Adminexport är äldre än 460. Använd backup från v460 eller senare.');
+        if(!Array.isArray(tables.saves)||!tables.saves.length)reasons.push('Backupen innehåller inga saves/appdata.');
+      }
+      var info={prodRaw:prodRaw,testRaw:testRaw,testAdmin:testAdmin,note:note,fileName:file&&file.name,checked:checked,total:total,checkedIds:checkedIds,
+        backupVersion:data&&data.backupVersion,adminExportVersion:data&&data.adminExportVersion,appVersion:data&&data.appVersion,exportedAt:data&&data.exportedAt,
+        saves:Array.isArray(tables.saves)?tables.saves.length:null,logical:logical,allowedUsers:Array.isArray(tables.allowed_users)?tables.allowed_users.length:null,
+        appAdmins:Array.isArray(tables.app_admins)?tables.app_admins.length:null,formationShares:Array.isArray(tables.formation_team_shares)?tables.formation_team_shares.length:null,
+        filmShares:Array.isArray(tables.taktikfilm_team_shares)?tables.taktikfilm_team_shares.length:null,teamCodes:teamCodes};
+      var ready=!reasons.length;
+      grid.innerHTML=''
+        +statusCard('Test-Supabase',testRaw?testRaw.replace(/^https?:\/\//,''):'saknas',(!testRaw||test===prod)?'bad':'')
+        +statusCard('Backup',file?file.name:'saknas',file?'':'bad')
+        +statusCard('Checklistan',checked+'/'+total,checked===total?'':'warn')
+        +statusCard('Saves',info.saves==null?'–':info.saves)
+        +statusCard('Överlämning',ready?'REDO':'STOPP',ready?'':'bad');
+      var html='<p><strong>Överlämningspaketet är bara en textsammanställning.</strong> Det gör ingen SQL, restore eller Supabase-skrivning.</p>';
+      if(reasons.length)html+='<div class="warntext"><strong>Inte redo ännu:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
+      else html+='<p class="oktext"><strong>Redo som överlämning till testmiljöfasen.</strong> Nästa praktiska arbete sker utanför produktionen.</p>';
+      html+='<p><strong>Viktig gräns:</strong> skrivande restore byggs först när separat test-Supabase finns och testadmin/testapp pekar dit.</p>';
+      details.innerHTML=html;
+      text.value=hv483BuildText(info,reasons);
+      st.textContent=(ready?'Överlämningspaket: REDO. ':'Överlämningspaket: STOPP/KONTROLL. ')+(reasons[0]||'')+' Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.';
+      st.className=ready?'status ok':'status warn';
+    }catch(e){
+      st.textContent='Överlämningspaket: tekniskt fel i rutan: '+(e&&e.message?e.message:e);
+      st.className='status bad';
+      details.innerHTML='<div class="badtext"><strong>Tekniskt fel:</strong> '+esc(e&&e.message?e.message:e)+'</div>';
+    }
+  }
+  if($('handoff-v483-prod-url'))$('handoff-v483-prod-url').value=SUPA_URL||'';
+  if($('btn-handoff-v483'))$('btn-handoff-v483').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();hv483Render();});
+  if($('btn-clear-handoff-v483'))$('btn-clear-handoff-v483').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();hv483Clear();});
+  if($('btn-copy-handoff-v483'))$('btn-copy-handoff-v483').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('handoff-v483-text')&&$('handoff-v483-text').value)||'');});
+  ['handoff-v483-test-url','handoff-v483-test-admin','handoff-v483-note'].forEach(function(id){if($(id))$(id).addEventListener('input',hv483SetDirty);});
+  if($('handoff-v483-file'))$('handoff-v483-file').addEventListener('change',hv483SetDirty);
+  hv483Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',hv483SetDirty);});
 
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
