@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v481</title>
+<title>Taktiktavla admin v482</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -617,53 +617,54 @@
     </section>
 
 
-    <section class="card" id="test-env-next-phase-card">
-      <div class="row" style="margin-bottom:6px">
+    <section class="card" id="next-phase-v482-card">
+      <div class="row" style="align-items:center;justify-content:space-between;gap:10px">
         <div>
           <h2 style="margin:0">Nästa fas: skapa separat testmiljö</h2>
-          <p>Det här är en praktisk guide för själva övergången från planering till separat testmiljö. Den gör fortfarande ingen restore och kör ingen SQL.</p>
+          <p class="muted">Skapar en kopierbar guide för vad som ska göras utanför produktion. Ingen SQL, ingen restore och inget skickas till Supabase.</p>
         </div>
-        <button id="btn-build-next-phase" class="primary right">Bygg nästa-fas-guide</button>
+        <button id="btn-next-phase-v482" class="primary right" type="button">Bygg nästa-fas-guide</button>
       </div>
-      <div class="helpbox">Syftet är att du ska kunna skapa en testmiljö utan att blanda ihop den med produktion. Produktionsdatabasen ska inte användas för restoretest.</div>
-      <div class="grid">
+
+      <div class="grid2">
         <div>
-          <label for="next-phase-prod-url-view">Produktions-Supabase URL, endast jämförelse</label>
-          <input id="next-phase-prod-url-view" type="text" readonly>
-        </div>
-        <div>
-          <label for="next-phase-test-url">Test-Supabase URL</label>
-          <input id="next-phase-test-url" type="text" placeholder="https://ditt-testprojekt.supabase.co">
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="next-phase-test-app-url">Testapp-URL</label>
-          <input id="next-phase-test-app-url" type="text" placeholder="https://taktiktavla-restore-test.vercel.app">
+          <label for="next-phase-v482-prod-url">Produktions-Supabase URL, endast jämförelse</label>
+          <input id="next-phase-v482-prod-url" type="text" readonly>
         </div>
         <div>
-          <label for="next-phase-test-admin-url">Testadmin-URL</label>
-          <input id="next-phase-test-admin-url" type="text" placeholder="https://taktiktavla-restore-test.vercel.app/admin.html">
+          <label for="next-phase-v482-test-url">Test-Supabase URL</label>
+          <input id="next-phase-v482-test-url" type="text" placeholder="https://ditt-testprojekt.supabase.co">
+        </div>
+        <div>
+          <label for="next-phase-v482-test-app">Testapp-URL</label>
+          <input id="next-phase-v482-test-app" type="text" placeholder="https://taktiktavla-restore-test.vercel.app">
+        </div>
+        <div>
+          <label for="next-phase-v482-test-admin">Testadmin-URL</label>
+          <input id="next-phase-v482-test-admin" type="text" placeholder="https://taktiktavla-restore-test.vercel.app/admin.html">
         </div>
       </div>
-      <label for="next-phase-backup-file">Backupfil som ska användas senare i testmiljön</label>
-      <input id="next-phase-backup-file" type="file" accept="application/json,.json">
-      <div class="checklist" aria-label="Nästa fas testmiljö">
-        <label class="checkline"><input id="next-phase-check-project" type="checkbox"><span>Jag ska skapa ett nytt separat Supabase-projekt, inte använda produktion.</span></label>
-        <label class="checkline"><input id="next-phase-check-keys" type="checkbox"><span>Jag ska bara använda testprojektets public anon key i testadmin/testapp, aldrig service-role i webbläsaren.</span></label>
-        <label class="checkline"><input id="next-phase-check-domain" type="checkbox"><span>Testadmin/testapp ska ha tydlig annan URL eller annan lokal fil så att jag ser att det är test.</span></label>
-        <label class="checkline"><input id="next-phase-check-sql" type="checkbox"><span>Jag ska köra schema/RLS/RPC i testprojektet innan skrivande restore testas.</span></label>
-        <label class="checkline"><input id="next-phase-check-stop" type="checkbox"><span>Om något pekar mot produktion stoppar jag och kör ingen restore.</span></label>
+
+      <label for="next-phase-v482-file">Backupfil som ska användas senare i testmiljön</label>
+      <input id="next-phase-v482-file" type="file" accept="application/json,.json">
+
+      <div class="checklist" aria-label="Nästa fas testmiljö v482">
+        <label class="checkline"><input id="next-phase-v482-check-project" type="checkbox"><span>Jag ska skapa ett nytt separat Supabase-projekt, inte använda produktion.</span></label>
+        <label class="checkline"><input id="next-phase-v482-check-keys" type="checkbox"><span>Jag ska bara använda testprojektets public anon key i testadmin/testapp, aldrig service-role i webbläsaren.</span></label>
+        <label class="checkline"><input id="next-phase-v482-check-domain" type="checkbox"><span>Testadmin/testapp ska ha tydlig annan URL eller annan lokal fil så att jag ser att det är test.</span></label>
+        <label class="checkline"><input id="next-phase-v482-check-sql" type="checkbox"><span>Jag ska köra schema/RLS/RPC i testprojektet innan skrivande restore testas.</span></label>
+        <label class="checkline"><input id="next-phase-v482-check-stop" type="checkbox"><span>Om något pekar mot produktion stoppar jag och kör ingen restore.</span></label>
       </div>
-      <div class="row" style="margin-top:10px">
-        <button id="btn-copy-next-phase" class="small">Kopiera nästa-fas-guide</button>
-        <button id="btn-clear-next-phase" class="small">Rensa</button>
+
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button id="btn-copy-next-phase-v482" class="small" type="button">Kopiera nästa-fas-guide</button>
+        <button id="btn-clear-next-phase-v482" class="small" type="button">Rensa</button>
       </div>
-      <div id="next-phase-status" class="status" style="margin-top:10px">Ingen nästa-fas-guide byggd ännu.</div>
-      <div id="next-phase-grid" class="statusgrid" aria-label="Nästa fas status"></div>
-      <div id="next-phase-details" class="statusnote"></div>
-      <label for="next-phase-text">Kopierbar nästa-fas-guide</label>
-      <textarea id="next-phase-text" readonly placeholder="Guiden skapas här när du trycker på Bygg nästa-fas-guide."></textarea>
+      <div id="next-phase-v482-status" class="status" style="margin-top:10px">Ingen nästa-fas-guide byggd ännu.</div>
+      <div id="next-phase-v482-grid" class="statusgrid" aria-label="Nästa fas status"></div>
+      <div id="next-phase-v482-details" class="statusnote"></div>
+      <label for="next-phase-v482-text">Kopierbar nästa-fas-guide</label>
+      <textarea id="next-phase-v482-text" readonly placeholder="Guiden skapas här när du trycker på Bygg nästa-fas-guide."></textarea>
     </section>
 
   </main>
@@ -2329,7 +2330,7 @@
   function buildTestEnvReadyText(info,reasons){
     var lines=[];
     lines.push('Taktiktavla – redo för separat restore-testmiljö');
-    lines.push('Skapad från admin v480. Ingen restore/import har gjorts.');
+    lines.push('Skapad från admin v482. Ingen restore/import har gjorts.');
     lines.push('');
     lines.push('Produktions-Supabase: '+(info.prodUrl||'saknas'));
     lines.push('Planerad test-Supabase: '+(info.testUrl||'saknas'));
@@ -2455,29 +2456,38 @@
   });
 
 
-  function nextPhaseChecks(){return [
-    {id:'next-phase-check-project',txt:'Separat Supabase-testprojekt skapas, inte produktion.'},
-    {id:'next-phase-check-keys',txt:'Endast testprojektets public anon key används i testadmin/testapp; ingen service-role i webbläsaren.'},
-    {id:'next-phase-check-domain',txt:'Testadmin/testapp är tydligt separerad från produktion.'},
-    {id:'next-phase-check-sql',txt:'Schema/RLS/RPC körs i testprojektet innan skrivande restore testas.'},
-    {id:'next-phase-check-stop',txt:'Allt stoppas om någon inställning pekar mot produktion.'}
+  // v482: Nästa fas-guide. Avsiktligt isolerad från övriga adminfunktioner.
+  function np482Checks(){return [
+    {id:'next-phase-v482-check-project',txt:'Separat Supabase-testprojekt skapas, inte produktion.'},
+    {id:'next-phase-v482-check-keys',txt:'Endast testprojektets public anon key används i testadmin/testapp; ingen service-role i webbläsaren.'},
+    {id:'next-phase-v482-check-domain',txt:'Testadmin/testapp är tydligt separerad från produktion.'},
+    {id:'next-phase-v482-check-sql',txt:'Schema/RLS/RPC körs i testprojektet innan skrivande restore testas.'},
+    {id:'next-phase-v482-check-stop',txt:'Allt stoppas om någon inställning pekar mot produktion.'}
   ];}
-  function clearNextPhaseGuide(){
-    ['next-phase-test-url','next-phase-test-app-url','next-phase-test-admin-url'].forEach(function(id){if($(id))$(id).value='';});
-    if($('next-phase-backup-file'))$('next-phase-backup-file').value='';
-    nextPhaseChecks().forEach(function(x){if($(x.id))$(x.id).checked=false;});
-    if($('next-phase-status')){$('next-phase-status').textContent='Ingen nästa-fas-guide byggd ännu.';$('next-phase-status').className='status';}
-    if($('next-phase-grid'))$('next-phase-grid').innerHTML='';
-    if($('next-phase-details'))$('next-phase-details').innerHTML='';
-    if($('next-phase-text'))$('next-phase-text').value='';
+  function np482Norm(u){return String(u||'').trim().replace(/\/+$/,'').toLowerCase();}
+  function np482SetDirty(){
+    var st=$('next-phase-v482-status'), grid=$('next-phase-v482-grid'), details=$('next-phase-v482-details'), text=$('next-phase-v482-text');
+    if(st){st.textContent='Ändringar gjorda. Tryck Bygg nästa-fas-guide för att skapa/uppdatera guiden.';st.className='status';}
+    if(grid)grid.innerHTML='';
+    if(details)details.innerHTML='';
+    if(text)text.value='';
   }
-  function buildNextPhaseText(info,reasons){
+  function np482Clear(){
+    ['next-phase-v482-test-url','next-phase-v482-test-app','next-phase-v482-test-admin'].forEach(function(id){if($(id))$(id).value='';});
+    if($('next-phase-v482-file'))$('next-phase-v482-file').value='';
+    np482Checks().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    if($('next-phase-v482-status')){$('next-phase-v482-status').textContent='Ingen nästa-fas-guide byggd ännu.';$('next-phase-v482-status').className='status';}
+    if($('next-phase-v482-grid'))$('next-phase-v482-grid').innerHTML='';
+    if($('next-phase-v482-details'))$('next-phase-v482-details').innerHTML='';
+    if($('next-phase-v482-text'))$('next-phase-v482-text').value='';
+  }
+  function np482BuildText(info,reasons){
     var lines=[];
     lines.push('Taktiktavla – nästa fas: skapa separat restore-testmiljö');
-    lines.push('Skapad från admin v481. Ingen restore/import har gjorts.');
+    lines.push('Skapad från admin v482. Ingen restore/import har gjorts.');
     lines.push('');
-    lines.push('Produktions-Supabase: '+(info.prodUrl||'[saknas]'));
-    lines.push('Test-Supabase: '+(info.testUrl||'[saknas]'));
+    lines.push('Produktions-Supabase: '+(info.prodRaw||'[saknas]'));
+    lines.push('Test-Supabase: '+(info.testRaw||'[saknas]'));
     lines.push('Testapp-URL: '+(info.testApp||'[saknas]'));
     lines.push('Testadmin-URL: '+(info.testAdmin||'[saknas]'));
     lines.push('Backupfil: '+(info.fileName||'[saknas]'));
@@ -2488,7 +2498,7 @@
     lines.push('Lagkoder: '+(info.teamCodes&&info.teamCodes.length?info.teamCodes.join(', '):'[saknas/inga]'));
     lines.push('');
     lines.push('Säkerhetsstatus: '+info.checked+'/'+info.total+' punkter markerade.');
-    nextPhaseChecks().forEach(function(x){lines.push((info.checkedIds[x.id]?'[x] ':'[ ] ')+x.txt);});
+    np482Checks().forEach(function(x){lines.push((info.checkedIds[x.id]?'[x] ':'[ ] ')+x.txt);});
     lines.push('');
     if(reasons.length){lines.push('STOPP före nästa fas:');reasons.forEach(function(r){lines.push('- '+r);});}
     else{lines.push('Nästa fas är redo att göras utanför produktion:');}
@@ -2508,18 +2518,20 @@
     lines.push('- Ingen service-role-nyckel i admin.html eller annan webbläsarkod.');
     return lines.join('\n');
   }
-  async function renderNextPhaseGuide(){
-    var st=$('next-phase-status'), grid=$('next-phase-grid'), details=$('next-phase-details'), text=$('next-phase-text');
-    if(!st||!grid||!details||!text)return;
+  async function np482Render(){
+    var st=$('next-phase-v482-status'), grid=$('next-phase-v482-grid'), details=$('next-phase-v482-details'), text=$('next-phase-v482-text');
+    if(!st||!grid||!details||!text){return;}
     grid.innerHTML='';details.innerHTML='';text.value='';
+    st.textContent='Nästa fas: kontrollerar val...';st.className='status';
     try{
-      var prodRaw=SUPA_URL||'', prod=normalizeUrlForCompare(prodRaw);
-      var testRaw=(($('next-phase-test-url')&&$('next-phase-test-url').value)||'').trim();
-      var test=normalizeUrlForCompare(testRaw);
-      var testApp=(($('next-phase-test-app-url')&&$('next-phase-test-app-url').value)||'').trim();
-      var testAdmin=(($('next-phase-test-admin-url')&&$('next-phase-test-admin-url').value)||'').trim();
-      var file=$('next-phase-backup-file')&&$('next-phase-backup-file').files&&$('next-phase-backup-file').files[0];
-      var checks=nextPhaseChecks(), checkedIds={}, checked=0, total=checks.length;
+      var prodRaw=SUPA_URL||'';
+      var prod=np482Norm(prodRaw);
+      var testRaw=(($('next-phase-v482-test-url')&&$('next-phase-v482-test-url').value)||'').trim();
+      var test=np482Norm(testRaw);
+      var testApp=(($('next-phase-v482-test-app')&&$('next-phase-v482-test-app').value)||'').trim();
+      var testAdmin=(($('next-phase-v482-test-admin')&&$('next-phase-v482-test-admin').value)||'').trim();
+      var file=$('next-phase-v482-file')&&$('next-phase-v482-file').files&&$('next-phase-v482-file').files[0];
+      var checks=np482Checks(), checkedIds={}, checked=0, total=checks.length;
       checks.forEach(function(x){var ok=!!($(x.id)&&$(x.id).checked);checkedIds[x.id]=ok;if(ok)checked++;});
       var reasons=[];
       if(!testRaw)reasons.push('Test-Supabase URL saknas.');
@@ -2530,33 +2542,28 @@
       var data=null,tables={},logical={},typeCounts={},teamCodes=[];
       if(file){
         data=await readLocalJsonFile(file);
-        tables=backupTables(data);logical=(data&&data.logicalCounts)||{};typeCounts=saveTypeCountsFromBackup(data);teamCodes=data&&Array.isArray(data.teamCodesInSaves)?data.teamCodesInSaves:[];
+        tables=backupTables(data); logical=(data&&data.logicalCounts)||{}; typeCounts=saveTypeCountsFromBackup(data); teamCodes=data&&Array.isArray(data.teamCodesInSaves)?data.teamCodesInSaves:[];
         if(!data||data.backupType!=='full-disaster-backup')reasons.push('Backupfilen har inte backupType full-disaster-backup.');
         if(Number(data&&data.backupVersion)!==1)reasons.push('Backupversion är inte 1.');
         if(Number((data&&data.adminExportVersion)||0)<460)reasons.push('Adminexport är äldre än 460. Använd backup från v460 eller senare.');
         if(!Array.isArray(tables.saves)||!tables.saves.length)reasons.push('Backupen innehåller inga saves/appdata.');
       }
-      var info={prodUrl:prodRaw,testUrl:testRaw,testApp:testApp,testAdmin:testAdmin,fileName:file&&file.name,checked:checked,total:total,checkedIds:checkedIds,
+      var info={prodRaw:prodRaw,testRaw:testRaw,testApp:testApp,testAdmin:testAdmin,fileName:file&&file.name,checked:checked,total:total,checkedIds:checkedIds,
         backupVersion:data&&data.backupVersion,adminExportVersion:data&&data.adminExportVersion,appVersion:data&&data.appVersion,
-        saves:Array.isArray(tables.saves)?tables.saves.length:null,
-        matches:logical.matches_in_saves!=null?logical.matches_in_saves:(typeCounts.match||0),
-        formations:logical.uppstallningar_in_saves!=null?logical.uppstallningar_in_saves:(typeCounts.uppstallning||0),
-        movies:logical.taktikfilmer_in_saves!=null?logical.taktikfilmer_in_saves:(typeCounts.taktikfilm||0),
-        teamCodes:teamCodes};
+        saves:Array.isArray(tables.saves)?tables.saves.length:null,teamCodes:teamCodes};
       var ready=!reasons.length;
       grid.innerHTML=''
         +statusCard('Test-Supabase',testRaw?testRaw.replace(/^https?:\/\//,''):'saknas',!testRaw||test===prod?'bad':'')
         +statusCard('Backupfil',file?file.name:'saknas',file?'':'bad')
         +statusCard('Checklistan',checked+'/'+total,checked===total?'':'warn')
         +statusCard('Saves',info.saves==null?'–':info.saves)
-        +statusCard('Lagkoder',teamCodes.length||'–')
         +statusCard('Nästa fas',ready?'KLAR':'STOPP',ready?'':'bad');
-      var html='<p><strong>Den här rutan är sista praktiska förberedelsen före att du skapar en separat testmiljö.</strong> Den gör ingen restore och skriver inget.</p>';
+      var html='<p><strong>Det här är en praktisk guide inför separat testmiljö.</strong> Den gör ingen restore, kör ingen SQL och skriver inget.</p>';
       if(reasons.length)html+='<div class="warntext"><strong>Inte redo ännu:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
-      else html+='<p class="oktext"><strong>Nästa fas är klar att göras utanför produktion:</strong> skapa separat Supabase-testprojekt och låt testadmin/testapp peka dit.</p>';
-      html+='<p><strong>Gräns:</strong> när riktig skrivande restore byggs ska den bara finnas/användas i testmiljö, inte i produktionsadmin.</p>';
+      else html+='<p class="oktext"><strong>Klar att skapa testmiljö utanför produktion.</strong> Nästa praktiska steg är nytt Supabase-testprojekt och separat testadmin/testapp.</p>';
+      html+='<p><strong>Gräns:</strong> skrivande restore ska först byggas/testas i separat tom testmiljö, inte i produktionsadmin.</p>';
       details.innerHTML=html;
-      text.value=buildNextPhaseText(info,reasons);
+      text.value=np482BuildText(info,reasons);
       st.textContent=(ready?'Nästa fas: KLAR ATT SKAPA TESTMILJÖ. ':'Nästa fas: STOPP/KONTROLL. ')+(reasons[0]||'')+' Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.';
       st.className=ready?'status ok':'status warn';
     }catch(e){
@@ -2565,18 +2572,13 @@
       details.innerHTML='<div class="badtext"><strong>Tekniskt fel:</strong> '+esc(e&&e.message?e.message:e)+'</div>';
     }
   }
-  function markNextPhaseDirty(){
-    var st=$('next-phase-status'),grid=$('next-phase-grid'),details=$('next-phase-details'),text=$('next-phase-text');
-    if(st){st.textContent='Ändringar gjorda. Tryck Bygg nästa-fas-guide för att skapa/uppdatera guiden.';st.className='status';}
-    if(grid)grid.innerHTML='';if(details)details.innerHTML='';if(text)text.value='';
-  }
-  if($('next-phase-prod-url-view'))$('next-phase-prod-url-view').value=SUPA_URL||'';
-  if($('btn-build-next-phase'))$('btn-build-next-phase').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();renderNextPhaseGuide();};
-  if($('btn-clear-next-phase'))$('btn-clear-next-phase').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();clearNextPhaseGuide();};
-  if($('btn-copy-next-phase'))$('btn-copy-next-phase').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('next-phase-text')&&$('next-phase-text').value)||'');};
-  ['next-phase-test-url','next-phase-test-app-url','next-phase-test-admin-url'].forEach(function(id){if($(id))$(id).addEventListener('input',markNextPhaseDirty);});
-  if($('next-phase-backup-file'))$('next-phase-backup-file').addEventListener('change',markNextPhaseDirty);
-  nextPhaseChecks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',markNextPhaseDirty);});
+  if($('next-phase-v482-prod-url'))$('next-phase-v482-prod-url').value=SUPA_URL||'';
+  if($('btn-next-phase-v482'))$('btn-next-phase-v482').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();np482Render();});
+  if($('btn-clear-next-phase-v482'))$('btn-clear-next-phase-v482').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();np482Clear();});
+  if($('btn-copy-next-phase-v482'))$('btn-copy-next-phase-v482').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('next-phase-v482-text')&&$('next-phase-v482-text').value)||'');});
+  ['next-phase-v482-test-url','next-phase-v482-test-app','next-phase-v482-test-admin'].forEach(function(id){if($(id))$(id).addEventListener('input',np482SetDirty);});
+  if($('next-phase-v482-file'))$('next-phase-v482-file').addEventListener('change',np482SetDirty);
+  np482Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',np482SetDirty);});
 
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
