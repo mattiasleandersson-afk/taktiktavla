@@ -1,19 +1,11 @@
+// v430: felsökning ska inte längre visa stor röd/grön overlay vid appstart.
+// Globala fel loggas i console, medan vanliga användarmeddelanden fortfarande går via showToast().
 window.onerror = function(msg,src,line,col,err){
-  var t=document.getElementById("toast-msg");
-  var detail="FEL rad "+line+": "+msg+(err&&err.stack?" | "+err.stack.split("\n")[1]:"");
-  if(t){t.textContent=detail;t.style.background="#e84a4a";t.style.color="#fff";t.style.display="block";t.style.opacity="1";t.style.zIndex="9999";t.style.position="fixed";t.style.top="20px";t.style.left="10px";t.style.right="10px";t.style.bottom="auto";t.style.borderRadius="8px";t.style.padding="12px 16px";t.style.fontSize="0.75rem";t.style.maxWidth="100%";}
-  else{var d=document.createElement("div");d.style.cssText="position:fixed;top:0;left:0;right:0;background:#e84a4a;color:#fff;padding:12px;font-family:monospace;font-size:12px;z-index:99999";d.textContent=detail;document.body.appendChild(d);}
-  console.error("FEL rad "+line+":",msg,err);
-  return true;
+  try{ console.error("Globalt fel rad "+line+":", msg, err); }catch(e){}
+  return false;
 };
 window.addEventListener("unhandledrejection",function(e){
-  var msg=e.reason&&e.reason.message?e.reason.message:String(e.reason);
-  var stack=e.reason&&e.reason.stack?e.reason.stack:"";
-  var lines=stack.split("\\n");
-  var detail="Promise: "+msg+(lines[1]?" | "+lines[1]:"");
-  var t=document.getElementById("toast-msg");
-  if(t){t.textContent=detail;t.style.background="#e84a4a";t.style.color="#fff";t.style.display="block";t.style.opacity="1";t.style.zIndex="9999";t.style.position="fixed";t.style.top="20px";t.style.left="10px";t.style.right="10px";t.style.borderRadius="8px";t.style.padding="12px 16px";t.style.fontSize="0.75rem";t.style.maxWidth="100%";}
-  console.error("Promise error:",e.reason);
+  try{ console.error("Promise error:", e && e.reason ? e.reason : e); }catch(_e){}
 });
 
 var W=400,H=600,format=11,homeColor="#cc2200",awayColor="#002290",displayMode="number";
@@ -76,6 +68,8 @@ var _toastTimer=null;
 function showToast(msg,ok){
   var el=document.getElementById("toast-msg");
   if(!el)return;
+  // v430: rensa gamla inline-stilar från tidigare globala feloverlay så toasten inte kan bli halvskärm.
+  try{["position","top","left","right","bottom","zIndex","maxWidth","padding","fontSize","borderRadius","opacity"].forEach(function(k){el.style[k]="";});}catch(e){}
   el.textContent=msg;
   el.style.background=ok===false?"#e84a4a":"#4ae87a";
   el.style.color=ok===false?"#fff":"#0a1a0d";
@@ -1435,7 +1429,7 @@ function animateToStep(targetIdx){if(!playback)return;playback.animating=true;pl
             players[i].x=fp.x+(tp2.x-fp.x)*ease;
             players[i].y=fp.y+(tp2.y-fp.y)*ease;
           }
-        }var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}if(tx){tx.setAttribute("x",players[i].x);tx.setAttribute("y",players[i].y);if(document.body.classList.contains("landscape")&&!document.body.classList.contains("desktop"))tx.setAttribute("transform","rotate(90,"+players[i].x+","+players[i].y+")");else tx.removeAttribute("transform");}}}var ballMvPath=null;
+        }var g=svg.querySelector(".player-token[data-id='"+players[i].id+"']");if(g){var c=g.querySelector("circle"),tx=g.querySelector("text");if(c){c.setAttribute("cx",players[i].x);c.setAttribute("cy",players[i].y);}if(tx){tx.setAttribute("x",players[i].x);var _tt430sym="circle";try{_tt430sym=localStorage.getItem("tt425_taktikfilm_symbol")||"circle";}catch(_e){}var _tt430ty=players[i].y+(_tt430sym==="jersey"?1:0);tx.setAttribute("y",_tt430ty);tx.setAttribute("dy","0");tx.setAttribute("text-anchor","middle");tx.setAttribute("dominant-baseline","central");tx.setAttribute("alignment-baseline","middle");tx.setAttribute("font-family","Arial Narrow, Arial, sans-serif");tx.setAttribute("font-size",_tt430sym==="jersey"?"13":"14");tx.setAttribute("font-weight","900");tx.setAttribute("fill","#fff");tx.setAttribute("stroke","rgba(0,0,0,.75)");tx.setAttribute("stroke-width","1.2");tx.setAttribute("paint-order","stroke");if(document.body.classList.contains("landscape")&&!document.body.classList.contains("desktop"))tx.setAttribute("transform","rotate(90,"+players[i].x+","+_tt430ty+")");else tx.removeAttribute("transform");}}}var ballMvPath=null;
       var fromStepB=targetIdx>0?playback.tk.steps[targetIdx-1]:null;
       var fromMvsB=(fromStepB&&fromStepB.movementPaths)||[];
       for(var kb=0;kb<fromMvsB.length;kb++){if(fromMvsB[kb].playerId==="ball"){ballMvPath=fromMvsB[kb];break;}}
@@ -37265,3 +37259,93 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [0,50,150,350,800,1600,3000,6000,10000].forEach(function(ms){setTimeout(run429,ms);});
 })();
 /* === slut v429-taktikfilm-nummer-stroke-versionfix === */
+
+
+/* === v430-starttoast-och-taktikfilm-nummerposition ===
+   Bas: v429 stabil. Smal fix:
+   - globala startfel visas inte längre som stor röd/grön overlay i appen
+   - rensa gamla inline-toast-stilar
+   - siffrans y/baseline/stroke i Taktikfilm hålls stabil även under animationsframe
+   - lås version till 430 efter vybyte
+*/
+(function(){
+  if(window.__tt430StartToastAndNumberPolish)return;
+  window.__tt430StartToastAndNumberPolish=true;
+  var VERSION='430';
+  function setVersion430(){
+    try{
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+      if(document.body)document.body.setAttribute('data-app-version',VERSION);
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+    }catch(e){}
+  }
+  function isFilm430(){
+    try{if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null && typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;}catch(e){}
+    try{if(typeof playback!=='undefined' && playback && playback.tk)return true;}catch(e){}
+    return false;
+  }
+  function sym430(){try{return localStorage.getItem('tt425_taktikfilm_symbol')||'circle';}catch(e){return 'circle';}}
+  function showNr430(){try{var v=localStorage.getItem('tt425_taktikfilm_numbers');return v===null?true:v!=='off';}catch(e){return true;}}
+  function esc430(id){return String(id).replace(/\\/g,'\\\\').replace(/"/g,'\\"');}
+  function defaultNr430(p){try{var m=String(p&&p.id||'').match(/^[ha](\d+)$/);if(m)return String(parseInt(m[1],10)+1);}catch(e){}return String((p&&p.number)||'');}
+  function stableNumbers430(){
+    setVersion430();
+    if(!isFilm430())return;
+    try{
+      var sym=sym430(), showNr=showNr430(), size=(sym==='jersey')?13:14;
+      (players||[]).forEach(function(p){
+        var g=document.querySelector('.player-token[data-id="'+esc430(p.id)+'"]'); if(!g)return;
+        var token=g.querySelector('text.token-text'); if(!token)return;
+        var x=(typeof p.x==='number')?p.x:parseFloat(token.getAttribute('x')||'0');
+        var y=(typeof p.y==='number')?p.y:parseFloat(token.getAttribute('y')||'0');
+        var ty=y+(sym==='jersey'?1:0);
+        token.textContent=showNr?String(p.number||defaultNr430(p)):'';
+        token.style.display=showNr?'':'none';
+        token.style.fontSize='';
+        token.setAttribute('x',String(x));
+        token.setAttribute('y',String(ty));
+        token.setAttribute('dy','0');
+        token.setAttribute('text-anchor','middle');
+        token.setAttribute('dominant-baseline','central');
+        token.setAttribute('alignment-baseline','middle');
+        token.setAttribute('font-size',String(size));
+        token.setAttribute('font-weight','900');
+        token.setAttribute('font-family','Arial Narrow, Arial, sans-serif');
+        token.setAttribute('fill','#fff');
+        token.setAttribute('stroke','rgba(0,0,0,.75)');
+        token.setAttribute('stroke-width','1.2');
+        token.setAttribute('stroke-linejoin','round');
+        token.setAttribute('paint-order','stroke');
+        if(document.body.classList.contains('landscape')&&!document.body.classList.contains('desktop'))token.setAttribute('transform','rotate(90,'+x+','+ty+')');
+        else token.removeAttribute('transform');
+      });
+    }catch(e){}
+  }
+  function resetToastOverlay430(){
+    try{
+      var el=document.getElementById('toast-msg'); if(!el)return;
+      ['position','top','left','right','bottom','zIndex','maxWidth','padding','fontSize','borderRadius'].forEach(function(k){el.style[k]='';});
+    }catch(e){}
+  }
+  function run430(){
+    resetToastOverlay430();
+    try{if(typeof window.tt425SyncTaktikfilmVisuals==='function')window.tt425SyncTaktikfilmVisuals();}catch(e){}
+    try{if(typeof window.tt428SyncTaktikfilmTextSizes==='function')window.tt428SyncTaktikfilmTextSizes();}catch(e){}
+    try{if(typeof window.tt429PolishTaktikfilmNumbers==='function')window.tt429PolishTaktikfilmNumbers();}catch(e){}
+    stableNumbers430();
+    setVersion430();
+  }
+  if(typeof render==='function'&&!render.__tt430NumberPolish){var oldRender430=render;render=function(){var r=oldRender430.apply(this,arguments);try{run430();}catch(e){}return r;};render.__tt430NumberPolish=true;window.render=render;}
+  if(typeof moveDrag==='function'&&!moveDrag.__tt430NumberPolish){var oldMove430=moveDrag;moveDrag=function(){var r=oldMove430.apply(this,arguments);try{run430();}catch(e){}return r;};moveDrag.__tt430NumberPolish=true;window.moveDrag=moveDrag;}
+  // Kör efter varje animationsframe via setTimeout 0 för att hamna efter äldre v425/v428/v429-synkar.
+  if(!window.__tt430RafWrapped){var oldRAF430=window.requestAnimationFrame;window.requestAnimationFrame=function(cb){return oldRAF430.call(window,function(ts){var out=cb(ts);try{run430();}catch(e){}try{setTimeout(run430,0);}catch(e){}return out;});};window.__tt430RafWrapped=true;}
+  ['click','contextmenu','touchend','pointerup','mouseup'].forEach(function(ev){document.addEventListener(ev,function(){setTimeout(run430,0);setTimeout(run430,60);setTimeout(run430,180);},true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run430);else run430();
+  [0,50,150,350,800,1600,3000,6000,10000].forEach(function(ms){setTimeout(run430,ms);});
+})();
+/* === slut v430-starttoast-och-taktikfilm-nummerposition === */
