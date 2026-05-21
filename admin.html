@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v486</title>
+<title>Taktiktavla admin v487</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -878,6 +878,57 @@
       <div id="restore-batch-v486-details" class="statusnote"></div>
       <label for="restore-batch-v486-text">Kopierbar restore-batchplan / körsimulator</label>
       <textarea id="restore-batch-v486-text" readonly placeholder="Batchplanen skapas här när du trycker på Bygg batchplan."></textarea>
+    </section>
+
+
+    <section class="card" id="restore-preflight-v487-card">
+      <div class="row" style="align-items:center;justify-content:space-between;gap:10px">
+        <div>
+          <h2 style="margin:0">Testrestore: preflight-krav före skrivning</h2>
+          <p class="muted">Read-only kravlista för den kontroll som måste köras innan en framtida skrivande testrestore får skapa rader. Rutan kör ingen SQL och kontrollerar inte databasen live; den bygger bara den säkra preflight-specifikationen.</p>
+        </div>
+        <button id="btn-restore-preflight-v487" class="primary right" type="button">Bygg preflight-krav</button>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label for="restore-preflight-v487-prod-url">Produktions-Supabase URL, endast jämförelse</label>
+          <input id="restore-preflight-v487-prod-url" type="text" readonly>
+        </div>
+        <div>
+          <label for="restore-preflight-v487-test-url">Planerad test-Supabase URL</label>
+          <input id="restore-preflight-v487-test-url" type="text" placeholder="https://ditt-testprojekt.supabase.co">
+        </div>
+        <div>
+          <label for="restore-preflight-v487-admin-url">Planerad testadmin-URL, valfri</label>
+          <input id="restore-preflight-v487-admin-url" type="text" placeholder="https://taktiktavla-restore-test.vercel.app/admin.html">
+        </div>
+        <div>
+          <label for="restore-preflight-v487-note">Kort notering, valfri</label>
+          <input id="restore-preflight-v487-note" type="text" placeholder="Ex: preflight ska stoppa om saves/allowed_users redan innehåller rader">
+        </div>
+      </div>
+
+      <label for="restore-preflight-v487-file">Backupfil som preflight-kraven ska bygga på</label>
+      <input id="restore-preflight-v487-file" type="file" accept="application/json,.json">
+
+      <div class="checklist" aria-label="Preflight krav v487">
+        <label class="checkline"><input id="restore-preflight-v487-check-testonly" type="checkbox"><span>Preflight gäller bara separat test-Supabase, aldrig produktion.</span></label>
+        <label class="checkline"><input id="restore-preflight-v487-check-empty" type="checkbox"><span>Framtida skrivande restore måste stoppa om testdatabasen inte är tom/förberedd.</span></label>
+        <label class="checkline"><input id="restore-preflight-v487-check-schema" type="checkbox"><span>Preflight måste kontrollera att nödvändiga tabeller/RPC:er finns innan skrivning.</span></label>
+        <label class="checkline"><input id="restore-preflight-v487-check-refs" type="checkbox"><span>Preflight måste kontrollera delningsreferenser mot backupens saves innan skrivning.</span></label>
+        <label class="checkline"><input id="restore-preflight-v487-check-confirm" type="checkbox"><span>En framtida skrivande restore måste kräva ny skarp bekräftelse efter preflight.</span></label>
+      </div>
+
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button id="btn-copy-restore-preflight-v487" class="small" type="button">Kopiera preflight-krav</button>
+        <button id="btn-clear-restore-preflight-v487" class="small" type="button">Rensa</button>
+      </div>
+      <div id="restore-preflight-v487-status" class="status" style="margin-top:10px">Inga preflight-krav byggda ännu.</div>
+      <div id="restore-preflight-v487-grid" class="statusgrid" aria-label="Restore preflight status"></div>
+      <div id="restore-preflight-v487-details" class="statusnote"></div>
+      <label for="restore-preflight-v487-text">Kopierbar preflight-specifikation</label>
+      <textarea id="restore-preflight-v487-text" readonly placeholder="Preflight-kraven skapas här när du trycker på Bygg preflight-krav."></textarea>
     </section>
 
 
@@ -3398,6 +3449,141 @@
   if($('restore-batch-v486-mode'))$('restore-batch-v486-mode').addEventListener('change',rb486SetDirty);
   if($('restore-batch-v486-file'))$('restore-batch-v486-file').addEventListener('change',rb486SetDirty);
   rb486Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',rb486SetDirty);});
+
+
+  function rp487Norm(u){return String(u||'').trim().replace(/\/+$/,'').toLowerCase();}
+  function rp487Checks(){return [
+    {id:'restore-preflight-v487-check-testonly',txt:'Preflight gäller bara separat test-Supabase, aldrig produktion.'},
+    {id:'restore-preflight-v487-check-empty',txt:'Framtida skrivande restore måste stoppa om testdatabasen inte är tom/förberedd.'},
+    {id:'restore-preflight-v487-check-schema',txt:'Preflight måste kontrollera att nödvändiga tabeller/RPC:er finns innan skrivning.'},
+    {id:'restore-preflight-v487-check-refs',txt:'Preflight måste kontrollera delningsreferenser mot backupens saves innan skrivning.'},
+    {id:'restore-preflight-v487-check-confirm',txt:'En framtida skrivande restore måste kräva ny skarp bekräftelse efter preflight.'}
+  ];}
+  function rp487TypeCounts(saves){
+    var out={};
+    if(!Array.isArray(saves))return out;
+    saves.forEach(function(r){var t=(r&&(r.type||r.save_type||r.kind))||'okänd';out[t]=(out[t]||0)+1;});
+    return out;
+  }
+  function rp487BrokenShares(tables){
+    var saves=Array.isArray(tables.saves)?tables.saves:[];
+    var ids={}; saves.forEach(function(r){if(r&&r.id!=null)ids[String(r.id)]=true;});
+    function count(rows,field){var n=0;(Array.isArray(rows)?rows:[]).forEach(function(r){if(r&&r[field]!=null&&!ids[String(r[field])])n++;});return n;}
+    return {formation:count(tables.formation_team_shares,'formation_id'),taktikfilm:count(tables.taktikfilm_team_shares,'taktikfilm_id')};
+  }
+  function rp487SetDirty(){
+    var st=$('restore-preflight-v487-status');
+    if(st){st.textContent='Ändringar gjorda. Tryck Bygg preflight-krav för att skapa/uppdatera specifikationen.';st.className='status warn';}
+  }
+  function rp487Clear(){
+    ['restore-preflight-v487-test-url','restore-preflight-v487-admin-url','restore-preflight-v487-note'].forEach(function(id){if($(id))$(id).value='';});
+    var file=$('restore-preflight-v487-file'); if(file)file.value='';
+    rp487Checks().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    if($('restore-preflight-v487-grid'))$('restore-preflight-v487-grid').innerHTML='';
+    if($('restore-preflight-v487-details'))$('restore-preflight-v487-details').innerHTML='';
+    if($('restore-preflight-v487-text'))$('restore-preflight-v487-text').value='';
+    if($('restore-preflight-v487-status')){$('restore-preflight-v487-status').textContent='Inga preflight-krav byggda ännu.';$('restore-preflight-v487-status').className='status';}
+  }
+  function rp487BuildText(info,reasons){
+    var lines=[];
+    lines.push('Taktiktavla testrestore – preflight-krav v487');
+    lines.push('');
+    lines.push('Status: '+(reasons.length?'STOPP/KONTROLL':'REDO SOM READ-ONLY KRAVSPECIFIKATION'));
+    if(reasons.length){lines.push('Stopporsaker:');reasons.forEach(function(r){lines.push('- '+r);});lines.push('');}
+    lines.push('Test-Supabase URL: '+(info.testRaw||'saknas'));
+    lines.push('Testadmin URL: '+(info.adminUrl||'ej angiven'));
+    lines.push('Backupfil: '+(info.fileName||'saknas'));
+    lines.push('Backupversion: '+(info.backupVersion||'saknas'));
+    lines.push('Adminexport: '+(info.adminExportVersion||'saknas'));
+    lines.push('Appversion: '+(info.appVersion||'saknas'));
+    lines.push('ExportedAt: '+(info.exportedAt||'saknas'));
+    lines.push('');
+    lines.push('Backupinnehåll:');
+    lines.push('- saves: '+info.saves);
+    lines.push('- allowed_users: '+info.allowedUsers);
+    lines.push('- app_admins: '+info.appAdmins);
+    lines.push('- formation_team_shares: '+info.formationShares);
+    lines.push('- taktikfilm_team_shares: '+info.taktikfilmShares);
+    lines.push('- saves-typer: '+Object.keys(info.types||{}).map(function(k){return k+': '+info.types[k];}).join(', '));
+    lines.push('- lagkoder: '+((info.teamCodes||[]).join(', ')||'inga hittade'));
+    lines.push('');
+    lines.push('Preflight måste i framtida skrivande restore kontrollera:');
+    lines.push('1. Körs mot test-Supabase, inte produktion.');
+    lines.push('2. Databasen är tom/förberedd innan insert/upsert.');
+    lines.push('3. Nödvändiga tabeller och RPC:er finns.');
+    lines.push('4. Backupfilens metadata och counts är rimliga.');
+    lines.push('5. Saves skrivs före delningstabeller.');
+    lines.push('6. Delningsrader pekar på befintliga saves.');
+    lines.push('7. Supabase Auth/lösenord återställs inte av backuprestore.');
+    lines.push('8. Skrivande knapp kräver ny skarp bekräftelse efter preflight.');
+    lines.push('');
+    lines.push('v487 gör ingen SQL, ingen restore och skickar inget till Supabase.');
+    if(info.note){lines.push('');lines.push('Notering: '+info.note);}
+    return lines.join('\n');
+  }
+  async function rp487Render(){
+    var st=$('restore-preflight-v487-status'), grid=$('restore-preflight-v487-grid'), details=$('restore-preflight-v487-details'), text=$('restore-preflight-v487-text');
+    if(!st||!grid||!details||!text)return;
+    st.textContent='Preflight-krav: kontrollerar val...'; st.className='status warn';
+    try{
+      var prodRaw=SUPA_URL||'', prod=rp487Norm(prodRaw);
+      var testRaw=(($('restore-preflight-v487-test-url')&&$('restore-preflight-v487-test-url').value)||'').trim();
+      var test=rp487Norm(testRaw);
+      var adminUrl=(($('restore-preflight-v487-admin-url')&&$('restore-preflight-v487-admin-url').value)||'').trim();
+      var note=(($('restore-preflight-v487-note')&&$('restore-preflight-v487-note').value)||'').trim();
+      var file=$('restore-preflight-v487-file')&&$('restore-preflight-v487-file').files&&$('restore-preflight-v487-file').files[0];
+      var checks=rp487Checks(), checked=0, total=checks.length;
+      checks.forEach(function(x){if($(x.id)&&$(x.id).checked)checked++;});
+      var reasons=[];
+      if(!testRaw)reasons.push('Test-Supabase URL saknas.');
+      if(testRaw&&!/^https:\/\/[^\s]+\.supabase\.co\/?$/i.test(testRaw))reasons.push('Test-Supabase URL ser inte ut som en Supabase Project URL.');
+      if(testRaw&&prod&&test===prod)reasons.push('Test-Supabase URL är samma som produktions-URL. Stoppa här.');
+      if(!file)reasons.push('Backupfil saknas.');
+      if(checked<total)reasons.push('Alla preflight-spärrar är inte markerade.');
+      var data=null,tables={},types={},broken={formation:null,taktikfilm:null},teamCodes=[];
+      if(file){
+        data=await readLocalJsonFile(file);
+        tables=backupTables(data);
+        types=rp487TypeCounts(tables.saves);
+        broken=rp487BrokenShares(tables);
+        teamCodes=(data&&Array.isArray(data.teamCodesInSaves))?data.teamCodesInSaves:[];
+        if(!data||data.backupType!=='full-disaster-backup')reasons.push('Backupfilen har inte backupType full-disaster-backup.');
+        if(Number(data&&data.backupVersion)!==1)reasons.push('Backupversion är inte 1.');
+        if(Number((data&&data.adminExportVersion)||0)<460)reasons.push('Adminexport är äldre än 460.');
+        if(!Array.isArray(tables.saves)||!tables.saves.length)reasons.push('Backupen innehåller inga saves/appdata.');
+        if(broken.formation>0)reasons.push('Taveldelningar i backupen pekar på saknade saves.');
+        if(broken.taktikfilm>0)reasons.push('Filmdelningar i backupen pekar på saknade saves.');
+      }
+      var info={testRaw:testRaw,adminUrl:adminUrl,note:note,fileName:file&&file.name,backupVersion:data&&data.backupVersion,adminExportVersion:data&&data.adminExportVersion,appVersion:data&&data.appVersion,exportedAt:data&&data.exportedAt,saves:Array.isArray(tables.saves)?tables.saves.length:0,allowedUsers:Array.isArray(tables.allowed_users)?tables.allowed_users.length:0,appAdmins:Array.isArray(tables.app_admins)?tables.app_admins.length:0,formationShares:Array.isArray(tables.formation_team_shares)?tables.formation_team_shares.length:0,taktikfilmShares:Array.isArray(tables.taktikfilm_team_shares)?tables.taktikfilm_team_shares.length:0,types:types,teamCodes:teamCodes};
+      var ready=!reasons.length;
+      grid.innerHTML=''
+        +statusCard('Test-Supabase',testRaw?testRaw.replace(/^https?:\/\//,''):'saknas',(!testRaw||test===prod)?'bad':'')
+        +statusCard('Saves',info.saves,info.saves?'':'bad')
+        +statusCard('Checklistan',checked+'/'+total,checked===total?'':'warn')
+        +statusCard('Delningsfel',(broken.formation||0)+(broken.taktikfilm||0),((broken.formation||0)+(broken.taktikfilm||0))?'bad':'')
+        +statusCard('Preflight',ready?'REDO':'STOPP',ready?'':'bad');
+      var html='<p><strong>Detta är bara en preflight-specifikation.</strong> Den kontrollerar inte testdatabasen live och kör ingen SQL.</p>';
+      html+='<p><strong>Framtida skrivande restore får inte börja förrän preflight kan kontrollera testdatabasen live.</strong></p>';
+      html+='<ul><li>Stoppa om test-URL är produktion.</li><li>Stoppa om databasen inte är tom/förberedd.</li><li>Stoppa om schema/RPC saknas.</li><li>Stoppa om backupens delningsreferenser är trasiga.</li><li>Kräv ny skarp bekräftelse innan skrivning.</li></ul>';
+      if(reasons.length)html+='<div class="warntext"><strong>Inte redo ännu:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
+      else html+='<p class="oktext"><strong>Preflight-kraven är redo som read-only underlag.</strong> Nästa stora steg är att skapa en riktig separat testmiljö och därefter bygga preflight som faktiskt läser den testdatabasen.</p>';
+      details.innerHTML=html;
+      text.value=rp487BuildText(info,reasons);
+      st.textContent=(ready?'Preflight-krav: REDO. ':'Preflight-krav: STOPP/KONTROLL. ')+(reasons[0]||'')+' Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.';
+      st.className=ready?'status ok':'status warn';
+    }catch(e){
+      st.textContent='Preflight-krav: tekniskt fel i rutan: '+(e&&e.message?e.message:e);
+      st.className='status bad';
+      details.innerHTML='<div class="badtext"><strong>Tekniskt fel:</strong> '+esc(e&&e.message?e.message:e)+'</div>';
+    }
+  }
+  if($('restore-preflight-v487-prod-url'))$('restore-preflight-v487-prod-url').value=SUPA_URL||'';
+  if($('btn-restore-preflight-v487'))$('btn-restore-preflight-v487').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();rp487Render();});
+  if($('btn-clear-restore-preflight-v487'))$('btn-clear-restore-preflight-v487').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();rp487Clear();});
+  if($('btn-copy-restore-preflight-v487'))$('btn-copy-restore-preflight-v487').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('restore-preflight-v487-text')&&$('restore-preflight-v487-text').value)||'');});
+  ['restore-preflight-v487-test-url','restore-preflight-v487-admin-url','restore-preflight-v487-note'].forEach(function(id){if($(id))$(id).addEventListener('input',rp487SetDirty);});
+  if($('restore-preflight-v487-file'))$('restore-preflight-v487-file').addEventListener('change',rp487SetDirty);
+  rp487Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',rp487SetDirty);});
 
 
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
