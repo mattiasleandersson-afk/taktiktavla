@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v453</title>
+<title>Taktiktavla admin v455</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -30,10 +30,16 @@
   button.small{font-size:.78rem;padding:6px 8px;min-height:30px}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:0 0 auto}.row .grow{flex:1 1 220px}
   .status{padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(0,0,0,.16);color:var(--muted);font-size:.86rem;min-height:38px}
+  .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+  .stat{background:rgba(7,17,10,.78);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .stat .num{font-size:1.7rem;font-weight:900;color:var(--green);line-height:1}
+  .stat .label{font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:5px}
+  .helpbox{background:rgba(255,211,107,.08);border:1px solid rgba(255,211,107,.25);border-radius:12px;padding:10px;margin-top:10px;color:#ffe1a3;font-size:.86rem;line-height:1.35}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px}.toolbar input{max-width:320px}
   .status.ok{color:var(--green);border-color:rgba(74,232,122,.45)}.status.bad{color:#ff9a9a;border-color:rgba(232,74,74,.55)}
   table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{border-bottom:1px solid rgba(45,74,53,.8);padding:9px 8px;text-align:left;vertical-align:middle}th{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.45px}td.actions{white-space:nowrap}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:.76rem;font-weight:800}.pill.on{background:rgba(74,232,122,.12);color:var(--green);border:1px solid rgba(74,232,122,.38)}.pill.off{background:rgba(232,74,74,.11);color:#ff9a9a;border:1px solid rgba(232,74,74,.42)}
   .hidden{display:none!important}.muted{color:var(--muted)}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem}.right{margin-left:auto}.split{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}.split>div{flex:1 1 300px}.kbd{border:1px solid var(--line);border-radius:7px;padding:1px 6px;color:var(--green);background:#07110a}
-  @media(max-width:760px){body{padding:10px}.grid{grid-template-columns:1fr}table{font-size:.8rem}th:nth-child(3),td:nth-child(3),th:nth-child(4),td:nth-child(4){display:none}.card{padding:12px}.row .grow{flex-basis:100%}}
+  @media(max-width:760px){body{padding:10px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}table{font-size:.8rem}th:nth-child(3),td:nth-child(3),th:nth-child(4),td:nth-child(4){display:none}.card{padding:12px}.row .grow{flex-basis:100%}}
 </style>
 </head>
 <body>
@@ -70,6 +76,10 @@
   </section>
 
   <main id="admin-area" class="hidden">
+    <section class="stats" aria-label="Översikt">
+      <div class="stat"><div id="active-count" class="num">–</div><div class="label">Aktiva användare</div></div>
+      <div class="stat"><div id="access-status" class="num">✓</div><div class="label">Adminläge aktivt</div></div>
+    </section>
     <div class="grid">
       <section class="card">
         <h2>Lägg till åtkomst</h2>
@@ -85,11 +95,11 @@
 
       <section class="card">
         <h2>Inbjudningsmejl</h2>
-        <p>Mejlet skickas inte automatiskt. Sidan öppnar ditt vanliga mejlprogram eller kopierar texten.</p>
+        <p>Mejlet skickas inte automatiskt. Du kan öppna det i ditt mejlprogram eller kopiera texten och justera innan du skickar.</p><div class="helpbox">Tips: personen måste använda exakt den e-postadress du lägger till här. Lägg sedan till personen i rätt lag inne i appen om den ska komma åt ett lag.</div>
         <label for="app-url">App-länk</label>
         <input id="app-url" type="url">
         <div class="row" style="margin-top:12px">
-          <button id="btn-copy-template">Kopiera mejltext</button>
+          <button id="btn-copy-template">Kopiera mall</button>
           <button id="btn-open-template">Öppna mejl utan mottagare</button>
         </div>
       </section>
@@ -99,6 +109,10 @@
       <div class="row" style="margin-bottom:8px">
         <h2 style="margin:0">Tillåtna användare</h2>
         <button id="btn-refresh" class="small right">Uppdatera</button>
+      </div>
+      <div class="toolbar">
+        <input id="user-search" type="search" placeholder="Sök e-post eller anteckning">
+        <span id="user-summary" class="muted">Aktiva användare: –</span>
       </div>
       <div style="overflow:auto">
         <table>
@@ -139,29 +153,52 @@
   function appUrl(){var inp=$('app-url');var v=(inp&&inp.value||'').trim();if(v)return v;try{return new URL('index.html',location.href).href;}catch(e){return 'index.html';}}
   function buildMail(to){
     var email=(to||'').trim();
-    return 'Hej!\n\nDu har fått åtkomst till Taktiktavla.\n\nÖppna appen här:\n'+appUrl()+'\n\nSkapa konto eller logga in med denna e-postadress:\n'+(email||'[e-postadress]')+'\n\nTips för iPhone/iPad:\n1. Öppna länken i Safari.\n2. Tryck på dela-symbolen.\n3. Välj ”Lägg till på hemskärmen”.\n4. Starta sedan Taktiktavla från ikonen på hemskärmen. Då fungerar den mer som en app och bättre i helskärm.\n\nTips för Android:\n1. Öppna länken i Chrome.\n2. Tryck på menyn med tre prickar.\n3. Välj ”Lägg till på startskärmen” eller ”Installera app”.\n4. Starta sedan Taktiktavla från ikonen på startskärmen.\n\nNär du är inne i appen kan du välja lag eller använda den lagkod du fått.\n';
+    return 'Hej!\n\nDu har fått åtkomst till Taktiktavla. Det är en webbapp för taktiktavla, taktikfilm, trupp och matcher.\n\nÖppna appen här:\n'+appUrl()+'\n\nSkapa konto eller logga in med denna e-postadress:\n'+(email||'[e-postadress]')+'\n\nViktigt: använd just e-postadressen ovan, annars släpps kontot inte in.\n\nFör bästa upplevelse: lägg appen på hemskärmen och starta den därifrån. Då öppnas den mer som en vanlig app och fungerar bättre i helskärm.\n\niPhone/iPad:\n1. Öppna länken i Safari.\n2. Tryck på dela-symbolen.\n3. Välj ”Lägg till på hemskärmen”.\n4. Starta sedan Taktiktavla från ikonen på hemskärmen.\n\nAndroid:\n1. Öppna länken i Chrome.\n2. Tryck på menyn med tre prickar.\n3. Välj ”Lägg till på startskärmen” eller ”Installera app”.\n4. Starta sedan Taktiktavla från ikonen på startskärmen.\n\nNär du är inne i appen kan du välja lag eller använda den lagkod du fått.\n';
   }
   function setMailPreview(to){var text=buildMail(to);$('mail-preview').value=text;return text;}
   function openMail(to){var subject='Inbjudan till Taktiktavla';var body=setMailPreview(to);var href='mailto:'+(to?encodeURIComponent(to):'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);location.href=href;}
   async function copyText(text){try{await navigator.clipboard.writeText(text);setStatus('Kopierat till urklipp.');}catch(e){setStatus('Kunde inte kopiera automatiskt. Markera texten och kopiera manuellt.',true);}}
   function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function fmt(d){if(!d)return '';try{return new Date(d).toLocaleDateString('sv-SE');}catch(e){return String(d).slice(0,10);}}
-  async function loadUsers(){
-    var body=$('users-body');body.innerHTML='<tr><td colspan="5" class="muted">Laddar...</td></tr>';
-    var rows=await rpc('tt_admin_list_allowed_users',{});
-    if(!rows||!rows.length){body.innerHTML='<tr><td colspan="5" class="muted">Inga användare tillagda ännu.</td></tr>';return;}
+  var allUsers=[];
+  function updateCounts(rows){
+    var active=(rows||[]).filter(function(u){return !!u.is_active;}).length;
+    if($('active-count'))$('active-count').textContent=String(active);
+    if($('user-summary'))$('user-summary').textContent='Aktiva användare: '+active;
+  }
+  function filteredUsers(){
+    var q=($('user-search')&&$('user-search').value||'').trim().toLowerCase();
+    var rows=allUsers.slice().sort(function(a,b){
+      if(!!a.is_active!==!!b.is_active)return a.is_active?-1:1;
+      return String(a.email||'').localeCompare(String(b.email||''),'sv');
+    });
+    if(!q)return rows;
+    return rows.filter(function(u){return String(u.email||'').toLowerCase().indexOf(q)>=0 || String(u.note||'').toLowerCase().indexOf(q)>=0;});
+  }
+  function renderUsers(){
+    var body=$('users-body');
+    var rows=filteredUsers();
+    updateCounts(allUsers);
+    if(!allUsers.length){body.innerHTML='<tr><td colspan="5" class="muted">Inga användare tillagda ännu.</td></tr>';return;}
+    if(!rows.length){body.innerHTML='<tr><td colspan="5" class="muted">Inga träffar i sökningen.</td></tr>';return;}
     body.innerHTML='';
     rows.forEach(function(u){
       var tr=document.createElement('tr');
       tr.innerHTML='<td class="mono">'+esc(u.email)+'</td><td>'+esc(u.note||'')+'</td><td>'+(u.is_active?'<span class="pill on">Aktiv</span>':'<span class="pill off">Avstängd</span>')+'</td><td>'+esc(fmt(u.created_at))+'</td><td class="actions"></td>';
       var actions=tr.querySelector('.actions');
-      var mail=document.createElement('button');mail.className='small';mail.textContent='Mejl';mail.onclick=function(){openMail(u.email);};actions.appendChild(mail);
-      var copy=document.createElement('button');copy.className='small';copy.textContent='Kopiera';copy.onclick=function(){copyText(buildMail(u.email));};actions.appendChild(copy);
-      if(u.is_active){var del=document.createElement('button');del.className='small danger';del.textContent='Ta bort åtkomst';del.onclick=async function(){if(!confirm('Ta bort åtkomst för '+u.email+'?'))return;try{await rpc('tt_admin_deactivate_allowed_user',{p_email:u.email});setStatus('Åtkomst borttagen för '+u.email);loadUsers();}catch(e){setStatus('Fel: '+e.message,true);}};actions.appendChild(del);}else{
-        var on=document.createElement('button');on.className='small warn';on.textContent='Aktivera';on.onclick=async function(){try{await rpc('tt_admin_upsert_allowed_user',{p_email:u.email,p_note:u.note||''});setStatus('Åtkomst aktiverad för '+u.email);loadUsers();}catch(e){setStatus('Fel: '+e.message,true);}};actions.appendChild(on);
+      var mail=document.createElement('button');mail.className='small';mail.textContent='Öppna mejl';mail.onclick=function(){openMail(u.email);};actions.appendChild(mail);
+      var copy=document.createElement('button');copy.className='small';copy.textContent='Kopiera mejl';copy.onclick=function(){copyText(buildMail(u.email));};actions.appendChild(copy);
+      if(u.is_active){var del=document.createElement('button');del.className='small danger';del.textContent='Stäng av åtkomst';del.onclick=async function(){if(!confirm('Stäng av åtkomst för '+u.email+'?'))return;try{await rpc('tt_admin_deactivate_allowed_user',{p_email:u.email});setStatus('Åtkomst avstängd för '+u.email);loadUsers();}catch(e){setStatus('Fel: '+e.message,true);}};actions.appendChild(del);}else{
+        var on=document.createElement('button');on.className='small warn';on.textContent='Återaktivera';on.onclick=async function(){try{await rpc('tt_admin_upsert_allowed_user',{p_email:u.email,p_note:u.note||''});setStatus('Åtkomst återaktiverad för '+u.email);loadUsers();}catch(e){setStatus('Fel: '+e.message,true);}};actions.appendChild(on);
       }
       body.appendChild(tr);
     });
+  }
+  async function loadUsers(){
+    var body=$('users-body');body.innerHTML='<tr><td colspan="5" class="muted">Laddar...</td></tr>';
+    var rows=await rpc('tt_admin_list_allowed_users',{});
+    allUsers=Array.isArray(rows)?rows:[];
+    renderUsers();
   }
   async function checkAdmin(){
     var s=session();
@@ -180,7 +217,7 @@
     try{setStatus('Loggar in...');var data=await authFetch('/auth/v1/token?grant_type=password',{method:'POST',headers:headers(),body:JSON.stringify({email:email,password:pass})});saveSession(data);await checkAdmin();}
     catch(e){setStatus('Inloggning misslyckades: '+e.message,true);}
   };
-  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');setStatus('Utloggad.');};
+  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';setStatus('Utloggad.');};
   async function addUser(openAfter){
     var email=$('new-email').value.trim();var note=$('new-note').value.trim();
     if(!email){setStatus('Skriv en e-postadress.',true);return;}
@@ -189,6 +226,7 @@
   $('btn-add').onclick=function(){addUser(false);};
   $('btn-add-mail').onclick=function(){addUser(true);};
   $('btn-refresh').onclick=function(){loadUsers().catch(function(e){setStatus('Fel: '+e.message,true);});};
+  if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   $('btn-copy-template').onclick=function(){copyText(buildMail(''));};
   $('btn-open-template').onclick=function(){openMail('');};
   $('btn-copy-current').onclick=function(){copyText($('mail-preview').value||buildMail(''));};
