@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v470</title>
+<title>Taktiktavla admin v471</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -156,7 +156,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Restore-skydd / skarp checklista</h2>
-          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v470 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
+          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v471 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Ingen återställning görs här.</strong> Riktig restore ska inte byggas/startas förrän checklistan är grön och du uttryckligen väljer att gå vidare i en separat framtida version.</div>
@@ -183,7 +183,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-plan för riktig restore</h2>
-          <p>Detta steg hjälper dig planera en separat testmiljö innan någon riktig återställningskod byggs. v470 skriver fortfarande ingenting till Supabase. Den läser bara en backupfil lokalt och visar exakt vad som bör skapas/testas utanför den riktiga appen.</p>
+          <p>Detta steg hjälper dig planera en separat testmiljö innan någon riktig återställningskod byggs. v471 skriver fortfarande ingenting till Supabase. Den läser bara en backupfil lokalt och visar exakt vad som bör skapas/testas utanför den riktiga appen.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Mål:</strong> kunna testa framtida restore mot en tom testdatabas/testapp, inte mot din riktiga Taktiktavla-miljö.</div>
@@ -202,7 +202,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-checklista / startpaket</h2>
-          <p>Detta steg gör planen mer praktisk: välj backupfilen och bygg en kopierbar checklista för separat Supabase-testprojekt och separat testadmin/testapp. v470 skriver fortfarande ingenting och gör ingen restore.</p>
+          <p>Detta steg gör planen mer praktisk: välj backupfilen och bygg en kopierbar checklista för separat Supabase-testprojekt och separat testadmin/testapp. v471 skriver fortfarande ingenting och gör ingen restore.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Säkerhetsidé:</strong> den här checklistan ska hjälpa oss att hålla produktion och test helt åtskilda innan någon skrivande restore ens byggs.</div>
@@ -240,7 +240,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-konfiguration</h2>
-          <p>Detta steg gör testmiljön mer konkret: fyll i test-Supabase och test-URL:er och bygg en kopierbar konfigurationsplan. v470 skriver fortfarande ingenting, skapar inget projekt och gör ingen restore.</p>
+          <p>Detta steg gör testmiljön mer konkret: fyll i test-Supabase och test-URL:er och bygg en kopierbar konfigurationsplan. v471 skriver fortfarande ingenting, skapar inget projekt och gör ingen restore.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Syfte:</strong> minska risken att testadmin/testapp råkar peka mot produktion när vi senare testar en skrivande restore.</div>
@@ -285,7 +285,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-SQL-checklista</h2>
-          <p>Detta steg listar vilka SQL-delar som behöver vara på plats i ett separat Supabase-testprojekt innan en framtida skrivande restore ens får testas. v470 kör ingen SQL och gör ingen restore.</p>
+          <p>Detta steg listar vilka SQL-delar som behöver vara på plats i ett separat Supabase-testprojekt innan en framtida skrivande restore ens får testas. v471 kör ingen SQL och gör ingen restore.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Syfte:</strong> se till att testprojektet byggs i rätt ordning och att vi inte råkar blanda test och produktion. Checklistan är bara en plan, inte en körning.</div>
@@ -1171,8 +1171,8 @@
     ];
   }
   function buildSqlChecklistText(){
-    var testUrl=normUrl(($('sql-test-supabase-url')&&$('sql-test-supabase-url').value)||'');
-    var prodUrl=normUrl(SUPA_URL||'');
+    var testUrl=normalizeUrlForCompare(($('sql-test-supabase-url')&&$('sql-test-supabase-url').value)||'');
+    var prodUrl=normalizeUrlForCompare(SUPA_URL||'');
     var items=sqlChecklistItems();
     var checked=items.filter(function(x){return $(x.id)&&$(x.id).checked;}).length;
     var lines=[];
@@ -1199,8 +1199,8 @@
   function renderSqlChecklist(){
     var st=$('test-env-sql-status'), grid=$('test-env-sql-grid'), details=$('test-env-sql-details'), text=$('test-env-sql-text');
     if(!st||!grid||!details)return;
-    var testUrl=normUrl(($('sql-test-supabase-url')&&$('sql-test-supabase-url').value)||'');
-    var prodUrl=normUrl(SUPA_URL||'');
+    var testUrl=normalizeUrlForCompare(($('sql-test-supabase-url')&&$('sql-test-supabase-url').value)||'');
+    var prodUrl=normalizeUrlForCompare(SUPA_URL||'');
     var items=sqlChecklistItems();
     var checked=items.filter(function(x){return $(x.id)&&$(x.id).checked;}).length;
     var errors=[];
@@ -1218,7 +1218,7 @@
       +statusCard('Skild från produktion',(testUrl&&prodUrl&&testUrl!==prodUrl)?'Ja':'Nej',(testUrl&&prodUrl&&testUrl!==prodUrl)?'':'bad')
       +statusCard('Checklistan',checked+'/'+items.length,checked===items.length?'':'warn')
       +statusCard('Status',ready?'Förberedd':'Kontroll',ready?'':'warn');
-    var html='<p><strong>Detta är bara en SQL-plan.</strong> v470 kör ingen SQL och gör ingen restore.</p>';
+    var html='<p><strong>Detta är bara en SQL-plan.</strong> v471 kör ingen SQL och gör ingen restore.</p>';
     html+='<h3 style="color:var(--green);margin:12px 0 6px;font-size:.96rem">Rekommenderad ordning</h3><ol><li>'+requiredSqlPlanLines().map(esc).join('</li><li>')+'</li></ol>';
     html+='<h3 style="color:var(--green);margin:12px 0 6px;font-size:.96rem">Kontroller före skrivande restore</h3><ul><li>Testprojektet måste vara separat från produktion.</li><li>Systemstatus i testadmin ska fungera innan restore testas.</li><li>Backupfil ska valideras och dry-run ska vara rimlig.</li><li>Restore får först byggas/testas mot tom testdatabas.</li></ul>';
     if(errors.length)html+='<div class="badtext" style="margin-top:8px"><strong>Stopp:</strong><ul><li>'+errors.map(esc).join('</li><li>')+'</li></ul></div>';
