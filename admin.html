@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v487</title>
+<title>Taktiktavla admin v488</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -929,6 +929,57 @@
       <div id="restore-preflight-v487-details" class="statusnote"></div>
       <label for="restore-preflight-v487-text">Kopierbar preflight-specifikation</label>
       <textarea id="restore-preflight-v487-text" readonly placeholder="Preflight-kraven skapas här när du trycker på Bygg preflight-krav."></textarea>
+    </section>
+
+
+    <section class="card" id="live-preflight-v488-card">
+      <div class="row" style="align-items:center;justify-content:space-between;gap:10px">
+        <div>
+          <h2 style="margin:0">Live-preflight: design före testdatabas-kontroll</h2>
+          <p class="muted">Read-only design av nästa fas: en framtida preflight som faktiskt läser test-Supabase innan restore får skriva. Den här rutan kör ingen livekontroll och skriver inget.</p>
+        </div>
+        <button id="btn-live-preflight-v488" class="primary right" type="button">Bygg live-preflight-design</button>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label for="live-preflight-v488-prod-url">Produktions-Supabase URL, endast jämförelse</label>
+          <input id="live-preflight-v488-prod-url" type="text" readonly>
+        </div>
+        <div>
+          <label for="live-preflight-v488-test-url">Planerad test-Supabase URL</label>
+          <input id="live-preflight-v488-test-url" type="text" placeholder="https://ditt-testprojekt.supabase.co">
+        </div>
+        <div>
+          <label for="live-preflight-v488-admin-url">Planerad testadmin-URL, valfri</label>
+          <input id="live-preflight-v488-admin-url" type="text" placeholder="https://taktiktavla-restore-test.vercel.app/admin.html">
+        </div>
+        <div>
+          <label for="live-preflight-v488-note">Kort notering, valfri</label>
+          <input id="live-preflight-v488-note" type="text" placeholder="Ex: live-preflight ska bara läsa testdatabasen">
+        </div>
+      </div>
+
+      <label for="live-preflight-v488-file">Backupfil som live-preflight-designen ska bygga på</label>
+      <input id="live-preflight-v488-file" type="file" accept="application/json,.json">
+
+      <div class="checklist" aria-label="Live preflight design v488">
+        <label class="checkline"><input id="live-preflight-v488-check-testonly" type="checkbox"><span>Live-preflight ska bara få köras mot separat test-Supabase, aldrig produktion.</span></label>
+        <label class="checkline"><input id="live-preflight-v488-check-readonly" type="checkbox"><span>Första live-preflight ska endast läsa testdatabasen, inte skriva.</span></label>
+        <label class="checkline"><input id="live-preflight-v488-check-empty" type="checkbox"><span>Den ska kontrollera att kritiska tabeller är tomma/förberedda innan framtida restore.</span></label>
+        <label class="checkline"><input id="live-preflight-v488-check-schema" type="checkbox"><span>Den ska kontrollera att nödvändiga tabeller/RPC:er finns i testprojektet.</span></label>
+        <label class="checkline"><input id="live-preflight-v488-check-stop" type="checkbox"><span>Den ska stoppa hårt vid produktion-URL, saknad backup, schemafel eller befintlig data.</span></label>
+      </div>
+
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button id="btn-copy-live-preflight-v488" class="small" type="button">Kopiera live-preflight-design</button>
+        <button id="btn-clear-live-preflight-v488" class="small" type="button">Rensa</button>
+      </div>
+      <div id="live-preflight-v488-status" class="status" style="margin-top:10px">Ingen live-preflight-design byggd ännu.</div>
+      <div id="live-preflight-v488-grid" class="statusgrid" aria-label="Live preflight status"></div>
+      <div id="live-preflight-v488-details" class="statusnote"></div>
+      <label for="live-preflight-v488-text">Kopierbar live-preflight-design</label>
+      <textarea id="live-preflight-v488-text" readonly placeholder="Live-preflight-designen skapas här när du trycker på Bygg live-preflight-design."></textarea>
     </section>
 
 
@@ -3584,6 +3635,143 @@
   ['restore-preflight-v487-test-url','restore-preflight-v487-admin-url','restore-preflight-v487-note'].forEach(function(id){if($(id))$(id).addEventListener('input',rp487SetDirty);});
   if($('restore-preflight-v487-file'))$('restore-preflight-v487-file').addEventListener('change',rp487SetDirty);
   rp487Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',rp487SetDirty);});
+
+
+
+  function lp488Norm(u){return String(u||'').trim().replace(/\/+$/,'').toLowerCase();}
+  function lp488Checks(){return [
+    {id:'live-preflight-v488-check-testonly',label:'Endast separat test-Supabase, aldrig produktion'},
+    {id:'live-preflight-v488-check-readonly',label:'Första live-preflight ska bara läsa'},
+    {id:'live-preflight-v488-check-empty',label:'Tomhetskontroll krävs före framtida restore'},
+    {id:'live-preflight-v488-check-schema',label:'Schema/RPC-kontroll krävs'},
+    {id:'live-preflight-v488-check-stop',label:'Hårda stopp vid risk'}
+  ];}
+  function lp488SetDirty(){
+    var st=$('live-preflight-v488-status');
+    if(st){st.textContent='Ändringar gjorda. Tryck Bygg live-preflight-design för att skapa/uppdatera rapporten.';st.className='status warn';}
+  }
+  function lp488Clear(){
+    ['live-preflight-v488-test-url','live-preflight-v488-admin-url','live-preflight-v488-note'].forEach(function(id){if($(id))$(id).value='';});
+    if($('live-preflight-v488-file'))$('live-preflight-v488-file').value='';
+    lp488Checks().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    if($('live-preflight-v488-grid'))$('live-preflight-v488-grid').innerHTML='';
+    if($('live-preflight-v488-details'))$('live-preflight-v488-details').innerHTML='';
+    if($('live-preflight-v488-text'))$('live-preflight-v488-text').value='';
+    if($('live-preflight-v488-status')){$('live-preflight-v488-status').textContent='Ingen live-preflight-design byggd ännu.';$('live-preflight-v488-status').className='status';}
+  }
+  function lp488TypeCounts(saves){
+    var out={};
+    (Array.isArray(saves)?saves:[]).forEach(function(r){var t=(r&&r.type)||'okänd';out[t]=(out[t]||0)+1;});
+    return out;
+  }
+  function lp488BrokenShares(tables){
+    var saves=Array.isArray(tables.saves)?tables.saves:[];
+    var ids={}; saves.forEach(function(r){if(r&&r.id!=null)ids[String(r.id)]=true;});
+    var f=0,t=0;
+    (Array.isArray(tables.formation_team_shares)?tables.formation_team_shares:[]).forEach(function(r){var id=r&&(r.formation_id||r.save_id); if(id!=null&&!ids[String(id)])f++;});
+    (Array.isArray(tables.taktikfilm_team_shares)?tables.taktikfilm_team_shares:[]).forEach(function(r){var id=r&&(r.taktikfilm_id||r.save_id); if(id!=null&&!ids[String(id)])t++;});
+    return {formation:f,taktikfilm:t};
+  }
+  function lp488BuildText(info,reasons){
+    var lines=[];
+    lines.push('Taktiktavla – live-preflight-design v488');
+    lines.push('');
+    lines.push('Status: '+(reasons.length?'STOPP/KONTROLL':'REDO SOM DESIGNUNDERLAG'));
+    if(reasons.length){lines.push('Stopporsaker:');reasons.forEach(function(r){lines.push('- '+r);});lines.push('');}
+    lines.push('Test-Supabase URL: '+(info.testRaw||'saknas'));
+    lines.push('Testadmin URL: '+(info.adminUrl||'ej angiven'));
+    lines.push('Backupfil: '+(info.fileName||'saknas'));
+    lines.push('Backupversion: '+(info.backupVersion||'saknas'));
+    lines.push('Adminexport: '+(info.adminExportVersion||'saknas'));
+    lines.push('Appversion: '+(info.appVersion||'saknas'));
+    lines.push('ExportedAt: '+(info.exportedAt||'saknas'));
+    lines.push('');
+    lines.push('Backupinnehåll som live-preflight ska jämföra mot:');
+    lines.push('- saves: '+info.saves);
+    lines.push('- allowed_users: '+info.allowedUsers);
+    lines.push('- app_admins: '+info.appAdmins);
+    lines.push('- formation_team_shares: '+info.formationShares);
+    lines.push('- taktikfilm_team_shares: '+info.taktikfilmShares);
+    lines.push('- saves-typer: '+(Object.keys(info.types||{}).map(function(k){return k+': '+info.types[k];}).join(', ')||'saknas'));
+    lines.push('- lagkoder: '+((info.teamCodes||[]).join(', ')||'inga hittade'));
+    lines.push('');
+    lines.push('Nästa fas, live-preflight, ska läsa testdatabasen och kontrollera:');
+    lines.push('1. Aktiv Supabase URL är testprojektet och inte produktion.');
+    lines.push('2. Inloggad användare är app_admin i testprojektet.');
+    lines.push('3. Kritiska tabeller finns: saves, allowed_users, app_admins, formation_team_shares, taktikfilm_team_shares.');
+    lines.push('4. Nödvändiga RPC-funktioner finns för admin/status/backup.');
+    lines.push('5. Testdatabasen är tom/förberedd: inga befintliga saves/delningar som kan blandas med restore.');
+    lines.push('6. Backupfilens delningar pekar på saves som finns i backupfilen.');
+    lines.push('7. Supabase Auth/lösenord ska inte återställas av backupen.');
+    lines.push('8. Live-preflight får fortfarande inte skriva något. Skrivande restore ska vara separat version.');
+    lines.push('');
+    lines.push('v488 gör ingen livekontroll, ingen SQL och ingen restore. Den är bara designunderlag för nästa säkra fas.');
+    if(info.note){lines.push('');lines.push('Notering: '+info.note);}
+    return lines.join('\n');
+  }
+  async function lp488Render(){
+    var st=$('live-preflight-v488-status'), grid=$('live-preflight-v488-grid'), details=$('live-preflight-v488-details'), text=$('live-preflight-v488-text');
+    if(!st||!grid||!details||!text)return;
+    st.textContent='Live-preflight-design: kontrollerar val...'; st.className='status warn';
+    try{
+      var prodRaw=SUPA_URL||'', prod=lp488Norm(prodRaw);
+      var testRaw=(($('live-preflight-v488-test-url')&&$('live-preflight-v488-test-url').value)||'').trim();
+      var test=lp488Norm(testRaw);
+      var adminUrl=(($('live-preflight-v488-admin-url')&&$('live-preflight-v488-admin-url').value)||'').trim();
+      var note=(($('live-preflight-v488-note')&&$('live-preflight-v488-note').value)||'').trim();
+      var file=$('live-preflight-v488-file')&&$('live-preflight-v488-file').files&&$('live-preflight-v488-file').files[0];
+      var checks=lp488Checks(), checked=0, total=checks.length;
+      checks.forEach(function(x){if($(x.id)&&$(x.id).checked)checked++;});
+      var reasons=[];
+      if(!testRaw)reasons.push('Test-Supabase URL saknas.');
+      if(testRaw&&!/^https:\/\/[^\s]+\.supabase\.co\/?$/i.test(testRaw))reasons.push('Test-Supabase URL ser inte ut som en Supabase Project URL.');
+      if(testRaw&&prod&&test===prod)reasons.push('Test-Supabase URL är samma som produktions-URL. Stoppa här.');
+      if(!file)reasons.push('Backupfil saknas.');
+      if(checked<total)reasons.push('Alla live-preflight-spärrar är inte markerade.');
+      var data=null,tables={},types={},broken={formation:0,taktikfilm:0},teamCodes=[];
+      if(file){
+        data=await readLocalJsonFile(file);
+        tables=backupTables(data);
+        types=lp488TypeCounts(tables.saves);
+        broken=lp488BrokenShares(tables);
+        teamCodes=(data&&Array.isArray(data.teamCodesInSaves))?data.teamCodesInSaves:[];
+        if(!data||data.backupType!=='full-disaster-backup')reasons.push('Backupfilen har inte backupType full-disaster-backup.');
+        if(Number(data&&data.backupVersion)!==1)reasons.push('Backupversion är inte 1.');
+        if(Number((data&&data.adminExportVersion)||0)<460)reasons.push('Adminexport är äldre än 460.');
+        if(!Array.isArray(tables.saves)||!tables.saves.length)reasons.push('Backupen innehåller inga saves/appdata.');
+        if(broken.formation>0)reasons.push('Taveldelningar i backupen pekar på saknade saves.');
+        if(broken.taktikfilm>0)reasons.push('Filmdelningar i backupen pekar på saknade saves.');
+      }
+      var info={testRaw:testRaw,adminUrl:adminUrl,note:note,fileName:file&&file.name,backupVersion:data&&data.backupVersion,adminExportVersion:data&&data.adminExportVersion,appVersion:data&&data.appVersion,exportedAt:data&&data.exportedAt,saves:Array.isArray(tables.saves)?tables.saves.length:0,allowedUsers:Array.isArray(tables.allowed_users)?tables.allowed_users.length:0,appAdmins:Array.isArray(tables.app_admins)?tables.app_admins.length:0,formationShares:Array.isArray(tables.formation_team_shares)?tables.formation_team_shares.length:0,taktikfilmShares:Array.isArray(tables.taktikfilm_team_shares)?tables.taktikfilm_team_shares.length:0,types:types,teamCodes:teamCodes};
+      var ready=!reasons.length;
+      grid.innerHTML=''
+        +statusCard('Test-Supabase',testRaw?testRaw.replace(/^https?:\/\//,''):'saknas',(!testRaw||test===prod)?'bad':'')
+        +statusCard('Backup',file?'vald':'saknas',file?'':'bad')
+        +statusCard('Saves',info.saves,info.saves?'':'bad')
+        +statusCard('Checklistan',checked+'/'+total,checked===total?'':'warn')
+        +statusCard('Live-preflight',ready?'DESIGN REDO':'STOPP',ready?'':'bad');
+      var html='<p><strong>v488 är bara designunderlag.</strong> Nästa riktiga steg blir en live-preflight som läser testdatabasen, men fortfarande inte skriver något.</p>';
+      html+='<p>Den framtida live-preflighten ska kontrollera produktion/test-URL, adminstatus, tabeller, RPC:er, tomhet och backupens referenser innan skrivande restore ens får visas.</p>';
+      html+='<ul><li>Första live-preflight ska vara read-only.</li><li>Den ska stoppa om testdatabasen redan innehåller data som riskerar att blandas med restore.</li><li>Skrivande restore ska ligga i en separat senare version.</li></ul>';
+      if(reasons.length)html+='<div class="warntext"><strong>Inte redo ännu:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
+      else html+='<p class="oktext"><strong>Live-preflight-designen är redo.</strong> Nästa säkra fas är att skapa separat testmiljö och bygga en read-only live-preflight som pekar dit.</p>';
+      details.innerHTML=html;
+      text.value=lp488BuildText(info,reasons);
+      st.textContent=(ready?'Live-preflight-design: REDO. ':'Live-preflight-design: STOPP/KONTROLL. ')+(reasons[0]||'')+' Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.';
+      st.className=ready?'status ok':'status warn';
+    }catch(e){
+      st.textContent='Live-preflight-design: tekniskt fel i rutan: '+(e&&e.message?e.message:e);
+      st.className='status bad';
+      details.innerHTML='<div class="badtext"><strong>Tekniskt fel:</strong> '+esc(e&&e.message?e.message:e)+'</div>';
+    }
+  }
+  if($('live-preflight-v488-prod-url'))$('live-preflight-v488-prod-url').value=SUPA_URL||'';
+  if($('btn-live-preflight-v488'))$('btn-live-preflight-v488').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();lp488Render();});
+  if($('btn-clear-live-preflight-v488'))$('btn-clear-live-preflight-v488').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();lp488Clear();});
+  if($('btn-copy-live-preflight-v488'))$('btn-copy-live-preflight-v488').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('live-preflight-v488-text')&&$('live-preflight-v488-text').value)||'');});
+  ['live-preflight-v488-test-url','live-preflight-v488-admin-url','live-preflight-v488-note'].forEach(function(id){if($(id))$(id).addEventListener('input',lp488SetDirty);});
+  if($('live-preflight-v488-file'))$('live-preflight-v488-file').addEventListener('change',lp488SetDirty);
+  lp488Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',lp488SetDirty);});
 
 
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
