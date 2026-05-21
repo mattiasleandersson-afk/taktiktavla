@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v460</title>
+<title>Taktiktavla admin v461</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -108,12 +108,29 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Full backup-export</h2>
-          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v460 lägger även till tydligare metadata och logiska counts för data som ligger inne i saves. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
+          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v461 bygger vidare på v460:s tydliga metadata och logiska counts. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
         </div>
         <button id="btn-download-backup" class="primary right">Ladda ner full backup</button>
       </div>
       <div class="helpbox">Backupfilen kan innehålla e-postadresser, lagdata, matcher, taktikfilmer och sparade taktiktavlor. Spara den säkert och dela den inte öppet.</div>
       <div id="backup-export-status" class="status" style="margin-top:10px">Kör systemstatus först och ladda sedan ner backup vid behov.</div>
+    </section>
+
+    <section class="card" id="backup-validate-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Kontrollera backupfil</h2>
+          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v461 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
+        </div>
+      </div>
+      <input id="backup-validate-file" type="file" accept="application/json,.json">
+      <div class="row" style="margin-top:10px">
+        <button id="btn-validate-backup" class="primary">Kontrollera vald backup</button>
+        <button id="btn-clear-validation" class="small">Rensa kontroll</button>
+      </div>
+      <div id="backup-validate-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
+      <div id="backup-validate-grid" class="statusgrid" aria-label="Backupkontroll"></div>
+      <div id="backup-validate-details" class="statusnote"></div>
     </section>
     <div class="grid">
       <section class="card">
@@ -364,6 +381,128 @@
       setStatus('Kunde inte skapa backup: '+e.message,true);
     }
   }
+
+  function uniqueValues(arr){
+    var out=[], seen={};
+    (arr||[]).forEach(function(v){v=String(v||'').trim();if(v&&!seen[v]){seen[v]=1;out.push(v);}});
+    return out;
+  }
+  function getSaveTeamCode(row){
+    var d=row&&row.data||{};
+    var m=d._meta||{};
+    return m.teamCode||m.teamId||d.teamCode||d.teamId||'';
+  }
+  function recomputeLogicalCounts(saves){
+    saves=Array.isArray(saves)?saves:[];
+    var folders={}, teams={}, shared=0;
+    var out={matches_in_saves:0,uppstallningar_in_saves:0,team_members_in_saves:0,taktikfilmer_in_saves:0,trupp_in_saves:0,folders_in_saves:0,teams_referenced_in_saves:0,shared_saves_meta_true:0};
+    saves.forEach(function(r){
+      var type=String(r&&r.type||'').toLowerCase();
+      if(type==='match')out.matches_in_saves++;
+      if(type==='uppstallning')out.uppstallningar_in_saves++;
+      if(type==='team_member')out.team_members_in_saves++;
+      if(type==='taktikfilm')out.taktikfilmer_in_saves++;
+      if(type==='trupp')out.trupp_in_saves++;
+      var f=String(r&&r.folder||'').trim();if(f)folders[f]=1;
+      var tc=getSaveTeamCode(r);if(tc)teams[tc]=1;
+      if(r&&r.data&&r.data._meta&&r.data._meta.sharedWithTeam===true)shared++;
+    });
+    out.folders_in_saves=Object.keys(folders).length;
+    out.teams_referenced_in_saves=Object.keys(teams).length;
+    out.shared_saves_meta_true=shared;
+    out.teamCodes=Object.keys(teams).sort();
+    return out;
+  }
+  function validateBackupData(data){
+    var errors=[], warnings=[], ok=[];
+    function has(k){return Object.prototype.hasOwnProperty.call(data||{},k);}
+    if(!data || typeof data!=='object' || Array.isArray(data)){errors.push('Filen är inte ett JSON-objekt.');return {errors:errors,warnings:warnings,ok:ok};}
+    if(data.backupType!=='full-disaster-backup')errors.push('backupType är inte full-disaster-backup.'); else ok.push('backupType stämmer.');
+    if(data.backupVersion!==1)warnings.push('backupVersion är inte 1.'); else ok.push('backupVersion 1.');
+    if(!has('exportedAt'))warnings.push('exportedAt saknas.');
+    if(!has('appVersion'))warnings.push('appVersion saknas.');
+    if(!has('adminExportVersion'))warnings.push('adminExportVersion saknas.');
+    if(!data.tables || typeof data.tables!=='object')errors.push('tables saknas eller är inte ett objekt.');
+    if(!data.counts || typeof data.counts!=='object')warnings.push('counts saknas eller är inte ett objekt.');
+    var tables=(data.tables||{}), counts=(data.counts||{});
+    var known=['saves','allowed_users','app_admins','formation_team_shares','taktikfilm_team_shares','teams','team_members','players','matches'];
+    known.forEach(function(t){
+      if(tables[t] && !Array.isArray(tables[t]))errors.push('tables.'+t+' är inte en lista.');
+      if(Array.isArray(tables[t]) && counts[t]!=null && Number(counts[t])!==tables[t].length){warnings.push('count mismatch för '+t+': counts='+counts[t]+', faktiskt='+tables[t].length+'.');}
+    });
+    var saves=Array.isArray(tables.saves)?tables.saves:[];
+    if(!saves.length)warnings.push('Inga saves hittades. Det kan vara okej i en tom miljö men är ovanligt för en aktiv app.'); else ok.push('saves går att läsa: '+saves.length+' rader.');
+    var ids={};
+    saves.forEach(function(r){if(r&&r.id!=null)ids[String(r.id)]=1;});
+    var badForm=[];(Array.isArray(tables.formation_team_shares)?tables.formation_team_shares:[]).forEach(function(r){var id=r&&r.formation_id;if(id!=null&&!ids[String(id)])badForm.push(id);});
+    var badFilm=[];(Array.isArray(tables.taktikfilm_team_shares)?tables.taktikfilm_team_shares:[]).forEach(function(r){var id=r&&r.taktikfilm_id;if(id!=null&&!ids[String(id)])badFilm.push(id);});
+    badForm=uniqueValues(badForm);badFilm=uniqueValues(badFilm);
+    if(badForm.length)errors.push('formation_team_shares pekar på saknade saves: '+badForm.join(', ')+'.'); else ok.push('Taktiktavle-delningar pekar på befintliga saves.');
+    if(badFilm.length)errors.push('taktikfilm_team_shares pekar på saknade saves: '+badFilm.join(', ')+'.'); else ok.push('Taktikfilm-delningar pekar på befintliga saves.');
+    var recomputed=recomputeLogicalCounts(saves);
+    var lc=data.logicalCounts||{};
+    ['matches_in_saves','uppstallningar_in_saves','team_members_in_saves','taktikfilmer_in_saves','trupp_in_saves','folders_in_saves','teams_referenced_in_saves','shared_saves_meta_true'].forEach(function(k){
+      if(lc[k]!=null && Number(lc[k])!==Number(recomputed[k]))warnings.push('logicalCounts mismatch för '+k+': metadata='+lc[k]+', faktiskt='+recomputed[k]+'.');
+    });
+    if(!data.logicalCounts)warnings.push('logicalCounts saknas. Backupen kan ändå gå att läsa men är mindre lätt att kontrollera.'); else ok.push('logicalCounts finns.');
+    var teamCodes=Array.isArray(data.teamCodesInSaves)?data.teamCodesInSaves.map(String).sort():[];
+    var actualTeams=(recomputed.teamCodes||[]).map(String).sort();
+    if(teamCodes.length && teamCodes.join('|')!==actualTeams.join('|'))warnings.push('teamCodesInSaves matchar inte beräknade lagkoder från saves.');
+    return {errors:errors,warnings:warnings,ok:ok,recomputed:recomputed};
+  }
+  function renderBackupValidation(data,fileName,bytes){
+    var st=$('backup-validate-status'), grid=$('backup-validate-grid'), details=$('backup-validate-details');
+    if(!st||!grid||!details)return;
+    var res=validateBackupData(data);
+    var c=(data&&data.counts)||{}, lc=(data&&data.logicalCounts)||{}, rc=res.recomputed||{};
+    grid.innerHTML=''
+      +statusCard('Backupversion',data&&data.backupVersion)
+      +statusCard('Adminexport',data&&data.adminExportVersion)
+      +statusCard('Appversion',data&&data.appVersion)
+      +statusCard('Saves',c.saves)
+      +statusCard('Matcher i saves',lc.matches_in_saves==null?rc.matches_in_saves:lc.matches_in_saves)
+      +statusCard('Utgångslägen i saves',lc.uppstallningar_in_saves==null?rc.uppstallningar_in_saves:lc.uppstallningar_in_saves)
+      +statusCard('Taktikfilmer i saves',lc.taktikfilmer_in_saves==null?rc.taktikfilmer_in_saves:lc.taktikfilmer_in_saves)
+      +statusCard('Trupper i saves',lc.trupp_in_saves==null?rc.trupp_in_saves:lc.trupp_in_saves)
+      +statusCard('Lagmedlemskap i saves',lc.team_members_in_saves==null?rc.team_members_in_saves:lc.team_members_in_saves)
+      +statusCard('Allowed users',c.allowed_users)
+      +statusCard('App admins',c.app_admins)
+      +statusCard('Taveldelningar',c.formation_team_shares)
+      +statusCard('Filmdelningar',c.taktikfilm_team_shares)
+      +statusCard('Lagkoder i saves',lc.teams_referenced_in_saves==null?rc.teams_referenced_in_saves:lc.teams_referenced_in_saves);
+    if(res.errors.length){st.textContent='Backupkontroll: FEL hittades. Använd inte denna fil för återställning innan felen är utredda.';st.className='status bad';}
+    else if(res.warnings.length){st.textContent='Backupkontroll: filen går att läsa, men '+res.warnings.length+' varning(ar) finns. Fil: '+fileName+', cirka '+Math.round((bytes||0)/1024)+' kB.';st.className='status warn';}
+    else{st.textContent='Backupkontroll: OK. Filen ser sund ut. Fil: '+fileName+', cirka '+Math.round((bytes||0)/1024)+' kB.';st.className='status ok';}
+    var teams=Array.isArray(data.teamCodesInSaves)?data.teamCodesInSaves:(rc.teamCodes||[]);
+    var html='';
+    html+='<div><strong>Metadata:</strong> backupType '+esc(data.backupType||'–')+', exportedAt '+esc(data.exportedAt||'–')+', adminPageVersion '+esc(data.adminPageVersion||'–')+'.</div>';
+    html+='<div><strong>Lagkoder i saves:</strong> '+esc((teams||[]).join(', ')||'–')+'</div>';
+    if(res.errors.length)html+='<div class="bad" style="margin-top:8px"><strong>Fel:</strong><ul><li>'+res.errors.map(esc).join('</li><li>')+'</li></ul></div>';
+    if(res.warnings.length)html+='<div class="warn" style="margin-top:8px"><strong>Varningar:</strong><ul><li>'+res.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+    html+='<div style="margin-top:8px"><strong>Godkända kontroller:</strong><ul><li>'+res.ok.map(esc).join('</li><li>')+'</li></ul></div>';
+    details.innerHTML=html;
+  }
+  async function validateSelectedBackup(){
+    var input=$('backup-validate-file'), st=$('backup-validate-status'), grid=$('backup-validate-grid'), details=$('backup-validate-details');
+    if(!input||!input.files||!input.files[0]){if(st){st.textContent='Välj en JSON-backupfil först.';st.className='status bad';}return;}
+    var file=input.files[0];
+    if(st){st.textContent='Läser backupfil lokalt...';st.className='status';}
+    if(grid)grid.innerHTML=''; if(details)details.textContent='';
+    try{
+      var txt=await file.text();
+      var data=JSON.parse(txt);
+      renderBackupValidation(data,file.name,txt.length);
+    }catch(e){
+      if(st){st.textContent='Kunde inte läsa/parse:a JSON-filen: '+e.message;st.className='status bad';}
+    }
+  }
+  function clearBackupValidation(){
+    if($('backup-validate-file'))$('backup-validate-file').value='';
+    if($('backup-validate-status')){$('backup-validate-status').textContent='Ingen backupfil vald ännu.';$('backup-validate-status').className='status';}
+    if($('backup-validate-grid'))$('backup-validate-grid').innerHTML='';
+    if($('backup-validate-details'))$('backup-validate-details').textContent='';
+  }
+
   async function loadUsers(){
     var body=$('users-body');body.innerHTML='<tr><td colspan="5" class="muted">Laddar...</td></tr>';
     var rows=await rpc('tt_admin_list_allowed_users',{});
@@ -387,7 +526,7 @@
     try{setStatus('Loggar in...');var data=await authFetch('/auth/v1/token?grant_type=password',{method:'POST',headers:headers(),body:JSON.stringify({email:email,password:pass})});saveSession(data);await checkAdmin();}
     catch(e){setStatus('Inloggning misslyckades: '+e.message,true);}
   };
-  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';if($('system-status-grid'))$('system-status-grid').innerHTML='';if($('system-status-summary'))$('system-status-summary').textContent='Logga in för att läsa systemstatus.';setStatus('Utloggad.');};
+  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';if($('system-status-grid'))$('system-status-grid').innerHTML='';if($('system-status-summary'))$('system-status-summary').textContent='Logga in för att läsa systemstatus.';clearBackupValidation();setStatus('Utloggad.');};
   async function addUser(openAfter){
     var email=$('new-email').value.trim();var note=$('new-note').value.trim();
     var teamInfo=selectedTeamInfo();
@@ -409,6 +548,9 @@
   $('btn-refresh').onclick=function(){loadUsers().catch(function(e){setStatus('Fel: '+e.message,true);});};
   if($('btn-refresh-system'))$('btn-refresh-system').onclick=function(){loadSystemStatus();};
   if($('btn-download-backup'))$('btn-download-backup').onclick=function(){downloadFullBackup();};
+  if($('btn-validate-backup'))$('btn-validate-backup').onclick=function(){validateSelectedBackup();};
+  if($('backup-validate-file'))$('backup-validate-file').addEventListener('change',function(){validateSelectedBackup();});
+  if($('btn-clear-validation'))$('btn-clear-validation').onclick=function(){clearBackupValidation();};
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
   if($('new-team-role'))$('new-team-role').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
