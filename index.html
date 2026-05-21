@@ -1313,13 +1313,108 @@
   }
 </style>
 
+
+
+<style id="v443-taktikfilm-iphone-topprad-css">
+  /* v443: Endast visning på iPhone/små skärmar. Inga funktioner ändras. */
+  @media (max-width: 760px){
+    /* Övre Taktikfilm-raden: ta bort dubbel information som redan visas längre ner. */
+    #taktikbar > div:first-child{
+      gap: 2px !important;
+      align-items: center !important;
+      flex-wrap: nowrap !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      padding-bottom: 1px !important;
+    }
+    #taktikbar-title,
+    #play-counter{
+      display: none !important;
+      width: 0 !important;
+      min-width: 0 !important;
+      max-width: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      flex: 0 0 0 !important;
+    }
+
+    /* Behåll pilknapparna men gör dem kompaktare. */
+    #btn-first,
+    #btn-prev,
+    #btn-next{
+      min-width: 27px !important;
+      height: 27px !important;
+      padding: 2px 5px !important;
+      font-size: .78rem !important;
+      line-height: 1 !important;
+      flex: 0 0 auto !important;
+    }
+
+    /* Spela hela: filmkamera utan text på iPhone. */
+    #btn-play-all{
+      position: relative !important;
+      min-width: 30px !important;
+      width: 30px !important;
+      height: 27px !important;
+      padding: 2px 4px !important;
+      font-size: 0 !important;
+      line-height: 1 !important;
+      color: #4ae87a !important;
+      border-color: #4ae87a !important;
+      text-shadow: 0 0 6px rgba(74,232,122,.35) !important;
+      flex: 0 0 auto !important;
+    }
+    #btn-play-all::before{
+      content: "🎥" !important;
+      font-size: .98rem !important;
+      line-height: 1 !important;
+      display: inline-block !important;
+      transform: translateY(0px) !important;
+    }
+
+    /* Paus och tempo: lite smalare, utan att ändra värden/funktion. */
+    #play-all-pause{
+      max-width: 58px !important;
+      width: 58px !important;
+      min-width: 58px !important;
+      height: 27px !important;
+      padding: 2px 12px 2px 4px !important;
+      font-size: .58rem !important;
+      flex: 0 0 auto !important;
+    }
+    #play-speed{
+      max-width: 50px !important;
+      width: 50px !important;
+      min-width: 50px !important;
+      height: 27px !important;
+      padding: 2px 12px 2px 4px !important;
+      font-size: .58rem !important;
+      flex: 0 0 auto !important;
+    }
+
+    #btn-copy-drawings,
+    #btn-copy-step,
+    #btn-paste-step,
+    #btn-edit-update-step2,
+    #btn-taktikbar-save,
+    #btn-stop-play{
+      height: 27px !important;
+      min-width: 27px !important;
+      padding: 2px 5px !important;
+      font-size: .68rem !important;
+      flex: 0 0 auto !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">442</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">443</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1921,7 +2016,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=442"></script>
+<script src="app.js?v=443"></script>
 
 <script>
 (function(){
