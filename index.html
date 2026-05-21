@@ -1485,13 +1485,59 @@
   }
 </style>
 
+
+
+<style id="v446-taktikfilm-playall-camera-stopfix-css">
+  /* v446: bara visning + stoppknappskoppling. Spela hela ska alltid vara kamera på små skärmar. */
+  @media (max-width: 760px){
+    #btn-play-all[data-tt446-camera-only="1"]{
+      position: relative !important;
+      width: 31px !important;
+      min-width: 31px !important;
+      max-width: 31px !important;
+      height: 27px !important;
+      min-height: 27px !important;
+      padding: 2px 3px !important;
+      font-size: .94rem !important;
+      line-height: 1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+    }
+    #btn-play-all[data-tt446-camera-only="1"]::before{
+      content: none !important;
+      display: none !important;
+    }
+    #btn-play-all[data-tt446-camera-only="1"]::after{
+      content: "" !important;
+      display: none !important;
+    }
+    #btn-play-all.on[data-tt446-camera-only="1"]::after{
+      display: block !important;
+      position: absolute !important;
+      left: 5px !important;
+      right: 5px !important;
+      top: 50% !important;
+      height: 2px !important;
+      border-radius: 999px !important;
+      background: currentColor !important;
+      box-shadow: 0 0 5px rgba(232,200,74,.55) !important;
+      transform: rotate(-35deg) !important;
+      transform-origin: center !important;
+      pointer-events: none !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">444</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">446</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
