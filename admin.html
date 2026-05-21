@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin</title>
+<title>Taktiktavla admin v453</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -123,11 +123,7 @@
 (function(){
   'use strict';
   var SUPA_URL='https://hpwpsmjswvpuzykxjvhd.supabase.co';
-  var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIcHdwc21qc3d2cHV6eWt4anZoZCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzc3NTAzMzgwLCJleHAiOjIwOTMwNzkzODB9.RKkWz-KzWxn7F3_ShnW7DVUMy4Unt7T52wP1EmgmCp0';
-  // Rätt nyckel från huvudappen om raden ovan skulle ha ändrats vid kopiering.
-  SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIcHdwc21qc3d2cHV6eWt4anZoZCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzc3NTAzMzgwLCJleHAiOjIwOTMwNzkzODB9.RKkWz-KzWxn7F3_ShnW7DVUMy4Unt7T52wP1EmgmCp0';
-  // fallback: huvudappens publika anon-nyckel
-  SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIcHdwc21qc3d2cHV6eWt4anhqdmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MDMzODAsImV4cCI6MjA5MzA3OTM4MH0.RKkWz-KzWxn7F3_ShnW7DVUMy4Unt7T52wP1EmgmCp0';
+  var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhwd3BzbWpzd3ZwdXp5a3hqdmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MDMzODAsImV4cCI6MjA5MzA3OTM4MH0.RKkWz-KzWxn7F3_ShnW7DVUMy4Unt7T52wP1EmgmCp0';
   var STORE='tt_admin_session_v1';
   var $=function(id){return document.getElementById(id);};
   function session(){try{return JSON.parse(localStorage.getItem(STORE)||'null');}catch(e){return null;}}
