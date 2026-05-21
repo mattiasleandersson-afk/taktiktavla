@@ -1220,7 +1220,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">433</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">434</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1462,6 +1462,7 @@
         <button class="btn" id="btn-cloud-refresh" title="Ny taktiktavla">Ny</button>
         <button class="btn" id="btn-export">&#8595; Exportera</button>
         <button class="btn" id="btn-import-btn">&#8593; Importera</button>
+        <button class="btn" id="btn-import-match-formation" title="Importera spelare från sparad match">Importera uppställning från match</button>
         <input type="file" id="btn-import" accept=".json" style="display:none">
       </div>
       <div id="cloud-status" style="font-size:0.72rem;color:#7aaa88;margin-bottom:5px"></div>
@@ -1767,6 +1768,18 @@
   <button class="ls-btn" id="ls-day-btn3" style="font-size:0.9rem;padding:8px 8px" title="Dagsljus">&#9728;</button>
 </div>
 
+<!-- IMPORT MATCH TO FORMATION MODAL -->
+<div class="modal-bg hidden" id="modal-import-match-formation">
+  <div class="modal" style="max-width:360px">
+    <h2>Importera uppställning från match</h2>
+    <div style="font-size:0.78rem;color:#7aaa88;margin-bottom:10px;line-height:1.25">Kopierar bara spelare/nummer till nuvarande taktiktavla. Positioner och koordinater ändras inte.</div>
+    <div id="import-match-formation-list" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;margin-bottom:12px"></div>
+    <div class="mactions">
+      <button class="btn" id="import-match-formation-cancel">Avbryt</button>
+    </div>
+  </div>
+</div>
+
 <!-- PLAYER PICKER MODAL -->
 <div class="modal-bg hidden" id="modal-player-picker">
   <div class="modal" style="max-width:320px">
@@ -1809,7 +1822,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=433"></script>
+<script src="app.js?v=434"></script>
 
 <script>
 (function(){
