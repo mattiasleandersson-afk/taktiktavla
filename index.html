@@ -1214,13 +1214,109 @@
   }
 </style>
 
+
+
+<style id="v441-taktikfilm-knapplayout-css">
+  /* v441: Endast visning/layout. Inga klickhändelser eller funktioner ändras. */
+
+  /* Dator: flytta Taktikfilms helskärmsknappar från botten till vänstersidan,
+     under ritverktygen med luft så färgval kan öppnas nedåt. */
+  @media (min-width: 1024px) and (pointer: fine){
+    body.fullscreen-portrait.v66-taktik-fs #fs-portrait-nav{
+      position: fixed !important;
+      left: calc(env(safe-area-inset-left, 0px) + 8px) !important;
+      top: calc(env(safe-area-inset-top, 0px) + 62px) !important;
+      bottom: auto !important;
+      right: auto !important;
+      transform: none !important;
+      z-index: 10004 !important;
+      max-width: 270px !important;
+      width: auto !important;
+      display: flex !important;
+      flex-wrap: wrap !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+      gap: 6px !important;
+      padding: 6px 7px !important;
+      border-radius: 11px !important;
+      background: rgba(14,23,16,.88) !important;
+      border: 1px solid rgba(74,232,122,.35) !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,.24) !important;
+    }
+    body.fullscreen-portrait.v66-taktik-fs #fs-portrait-nav .ls-btn,
+    body.fullscreen-portrait.v66-taktik-fs #fs-portrait-nav button,
+    body.fullscreen-portrait.v66-taktik-fs #fs-portrait-nav select{
+      min-height: 28px !important;
+      height: 28px !important;
+      padding-top: 3px !important;
+      padding-bottom: 3px !important;
+      font-size: .72rem !important;
+      flex: 0 0 auto !important;
+    }
+    body.fullscreen-portrait.v66-taktik-fs #fs-step-label{
+      min-width: 46px !important;
+      font-size: .68rem !important;
+      flex: 0 0 auto !important;
+    }
+    body.fullscreen-portrait.v66-taktik-fs #fs-play-all-pause{
+      max-width: 76px !important;
+      font-size: .58rem !important;
+    }
+  }
+
+  /* iPhone: tajtare Taktikfilm-ritrad genom att visa symboler i stället för text. */
+  @media (max-width: 760px){
+    #taktikbar > div:nth-child(2){
+      gap: 2px !important;
+      flex-wrap: nowrap !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+    #taktikbar > div:nth-child(2) > span{
+      font-size: 0 !important;
+      width: 0 !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
+      margin: 0 !important;
+    }
+    #btn-tb-arrow,
+    #btn-tb-freehand,
+    #btn-tb-zone,
+    #btn-tb-text,
+    #btn-tb-movement{
+      font-size: 0 !important;
+      min-width: 28px !important;
+      height: 28px !important;
+      padding: 2px 6px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex: 0 0 auto !important;
+    }
+    #btn-tb-arrow::before{content:"↗";}
+    #btn-tb-freehand::before{content:"✎";}
+    #btn-tb-zone::before{content:"▭";}
+    #btn-tb-text::before{content:"T";}
+    #btn-tb-movement::before{content:"➜•";}
+    #btn-tb-arrow::before,
+    #btn-tb-freehand::before,
+    #btn-tb-zone::before,
+    #btn-tb-text::before,
+    #btn-tb-movement::before{
+      font-size: .82rem !important;
+      line-height: 1 !important;
+      font-weight: 900 !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">440</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">441</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1822,7 +1918,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=440"></script>
+<script src="app.js?v=441"></script>
 
 <script>
 (function(){
