@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v471</title>
+<title>Taktiktavla admin v472</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -156,7 +156,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Restore-skydd / skarp checklista</h2>
-          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v471 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
+          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v472 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Ingen återställning görs här.</strong> Riktig restore ska inte byggas/startas förrän checklistan är grön och du uttryckligen väljer att gå vidare i en separat framtida version.</div>
@@ -183,7 +183,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-plan för riktig restore</h2>
-          <p>Detta steg hjälper dig planera en separat testmiljö innan någon riktig återställningskod byggs. v471 skriver fortfarande ingenting till Supabase. Den läser bara en backupfil lokalt och visar exakt vad som bör skapas/testas utanför den riktiga appen.</p>
+          <p>Detta steg hjälper dig planera en separat testmiljö innan någon riktig återställningskod byggs. v472 skriver fortfarande ingenting till Supabase. Den läser bara en backupfil lokalt och visar exakt vad som bör skapas/testas utanför den riktiga appen.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Mål:</strong> kunna testa framtida restore mot en tom testdatabas/testapp, inte mot din riktiga Taktiktavla-miljö.</div>
@@ -202,7 +202,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-checklista / startpaket</h2>
-          <p>Detta steg gör planen mer praktisk: välj backupfilen och bygg en kopierbar checklista för separat Supabase-testprojekt och separat testadmin/testapp. v471 skriver fortfarande ingenting och gör ingen restore.</p>
+          <p>Detta steg gör planen mer praktisk: välj backupfilen och bygg en kopierbar checklista för separat Supabase-testprojekt och separat testadmin/testapp. v472 skriver fortfarande ingenting och gör ingen restore.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Säkerhetsidé:</strong> den här checklistan ska hjälpa oss att hålla produktion och test helt åtskilda innan någon skrivande restore ens byggs.</div>
@@ -240,7 +240,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-konfiguration</h2>
-          <p>Detta steg gör testmiljön mer konkret: fyll i test-Supabase och test-URL:er och bygg en kopierbar konfigurationsplan. v471 skriver fortfarande ingenting, skapar inget projekt och gör ingen restore.</p>
+          <p>Detta steg gör testmiljön mer konkret: fyll i test-Supabase och test-URL:er och bygg en kopierbar konfigurationsplan. v472 skriver fortfarande ingenting, skapar inget projekt och gör ingen restore.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Syfte:</strong> minska risken att testadmin/testapp råkar peka mot produktion när vi senare testar en skrivande restore.</div>
@@ -285,7 +285,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-SQL-checklista</h2>
-          <p>Detta steg listar vilka SQL-delar som behöver vara på plats i ett separat Supabase-testprojekt innan en framtida skrivande restore ens får testas. v471 kör ingen SQL och gör ingen restore.</p>
+          <p>Detta steg listar vilka SQL-delar som behöver vara på plats i ett separat Supabase-testprojekt innan en framtida skrivande restore ens får testas. v472 kör ingen SQL och gör ingen restore.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Syfte:</strong> se till att testprojektet byggs i rätt ordning och att vi inte råkar blanda test och produktion. Checklistan är bara en plan, inte en körning.</div>
@@ -316,6 +316,28 @@
       <div id="test-env-sql-details" class="statusnote"></div>
       <label for="test-env-sql-text">Kopierbar SQL-checklista</label>
       <textarea id="test-env-sql-text" readonly placeholder="Här visas SQL-checklistan när du byggt den."></textarea>
+    </section>
+
+    <section class="card" id="test-env-schema-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Testmiljö-schemaöversikt</h2>
+          <p>Detta steg analyserar en backupfil och visar vilka tabeller, datatyper och RPC-funktioner en separat testmiljö behöver innan en framtida skrivande restore ens byggs. v472 läser bara filen lokalt och skriver ingenting.</p>
+        </div>
+      </div>
+      <div class="helpbox"><strong>Syfte:</strong> förstå vad backupen faktiskt innehåller och vilka delar test-Supabase måste kunna hantera. Detta är bara analys och planering, inte restore.</div>
+      <label for="schema-backup-file">Backupfil</label>
+      <input id="schema-backup-file" type="file" accept="application/json,.json">
+      <div class="row" style="margin-top:10px">
+        <button id="btn-test-env-schema" class="primary">Bygg schemaöversikt</button>
+        <button id="btn-copy-test-env-schema" class="small">Kopiera schemaöversikt</button>
+        <button id="btn-clear-test-env-schema" class="small">Rensa</button>
+      </div>
+      <div id="test-env-schema-status" class="status" style="margin-top:10px">Ingen schemaöversikt byggd ännu.</div>
+      <div id="test-env-schema-grid" class="statusgrid" aria-label="Testmiljö-schemaöversikt"></div>
+      <div id="test-env-schema-details" class="statusnote"></div>
+      <label for="test-env-schema-text">Kopierbar schemaöversikt</label>
+      <textarea id="test-env-schema-text" readonly placeholder="Här visas schemaöversikten när du byggt den."></textarea>
     </section>
 
     <div class="grid">
@@ -1218,7 +1240,7 @@
       +statusCard('Skild från produktion',(testUrl&&prodUrl&&testUrl!==prodUrl)?'Ja':'Nej',(testUrl&&prodUrl&&testUrl!==prodUrl)?'':'bad')
       +statusCard('Checklistan',checked+'/'+items.length,checked===items.length?'':'warn')
       +statusCard('Status',ready?'Förberedd':'Kontroll',ready?'':'warn');
-    var html='<p><strong>Detta är bara en SQL-plan.</strong> v471 kör ingen SQL och gör ingen restore.</p>';
+    var html='<p><strong>Detta är bara en SQL-plan.</strong> v472 kör ingen SQL och gör ingen restore.</p>';
     html+='<h3 style="color:var(--green);margin:12px 0 6px;font-size:.96rem">Rekommenderad ordning</h3><ol><li>'+requiredSqlPlanLines().map(esc).join('</li><li>')+'</li></ol>';
     html+='<h3 style="color:var(--green);margin:12px 0 6px;font-size:.96rem">Kontroller före skrivande restore</h3><ul><li>Testprojektet måste vara separat från produktion.</li><li>Systemstatus i testadmin ska fungera innan restore testas.</li><li>Backupfil ska valideras och dry-run ska vara rimlig.</li><li>Restore får först byggas/testas mot tom testdatabas.</li></ul>';
     if(errors.length)html+='<div class="badtext" style="margin-top:8px"><strong>Stopp:</strong><ul><li>'+errors.map(esc).join('</li><li>')+'</li></ul></div>';
@@ -1246,6 +1268,138 @@
   }
 
 
+
+  function backupTables(data){return (data&&data.tables&&typeof data.tables==='object')?data.tables:{};}
+  function tableLen(tables,name){return Array.isArray(tables[name])?tables[name].length:0;}
+  function saveTypeCountsFromBackup(data){
+    var tables=backupTables(data), saves=Array.isArray(tables.saves)?tables.saves:[], out={};
+    saves.forEach(function(row){var typ=String(row&&row.type||'okänd').trim()||'okänd';out[typ]=(out[typ]||0)+1;});
+    return out;
+  }
+  function expectedRestoreTables(){
+    return ['saves','allowed_users','app_admins','formation_team_shares','taktikfilm_team_shares','teams','team_members','players','matches'];
+  }
+  function requiredRestoreRpcs(){
+    return [
+      'tt_admin_is_app_admin',
+      'tt_admin_list_allowed_users',
+      'tt_admin_upsert_allowed_user',
+      'tt_admin_deactivate_allowed_user',
+      'tt_admin_list_teams',
+      'tt_admin_add_member_to_team',
+      'tt_admin_system_status',
+      'tt_admin_full_backup'
+    ];
+  }
+  function buildSchemaOverviewText(data,fileName,bytes){
+    var tables=backupTables(data), counts=(data&&data.counts)||{}, logical=(data&&data.logicalCounts)||{}, found=(data&&data.tablesFound)||{};
+    var tableNames=Object.keys(tables).sort();
+    var typeCounts=saveTypeCountsFromBackup(data);
+    var lines=[];
+    lines.push('Taktiktavla restore-test – schemaöversikt');
+    lines.push('Backupfil: '+(fileName||'vald fil'));
+    lines.push('Storlek: cirka '+Math.round((bytes||0)/1024)+' kB');
+    lines.push('backupType: '+(data&&data.backupType||''));
+    lines.push('backupVersion: '+(data&&data.backupVersion!=null?data.backupVersion:''));
+    lines.push('adminExportVersion: '+(data&&data.adminExportVersion!=null?data.adminExportVersion:''));
+    lines.push('appVersion: '+(data&&data.appVersion!=null?data.appVersion:''));
+    lines.push('exportedAt: '+(data&&data.exportedAt||''));
+    lines.push('');
+    lines.push('Tabeller/sektioner i backupens tables:');
+    if(tableNames.length){
+      tableNames.forEach(function(n){lines.push('- '+n+': '+tableLen(tables,n)+' rader'+(counts[n]!=null?' (counts: '+counts[n]+')':''));});
+    }else{
+      lines.push('- Inga tables hittades.');
+    }
+    lines.push('');
+    lines.push('Förväntade restore-tabeller och status i backup:');
+    expectedRestoreTables().forEach(function(n){
+      var exists=Object.prototype.hasOwnProperty.call(tables,n);
+      var tf=found[n];
+      lines.push('- '+n+': '+(exists?'finns i tables, '+tableLen(tables,n)+' rader':'saknas i tables')+(tf!==undefined?' · tablesFound: '+tf:''));
+    });
+    lines.push('');
+    lines.push('Saves-typer:');
+    Object.keys(typeCounts).sort().forEach(function(k){lines.push('- '+k+': '+typeCounts[k]);});
+    if(!Object.keys(typeCounts).length)lines.push('- Inga saves-typer hittades.');
+    lines.push('');
+    lines.push('logicalCounts:');
+    if(Object.keys(logical).length){Object.keys(logical).sort().forEach(function(k){lines.push('- '+k+': '+logical[k]);});}else{lines.push('- Saknas.');}
+    lines.push('');
+    lines.push('RPC/funktioner som testmiljön bör ha före framtida restoretest:');
+    requiredRestoreRpcs().forEach(function(n){lines.push('- '+n);});
+    lines.push('');
+    lines.push('Viktig slutsats: riktig appdata verkar främst ligga i saves plus separata delningstabeller och global åtkomst/admin-tabeller. En framtida skrivande restore måste återskapa saves först och därefter delningar som pekar på sparade id:n.');
+    lines.push('');
+    lines.push('Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.');
+    return lines.join('\n');
+  }
+  function clearSchemaOverview(){
+    if($('schema-backup-file'))$('schema-backup-file').value='';
+    if($('test-env-schema-status')){$('test-env-schema-status').textContent='Ingen schemaöversikt byggd ännu.';$('test-env-schema-status').className='status';}
+    if($('test-env-schema-grid'))$('test-env-schema-grid').innerHTML='';
+    if($('test-env-schema-details'))$('test-env-schema-details').innerHTML='';
+    if($('test-env-schema-text'))$('test-env-schema-text').value='';
+  }
+  function readLocalJsonFile(file){
+    return new Promise(function(resolve,reject){
+      var r=new FileReader();
+      r.onload=function(){try{resolve(JSON.parse(String(r.result||'')));}catch(e){reject(new Error('Filen är inte giltig JSON: '+e.message));}};
+      r.onerror=function(){reject(new Error('Kunde inte läsa filen.'));};
+      r.readAsText(file);
+    });
+  }
+  async function renderSchemaOverview(){
+    var input=$('schema-backup-file'), st=$('test-env-schema-status'), grid=$('test-env-schema-grid'), details=$('test-env-schema-details'), text=$('test-env-schema-text');
+    if(!st||!grid||!details||!text)return;
+    grid.innerHTML='';details.innerHTML='';text.value='';
+    var file=input&&input.files&&input.files[0];
+    if(!file){st.textContent='Testmiljö-schemaöversikt: STOPP/KONTROLL. Välj en backupfil först. Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.';st.className='status bad';return;}
+    try{
+      var data=await readLocalJsonFile(file);
+      var tables=backupTables(data), counts=(data&&data.counts)||{}, logical=(data&&data.logicalCounts)||{}, typeCounts=saveTypeCountsFromBackup(data);
+      var warnings=[];
+      if(!data||typeof data!=='object')warnings.push('Backupfilen är inte ett JSON-objekt.');
+      if(data.backupType!=='full-disaster-backup')warnings.push('backupType är inte full-disaster-backup.');
+      if(Number(data.backupVersion)!==1)warnings.push('backupVersion är inte 1.');
+      if(Number(data.adminExportVersion||0)<460)warnings.push('adminExportVersion är äldre än 460.');
+      if(!tables.saves||!Array.isArray(tables.saves))warnings.push('tables.saves saknas eller är inte en lista.');
+      ['allowed_users','app_admins','formation_team_shares','taktikfilm_team_shares'].forEach(function(n){if(!Array.isArray(tables[n]))warnings.push(n+' saknas eller är inte en lista.');});
+      Object.keys(counts).forEach(function(n){if(Array.isArray(tables[n])&&Number(counts[n])!==tables[n].length)warnings.push('Count mismatch för '+n+': counts='+counts[n]+', faktisk längd='+tables[n].length+'.');});
+      var saveIds={};(Array.isArray(tables.saves)?tables.saves:[]).forEach(function(r){if(r&&r.id!=null)saveIds[String(r.id)]=true;});
+      var brokenForm=0;(Array.isArray(tables.formation_team_shares)?tables.formation_team_shares:[]).forEach(function(r){if(r&&r.formation_id!=null&&!saveIds[String(r.formation_id)])brokenForm++;});
+      var brokenFilm=0;(Array.isArray(tables.taktikfilm_team_shares)?tables.taktikfilm_team_shares:[]).forEach(function(r){if(r&&r.taktikfilm_id!=null&&!saveIds[String(r.taktikfilm_id)])brokenFilm++;});
+      if(brokenForm)warnings.push('Taveldelningar med saknad save: '+brokenForm+'.');
+      if(brokenFilm)warnings.push('Filmdelningar med saknad save: '+brokenFilm+'.');
+      grid.innerHTML=''
+        +statusCard('Tables-sektioner',Object.keys(tables).length)
+        +statusCard('Saves',tableLen(tables,'saves'))
+        +statusCard('Matcher i saves',logical.matches_in_saves!=null?logical.matches_in_saves:(typeCounts.match||0))
+        +statusCard('Utgångslägen i saves',logical.uppstallningar_in_saves!=null?logical.uppstallningar_in_saves:(typeCounts.uppstallning||0))
+        +statusCard('Taktikfilmer i saves',logical.taktikfilmer_in_saves!=null?logical.taktikfilmer_in_saves:(typeCounts.taktikfilm||0))
+        +statusCard('Trupper i saves',logical.trupp_in_saves!=null?logical.trupp_in_saves:(typeCounts.trupp||0))
+        +statusCard('Allowed users',tableLen(tables,'allowed_users'))
+        +statusCard('App admins',tableLen(tables,'app_admins'))
+        +statusCard('Taveldelningar',tableLen(tables,'formation_team_shares'),brokenForm?'bad':'')
+        +statusCard('Filmdelningar',tableLen(tables,'taktikfilm_team_shares'),brokenFilm?'bad':'')
+        +statusCard('Varningar',warnings.length,warnings.length?'warn':'')
+        +statusCard('RPC-lista',requiredRestoreRpcs().length);
+      var html='<p><strong>Schemaöversikten är byggd.</strong> Detta är bara lokal analys av backupfilen. v472 gör ingen restore och kör ingen SQL.</p>';
+      html+='<p><strong>Tabeller i backup:</strong> '+esc(Object.keys(tables).sort().join(', ')||'inga')+'</p>';
+      html+='<p><strong>Förväntade tabeller för framtida restore:</strong> '+esc(expectedRestoreTables().join(', '))+'</p>';
+      html+='<p><strong>RPC/funktioner testmiljön bör ha:</strong> '+esc(requiredRestoreRpcs().join(', '))+'</p>';
+      if(warnings.length){html+='<p class="warntext"><strong>Varningar:</strong></p><ul>';warnings.forEach(function(w){html+='<li class="warntext">'+esc(w)+'</li>';});html+='</ul>';}
+      else{html+='<p class="oktext"><strong>Inga uppenbara schema-/referensvarningar hittades i backupfilen.</strong></p>';}
+      html+='<p><strong>Viktig slutsats:</strong> restore behöver sannolikt hantera <span class="kbd">saves</span> som huvudtabell för appdata, plus separata tabeller för global åtkomst/admin och delningar.</p>';
+      details.innerHTML=html;
+      text.value=buildSchemaOverviewText(data,file.name,file.size);
+      st.textContent=(warnings.length?'Testmiljö-schemaöversikt: KLAR MED VARNINGAR. ':'Testmiljö-schemaöversikt: OK. ')+'Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.';
+      st.className='status '+(warnings.length?'warn':'ok');
+    }catch(e){
+      st.textContent='Testmiljö-schemaöversikt: tekniskt fel i rutan: '+(e&&e.message?e.message:e);
+      st.className='status bad';
+    }
+  }
   async function loadUsers(){
     var body=$('users-body');body.innerHTML='<tr><td colspan="5" class="muted">Laddar...</td></tr>';
     var rows=await rpc('tt_admin_list_allowed_users',{});
@@ -1334,6 +1488,11 @@
   if($('btn-copy-test-env-sql'))$('btn-copy-test-env-sql').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('test-env-sql-text')&&$('test-env-sql-text').value)||'');};
   if($('sql-test-supabase-url'))$('sql-test-supabase-url').addEventListener('input',function(){if($('test-env-sql-text')&&$('test-env-sql-text').value)renderSqlChecklist();});
   sqlChecklistItems().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',function(){if($('test-env-sql-text')&&$('test-env-sql-text').value)renderSqlChecklist();});});
+
+  if($('btn-test-env-schema'))$('btn-test-env-schema').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();renderSchemaOverview();};
+  if($('btn-clear-test-env-schema'))$('btn-clear-test-env-schema').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();clearSchemaOverview();};
+  if($('btn-copy-test-env-schema'))$('btn-copy-test-env-schema').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('test-env-schema-text')&&$('test-env-schema-text').value)||'');};
+  if($('schema-backup-file'))$('schema-backup-file').addEventListener('change',function(){if($('schema-backup-file').files&&$('schema-backup-file').files[0])renderSchemaOverview();});
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
   if($('new-team-role'))$('new-team-role').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
