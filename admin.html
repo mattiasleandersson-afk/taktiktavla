@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v455</title>
+<title>Taktiktavla admin v456</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -150,7 +150,7 @@
   async function readJson(res){var txt=await res.text();var data=null;try{data=txt?JSON.parse(txt):null;}catch(e){data=txt;}if(!res.ok){var m=(data&&data.message)||data||('HTTP '+res.status);throw new Error(m);}return data;}
   async function authFetch(path,opts){var res=await fetch(SUPA_URL+path,opts||{});return readJson(res);}
   async function rpc(name,body){var res=await fetch(SUPA_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:headers(),body:JSON.stringify(body||{})});return readJson(res);}
-  function appUrl(){var inp=$('app-url');var v=(inp&&inp.value||'').trim();if(v)return v;try{return new URL('index.html',location.href).href;}catch(e){return 'index.html';}}
+  function appUrl(){var inp=$('app-url');var v=(inp&&inp.value||'').trim();if(v)return v;try{return new URL('./',location.href).href.replace(/\/$/,'');}catch(e){return 'https://taktiktavla.vercel.app';}}
   function buildMail(to){
     var email=(to||'').trim();
     return 'Hej!\n\nDu har fått åtkomst till Taktiktavla. Det är en webbapp för taktiktavla, taktikfilm, trupp och matcher.\n\nÖppna appen här:\n'+appUrl()+'\n\nSkapa konto eller logga in med denna e-postadress:\n'+(email||'[e-postadress]')+'\n\nViktigt: använd just e-postadressen ovan, annars släpps kontot inte in.\n\nFör bästa upplevelse: lägg appen på hemskärmen och starta den därifrån. Då öppnas den mer som en vanlig app och fungerar bättre i helskärm.\n\niPhone/iPad:\n1. Öppna länken i Safari.\n2. Tryck på dela-symbolen.\n3. Välj ”Lägg till på hemskärmen”.\n4. Starta sedan Taktiktavla från ikonen på hemskärmen.\n\nAndroid:\n1. Öppna länken i Chrome.\n2. Tryck på menyn med tre prickar.\n3. Välj ”Lägg till på startskärmen” eller ”Installera app”.\n4. Starta sedan Taktiktavla från ikonen på startskärmen.\n\nNär du är inne i appen kan du välja lag eller använda den lagkod du fått.\n';
@@ -230,7 +230,7 @@
   $('btn-copy-template').onclick=function(){copyText(buildMail(''));};
   $('btn-open-template').onclick=function(){openMail('');};
   $('btn-copy-current').onclick=function(){copyText($('mail-preview').value||buildMail(''));};
-  try{$('app-url').value=new URL('index.html',location.href).href;}catch(e){$('app-url').value='index.html';}
+  try{$('app-url').value=new URL('./',location.href).href.replace(/\/$/,'');}catch(e){$('app-url').value='https://taktiktavla.vercel.app';}
   checkAdmin();
 })();
 </script>
