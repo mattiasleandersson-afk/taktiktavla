@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v476</title>
+<title>Taktiktavla admin v477</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -322,7 +322,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-schemaöversikt</h2>
-          <p>Detta steg analyserar en backupfil och visar vilka tabeller, datatyper och RPC-funktioner en separat testmiljö behöver innan en framtida skrivande restore ens byggs. v476 läser bara filen lokalt och skriver ingenting.</p>
+          <p>Detta steg analyserar en backupfil och visar vilka tabeller, datatyper och RPC-funktioner en separat testmiljö behöver innan en framtida skrivande restore ens byggs. v477 läser bara filen lokalt och skriver ingenting.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Syfte:</strong> förstå vad backupen faktiskt innehåller och vilka delar test-Supabase måste kunna hantera. Detta är bara analys och planering, inte restore.</div>
@@ -1456,7 +1456,7 @@
         +statusCard('Filmdelningar',tableLen(tables,'taktikfilm_team_shares'),brokenFilm?'bad':'')
         +statusCard('Varningar',warnings.length,warnings.length?'warn':'')
         +statusCard('RPC-lista',requiredRestoreRpcs().length);
-      var html='<p><strong>Schemaöversikten är byggd.</strong> Detta är bara lokal analys av backupfilen. v476 gör ingen restore och kör ingen SQL.</p>';
+      var html='<p><strong>Schemaöversikten är byggd.</strong> Detta är bara lokal analys av backupfilen. v477 gör ingen restore och kör ingen SQL.</p>';
       html+='<p><strong>Tabeller i backup:</strong> '+esc(Object.keys(tables).sort().join(', ')||'inga')+'</p>';
       html+='<p><strong>Förväntade tabeller för framtida restore:</strong> '+esc(expectedRestoreTables().join(', '))+'</p>';
       html+='<p><strong>RPC/funktioner testmiljön bör ha:</strong> '+esc(requiredRestoreRpcs().join(', '))+'</p>';
@@ -1697,7 +1697,7 @@
         +statusCard('Ägar/authfält',a.ownerFields.length,a.ownerFields.length?'':'warn')
         +statusCard('E-postfält',a.emailFields.length,a.emailFields.length?'':'warn')
         +statusCard('Risker',a.risks.length,a.risks.length?(hasBlocking?'bad':'warn'):'');
-      var html='<p><strong>Detta är bara en riskrapport.</strong> v476 gör ingen restore och skriver inget.</p>';
+      var html='<p><strong>Detta är bara en riskrapport.</strong> v477 gör ingen restore och skriver inget.</p>';
       html+='<p><strong>Fil:</strong> '+esc(file.name)+' · <strong>backupType:</strong> '+esc(data&&data.backupType||'–')+' · <strong>exportedAt:</strong> '+esc(data&&data.exportedAt||'–')+'</p>';
       html+='<h3 style="color:var(--green);margin:12px 0 6px;font-size:.96rem">Viktig riskbild</h3><ul><li>Restore får först testas i separat tom testmiljö.</li><li>Delningar är beroende av att saves.id bevaras eller mappas korrekt.</li><li>Supabase Auth/lösenord ingår inte i backupen.</li><li>Ägarskap via auth-id/e-post måste kontrolleras i ny miljö.</li></ul>';
       html+='<h3 style="color:var(--green);margin:12px 0 6px;font-size:.96rem">Ägar-/authfält i saves</h3><p>'+esc(a.ownerFields.join(', ')||'Inga tydliga hittades')+'</p>';
@@ -1764,7 +1764,7 @@
     lines.push('- Ingen service-role-nyckel i webbläsare/admin.html.');
     lines.push('- Avbryt om test-Supabase URL är samma som produktions-URL.');
     lines.push('');
-    lines.push('v476 är bara startguide. Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.');
+    lines.push('v477 är bara startguide. Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.');
     return lines.join('\n');
   }
   function renderTestEnvStartGuide(){
@@ -1788,7 +1788,7 @@
         +statusCard('Test-URL',testRaw?testRaw.replace(/^https?:\/\//,''):'saknas',!testRaw?'bad':(test===prod?'bad':''))
         +statusCard('Checklistan',checked+'/'+testEnvStartItems().length,checked===testEnvStartItems().length?'':'warn')
         +statusCard('Läge',ready?'FÖRBEREDD':'STOPP',ready?'':'bad');
-      var html='<p><strong>Detta är bara en startguide.</strong> v476 gör ingen restore och skriver inget.</p>';
+      var html='<p><strong>Detta är bara en startguide.</strong> v477 gör ingen restore och skriver inget.</p>';
       html+='<p><strong>Testmiljö:</strong> '+esc(envName)+'<br><strong>Test-Supabase:</strong> '+esc(testRaw||'saknas')+'<br><strong>Testadmin:</strong> '+esc(testAdmin||'saknas')+'</p>';
       if(reasons.length)html+='<div class="warntext"><strong>Kontroller:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
       else html+='<p class="oktext"><strong>Startguiden är förberedd.</strong> Nästa praktiska steg är att skapa separat Supabase-testprojekt och koppla en testadmin/testapp dit.</p>';
@@ -1808,8 +1808,19 @@
   if($('btn-test-env-start'))$('btn-test-env-start').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();renderTestEnvStartGuide();};
   if($('btn-clear-test-env-start'))$('btn-clear-test-env-start').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();clearTestEnvStartGuide();};
   if($('btn-copy-test-env-start'))$('btn-copy-test-env-start').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('test-env-start-text')&&$('test-env-start-text').value)||'');};
-  ['start-env-name','start-test-supabase-url','start-test-admin-url'].forEach(function(id){if($(id))$(id).addEventListener('input',function(){if($('test-env-start-text')&&$('test-env-start-text').value)renderTestEnvStartGuide();});});
-  testEnvStartItems().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',function(){if($('test-env-start-text')&&$('test-env-start-text').value)renderTestEnvStartGuide();});});
+  function markTestEnvStartGuideDirty(){
+    var st=$('test-env-start-status'), grid=$('test-env-start-grid'), details=$('test-env-start-details'), text=$('test-env-start-text');
+    if(st){st.textContent='Ändringar gjorda. Tryck Bygg startguide för att skapa/uppdatera startguiden.';st.className='status';}
+    if(grid)grid.innerHTML='';
+    if(details)details.innerHTML='';
+    if(text)text.value='';
+  }
+  ['start-env-name','start-test-supabase-url','start-test-admin-url'].forEach(function(id){
+    if($(id))$(id).addEventListener('input',markTestEnvStartGuideDirty);
+  });
+  testEnvStartItems().forEach(function(x){
+    if($(x.id))$(x.id).addEventListener('change',markTestEnvStartGuideDirty);
+  });
 
   if($('btn-restore-risk'))$('btn-restore-risk').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();renderRestoreRisk();};
   if($('btn-clear-restore-risk'))$('btn-clear-restore-risk').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();clearRestoreRisk();};
