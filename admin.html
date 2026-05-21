@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v464</title>
+<title>Taktiktavla admin v465</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -109,7 +109,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Full backup-export</h2>
-          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v464 bygger vidare på v460:s tydliga metadata och logiska counts. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
+          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v465 bygger vidare på v460:s tydliga metadata och logiska counts. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
         </div>
         <button id="btn-download-backup" class="primary right">Ladda ner full backup</button>
       </div>
@@ -121,7 +121,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Kontrollera backupfil</h2>
-          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v464 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
+          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v465 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
         </div>
       </div>
       <input id="backup-validate-file" type="file" accept="application/json,.json">
@@ -138,7 +138,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Restore-plan / dry-run</h2>
-          <p>Välj en backupfil för att se exakt vad en framtida katastrofåterställning skulle behöva göra. v464 gör ingen återställning, skickar inget till Supabase och skriver ingenting. Den visar bara plan, ordning, counts och varningar lokalt i webbläsaren.</p>
+          <p>Välj en backupfil för att se exakt vad en framtida katastrofåterställning skulle behöva göra. v465 gör ingen återställning, skickar inget till Supabase och skriver ingenting. Den visar bara plan, ordning, counts och varningar lokalt i webbläsaren.</p>
         </div>
       </div>
       <div class="helpbox">Den här planen är avsedd för återställning till en tom/förberedd databas. Supabase Auth-konton/lösenord ingår inte i backupen; användare behöver kunna logga in/skapas igen med samma e-post.</div>
@@ -156,7 +156,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Restore-skydd / skarp checklista</h2>
-          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v464 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
+          <p>Detta är ett extra säkerhetslager inför en framtida riktig återställning. v465 skriver fortfarande ingenting till Supabase. Den läser bara backupfilen lokalt, kräver checklistan och visar om restore-läget är STOPP eller FÖRBEREDD.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Ingen återställning görs här.</strong> Riktig restore ska inte byggas/startas förrän checklistan är grön och du uttryckligen väljer att gå vidare i en separat framtida version.</div>
@@ -183,7 +183,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Testmiljö-plan för riktig restore</h2>
-          <p>Detta steg hjälper dig planera en separat testmiljö innan någon riktig återställningskod byggs. v464 skriver fortfarande ingenting till Supabase. Den läser bara en backupfil lokalt och visar exakt vad som bör skapas/testas utanför den riktiga appen.</p>
+          <p>Detta steg hjälper dig planera en separat testmiljö innan någon riktig återställningskod byggs. v465 skriver fortfarande ingenting till Supabase. Den läser bara en backupfil lokalt och visar exakt vad som bör skapas/testas utanför den riktiga appen.</p>
         </div>
       </div>
       <div class="helpbox"><strong>Mål:</strong> kunna testa framtida restore mot en tom testdatabas/testapp, inte mot din riktiga Taktiktavla-miljö.</div>
@@ -195,6 +195,45 @@
       <div id="test-env-plan-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
       <div id="test-env-plan-grid" class="statusgrid" aria-label="Testmiljö-plan"></div>
       <div id="test-env-plan-details" class="statusnote"></div>
+    </section>
+
+
+    <section class="card" id="test-env-checklist-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Testmiljö-checklista / startpaket</h2>
+          <p>Detta steg gör planen mer praktisk: välj backupfilen och bygg en kopierbar checklista för separat Supabase-testprojekt och separat testadmin/testapp. v465 skriver fortfarande ingenting och gör ingen restore.</p>
+        </div>
+      </div>
+      <div class="helpbox"><strong>Säkerhetsidé:</strong> den här checklistan ska hjälpa oss att hålla produktion och test helt åtskilda innan någon skrivande restore ens byggs.</div>
+      <div class="grid" style="margin-top:10px">
+        <div>
+          <label for="test-env-name">Namn på testmiljö</label>
+          <input id="test-env-name" type="text" value="taktiktavla-restore-test" placeholder="taktiktavla-restore-test">
+        </div>
+        <div>
+          <label for="test-env-note">Kort notering, frivilligt</label>
+          <input id="test-env-note" type="text" placeholder="Ex. tom Supabase för restoretest">
+        </div>
+      </div>
+      <input id="test-env-checklist-file" type="file" accept="application/json,.json" style="margin-top:10px">
+      <div class="checklist" aria-label="Testmiljö-checklista">
+        <label class="checkline"><input id="test-check-separate-supabase" type="checkbox"><span>Separat Supabase-testprojekt ska användas, inte produktionsprojektet.</span></label>
+        <label class="checkline"><input id="test-check-separate-admin" type="checkbox"><span>Separat testadmin/testapp ska peka på test-Supabase, inte produktion.</span></label>
+        <label class="checkline"><input id="test-check-empty-db" type="checkbox"><span>Testdatabasen ska vara tom/förberedd innan skrivande restore testas senare.</span></label>
+        <label class="checkline"><input id="test-check-sql-order" type="checkbox"><span>SQL/schema ska köras i rätt ordning i testprojektet innan restore testas.</span></label>
+        <label class="checkline"><input id="test-check-no-prod" type="checkbox"><span>Ingen insert/upsert/delete får köras mot produktionsdatabasen under restoretest.</span></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="btn-test-env-checklist" class="primary">Bygg kopierbar checklista</button>
+        <button id="btn-copy-test-env-checklist" class="small">Kopiera checklista</button>
+        <button id="btn-clear-test-env-checklist" class="small">Rensa</button>
+      </div>
+      <div id="test-env-checklist-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
+      <div id="test-env-checklist-grid" class="statusgrid" aria-label="Testmiljö-checklista"></div>
+      <div id="test-env-checklist-details" class="statusnote"></div>
+      <label for="test-env-checklist-text">Kopierbar checklista</label>
+      <textarea id="test-env-checklist-text" readonly placeholder="Här visas checklistan när du byggt den."></textarea>
     </section>
     <div class="grid">
       <section class="card">
@@ -291,7 +330,7 @@
   }
   function setMailPreview(to){var text=buildMail(to);$('mail-preview').value=text;return text;}
   function openMail(to,teamInfo){var subject='Inbjudan till Taktiktavla';var body=buildMail(to,teamInfo);$('mail-preview').value=body;var href='mailto:'+(to?encodeURIComponent(to):'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);location.href=href;}
-  async function copyText(text){try{await navigator.clipboard.writeText(text);setStatus('Kopierat till urklipp.');}catch(e){setStatus('Kunde inte kopiera automatiskt. Markera texten och kopiera manuellt.',true);}}
+  async function copyText(text){try{if(!text){setStatus('Det finns ingen text att kopiera ännu.',true);return;}await navigator.clipboard.writeText(text);setStatus('Kopierat till urklipp.');}catch(e){setStatus('Kunde inte kopiera automatiskt. Markera texten och kopiera manuellt.',true);}}
   function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function fmt(d){if(!d)return '';try{return new Date(d).toLocaleDateString('sv-SE');}catch(e){return String(d).slice(0,10);}}
   var allUsers=[];
@@ -698,7 +737,7 @@
     if(validation.warnings.length)html+='<div class="warntext" style="margin-top:8px"><strong>Varningar från backupkontroll:</strong><ul><li>'+validation.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
     if(missing.length)html+='<div class="badtext" style="margin-top:8px"><strong>Saknade checkpunkter:</strong><ul><li>'+missing.map(function(x){return esc(x.label);}).join('</li><li>')+'</li></ul></div>';
     if(!confirmOk)html+='<div class="helpbox">För att passera spärren måste bekräftelsefältet innehålla exakt: <span class="mono">'+esc(expected)+'</span></div>';
-    html+='<div class="helpbox">Även om allt är grönt här gör v464 fortfarande ingen återställning. En framtida riktig restore ska ligga i separat version, med ytterligare bekräftelse och helst först testas i tom testmiljö.</div>';
+    html+='<div class="helpbox">Även om allt är grönt här gör v465 fortfarande ingen återställning. En framtida riktig restore ska ligga i separat version, med ytterligare bekräftelse och helst först testas i tom testmiljö.</div>';
     details.innerHTML=html;
   }
   async function checkRestoreGuard(){
@@ -751,7 +790,7 @@
     st.textContent=(ready?'Testmiljö-plan: OK att gå vidare med separat testmiljö. ':'Testmiljö-plan: STOPP/varning. Kontrollera punkterna nedan. ')+'Ingen restore har gjorts. Fil: '+fileName+', cirka '+Math.round((bytes||0)/1024)+' kB.';
     st.className='status '+(ready?'ok':'warn');
     var html='';
-    html+='<div><strong>Detta är bara en plan.</strong> v464 skapar ingen testmiljö, skickar inte filen till Supabase och skriver ingenting.</div>';
+    html+='<div><strong>Detta är bara en plan.</strong> v465 skapar ingen testmiljö, skickar inte filen till Supabase och skriver ingenting.</div>';
     html+='<div style="margin-top:8px"><strong>Rekommenderad separation:</strong><ul>';
     html+='<li><strong>Produktion:</strong> behåll nuvarande app och nuvarande Supabase orörda.</li>';
     html+='<li><strong>Test:</strong> skapa separat Supabase-projekt och separat testadmin/testapp innan riktig restore testas.</li>';
@@ -803,6 +842,132 @@
     if($('test-env-plan-details'))$('test-env-plan-details').textContent='';
   }
 
+  function testEnvChecklistChecked(id){var el=$(id);return !!(el&&el.checked);}
+  function testEnvChecklistItems(){
+    return [
+      {id:'test-check-separate-supabase',label:'Separat Supabase-testprojekt används, inte produktion.'},
+      {id:'test-check-separate-admin',label:'Separat testadmin/testapp pekar på test-Supabase.'},
+      {id:'test-check-empty-db',label:'Testdatabasen är tom/förberedd innan skrivande restore testas.'},
+      {id:'test-check-sql-order',label:'SQL/schema körs i rätt ordning i testprojektet.'},
+      {id:'test-check-no-prod',label:'Ingen insert/upsert/delete körs mot produktionsdatabasen.'}
+    ];
+  }
+  function buildTestEnvChecklistText(data,fileName){
+    var c=(data&&data.counts)||{};
+    var tables=(data&&data.tables)||{};
+    var saves=Array.isArray(tables.saves)?tables.saves:[];
+    var lc=Object.assign({},recomputeLogicalCounts(saves),(data&&data.logicalCounts)||{});
+    var teamCodes=Array.isArray(data&&data.teamCodesInSaves)?data.teamCodesInSaves:(lc.teamCodes||[]);
+    var envName=(($('test-env-name')&&$('test-env-name').value)||'taktiktavla-restore-test').trim();
+    var note=(($('test-env-note')&&$('test-env-note').value)||'').trim();
+    var checked=testEnvChecklistItems().filter(function(x){return testEnvChecklistChecked(x.id);}).length;
+    var lines=[];
+    lines.push('Taktiktavla restore-test – startchecklista');
+    lines.push('Testmiljö: '+envName);
+    if(note)lines.push('Notering: '+note);
+    lines.push('Backupfil: '+(fileName||'–'));
+    lines.push('Backupversion: '+((data&&data.backupVersion)||'–'));
+    lines.push('Adminexport: '+((data&&data.adminExportVersion)||'–'));
+    lines.push('Appversion: '+((data&&data.appVersion)||'–'));
+    lines.push('ExportedAt: '+((data&&data.exportedAt)||'–'));
+    lines.push('');
+    lines.push('Innehåll i backup:');
+    lines.push('- Saves: '+saves.length);
+    lines.push('- Matcher i saves: '+(lc.matches_in_saves||0));
+    lines.push('- Utgångslägen i saves: '+(lc.uppstallningar_in_saves||0));
+    lines.push('- Taktikfilmer i saves: '+(lc.taktikfilmer_in_saves||0));
+    lines.push('- Trupper i saves: '+(lc.trupp_in_saves||0));
+    lines.push('- Lagmedlemskap i saves: '+(lc.team_members_in_saves||0));
+    lines.push('- Allowed users: '+(c.allowed_users||0));
+    lines.push('- App admins: '+(c.app_admins||0));
+    lines.push('- Taveldelningar: '+(c.formation_team_shares||0));
+    lines.push('- Filmdelningar: '+(c.taktikfilm_team_shares||0));
+    lines.push('- Lagkoder: '+(teamCodes.length?teamCodes.join(', '):'–'));
+    lines.push('');
+    lines.push('Säkerhetsstatus före restoretest: '+checked+'/5 punkter markerade.');
+    testEnvChecklistItems().forEach(function(x){lines.push((testEnvChecklistChecked(x.id)?'[x] ':'[ ] ')+x.label);});
+    lines.push('');
+    lines.push('Rekommenderad ordning:');
+    lines.push('1. Skapa separat Supabase-testprojekt.');
+    lines.push('2. Kör grundschema/RLS/policies som appen behöver.');
+    lines.push('3. Kör admin-SQL i test: v452, v457, v458 och v460.');
+    lines.push('4. Lägg till minst en app_admin i testprojektet.');
+    lines.push('5. Lägg upp separat testadmin/testapp som pekar på test-Supabase.');
+    lines.push('6. Validera backupfilen i testadmin.');
+    lines.push('7. Kör först dry-run i testmiljön.');
+    lines.push('8. Bygg eventuell skrivande restore endast för testmiljö, med stopp om databasen inte är tom.');
+    lines.push('9. Efter testrestore: kontrollera trupp, matcher, utgångslägen, taktikfilmer, delningar och global åtkomst.');
+    lines.push('');
+    lines.push('Får inte göras:');
+    lines.push('- Ingen restore mot produktionsdatabas.');
+    lines.push('- Ingen merge in i databas med befintlig riktig data.');
+    lines.push('- Ingen service-role-nyckel i webbläsaren/admin.html.');
+    return lines.join('\n');
+  }
+  function renderTestEnvChecklist(data,fileName,bytes){
+    var st=$('test-env-checklist-status'), grid=$('test-env-checklist-grid'), details=$('test-env-checklist-details'), text=$('test-env-checklist-text');
+    if(!st||!grid||!details)return;
+    var validation=validateBackupData(data);
+    var c=(data&&data.counts)||{};
+    var tables=(data&&data.tables)||{};
+    var saves=Array.isArray(tables.saves)?tables.saves:[];
+    var lc=Object.assign({},recomputeLogicalCounts(saves),(data&&data.logicalCounts)||{});
+    var teamCodes=Array.isArray(data&&data.teamCodesInSaves)?data.teamCodesInSaves:(lc.teamCodes||[]);
+    var checked=testEnvChecklistItems().filter(function(x){return testEnvChecklistChecked(x.id);}).length;
+    var ready=validation.errors.length===0 && saves.length>0 && checked===testEnvChecklistItems().length;
+    grid.innerHTML=''
+      +statusCard('Backupversion',data&&data.backupVersion,Number(data&&data.backupVersion)===1?'':'bad')
+      +statusCard('Adminexport',data&&data.adminExportVersion,Number(data&&data.adminExportVersion)>=460?'':'warn')
+      +statusCard('Appversion',data&&data.appVersion)
+      +statusCard('Saves',saves.length,saves.length?'':'bad')
+      +statusCard('Matcher',lc.matches_in_saves)
+      +statusCard('Utgångslägen',lc.uppstallningar_in_saves)
+      +statusCard('Taktikfilmer',lc.taktikfilmer_in_saves)
+      +statusCard('Trupper',lc.trupp_in_saves)
+      +statusCard('Allowed users',c.allowed_users)
+      +statusCard('App admins',c.app_admins)
+      +statusCard('Lagkoder',teamCodes.length)
+      +statusCard('Checklista',checked+'/'+testEnvChecklistItems().length,checked===testEnvChecklistItems().length?'':'warn');
+    st.textContent=(ready?'Testmiljö-checklista: FÖRBEREDD. ':'Testmiljö-checklista: INTE KLAR. ')+'Ingen restore har gjorts. Fil: '+fileName+', cirka '+Math.round((bytes||0)/1024)+' kB.';
+    st.className='status '+(ready?'ok':'warn');
+    var html='';
+    html+='<div><strong>Detta är ett startpaket/checklista, inte restore.</strong> Inget skickas till Supabase och inga rader skapas, ändras eller raderas.</div>';
+    html+='<div style="margin-top:8px"><strong>Checklistestatus:</strong><ul>';
+    testEnvChecklistItems().forEach(function(x){html+='<li class="'+(testEnvChecklistChecked(x.id)?'oktext':'warntext')+'">'+(testEnvChecklistChecked(x.id)?'✓ ':'○ ')+esc(x.label)+'</li>';});
+    html+='</ul></div>';
+    html+='<div style="margin-top:8px"><strong>Backupen som checklistan bygger på:</strong> '+esc(fileName)+' · backupType: '+esc((data&&data.backupType)||'–')+' · exportedAt: '+esc((data&&data.exportedAt)||'–')+'</div>';
+    if(validation.errors.length)html+='<div class="badtext" style="margin-top:8px"><strong>Fel:</strong><ul><li>'+validation.errors.map(esc).join('</li><li>')+'</li></ul></div>';
+    if(validation.warnings.length)html+='<div class="warntext" style="margin-top:8px"><strong>Varningar:</strong><ul><li>'+validation.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+    html+='<div class="helpbox">Den kopierbara checklistan är tänkt som arbetsunderlag när test-Supabase/testadmin skapas. v465 gör fortfarande ingen återställning.</div>';
+    details.innerHTML=html;
+    if(text)text.value=buildTestEnvChecklistText(data,fileName);
+  }
+  async function showTestEnvChecklist(){
+    var input=$('test-env-checklist-file'), st=$('test-env-checklist-status'), grid=$('test-env-checklist-grid'), details=$('test-env-checklist-details');
+    if(!input||!input.files||!input.files[0]){if(st){st.textContent='Välj en JSON-backupfil först.';st.className='status bad';}return;}
+    var file=input.files[0];
+    if(st){st.textContent='Läser backupfil lokalt och bygger testmiljö-checklista...';st.className='status';}
+    if(grid)grid.innerHTML=''; if(details)details.textContent=''; if($('test-env-checklist-text'))$('test-env-checklist-text').value='';
+    try{
+      var txt=await file.text();
+      var data=JSON.parse(txt);
+      renderTestEnvChecklist(data,file.name,txt.length);
+    }catch(e){
+      if(st){st.textContent='Kunde inte läsa/parse:a JSON-filen: '+e.message;st.className='status bad';}
+    }
+  }
+  function clearTestEnvChecklist(){
+    if($('test-env-checklist-file'))$('test-env-checklist-file').value='';
+    testEnvChecklistItems().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    if($('test-env-name'))$('test-env-name').value='taktiktavla-restore-test';
+    if($('test-env-note'))$('test-env-note').value='';
+    if($('test-env-checklist-status')){$('test-env-checklist-status').textContent='Ingen backupfil vald ännu.';$('test-env-checklist-status').className='status';}
+    if($('test-env-checklist-grid'))$('test-env-checklist-grid').innerHTML='';
+    if($('test-env-checklist-details'))$('test-env-checklist-details').textContent='';
+    if($('test-env-checklist-text'))$('test-env-checklist-text').value='';
+  }
+
+
   async function loadUsers(){
     var body=$('users-body');body.innerHTML='<tr><td colspan="5" class="muted">Laddar...</td></tr>';
     var rows=await rpc('tt_admin_list_allowed_users',{});
@@ -826,7 +991,7 @@
     try{setStatus('Loggar in...');var data=await authFetch('/auth/v1/token?grant_type=password',{method:'POST',headers:headers(),body:JSON.stringify({email:email,password:pass})});saveSession(data);await checkAdmin();}
     catch(e){setStatus('Inloggning misslyckades: '+e.message,true);}
   };
-  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';if($('system-status-grid'))$('system-status-grid').innerHTML='';if($('system-status-summary'))$('system-status-summary').textContent='Logga in för att läsa systemstatus.';clearBackupValidation();clearRestorePlan();clearRestoreGuard();clearTestEnvPlan();setStatus('Utloggad.');};
+  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';if($('system-status-grid'))$('system-status-grid').innerHTML='';if($('system-status-summary'))$('system-status-summary').textContent='Logga in för att läsa systemstatus.';clearBackupValidation();clearRestorePlan();clearRestoreGuard();clearTestEnvPlan();clearTestEnvChecklist();setStatus('Utloggad.');};
   async function addUser(openAfter){
     var email=$('new-email').value.trim();var note=$('new-note').value.trim();
     var teamInfo=selectedTeamInfo();
@@ -862,6 +1027,13 @@
   if($('btn-test-env-plan'))$('btn-test-env-plan').onclick=function(){showTestEnvPlan();};
   if($('btn-clear-test-env-plan'))$('btn-clear-test-env-plan').onclick=function(){clearTestEnvPlan();};
   if($('test-env-plan-file'))$('test-env-plan-file').addEventListener('change',function(){showTestEnvPlan();});
+  if($('btn-test-env-checklist'))$('btn-test-env-checklist').onclick=function(){showTestEnvChecklist();};
+  if($('btn-clear-test-env-checklist'))$('btn-clear-test-env-checklist').onclick=function(){clearTestEnvChecklist();};
+  if($('btn-copy-test-env-checklist'))$('btn-copy-test-env-checklist').onclick=function(){copyText(($('test-env-checklist-text')&&$('test-env-checklist-text').value)||'');};
+  if($('test-env-checklist-file'))$('test-env-checklist-file').addEventListener('change',function(){showTestEnvChecklist();});
+  testEnvChecklistItems().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',function(){if($('test-env-checklist-file')&&$('test-env-checklist-file').files&&$('test-env-checklist-file').files[0])showTestEnvChecklist();});});
+  if($('test-env-name'))$('test-env-name').addEventListener('input',function(){if($('test-env-checklist-file')&&$('test-env-checklist-file').files&&$('test-env-checklist-file').files[0])showTestEnvChecklist();});
+  if($('test-env-note'))$('test-env-note').addEventListener('input',function(){if($('test-env-checklist-file')&&$('test-env-checklist-file').files&&$('test-env-checklist-file').files[0])showTestEnvChecklist();});
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
   if($('new-team-role'))$('new-team-role').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
