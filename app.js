@@ -38061,3 +38061,65 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt444ApplyTaktikfilmIphoneToprowClean=apply444;
 })();
 /* === slut v444-taktikfilm-iphone-toprow-clean === */
+
+
+/* === v445-taktikfilm-iphone-toprow-prune-camera-off ===
+   Bas: v444. Endast visning/layout på iPhone/små skärmar.
+   - Döljer loop, kopiera ritningar och extra Spara-knappen i övre Taktikfilm-raden.
+   - Spela hela visar alltid kamera; aktivt läge visas med överstruken kamera.
+   - Inga klickhändelser, funktionsanrop, steg, animation, ritlogik eller data ändras.
+*/
+(function(){
+  if(window.__tt445TaktikfilmIphoneToprowPrune)return;
+  window.__tt445TaktikfilmIphoneToprowPrune=true;
+  var VERSION='445';
+  function small445(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
+  function setVersion445(){
+    try{
+      window.TAKTIKTAVLA_VERSION=VERSION;
+      if(document.body)document.body.setAttribute('data-app-version',VERSION);
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+    }catch(e){}
+  }
+  function apply445(){
+    try{
+      setVersion445();
+      var isSmall=small445();
+      var loop=document.getElementById('play-loop');
+      var loopLabel=loop&&loop.closest?loop.closest('label'):null;
+      [loopLabel,document.getElementById('btn-copy-drawings'),document.getElementById('btn-edit-update-step2')].forEach(function(el){
+        if(!el)return;
+        if(isSmall){
+          if(!el.getAttribute('data-tt445-old-display'))el.setAttribute('data-tt445-old-display',el.style.display||'');
+          el.style.display='none';
+          el.setAttribute('data-tt445-hidden','1');
+        }else if(el.getAttribute('data-tt445-hidden')==='1'){
+          el.style.display=el.getAttribute('data-tt445-old-display')||'';
+          el.removeAttribute('data-tt445-hidden');
+        }
+      });
+      var b=document.getElementById('btn-play-all');
+      if(b&&isSmall){
+        b.textContent='🎥';
+        b.setAttribute('data-tt445-camera-only','1');
+        b.setAttribute('aria-label',b.classList.contains('on')?'Stoppa spela hela':'Spela hela');
+        b.title=b.classList.contains('on')?'Stoppa Spela hela':'Spela hela taktikfilmen automatiskt från aktuell position';
+      }else if(b){
+        b.removeAttribute('data-tt445-camera-only');
+      }
+    }catch(e){console.warn('tt445 topbar prune',e);}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply445);else apply445();
+  [30,90,180,400,900,1600,3000,6000].forEach(function(ms){setTimeout(apply445,ms);});
+  ['click','touchend','pointerup','change','resize'].forEach(function(ev){
+    try{window.addEventListener(ev,function(){setTimeout(apply445,0);setTimeout(apply445,80);setTimeout(apply445,250);},true);}catch(e){}
+    try{document.addEventListener(ev,function(){setTimeout(apply445,0);setTimeout(apply445,80);setTimeout(apply445,250);},true);}catch(e){}
+  });
+  setInterval(apply445,2500);
+  window.tt445ApplyTaktikfilmIphoneToprowPrune=apply445;
+})();
+/* === slut v445-taktikfilm-iphone-toprow-prune-camera-off === */
