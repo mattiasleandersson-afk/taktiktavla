@@ -38223,19 +38223,19 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v446-taktikfilm-camera-stable-and-fullscreen-stopfix === */
 
 
-/* === v447-taktikfilm-playall-camera-hard-lock ===
-   Bas: v446. Endast visning av Spela hela-knappen.
-   Problem: äldre renderkod skriver tillbaka gammal text precis i skarven mellan rörelse och slutposition.
-   Lösning: knappen får en hård ikon-synk efter varje render/animation, och CSS kan rita kameran via pseudo-element
-   så eventuell gammal text aldrig syns. Ingen funktion, animation, steg eller data ändras.
+/* === v448-safe-rollback-camera-css-lock ===
+   Bas: fungerande v446. v447 öppnade inte appen, därför används ingen MutationObserver
+   och ingen tät hårdlåsning. Endast säker ikonvisning + version.
+   - Filmkameraknappen får ikon via CSS-attribut så äldre text kan döljas utan att funktionen ändras.
+   - Fullscreen-stoppfixen från v446 behålls.
+   - Inga steg, animationer, ritverktyg, import eller data ändras.
 */
 (function(){
-  if(window.__tt447TaktikfilmPlayAllCameraHardLock)return;
-  window.__tt447TaktikfilmPlayAllCameraHardLock=true;
-  var VERSION='447';
-  var CAMERA='🎥';
-  function small447(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
-  function setVersion447(){
+  if(window.__tt448SafeCameraCssLock)return;
+  window.__tt448SafeCameraCssLock=true;
+  var VERSION='448';
+  function small448(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
+  function setVersion448(){
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -38248,69 +38248,51 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       });
     }catch(e){}
   }
-  function mainBtn447(){return document.getElementById('btn-play-all');}
-  function fsBtn447(){return document.getElementById('fs-play-all-btn');}
-  function isPlaying447(){
-    var b=mainBtn447();
-    return !!(b&&(b.classList.contains('on')||b.classList.contains('active')||/Stoppa/i.test(b.getAttribute('aria-label')||'')||/Stoppa/i.test(b.textContent||'')));
+  function ensureStyle448(){
+    if(document.getElementById('tt448-safe-camera-css'))return;
+    var st=document.createElement('style');
+    st.id='tt448-safe-camera-css';
+    st.textContent='@media (max-width:760px){#btn-play-all[data-tt448-camera-only="1"],#btn-play-all[data-tt446-camera-only="1"],#btn-play-all[data-tt445-camera-only="1"]{font-size:0!important;color:transparent!important;line-height:1!important;position:relative!important;overflow:hidden!important;min-width:34px!important;}#btn-play-all[data-tt448-camera-only="1"]::before,#btn-play-all[data-tt446-camera-only="1"]::before,#btn-play-all[data-tt445-camera-only="1"]::before{content:"🎥"!important;font-size:18px!important;color:#4ae87a!important;line-height:1!important;display:inline-block!important;}#btn-play-all.on[data-tt448-camera-only="1"]::before,#btn-play-all.on[data-tt446-camera-only="1"]::before,#btn-play-all.on[data-tt445-camera-only="1"]::before{color:#e8c84a!important;}#btn-play-all.on[data-tt448-camera-only="1"]::after,#btn-play-all.on[data-tt446-camera-only="1"]::after,#btn-play-all.on[data-tt445-camera-only="1"]::after{content:""!important;position:absolute!important;left:8px!important;right:8px!important;top:50%!important;height:2px!important;background:#e84a4a!important;transform:rotate(-28deg)!important;transform-origin:center!important;border-radius:2px!important;opacity:.95!important;}}#fs-play-all-btn[data-tt448-camera-only="1"]{font-size:0!important;color:transparent!important;line-height:1!important;position:relative!important;overflow:hidden!important;}#fs-play-all-btn[data-tt448-camera-only="1"]::before{content:"🎥"!important;font-size:18px!important;color:#4ae87a!important;line-height:1!important;display:inline-block!important;}#fs-play-all-btn.active[data-tt448-camera-only="1"]::before{color:#e8c84a!important;}#fs-play-all-btn.active[data-tt448-camera-only="1"]::after{content:""!important;position:absolute!important;left:8px!important;right:8px!important;top:50%!important;height:2px!important;background:#e84a4a!important;transform:rotate(-28deg)!important;transform-origin:center!important;border-radius:2px!important;opacity:.95!important;}';
+    document.head.appendChild(st);
   }
-  function cameraize447(btn, force){
-    if(!btn)return;
-    var playing=isPlaying447();
-    if(force || small447() || btn.id==='fs-play-all-btn'){
-      btn.setAttribute('data-tt447-camera-lock','1');
-      btn.setAttribute('data-tt446-camera-only','1');
-      btn.setAttribute('data-tt445-camera-only','1');
-      if(btn.textContent!==CAMERA)btn.textContent=CAMERA;
-      btn.setAttribute('aria-label',playing?'Stoppa spela hela':'Spela hela');
-      btn.title=playing?'Stoppa automatisk uppspelning':'Spela hela taktikfilmen automatiskt';
-      btn.classList.toggle('tt447-camera-playing',playing);
-      if(btn.id==='fs-play-all-btn'){
-        btn.classList.toggle('active',playing);
-        btn.style.color=playing?'#e8c84a':'#4ae87a';
-        btn.style.borderColor=playing?'#e8c84a':'#4ae87a';
+  function isPlaying448(){
+    var b=document.getElementById('btn-play-all');
+    return !!(b&&(b.classList.contains('on')||/Stoppa/i.test(b.textContent||'')));
+  }
+  function apply448(){
+    try{
+      ensureStyle448();
+      setVersion448();
+      var b=document.getElementById('btn-play-all');
+      if(b&&small448()){
+        b.setAttribute('data-tt448-camera-only','1');
+        b.setAttribute('data-tt446-camera-only','1');
+        b.setAttribute('data-tt445-camera-only','1');
+        b.setAttribute('aria-label',isPlaying448()?'Stoppa spela hela':'Spela hela');
+        b.title=isPlaying448()?'Stoppa Spela hela':'Spela hela taktikfilmen automatiskt från aktuell position';
       }
-    }else{
-      btn.removeAttribute('data-tt447-camera-lock');
-      btn.classList.remove('tt447-camera-playing');
-    }
+      var fs=document.getElementById('fs-play-all-btn');
+      if(fs){
+        var playing=isPlaying448();
+        fs.setAttribute('data-tt448-camera-only','1');
+        fs.setAttribute('aria-label',playing?'Stoppa spela hela':'Spela hela');
+        fs.title=playing?'Stoppa automatisk uppspelning':'Spela hela taktikfilmen automatiskt';
+        fs.classList.toggle('active',playing);
+      }
+    }catch(e){console.warn('tt448 camera css lock',e);}
   }
-  var applying=false;
-  function apply447(){
-    if(applying)return;
-    applying=true;
-    try{
-      setVersion447();
-      cameraize447(mainBtn447(), small447());
-      cameraize447(fsBtn447(), true);
-    }catch(e){console.warn('tt447 camera lock',e);}finally{applying=false;}
+  function schedule448(){
+    apply448();
+    setTimeout(apply448,0);
+    setTimeout(apply448,80);
+    setTimeout(apply448,220);
   }
-  function schedule447(){
-    apply447();
-    try{requestAnimationFrame(apply447);}catch(e){}
-    setTimeout(apply447,0);
-    setTimeout(apply447,16);
-    setTimeout(apply447,50);
-    setTimeout(apply447,120);
-    setTimeout(apply447,260);
-  }
-  function observeBtn447(btn){
-    try{
-      if(!btn||btn.__tt447CameraObserver)return;
-      btn.__tt447CameraObserver=true;
-      var mo=new MutationObserver(function(){schedule447();});
-      mo.observe(btn,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['class','aria-label','title']});
-    }catch(e){}
-  }
-  function installObservers447(){observeBtn447(mainBtn447());observeBtn447(fsBtn447());}
-  ['click','touchend','pointerup','change','resize','animationend','transitionend'].forEach(function(ev){
-    try{window.addEventListener(ev,schedule447,true);}catch(e){}
-    try{document.addEventListener(ev,schedule447,true);}catch(e){}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule448);else schedule448();
+  [40,120,300,700,1200,2500,5000,9000].forEach(function(ms){setTimeout(schedule448,ms);});
+  ['click','touchend','pointerup','change','resize'].forEach(function(ev){
+    try{window.addEventListener(ev,schedule448,true);}catch(e){}
+    try{document.addEventListener(ev,schedule448,true);}catch(e){}
   });
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){installObservers447();schedule447();});
-  else{installObservers447();schedule447();}
-  [0,20,60,120,250,500,900,1500,3000,6000].forEach(function(ms){setTimeout(function(){installObservers447();schedule447();},ms);});
-  setInterval(function(){installObservers447();apply447();},500);
-  window.tt447ApplyTaktikfilmCameraHardLock=schedule447;
+  window.tt448ApplySafeCameraCssLock=schedule448;
 })();
-/* === slut v447-taktikfilm-playall-camera-hard-lock === */
+/* === slut v448-safe-rollback-camera-css-lock === */
