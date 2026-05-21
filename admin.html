@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v479</title>
+<title>Taktiktavla admin v480</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -551,6 +551,47 @@
       <div id="test-env-runbook-details" class="statusnote"></div>
       <label for="test-env-runbook-text">Kopierbar körplan</label>
       <textarea id="test-env-runbook-text" readonly placeholder="Här visas körplanen när du byggt den."></textarea>
+    </section>
+
+
+    <section class="card" id="test-env-ready-card">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <h2 style="margin:0">Redo för testmiljö / gräns före restore</h2>
+          <p class="muted">Samlar läget innan vi lämnar read-only-planeringen. Den här rutan avgör inte att restore är säker — bara om underlaget är redo för att skapa separat testmiljö.</p>
+        </div>
+        <span class="badge">read-only</span>
+      </div>
+      <div class="helpbox"><strong>Gräns:</strong> Efter denna punkt ska nästa praktiska arbete ske i separat testmiljö. Den riktiga produktionsdatabasen ska inte användas för skrivande restoretest.</div>
+      <div class="grid" style="margin-top:8px">
+        <div>
+          <label for="ready-prod-url-view">Produktions-Supabase URL, bara visning</label>
+          <input id="ready-prod-url-view" type="text" readonly>
+        </div>
+        <div>
+          <label for="ready-test-supabase-url">Planerad test-Supabase URL</label>
+          <input id="ready-test-supabase-url" type="url" placeholder="https://ditt-testprojekt.supabase.co">
+        </div>
+      </div>
+      <label for="ready-backup-file">Senaste backupfil</label>
+      <input id="ready-backup-file" type="file" accept="application/json,.json">
+      <div class="checklist" aria-label="Redo för testmiljö">
+        <label class="checkline"><input id="ready-check-backup" type="checkbox"><span>Backupfilen har kontrollerats med backupkontroll/schemaöversikt/riskrapport.</span></label>
+        <label class="checkline"><input id="ready-check-copy" type="checkbox"><span>Extra kopia av backupfilen finns sparad utanför appen.</span></label>
+        <label class="checkline"><input id="ready-check-sql" type="checkbox"><span>SQL-listan för testprojektet är känd: grundschema/RLS/policies samt v452, v457, v458 och v460.</span></label>
+        <label class="checkline"><input id="ready-check-separate" type="checkbox"><span>Testmiljön ska vara separat och får inte peka mot produktions-Supabase.</span></label>
+        <label class="checkline"><input id="ready-check-boundary" type="checkbox"><span>Jag förstår att nästa skrivande restore bara får byggas/testas i testmiljö, inte i produktionsadmin.</span></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="btn-test-env-ready" class="primary">Bygg redo-sammanfattning</button>
+        <button id="btn-copy-test-env-ready" class="small">Kopiera sammanfattning</button>
+        <button id="btn-clear-test-env-ready" class="small">Rensa</button>
+      </div>
+      <div id="test-env-ready-status" class="status" style="margin-top:10px">Ingen redo-sammanfattning byggd ännu.</div>
+      <div id="test-env-ready-grid" class="statusgrid" aria-label="Redo för testmiljö"></div>
+      <div id="test-env-ready-details" class="statusnote"></div>
+      <label for="test-env-ready-text">Kopierbar redo-sammanfattning</label>
+      <textarea id="test-env-ready-text" readonly placeholder="Här visas sammanfattningen när du byggt den."></textarea>
     </section>
 
     <section class="card" id="restore-risk-card">
@@ -2218,6 +2259,139 @@
   ['runbook-env-name','runbook-test-supabase-url','runbook-test-admin-url'].forEach(function(id){if($(id))$(id).addEventListener('input',markTestEnvRunbookDirty);});
   if($('runbook-backup-file'))$('runbook-backup-file').addEventListener('change',markTestEnvRunbookDirty);
   testEnvRunbookItems().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',markTestEnvRunbookDirty);});
+
+
+  function testEnvReadyItems(){return [
+    {id:'ready-check-backup',label:'Backupfilen har kontrollerats med backupkontroll/schemaöversikt/riskrapport.'},
+    {id:'ready-check-copy',label:'Extra kopia av backupfilen finns sparad utanför appen.'},
+    {id:'ready-check-sql',label:'SQL-listan för testprojektet är känd.'},
+    {id:'ready-check-separate',label:'Testmiljön är separat från produktion.'},
+    {id:'ready-check-boundary',label:'Skrivande restore får bara testas i testmiljö.'}
+  ];}
+  function clearTestEnvReady(){
+    ['ready-test-supabase-url'].forEach(function(id){if($(id))$(id).value='';});
+    if($('ready-backup-file'))$('ready-backup-file').value='';
+    testEnvReadyItems().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    var st=$('test-env-ready-status'), grid=$('test-env-ready-grid'), details=$('test-env-ready-details'), text=$('test-env-ready-text');
+    if(st){st.textContent='Ingen redo-sammanfattning byggd ännu.';st.className='status';}
+    if(grid)grid.innerHTML=''; if(details)details.innerHTML=''; if(text)text.value='';
+  }
+  function buildTestEnvReadyText(info,reasons){
+    var lines=[];
+    lines.push('Taktiktavla – redo för separat restore-testmiljö');
+    lines.push('Skapad från admin v480. Ingen restore/import har gjorts.');
+    lines.push('');
+    lines.push('Produktions-Supabase: '+(info.prodUrl||'saknas'));
+    lines.push('Planerad test-Supabase: '+(info.testUrl||'saknas'));
+    lines.push('Backupfil: '+(info.fileName||'saknas'));
+    lines.push('Backupversion: '+(info.backupVersion==null?'–':info.backupVersion));
+    lines.push('Adminexport: '+(info.adminExportVersion==null?'–':info.adminExportVersion));
+    lines.push('Appversion: '+(info.appVersion==null?'–':info.appVersion));
+    lines.push('ExportedAt: '+(info.exportedAt||'–'));
+    lines.push('');
+    lines.push('Backupinnehåll:');
+    lines.push('- Saves: '+(info.saves==null?'–':info.saves));
+    lines.push('- Matcher i saves: '+(info.matches==null?'–':info.matches));
+    lines.push('- Utgångslägen i saves: '+(info.formations==null?'–':info.formations));
+    lines.push('- Taktikfilmer i saves: '+(info.movies==null?'–':info.movies));
+    lines.push('- Trupper i saves: '+(info.squads==null?'–':info.squads));
+    lines.push('- Lagmedlemskap i saves: '+(info.memberships==null?'–':info.memberships));
+    lines.push('- Allowed users: '+(info.allowedUsers==null?'–':info.allowedUsers));
+    lines.push('- App admins: '+(info.appAdmins==null?'–':info.appAdmins));
+    lines.push('- Taveldelningar: '+(info.formationShares==null?'–':info.formationShares));
+    lines.push('- Filmdelningar: '+(info.movieShares==null?'–':info.movieShares));
+    lines.push('- Lagkoder: '+(info.teamCodes&&info.teamCodes.length?info.teamCodes.join(', '):'–'));
+    lines.push('');
+    lines.push('Checklistestatus: '+info.checked+'/'+info.total+' punkter markerade.');
+    lines.push('');
+    if(reasons&&reasons.length){
+      lines.push('Inte redo ännu:');
+      reasons.forEach(function(r){lines.push('- '+r);});
+    }else{
+      lines.push('Bedömning: redo att skapa/förbereda separat testmiljö.');
+      lines.push('Nästa steg är manuellt: skapa test-Supabase och kör rätt schema/SQL där.');
+    }
+    lines.push('');
+    lines.push('Hård gräns: ingen skrivande restore mot produktionsdatabasen. Första skrivande restore får bara byggas/testas i separat tom testmiljö.');
+    return lines.join('\n');
+  }
+  async function renderTestEnvReady(){
+    var st=$('test-env-ready-status'), grid=$('test-env-ready-grid'), details=$('test-env-ready-details'), text=$('test-env-ready-text');
+    if(!st||!grid||!details||!text)return;
+    grid.innerHTML='';details.innerHTML='';text.value='';
+    try{
+      var testRaw=(($('ready-test-supabase-url')&&$('ready-test-supabase-url').value)||'').trim();
+      var prodRaw=SUPA_URL||'';
+      var prod=normalizeUrlForCompare(prodRaw);
+      var test=normalizeUrlForCompare(testRaw);
+      var checked=testEnvReadyItems().filter(function(x){return $(x.id)&&$(x.id).checked;}).length;
+      var total=testEnvReadyItems().length;
+      var fileInput=$('ready-backup-file');
+      var file=fileInput&&fileInput.files&&fileInput.files[0];
+      var reasons=[];
+      if(!testRaw)reasons.push('Planerad test-Supabase URL saknas.');
+      else if(test===prod)reasons.push('Test-Supabase URL är samma som produktions-URL. Stoppa här.');
+      else if(!isProbablySupabaseUrl(testRaw))reasons.push('Test-Supabase URL ser inte ut som en vanlig Supabase-adress.');
+      if(!file)reasons.push('Backupfil saknas.');
+      if(checked<total)reasons.push('Alla redo-punkter är inte markerade.');
+      var data=null,tables={},logical={},typeCounts={},teamCodes=[];
+      if(file){
+        data=await readLocalJsonFile(file);
+        tables=backupTables(data); logical=(data&&data.logicalCounts)||{}; typeCounts=saveTypeCountsFromBackup(data); teamCodes=data&&Array.isArray(data.teamCodesInSaves)?data.teamCodesInSaves:[];
+        if(!data||data.backupType!=='full-disaster-backup')reasons.push('Backupfilen har inte backupType full-disaster-backup.');
+        if(Number(data&&data.backupVersion)!==1)reasons.push('Backupversion är inte 1.');
+        if(Number((data&&data.adminExportVersion)||0)<460)reasons.push('Adminexport är äldre än 460. Använd helst backup från v460 eller senare.');
+        if(!Array.isArray(tables.saves)||!tables.saves.length)reasons.push('Backupen innehåller inga saves/appdata.');
+      }
+      var info={
+        prodUrl:prodRaw,testUrl:testRaw,fileName:file&&file.name,checked:checked,total:total,
+        backupVersion:data&&data.backupVersion,adminExportVersion:data&&data.adminExportVersion,appVersion:data&&data.appVersion,exportedAt:data&&data.exportedAt,
+        saves:Array.isArray(tables.saves)?tables.saves.length:null,
+        matches:logical.matches_in_saves!=null?logical.matches_in_saves:(typeCounts.match||0),
+        formations:logical.uppstallningar_in_saves!=null?logical.uppstallningar_in_saves:(typeCounts.uppstallning||0),
+        movies:logical.taktikfilmer_in_saves!=null?logical.taktikfilmer_in_saves:(typeCounts.taktikfilm||0),
+        squads:logical.trupp_in_saves!=null?logical.trupp_in_saves:(typeCounts.trupp||0),
+        memberships:logical.team_members_in_saves!=null?logical.team_members_in_saves:(typeCounts.team_member||0),
+        allowedUsers:Array.isArray(tables.allowed_users)?tables.allowed_users.length:null,
+        appAdmins:Array.isArray(tables.app_admins)?tables.app_admins.length:null,
+        formationShares:Array.isArray(tables.formation_team_shares)?tables.formation_team_shares.length:null,
+        movieShares:Array.isArray(tables.taktikfilm_team_shares)?tables.taktikfilm_team_shares.length:null,
+        teamCodes:teamCodes
+      };
+      var ready=!reasons.length;
+      grid.innerHTML=''
+        +statusCard('Test-URL',testRaw?testRaw.replace(/^https?:\/\//,''):'saknas',!testRaw||test===prod?'bad':'')
+        +statusCard('Backupfil',file?file.name:'saknas',file?'':'bad')
+        +statusCard('Checklistan',checked+'/'+total,checked===total?'':'warn')
+        +statusCard('Saves',info.saves==null?'–':info.saves)
+        +statusCard('Adminexport',info.adminExportVersion==null?'–':info.adminExportVersion,(info.adminExportVersion&&info.adminExportVersion<460)?'warn':'')
+        +statusCard('Nästa läge',ready?'TESTMILJÖ':'STOPP',ready?'':'bad');
+      var html='<p><strong>Detta är en gränskontroll.</strong> v480 gör ingen restore, kör ingen SQL och skriver inget.</p>';
+      if(reasons.length)html+='<div class="warntext"><strong>Inte redo ännu:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
+      else html+='<p class="oktext"><strong>Redo att skapa/förbereda separat testmiljö.</strong> Nästa praktiska steg är inte mer produktionstest, utan separat Supabase-testprojekt.</p>';
+      html+='<p><strong>Fortsatt gräns:</strong> första skrivande restore ska bara byggas/testas i separat tom testmiljö. Produktionsadmin ska inte få en skrivande restore-knapp nu.</p>';
+      details.innerHTML=html;
+      text.value=buildTestEnvReadyText(info,reasons);
+      st.textContent=(ready?'Redo för testmiljö: REDO ATT SKAPA TESTMILJÖ. ':'Redo för testmiljö: STOPP/KONTROLL. ')+(reasons[0]||'')+' Ingen SQL har körts, ingen restore har gjorts och inget har skickats till Supabase.';
+      st.className=ready?'status ok':'status warn';
+    }catch(e){
+      st.textContent='Redo för testmiljö: tekniskt fel i rutan: '+(e&&e.message?e.message:e);
+      st.className='status bad';
+      details.innerHTML='<div class="badtext"><strong>Tekniskt fel:</strong> '+esc(e&&e.message?e.message:e)+'</div>';
+    }
+  }
+  function markTestEnvReadyDirty(){
+    var st=$('test-env-ready-status'), grid=$('test-env-ready-grid'), details=$('test-env-ready-details'), text=$('test-env-ready-text');
+    if(st){st.textContent='Ändringar gjorda. Tryck Bygg redo-sammanfattning för att skapa/uppdatera sammanfattningen.';st.className='status';}
+    if(grid)grid.innerHTML=''; if(details)details.innerHTML=''; if(text)text.value='';
+  }
+  if($('ready-prod-url-view'))$('ready-prod-url-view').value=SUPA_URL||'';
+  if($('btn-test-env-ready'))$('btn-test-env-ready').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();renderTestEnvReady();};
+  if($('btn-clear-test-env-ready'))$('btn-clear-test-env-ready').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();clearTestEnvReady();};
+  if($('btn-copy-test-env-ready'))$('btn-copy-test-env-ready').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('test-env-ready-text')&&$('test-env-ready-text').value)||'');};
+  if($('ready-test-supabase-url'))$('ready-test-supabase-url').addEventListener('input',markTestEnvReadyDirty);
+  if($('ready-backup-file'))$('ready-backup-file').addEventListener('change',markTestEnvReadyDirty);
+  testEnvReadyItems().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',markTestEnvReadyDirty);});
 
     if($('btn-restore-risk'))$('btn-restore-risk').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();renderRestoreRisk();};
   if($('btn-clear-restore-risk'))$('btn-clear-restore-risk').onclick=function(ev){if(ev&&ev.preventDefault)ev.preventDefault();clearRestoreRisk();};
