@@ -38221,3 +38221,96 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt446ApplyTaktikfilmCameraStableStopfix=apply446;
 })();
 /* === slut v446-taktikfilm-camera-stable-and-fullscreen-stopfix === */
+
+
+/* === v447-taktikfilm-playall-camera-hard-lock ===
+   Bas: v446. Endast visning av Spela hela-knappen.
+   Problem: äldre renderkod skriver tillbaka gammal text precis i skarven mellan rörelse och slutposition.
+   Lösning: knappen får en hård ikon-synk efter varje render/animation, och CSS kan rita kameran via pseudo-element
+   så eventuell gammal text aldrig syns. Ingen funktion, animation, steg eller data ändras.
+*/
+(function(){
+  if(window.__tt447TaktikfilmPlayAllCameraHardLock)return;
+  window.__tt447TaktikfilmPlayAllCameraHardLock=true;
+  var VERSION='447';
+  var CAMERA='🎥';
+  function small447(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
+  function setVersion447(){
+    try{
+      window.TAKTIKTAVLA_VERSION=VERSION;
+      if(document.body)document.body.setAttribute('data-app-version',VERSION);
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id); if(el){el.textContent=VERSION; el.setAttribute('data-version',VERSION);}
+      });
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t)){el.textContent=VERSION; el.setAttribute('data-version',VERSION);}
+      });
+    }catch(e){}
+  }
+  function mainBtn447(){return document.getElementById('btn-play-all');}
+  function fsBtn447(){return document.getElementById('fs-play-all-btn');}
+  function isPlaying447(){
+    var b=mainBtn447();
+    return !!(b&&(b.classList.contains('on')||b.classList.contains('active')||/Stoppa/i.test(b.getAttribute('aria-label')||'')||/Stoppa/i.test(b.textContent||'')));
+  }
+  function cameraize447(btn, force){
+    if(!btn)return;
+    var playing=isPlaying447();
+    if(force || small447() || btn.id==='fs-play-all-btn'){
+      btn.setAttribute('data-tt447-camera-lock','1');
+      btn.setAttribute('data-tt446-camera-only','1');
+      btn.setAttribute('data-tt445-camera-only','1');
+      if(btn.textContent!==CAMERA)btn.textContent=CAMERA;
+      btn.setAttribute('aria-label',playing?'Stoppa spela hela':'Spela hela');
+      btn.title=playing?'Stoppa automatisk uppspelning':'Spela hela taktikfilmen automatiskt';
+      btn.classList.toggle('tt447-camera-playing',playing);
+      if(btn.id==='fs-play-all-btn'){
+        btn.classList.toggle('active',playing);
+        btn.style.color=playing?'#e8c84a':'#4ae87a';
+        btn.style.borderColor=playing?'#e8c84a':'#4ae87a';
+      }
+    }else{
+      btn.removeAttribute('data-tt447-camera-lock');
+      btn.classList.remove('tt447-camera-playing');
+    }
+  }
+  var applying=false;
+  function apply447(){
+    if(applying)return;
+    applying=true;
+    try{
+      setVersion447();
+      cameraize447(mainBtn447(), small447());
+      cameraize447(fsBtn447(), true);
+    }catch(e){console.warn('tt447 camera lock',e);}finally{applying=false;}
+  }
+  function schedule447(){
+    apply447();
+    try{requestAnimationFrame(apply447);}catch(e){}
+    setTimeout(apply447,0);
+    setTimeout(apply447,16);
+    setTimeout(apply447,50);
+    setTimeout(apply447,120);
+    setTimeout(apply447,260);
+  }
+  function observeBtn447(btn){
+    try{
+      if(!btn||btn.__tt447CameraObserver)return;
+      btn.__tt447CameraObserver=true;
+      var mo=new MutationObserver(function(){schedule447();});
+      mo.observe(btn,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['class','aria-label','title']});
+    }catch(e){}
+  }
+  function installObservers447(){observeBtn447(mainBtn447());observeBtn447(fsBtn447());}
+  ['click','touchend','pointerup','change','resize','animationend','transitionend'].forEach(function(ev){
+    try{window.addEventListener(ev,schedule447,true);}catch(e){}
+    try{document.addEventListener(ev,schedule447,true);}catch(e){}
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){installObservers447();schedule447();});
+  else{installObservers447();schedule447();}
+  [0,20,60,120,250,500,900,1500,3000,6000].forEach(function(ms){setTimeout(function(){installObservers447();schedule447();},ms);});
+  setInterval(function(){installObservers447();apply447();},500);
+  window.tt447ApplyTaktikfilmCameraHardLock=schedule447;
+})();
+/* === slut v447-taktikfilm-playall-camera-hard-lock === */
