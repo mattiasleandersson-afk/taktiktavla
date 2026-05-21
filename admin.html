@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v457</title>
+<title>Taktiktavla admin v458</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -35,6 +35,16 @@
   .stat .num{font-size:1.7rem;font-weight:900;color:var(--green);line-height:1}
   .stat .label{font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:5px}
   .helpbox{background:rgba(255,211,107,.08);border:1px solid rgba(255,211,107,.25);border-radius:12px;padding:10px;margin-top:10px;color:#ffe1a3;font-size:.86rem;line-height:1.35}
+
+  .statusgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+  .statusitem{background:rgba(7,17,10,.78);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:76px}
+  .statusitem .num{font-size:1.55rem;font-weight:900;color:var(--green);line-height:1.05}
+  .statusitem .label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.45px;margin-top:5px;line-height:1.15}
+  .statusitem.warn .num{color:var(--yellow)}
+  .statusitem.bad .num{color:#ff9a9a}
+  .statusnote{margin-top:10px;color:var(--muted);font-size:.84rem;line-height:1.35}
+  @media(max-width:900px){.statusgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:520px){.statusgrid{grid-template-columns:1fr}}
   .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px}.toolbar input{max-width:320px}
   .status.ok{color:var(--green);border-color:rgba(74,232,122,.45)}.status.bad{color:#ff9a9a;border-color:rgba(232,74,74,.55)}
   table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{border-bottom:1px solid rgba(45,74,53,.8);padding:9px 8px;text-align:left;vertical-align:middle}th{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.45px}td.actions{white-space:nowrap}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:.76rem;font-weight:800}.pill.on{background:rgba(74,232,122,.12);color:var(--green);border:1px solid rgba(74,232,122,.38)}.pill.off{background:rgba(232,74,74,.11);color:#ff9a9a;border:1px solid rgba(232,74,74,.42)}
@@ -79,6 +89,19 @@
     <section class="stats" aria-label="Översikt">
       <div class="stat"><div id="active-count" class="num">–</div><div class="label">Aktiva användare</div></div>
       <div class="stat"><div id="access-status" class="num">✓</div><div class="label">Adminläge aktivt</div></div>
+    </section>
+
+    <section class="card" id="system-status-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Systemstatus / backupförberedelse</h2>
+          <p>Read-only översikt inför katastrofbackup. Den här rutan läser bara antal rader och ändrar inget i databasen.</p>
+        </div>
+        <button id="btn-refresh-system" class="small right">Uppdatera status</button>
+      </div>
+      <div id="system-status-summary" class="status">Laddar systemstatus...</div>
+      <div id="system-status-grid" class="statusgrid" aria-label="Systemstatus"></div>
+      <div id="system-status-note" class="statusnote"></div>
     </section>
     <div class="grid">
       <section class="card">
@@ -242,6 +265,50 @@
       body.appendChild(tr);
     });
   }
+  function statusCard(label,num,cls){
+    return '<div class="statusitem '+(cls||'')+'"><div class="num">'+esc(num==null?'–':num)+'</div><div class="label">'+esc(label)+'</div></div>';
+  }
+  function renderSystemStatus(data){
+    var grid=$('system-status-grid'), summary=$('system-status-summary'), note=$('system-status-note');
+    if(!grid||!summary||!note)return;
+    var c=(data&&data.counts)||{};
+    grid.innerHTML=''
+      +statusCard('Aktiva användare',c.active_allowed_users)
+      +statusCard('Avstängda användare',c.inactive_allowed_users,c.inactive_allowed_users>0?'warn':'')
+      +statusCard('Globala admins',c.app_admins)
+      +statusCard('Lag',c.teams)
+      +statusCard('Lagmedlemmar',c.team_members)
+      +statusCard('Lag-admins',c.team_admins)
+      +statusCard('Adminlösa lag',c.adminless_teams,c.adminless_teams>0?'bad':'')
+      +statusCard('Truppspelare',c.squad_players)
+      +statusCard('Matcher',c.matches)
+      +statusCard('Sparade utgångslägen',c.formations)
+      +statusCard('Taktikfilmer',c.taktikfilmer)
+      +statusCard('Saves totalt',c.saves_total)
+      +statusCard('Delningar taktiktavlor',c.formation_team_shares)
+      +statusCard('Delningar taktikfilmer',c.taktikfilm_team_shares);
+    var exported=data&&data.generatedAt?new Date(data.generatedAt).toLocaleString('sv-SE'):'';
+    summary.textContent='Systemstatus laddad'+(exported?' '+exported:'')+'. Detta är bara läsning, ingen backupfil skapas ännu.';
+    summary.className='status ok';
+    var t=(data&&data.tables)||{};
+    var missing=[];
+    if(t.formation_team_shares_exists===false)missing.push('formation_team_shares saknas/är inte skapad');
+    if(t.taktikfilm_team_shares_exists===false)missing.push('taktikfilm_team_shares saknas/är inte skapad');
+    note.textContent=missing.length?('Obs: '+missing.join('. ')+'. Det kan vara okej om tabellen inte används i denna miljö.'):'Alla kända backupdelar kunde räknas. Nästa steg kan bli full JSON-export, fortfarande read-only.';
+  }
+  async function loadSystemStatus(){
+    var summary=$('system-status-summary'), grid=$('system-status-grid'), note=$('system-status-note');
+    if(summary){summary.textContent='Laddar systemstatus...';summary.className='status';}
+    if(grid)grid.innerHTML='';
+    if(note)note.textContent='';
+    try{
+      var data=await rpc('tt_admin_system_status',{});
+      renderSystemStatus(data||{});
+    }catch(e){
+      if(summary){summary.textContent='Kunde inte läsa systemstatus: '+e.message;summary.className='status bad';}
+      if(note)note.textContent='Kör SQL-filen supabase_admin_systemstatus_v458.sql först om funktionen saknas.';
+    }
+  }
   async function loadUsers(){
     var body=$('users-body');body.innerHTML='<tr><td colspan="5" class="muted">Laddar...</td></tr>';
     var rows=await rpc('tt_admin_list_allowed_users',{});
@@ -255,7 +322,7 @@
     if(!s||!s.access_token){$('login-card').classList.remove('hidden');$('admin-area').classList.add('hidden');return;}
     try{
       var ok=await rpc('tt_is_app_admin',{});
-      if(ok===true){$('login-card').classList.add('hidden');$('admin-area').classList.remove('hidden');setStatus('Inloggad som global admin.');loadUsers();loadTeams();setMailPreview('');}
+      if(ok===true){$('login-card').classList.add('hidden');$('admin-area').classList.remove('hidden');setStatus('Inloggad som global admin.');loadUsers();loadTeams();loadSystemStatus();setMailPreview('');}
       else{$('admin-area').classList.add('hidden');$('login-card').classList.add('hidden');setStatus('Du är inloggad men saknar behörighet till adminsidan.',true);}
     }catch(e){$('admin-area').classList.add('hidden');setStatus('Admin-kontroll misslyckades: '+e.message,true);}
   }
@@ -265,7 +332,7 @@
     try{setStatus('Loggar in...');var data=await authFetch('/auth/v1/token?grant_type=password',{method:'POST',headers:headers(),body:JSON.stringify({email:email,password:pass})});saveSession(data);await checkAdmin();}
     catch(e){setStatus('Inloggning misslyckades: '+e.message,true);}
   };
-  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';setStatus('Utloggad.');};
+  $('btn-logout').onclick=async function(){try{if(token())await authFetch('/auth/v1/logout',{method:'POST',headers:headers(token()),body:'{}'});}catch(e){}clearSession();$('admin-area').classList.add('hidden');$('login-card').classList.remove('hidden');$('who').textContent='Inte inloggad';$('btn-logout').classList.add('hidden');if($('active-count'))$('active-count').textContent='–';if($('user-summary'))$('user-summary').textContent='Aktiva användare: –';if($('system-status-grid'))$('system-status-grid').innerHTML='';if($('system-status-summary'))$('system-status-summary').textContent='Logga in för att läsa systemstatus.';setStatus('Utloggad.');};
   async function addUser(openAfter){
     var email=$('new-email').value.trim();var note=$('new-note').value.trim();
     var teamInfo=selectedTeamInfo();
@@ -285,6 +352,7 @@
   $('btn-add').onclick=function(){addUser(false);};
   $('btn-add-mail').onclick=function(){addUser(true);};
   $('btn-refresh').onclick=function(){loadUsers().catch(function(e){setStatus('Fel: '+e.message,true);});};
+  if($('btn-refresh-system'))$('btn-refresh-system').onclick=function(){loadSystemStatus();};
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
   if($('new-team'))$('new-team').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
   if($('new-team-role'))$('new-team-role').addEventListener('change',function(){setMailPreview(($('new-email')&&$('new-email').value)||'');});
