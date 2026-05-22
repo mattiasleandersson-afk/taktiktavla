@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v489</title>
+<title>Taktiktavla admin v490</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -1031,6 +1031,57 @@
       <div id="live-preflight-v489-details" class="statusnote"></div>
       <label for="live-preflight-v489-text">Kopierbar live-preflight-rapport</label>
       <textarea id="live-preflight-v489-text" readonly placeholder="Rapporten skapas här när du trycker på Kör live-preflight read-only."></textarea>
+    </section>
+
+
+    <section class="card" id="live-preflight-v490-card">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+        <div>
+          <h2 style="margin:0">Live-preflight diagnos: test-Supabase</h2>
+          <p>Detaljerad read-only-diagnos inför testrestore. Den får bara läsa testmiljön och rapportera stopp, varningar och nästa åtgärd.</p>
+        </div>
+        <button id="btn-live-preflight-v490" class="primary right" type="button">Bygg live-diagnos</button>
+      </div>
+
+      <div class="grid" style="margin-top:8px">
+        <div>
+          <label for="live-preflight-v490-prod-url">Produktions-Supabase URL, endast jämförelse</label>
+          <input id="live-preflight-v490-prod-url" type="text" readonly>
+        </div>
+        <div>
+          <label for="live-preflight-v490-test-url">Test-Supabase URL</label>
+          <input id="live-preflight-v490-test-url" type="text" placeholder="https://ditt-testprojekt.supabase.co">
+        </div>
+        <div>
+          <label for="live-preflight-v490-test-key">Testprojektets public anon key</label>
+          <input id="live-preflight-v490-test-key" type="password" autocomplete="off" placeholder="eyJ... endast anon/public key, aldrig service-role">
+        </div>
+        <div>
+          <label for="live-preflight-v490-admin-url">Testadmin-URL, valfri</label>
+          <input id="live-preflight-v490-admin-url" type="text" placeholder="https://taktiktavla-restore-test.vercel.app/admin.html">
+        </div>
+      </div>
+
+      <label for="live-preflight-v490-file">Backupfil som diagnosen ska jämföra mot</label>
+      <input id="live-preflight-v490-file" type="file" accept="application/json,.json">
+
+      <div class="checklist" aria-label="Live preflight diagnos v490">
+        <label class="checkline"><input id="live-preflight-v490-check-testonly" type="checkbox"><span>Jag använder separat test-Supabase, inte produktion.</span></label>
+        <label class="checkline"><input id="live-preflight-v490-check-anon" type="checkbox"><span>Nyckeln är public anon key från testprojektet, inte service-role.</span></label>
+        <label class="checkline"><input id="live-preflight-v490-check-readonly" type="checkbox"><span>Diagnosen får bara läsa metadata/tabeller/RPC-status.</span></label>
+        <label class="checkline"><input id="live-preflight-v490-check-empty" type="checkbox"><span>Om testdatabasen innehåller data ska kommande skrivande restore stoppas.</span></label>
+        <label class="checkline"><input id="live-preflight-v490-check-separate" type="checkbox"><span>Skrivande restore ska byggas separat och bara för testmiljö.</span></label>
+      </div>
+
+      <div class="actions" style="margin-top:8px">
+        <button id="btn-clear-live-preflight-v490" class="small" type="button">Rensa</button>
+        <button id="btn-copy-live-preflight-v490" class="small" type="button">Kopiera diagnosrapport</button>
+      </div>
+      <div id="live-preflight-v490-status" class="status">Ingen live-diagnos byggd ännu.</div>
+      <div id="live-preflight-v490-grid" class="statusgrid"></div>
+      <div id="live-preflight-v490-details" class="statusnote"></div>
+      <label for="live-preflight-v490-text">Kopierbar diagnosrapport</label>
+      <textarea id="live-preflight-v490-text" readonly placeholder="Diagnosrapporten skapas här när du trycker på Bygg live-diagnos."></textarea>
     </section>
 
 
@@ -4029,6 +4080,173 @@
   ['live-preflight-v489-test-url','live-preflight-v489-test-key','live-preflight-v489-admin-url'].forEach(function(id){if($(id))$(id).addEventListener('input',lp489SetDirty);});
   if($('live-preflight-v489-file'))$('live-preflight-v489-file').addEventListener('change',lp489SetDirty);
   lp489Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',lp489SetDirty);});
+
+
+
+  function lp490Checks(){return [
+    {id:'live-preflight-v490-check-testonly',label:'Separat test-Supabase'},
+    {id:'live-preflight-v490-check-anon',label:'Endast public anon key'},
+    {id:'live-preflight-v490-check-readonly',label:'Endast read-only'},
+    {id:'live-preflight-v490-check-empty',label:'Stoppa om testdatabasen innehåller data'},
+    {id:'live-preflight-v490-check-separate',label:'Skrivande restore separat och bara i test'}
+  ];}
+  function lp490SetDirty(){
+    var st=$('live-preflight-v490-status');
+    if(st){st.textContent='Ändringar gjorda. Tryck Bygg live-diagnos för att skapa/uppdatera rapporten.';st.className='status warn';}
+  }
+  function lp490Clear(){
+    ['live-preflight-v490-test-url','live-preflight-v490-test-key','live-preflight-v490-admin-url'].forEach(function(id){if($(id))$(id).value='';});
+    if($('live-preflight-v490-file'))$('live-preflight-v490-file').value='';
+    lp490Checks().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    if($('live-preflight-v490-grid'))$('live-preflight-v490-grid').innerHTML='';
+    if($('live-preflight-v490-details'))$('live-preflight-v490-details').innerHTML='';
+    if($('live-preflight-v490-text'))$('live-preflight-v490-text').value='';
+    if($('live-preflight-v490-status')){$('live-preflight-v490-status').textContent='Ingen live-diagnos byggd ännu.';$('live-preflight-v490-status').className='status';}
+  }
+  async function lp490ProbeTableSafe(base,key,table){
+    try{return await lp489ProbeTable(base,key,table);}
+    catch(e){return {table:table,ok:false,status:'nätfel',count:null,missing:false,denied:false,message:'Kunde inte nå testprojektet: '+(e&&e.message?e.message:e)};}
+  }
+  async function lp490ProbeRpcSafe(base,key,name){
+    try{return await lp489ProbeRpc(base,key,name);}
+    catch(e){return {name:name,ok:false,status:'nätfel',missing:false,denied:false,message:'Kunde inte nå testprojektet: '+(e&&e.message?e.message:e)};}
+  }
+  function lp490BuildText(info,reasons,warnings,tableResults,rpcResults,nextAction){
+    var lines=[];
+    lines.push('Taktiktavla – live-preflight diagnos v490');
+    lines.push('');
+    lines.push('Status: '+(reasons.length?'STOPP/KONTROLL':(warnings.length?'DIAGNOS MED VARNINGAR':'DIAGNOS OK')));
+    lines.push('Nästa åtgärd: '+nextAction);
+    lines.push('');
+    if(reasons.length){lines.push('Stopporsaker:');reasons.forEach(function(r){lines.push('- '+r);});lines.push('');}
+    if(warnings.length){lines.push('Varningar:');warnings.forEach(function(r){lines.push('- '+r);});lines.push('');}
+    lines.push('Test-Supabase URL: '+(info.testRaw||'saknas'));
+    lines.push('Testadmin URL: '+(info.adminUrl||'ej angiven'));
+    lines.push('Backupfil: '+(info.fileName||'saknas'));
+    lines.push('Backupversion: '+(info.backupVersion||'saknas'));
+    lines.push('Adminexport: '+(info.adminExportVersion||'saknas'));
+    lines.push('Appversion: '+(info.appVersion||'saknas'));
+    lines.push('Saves i backup: '+info.saves);
+    lines.push('Saves-typer: '+(Object.keys(info.types||{}).map(function(k){return k+': '+info.types[k];}).join(', ')||'saknas'));
+    lines.push('Lagkoder: '+((info.teamCodes||[]).join(', ')||'inga hittade'));
+    lines.push('');
+    lines.push('Tabellstatus i test-Supabase:');
+    (tableResults||[]).forEach(function(r){lines.push('- '+r.table+': '+r.message+', status '+r.status+', count '+(r.count==null?'okänd':r.count));});
+    lines.push('');
+    lines.push('RPC-status i test-Supabase:');
+    (rpcResults||[]).forEach(function(r){lines.push('- '+r.name+': '+r.message+', status '+r.status);});
+    lines.push('');
+    lines.push('v490 är fortfarande read-only. Ingen SQL, ingen restore, ingen import och ingen insert/upsert/delete körs.');
+    return lines.join('\n');
+  }
+  async function lp490Render(){
+    var st=$('live-preflight-v490-status'), grid=$('live-preflight-v490-grid'), details=$('live-preflight-v490-details'), text=$('live-preflight-v490-text');
+    if(!st||!grid||!details||!text)return;
+    st.textContent='Live-diagnos: kontrollerar val...'; st.className='status warn';
+    grid.innerHTML=''; details.innerHTML=''; text.value='';
+    try{
+      var prodRaw=SUPA_URL||'', prod=lp489Norm(prodRaw);
+      var testRaw=(($('live-preflight-v490-test-url')&&$('live-preflight-v490-test-url').value)||'').trim();
+      var test=lp489Norm(testRaw);
+      var testKey=(($('live-preflight-v490-test-key')&&$('live-preflight-v490-test-key').value)||'').trim();
+      var adminUrl=(($('live-preflight-v490-admin-url')&&$('live-preflight-v490-admin-url').value)||'').trim();
+      var file=$('live-preflight-v490-file')&&$('live-preflight-v490-file').files&&$('live-preflight-v490-file').files[0];
+      var checks=lp490Checks(), checked=0, total=checks.length;
+      checks.forEach(function(x){if($(x.id)&&$(x.id).checked)checked++;});
+      var reasons=[], warnings=[];
+      if(!testRaw)reasons.push('Test-Supabase URL saknas.');
+      if(testRaw&&!/^https:\/\/[^\s]+\.supabase\.co\/?$/i.test(testRaw))reasons.push('Test-Supabase URL ser inte ut som en Supabase Project URL.');
+      if(testRaw&&prod&&test===prod)reasons.push('Test-Supabase URL är samma som produktions-URL. Stoppa här.');
+      if(!testKey)reasons.push('Testprojektets public anon key saknas.');
+      if(lp489IsProbablyServiceRole(testKey))reasons.push('Nyckeln ser ut att vara eller beskrivas som service-role. Stoppa här.');
+      if(!file)reasons.push('Backupfil saknas.');
+      if(checked<total)reasons.push('Alla diagnos-spärrar är inte markerade.');
+      var data=null,tables={},types={},broken={formation:0,taktikfilm:0},teamCodes=[];
+      if(file){
+        data=await readLocalJsonFile(file);
+        tables=backupTables(data);
+        types=lp489TypeCounts(tables.saves);
+        broken=lp489BrokenShares(tables);
+        teamCodes=(data&&Array.isArray(data.teamCodesInSaves))?data.teamCodesInSaves:[];
+        if(!data||data.backupType!=='full-disaster-backup')reasons.push('Backupfilen har inte backupType full-disaster-backup.');
+        if(Number(data&&data.backupVersion)!==1)reasons.push('Backupversion är inte 1.');
+        if(Number((data&&data.adminExportVersion)||0)<460)reasons.push('Adminexport är äldre än 460.');
+        if(!Array.isArray(tables.saves)||!tables.saves.length)reasons.push('Backupen innehåller inga saves/appdata.');
+        if(broken.formation>0)reasons.push('Taveldelningar i backupen pekar på saknade saves.');
+        if(broken.taktikfilm>0)reasons.push('Filmdelningar i backupen pekar på saknade saves.');
+      }
+      var info={testRaw:testRaw,adminUrl:adminUrl,fileName:file&&file.name,backupVersion:data&&data.backupVersion,adminExportVersion:data&&data.adminExportVersion,appVersion:data&&data.appVersion,saves:Array.isArray(tables.saves)?tables.saves.length:0,types:types,teamCodes:teamCodes};
+      var tableResults=[], rpcResults=[];
+      if(!reasons.length){
+        st.textContent='Live-diagnos: kör read-only-prober mot test-Supabase...';
+        var tableNames=['saves','allowed_users','app_admins','formation_team_shares','taktikfilm_team_shares'];
+        for(var i=0;i<tableNames.length;i++){
+          var tr=await lp490ProbeTableSafe(testRaw,testKey,tableNames[i]);
+          tableResults.push(tr);
+          if(tr.status==='nätfel')warnings.push('Kunde inte nå testprojektet för tabellen '+tr.table+'. Kontrollera URL/anon key/CORS/projektstatus.');
+          else if(tr.missing)warnings.push('Tabellen '+tr.table+' saknas eller kunde inte läsas via REST i testprojektet.');
+          else if(tr.denied)warnings.push('Tabellen '+tr.table+' nekades av RLS/behörighet. Det kan vara väntat, men testadmin måste kunna kontrollera den.');
+          else if(typeof tr.count==='number' && tr.count>0)warnings.push('Testtabellen '+tr.table+' innehåller redan '+tr.count+' rad(er). Skrivande restore ska stoppa om testdatabasen inte är tom/förberedd.');
+        }
+        var rpcNames=['tt_admin_system_status','tt_admin_full_backup'];
+        for(var j=0;j<rpcNames.length;j++){
+          var rr=await lp490ProbeRpcSafe(testRaw,testKey,rpcNames[j]);
+          rpcResults.push(rr);
+          if(rr.status==='nätfel')warnings.push('Kunde inte nå testprojektet för RPC '+rr.name+'.');
+          else if(rr.missing)warnings.push('RPC-funktionen '+rr.name+' verkar saknas i testprojektet.');
+          else if(rr.denied)warnings.push('RPC-funktionen '+rr.name+' nekades utan rätt test-admin-session. Det kan vara normalt, men funktionen måste finnas.');
+        }
+      }
+      var missingTables=tableResults.filter(function(r){return r.missing;}).length;
+      var networkIssues=tableResults.concat(rpcResults).filter(function(r){return r.status==='nätfel';}).length;
+      var nonEmpty=tableResults.filter(function(r){return typeof r.count==='number'&&r.count>0;}).length;
+      var nextAction='';
+      if(reasons.length)nextAction='Åtgärda stopporsakerna innan live-diagnosen körs igen.';
+      else if(networkIssues)nextAction='Kontrollera test-URL och testprojektets anon key innan nästa steg.';
+      else if(missingTables)nextAction='Kör eller komplettera SQL/schema i testprojektet innan restore byggs.';
+      else if(nonEmpty)nextAction='Töm/förbered testdatabasen eller skapa nytt testprojekt innan skrivande restore.';
+      else if(warnings.length)nextAction='Gå igenom varningarna och bekräfta att de är väntade innan nästa steg.';
+      else nextAction='Testmiljön verkar redo för nästa read-only steg: live-preflight med test-admin-session. Fortfarande ingen restore.';
+      grid.innerHTML=''
+        +statusCard('Test-Supabase',testRaw?testRaw.replace(/^https?:\/\//,''):'saknas',(!testRaw||test===prod)?'bad':'')
+        +statusCard('Backup',file?'vald':'saknas',file?'':'bad')
+        +statusCard('Checklistan',checked+'/'+total,checked===total?'':'warn')
+        +statusCard('Tabeller saknas',missingTables,missingTables?'warn':'')
+        +statusCard('Nät/nyckel-problem',networkIssues,networkIssues?'warn':'')
+        +statusCard('Icke tomma tabeller',nonEmpty,nonEmpty?'warn':'')
+        +statusCard('Diagnos',reasons.length?'STOPP':(warnings.length?'VARNINGAR':'OK'),reasons.length?'bad':(warnings.length?'warn':''));
+      var html='<p><strong>v490 är en detaljerad read-only-diagnos.</strong> Den hjälper oss avgöra om testmiljön verkar redo för nästa säkra fas.</p>';
+      if(reasons.length)html+='<div class="warntext"><strong>Stopporsaker:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
+      if(warnings.length)html+='<div class="warntext"><strong>Varningar:</strong><ul><li>'+warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+      html+='<p><strong>Nästa åtgärd:</strong> '+esc(nextAction)+'</p>';
+      if(tableResults.length){
+        html+='<h3>Tabell-diagnos</h3><table><thead><tr><th>Tabell</th><th>Status</th><th>Count</th><th>Kommentar</th></tr></thead><tbody>';
+        tableResults.forEach(function(r){html+='<tr><td class="mono">'+esc(r.table)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.count==null?'okänd':r.count)+'</td><td>'+esc(r.message)+'</td></tr>';});
+        html+='</tbody></table>';
+      }
+      if(rpcResults.length){
+        html+='<h3>RPC-diagnos</h3><table><thead><tr><th>Funktion</th><th>Status</th><th>Kommentar</th></tr></thead><tbody>';
+        rpcResults.forEach(function(r){html+='<tr><td class="mono">'+esc(r.name)+'</td><td>'+esc(r.status)+'</td><td>'+esc(r.message)+'</td></tr>';});
+        html+='</tbody></table>';
+      }
+      html+='<p><strong>Inget har skrivits:</strong> ingen SQL, ingen restore, ingen import, ingen insert/upsert/delete.</p>';
+      details.innerHTML=html;
+      text.value=lp490BuildText(info,reasons,warnings,tableResults,rpcResults,nextAction);
+      st.textContent=(reasons.length?'Live-diagnos: STOPP/KONTROLL. ':warnings.length?'Live-diagnos: DIAGNOS MED VARNINGAR. ':'Live-diagnos: OK READ-ONLY. ')+nextAction+' Ingen SQL har körts, ingen restore har gjorts och inget har skrivits till Supabase.';
+      st.className=reasons.length?'status warn':(warnings.length?'status warn':'status ok');
+    }catch(e){
+      st.textContent='Live-diagnos: tekniskt fel i rutan: '+(e&&e.message?e.message:e);
+      st.className='status bad';
+      details.innerHTML='<div class="badtext"><strong>Tekniskt fel:</strong> '+esc(e&&e.message?e.message:e)+'</div>';
+    }
+  }
+  if($('live-preflight-v490-prod-url'))$('live-preflight-v490-prod-url').value=SUPA_URL||'';
+  if($('btn-live-preflight-v490'))$('btn-live-preflight-v490').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();lp490Render();});
+  if($('btn-clear-live-preflight-v490'))$('btn-clear-live-preflight-v490').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();lp490Clear();});
+  if($('btn-copy-live-preflight-v490'))$('btn-copy-live-preflight-v490').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('live-preflight-v490-text')&&$('live-preflight-v490-text').value)||'');});
+  ['live-preflight-v490-test-url','live-preflight-v490-test-key','live-preflight-v490-admin-url'].forEach(function(id){if($(id))$(id).addEventListener('input',lp490SetDirty);});
+  if($('live-preflight-v490-file'))$('live-preflight-v490-file').addEventListener('change',lp490SetDirty);
+  lp490Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',lp490SetDirty);});
 
 
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
