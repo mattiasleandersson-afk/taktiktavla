@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v516</title>
+<title>Taktiktavla admin v518</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -87,15 +87,140 @@
   </section>
 
   <main id="admin-area" class="hidden">
+
     <section class="stats" aria-label="Översikt">
       <div class="stat"><div id="active-count" class="num">–</div><div class="label">Aktiva användare</div></div>
       <div class="stat"><div id="access-status" class="num">✓</div><div class="label">Adminläge aktivt</div></div>
     </section>
 
+    
+    <section class="card" id="admin-users-v518-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Användare och åtkomst</h2>
+          <p>Det här ligger överst eftersom det är den del som används mest i vardagen: lägga till användare, skicka inbjudan och se tillåtna användare.</p>
+        </div>
+      </div>
+      <div class="status ok"><strong>Vardaglig admin:</strong> Hantera global åtkomst och eventuell första lagkoppling. Backup- och restorematerial ligger längre ner.</div>
+    </section>
+    <div class="grid">
+      <section class="card">
+        <h2>Lägg till åtkomst</h2>
+        <label for="new-email">E-postadress</label>
+        <input id="new-email" type="email" placeholder="ny.anvandare@example.com">
+        <label for="new-note">Anteckning, frivilligt</label>
+        <input id="new-note" type="text" placeholder="Ex. P12 tränare, testkonto, förening">
+        <div class="helpbox">Valfritt: välj lag och roll om personen ska ligga i ett lag direkt när den loggar in. Detta ändrar inte appens vanliga roller; det lägger bara till personen i lagets medlemslista.</div>
+        <div class="grid" style="margin-top:8px">
+          <div>
+            <label for="new-team">Lägg även till i lag, frivilligt</label>
+            <select id="new-team"><option value="">Endast global åtkomst</option></select>
+          </div>
+          <div>
+            <label for="new-team-role">Roll i laget</label>
+            <select id="new-team-role"><option value="member">Medlem</option><option value="admin">Admin</option></select>
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button id="btn-add" class="primary">Lägg till åtkomst</button>
+          <button id="btn-add-mail" class="warn">Lägg till + öppna mejl</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Inbjudningsmejl</h2>
+        <p>Mejlet skickas inte automatiskt. Du kan öppna det i ditt mejlprogram eller kopiera texten och justera innan du skickar.</p><div class="helpbox">Tips: personen måste använda exakt den e-postadress du lägger till här. Om du väljer lag i formuläret läggs personen redan in i laget. Annars kan lag-admin lägga till personen i appen senare.</div>
+        <label for="app-url">App-länk</label>
+        <input id="app-url" type="url">
+        <div class="row" style="margin-top:12px">
+          <button id="btn-copy-template">Kopiera mall</button>
+          <button id="btn-open-template">Öppna mejl utan mottagare</button>
+        </div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="row" style="margin-bottom:8px">
+        <h2 style="margin:0">Tillåtna användare</h2>
+        <button id="btn-refresh" class="small right">Uppdatera</button>
+      </div>
+      <div class="toolbar">
+        <input id="user-search" type="search" placeholder="Sök e-post eller anteckning">
+        <span id="user-summary" class="muted">Aktiva användare: –</span>
+      </div>
+      <div style="overflow:auto">
+        <table>
+          <thead><tr><th>E-post</th><th>Anteckning</th><th>Status</th><th>Tillagd</th><th>Åtgärder</th></tr></thead>
+          <tbody id="users-body"><tr><td colspan="5" class="muted">Laddar...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Mejltext</h2>
+      <p>Här visas senaste genererade mejltexten, så att du kan justera manuellt vid behov.</p>
+      <textarea id="mail-preview"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button id="btn-copy-current">Kopiera texten</button>
+      </div>
+    </section>
+
+    
+    <section class="card" id="backup-main-v518-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Backup</h2>
+          <p>Viktigaste backupfunktionerna ligger först: exportera backupfil, kontrollera backupfil och kör systemstatus.</p>
+        </div>
+      </div>
+      <div class="status ok"><strong>Read-only:</strong> Den här produktionsadminen får läsa och exportera, men innehåller fortsatt ingen restore/import.</div>
+    </section>
+<section class="card" id="backup-export-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Full backup-export</h2>
+          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v516 behåller read-only exporten och påminner om att restore/import endast görs i separat testmiljö. Inget importeras, återställs, ändras eller tas bort.</p>
+        </div>
+        <button id="btn-download-backup" class="primary right">Ladda ner full backup</button>
+      </div>
+      <div class="helpbox">Backupfilen kan innehålla e-postadresser, lagdata, matcher, taktikfilmer och sparade taktiktavlor. Spara den säkert och dela den inte öppet.</div>
+      <div id="backup-export-status" class="status" style="margin-top:10px">Kör systemstatus först och ladda sedan ner backup vid behov.</div>
+    </section>
+
+    <section class="card" id="backup-validate-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Kontrollera backupfil</h2>
+          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v516 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
+        </div>
+      </div>
+      <input id="backup-validate-file" type="file" accept="application/json,.json">
+      <div class="row" style="margin-top:10px">
+        <button id="btn-validate-backup" class="primary">Kontrollera vald backup</button>
+        <button id="btn-clear-validation" class="small">Rensa kontroll</button>
+      </div>
+      <div id="backup-validate-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
+      <div id="backup-validate-grid" class="statusgrid" aria-label="Backupkontroll"></div>
+      <div id="backup-validate-details" class="statusnote"></div>
+    </section>
+
+    <section class="card" id="system-status-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Systemstatus / backupförberedelse</h2>
+          <p>Read-only översikt inför katastrofbackup. Den här rutan läser bara antal rader och ändrar inget i databasen.</p>
+        </div>
+        <button id="btn-refresh-system" class="small right">Uppdatera status</button>
+      </div>
+      <div id="system-status-summary" class="status">Laddar systemstatus...</div>
+      <div id="system-status-grid" class="statusgrid" aria-label="Systemstatus"></div>
+      <div id="system-status-note" class="statusnote"></div>
+    </section>
+
     <section class="card" id="backup-dashboard-v514-card">
       <div class="row" style="margin-bottom:6px">
         <div>
-          <h2 style="margin:0">Backup-dashboard v516 / READ-ONLY</h2>
+          <h2 style="margin:0">Backup-dashboard v518 / READ-ONLY</h2>
           <p>Produktionsadminens säkra backupöversikt. Den här rutan skriver ingenting och innehåller ingen restore/import.</p>
         </div>
       </div>
@@ -122,7 +247,7 @@
     <section class="card" id="backup-routine-v515-card">
       <div class="row" style="margin-bottom:6px">
         <div>
-          <h2 style="margin:0">Backup-rutin v516 / READ-ONLY</h2>
+          <h2 style="margin:0">Backup-rutin v518 / READ-ONLY</h2>
           <p>Praktisk körordning för att ta och kontrollera en produktionsbackup utan att skriva till databasen.</p>
         </div>
       </div>
@@ -150,7 +275,7 @@
     <section class="card" id="disaster-plan-v516-card">
       <div class="row" style="margin-bottom:6px">
         <div>
-          <h2 style="margin:0">Katastrofplan v516 / READ-ONLY</h2>
+          <h2 style="margin:0">Katastrofplan v518 / READ-ONLY</h2>
           <p>Vad vi gör om produktionsdatabasen någon gång kraschar eller behöver ersättas. Detta är bara en säker handlingsplan – ingen restore/import finns i produktionsadminen.</p>
         </div>
       </div>
@@ -180,49 +305,17 @@
       <div class="status ok"><strong>Nuvarande verifierat läge:</strong> Backup från produktion har återställts i testmiljö och kontrollerats med v503. Det räcker som beredskap utan att lägga farliga restore-knappar i produktion.</div>
     </section>
 
-    <section class="card" id="system-status-card">
+    
+    <section class="card" id="restore-test-archive-v518-card">
       <div class="row" style="margin-bottom:6px">
         <div>
-          <h2 style="margin:0">Systemstatus / backupförberedelse</h2>
-          <p>Read-only översikt inför katastrofbackup. Den här rutan läser bara antal rader och ändrar inget i databasen.</p>
-        </div>
-        <button id="btn-refresh-system" class="small right">Uppdatera status</button>
-      </div>
-      <div id="system-status-summary" class="status">Laddar systemstatus...</div>
-      <div id="system-status-grid" class="statusgrid" aria-label="Systemstatus"></div>
-      <div id="system-status-note" class="statusnote"></div>
-    </section>
-
-    <section class="card" id="backup-export-card">
-      <div class="row" style="margin-bottom:6px">
-        <div>
-          <h2 style="margin:0">Full backup-export</h2>
-          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v516 behåller read-only exporten och påminner om att restore/import endast görs i separat testmiljö. Inget importeras, återställs, ändras eller tas bort.</p>
-        </div>
-        <button id="btn-download-backup" class="primary right">Ladda ner full backup</button>
-      </div>
-      <div class="helpbox">Backupfilen kan innehålla e-postadresser, lagdata, matcher, taktikfilmer och sparade taktiktavlor. Spara den säkert och dela den inte öppet.</div>
-      <div id="backup-export-status" class="status" style="margin-top:10px">Kör systemstatus först och ladda sedan ner backup vid behov.</div>
-    </section>
-
-    <section class="card" id="backup-validate-card">
-      <div class="row" style="margin-bottom:6px">
-        <div>
-          <h2 style="margin:0">Kontrollera backupfil</h2>
-          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v516 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
+          <h2 style="margin:0">Restore/testmiljö – dokumentation och arkiv</h2>
+          <p>Detta är äldre planerings-, testmiljö- och restoreunderlag. Det ligger längre ner eftersom daglig användaradmin och backup-export är viktigare i produktionsadminen.</p>
         </div>
       </div>
-      <input id="backup-validate-file" type="file" accept="application/json,.json">
-      <div class="row" style="margin-top:10px">
-        <button id="btn-validate-backup" class="primary">Kontrollera vald backup</button>
-        <button id="btn-clear-validation" class="small">Rensa kontroll</button>
-      </div>
-      <div id="backup-validate-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
-      <div id="backup-validate-grid" class="statusgrid" aria-label="Backupkontroll"></div>
-      <div id="backup-validate-details" class="statusnote"></div>
+      <div class="status warn"><strong>Påminnelse:</strong> Skrivande restore/import körs inte här utan i separat testmiljö via <span class="mono">admin_testversion.html</span>.</div>
     </section>
-
-    <section class="card" id="restore-plan-card">
+<section class="card" id="restore-plan-card">
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Restore-plan / dry-run</h2>
@@ -428,69 +521,7 @@
       <textarea id="test-env-schema-text" readonly placeholder="Här visas schemaöversikten när du byggt den."></textarea>
     </section>
 
-    <div class="grid">
-      <section class="card">
-        <h2>Lägg till åtkomst</h2>
-        <label for="new-email">E-postadress</label>
-        <input id="new-email" type="email" placeholder="ny.anvandare@example.com">
-        <label for="new-note">Anteckning, frivilligt</label>
-        <input id="new-note" type="text" placeholder="Ex. P12 tränare, testkonto, förening">
-        <div class="helpbox">Valfritt: välj lag och roll om personen ska ligga i ett lag direkt när den loggar in. Detta ändrar inte appens vanliga roller; det lägger bara till personen i lagets medlemslista.</div>
-        <div class="grid" style="margin-top:8px">
-          <div>
-            <label for="new-team">Lägg även till i lag, frivilligt</label>
-            <select id="new-team"><option value="">Endast global åtkomst</option></select>
-          </div>
-          <div>
-            <label for="new-team-role">Roll i laget</label>
-            <select id="new-team-role"><option value="member">Medlem</option><option value="admin">Admin</option></select>
-          </div>
-        </div>
-        <div class="row" style="margin-top:12px">
-          <button id="btn-add" class="primary">Lägg till åtkomst</button>
-          <button id="btn-add-mail" class="warn">Lägg till + öppna mejl</button>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>Inbjudningsmejl</h2>
-        <p>Mejlet skickas inte automatiskt. Du kan öppna det i ditt mejlprogram eller kopiera texten och justera innan du skickar.</p><div class="helpbox">Tips: personen måste använda exakt den e-postadress du lägger till här. Om du väljer lag i formuläret läggs personen redan in i laget. Annars kan lag-admin lägga till personen i appen senare.</div>
-        <label for="app-url">App-länk</label>
-        <input id="app-url" type="url">
-        <div class="row" style="margin-top:12px">
-          <button id="btn-copy-template">Kopiera mall</button>
-          <button id="btn-open-template">Öppna mejl utan mottagare</button>
-        </div>
-      </section>
-    </div>
-
-    <section class="card">
-      <div class="row" style="margin-bottom:8px">
-        <h2 style="margin:0">Tillåtna användare</h2>
-        <button id="btn-refresh" class="small right">Uppdatera</button>
-      </div>
-      <div class="toolbar">
-        <input id="user-search" type="search" placeholder="Sök e-post eller anteckning">
-        <span id="user-summary" class="muted">Aktiva användare: –</span>
-      </div>
-      <div style="overflow:auto">
-        <table>
-          <thead><tr><th>E-post</th><th>Anteckning</th><th>Status</th><th>Tillagd</th><th>Åtgärder</th></tr></thead>
-          <tbody id="users-body"><tr><td colspan="5" class="muted">Laddar...</td></tr></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>Mejltext</h2>
-      <p>Här visas senaste genererade mejltexten, så att du kan justera manuellt vid behov.</p>
-      <textarea id="mail-preview"></textarea>
-      <div class="row" style="margin-top:10px">
-        <button id="btn-copy-current">Kopiera texten</button>
-      </div>
-    </section>
-
-    <section class="card" id="test-env-start-card">
+<section class="card" id="test-env-start-card">
       <div class="row" style="justify-content:space-between;align-items:flex-start">
         <div>
           <h2 style="margin:0">Testmiljö-startguide</h2>
@@ -1222,7 +1253,6 @@
       <label for="testadmin-session-v492-text">Kopierbar testadmin-session-plan</label>
       <textarea id="testadmin-session-v492-text" readonly placeholder="Planen skapas här när du trycker på Bygg testadmin-session-plan."></textarea>
     </section>
-
 
 
     <section class="card" id="logged-preflight-v494-card">
