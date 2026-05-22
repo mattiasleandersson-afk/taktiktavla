@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v503 TEST</title>
+<title>Taktiktavla admin v505 TEST</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -57,7 +57,7 @@
 <div class="wrap">
   <header>
     <div>
-      <h1>⚽ Taktiktavla admin TEST v503</h1>
+      <h1>⚽ Taktiktavla admin TEST v505</h1>
       <p><strong>TESTADMIN:</strong> Denna fil pekar mot separat Supabase-testprojekt. Används för read-only/preflight och admin-test, inte produktion.</p>
     </div>
     <div class="row">
@@ -68,7 +68,7 @@
 
   <div id="status" class="status">Logga in för att hantera vilka e-postadresser som får använda appen.</div>
 
-  <div class="status warn"><strong>Testläge v503:</strong> Denna adminfil använder test-Supabase <span class="mono">zlynggtimbbnsatjejdx</span>. Kör inte restore/import här.</div>
+  <div class="status warn"><strong>Testläge v505:</strong> Denna adminfil använder test-Supabase <span class="mono">zlynggtimbbnsatjejdx</span>. Kör inte restore/import här.</div>
 
   <section id="login-card" class="card">
     <h2>Logga in</h2>
@@ -266,6 +266,58 @@
       <div id="restore-shares-v502-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
       <div id="restore-shares-v502-grid" class="statusgrid" aria-label="Delningsrestore v502"></div>
       <div id="restore-shares-v502-details" class="statusnote"></div>
+    </section>
+
+    <section class="card" id="restore-dashboard-v505-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Restore-dashboard v505 / READ-ONLY</h2>
+          <p>Samlar bekräftad testrestore-status och rätt körordning. Detta är bara dokumentation/översikt i adminfilen och ändrar inga datarader.</p>
+        </div>
+      </div>
+      <div class="status ok"><strong>Bekräftad testbas:</strong> v502 testrestore + v503 efterkontroll är verifierade i separat Supabase-testmiljö. Produktion har inte rörts.</div>
+      <div class="statusgrid" aria-label="Bekräftad restore-status v505">
+        <div class="tile"><strong>v499</strong><span>reset testdata</span></div>
+        <div class="tile"><strong>v500</strong><span>allowed_users</span></div>
+        <div class="tile"><strong>v501</strong><span>saves 25 rader</span></div>
+        <div class="tile"><strong>v502</strong><span>delningar 4 + 2</span></div>
+        <div class="tile"><strong>v503</strong><span>efterkontroll KLAR</span></div>
+        <div class="tile"><strong>v505</strong><span>read-only dashboard</span></div>
+      </div>
+      <div class="helpbox">
+        <strong>Bekräftade totalsiffror efter restore:</strong>
+        <span class="mono">saves=25</span>,
+        <span class="mono">allowed_users=3</span>,
+        <span class="mono">app_admins=1</span>,
+        <span class="mono">formation_team_shares=4</span>,
+        <span class="mono">taktikfilm_team_shares=2</span>.
+        Typfördelning i <span class="mono">saves</span>:
+        <span class="mono">match=8</span>,
+        <span class="mono">taktikfilm=3</span>,
+        <span class="mono">team_member=4</span>,
+        <span class="mono">trupp=2</span>,
+        <span class="mono">uppstallning=8</span>.
+      </div>
+      <div class="helpbox">
+        <strong>RLS-observation:</strong> vanlig REST-läsning i admin kan visa färre <span class="mono">saves</span>-rader, till exempel 19, trots att SQL Editor/v503-RPC visar 25. Använd därför v503 efterkontroll för slutgiltig totalräkning.
+      </div>
+      <details style="margin-top:10px">
+        <summary><strong>Rekommenderad körordning vid ny testrestore</strong></summary>
+        <ol>
+          <li>Kontrollera att du är i separat Supabase-testprojekt.</li>
+          <li>Kör v499 om testdata behöver rensas.</li>
+          <li>Kör v500 för <span class="mono">allowed_users</span>.</li>
+          <li>Kör SQL för v501 och därefter admin v501 för <span class="mono">saves</span>.</li>
+          <li>Kör SQL för v502 och därefter admin v502 för delningstabeller.</li>
+          <li>Kör SQL för v503 och därefter admin v503 efterkontroll.</li>
+          <li>Testa testappen: lagåtkomst, Trupp, Matcher, Utgångslägen, Taktikfilmer och lagdelade filer.</li>
+        </ol>
+      </details>
+      <div class="row" style="margin-top:10px">
+        <a class="btn small" href="#restore-aftercheck-v503-card">Gå till v503 efterkontroll</a>
+        <a class="btn small" href="#restore-shares-v502-card">Gå till v502 delningar</a>
+        <a class="btn small" href="#restore-saves-v501-card">Gå till v501 saves</a>
+      </div>
     </section>
 
     <section class="card" id="restore-aftercheck-v503-card">
