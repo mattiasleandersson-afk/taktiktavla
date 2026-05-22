@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v492</title>
+<title>Taktiktavla admin v493</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -1133,6 +1133,57 @@
       <div id="testadmin-session-v492-details" class="statusnote"></div>
       <label for="testadmin-session-v492-text">Kopierbar testadmin-session-plan</label>
       <textarea id="testadmin-session-v492-text" readonly placeholder="Planen skapas här när du trycker på Bygg testadmin-session-plan."></textarea>
+    </section>
+
+
+    <section class="card" id="logged-preflight-v493-card">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+        <div>
+          <h2 style="margin:0">Inloggad live-preflight: manifest före testkörning</h2>
+          <p>Detta är sista read-only-planen innan en kommande testadmin-version får försöka läsa test-Supabase med inloggad session. Den bygger ett manifest över exakt vad den inloggade live-preflighten ska kontrollera.</p>
+        </div>
+        <button id="btn-logged-preflight-v493" class="primary right" type="button">Bygg preflight-manifest</button>
+      </div>
+
+      <div class="grid" style="margin-top:8px">
+        <div>
+          <label for="logged-preflight-v493-prod-url">Produktions-Supabase URL, endast jämförelse</label>
+          <input id="logged-preflight-v493-prod-url" type="text" readonly>
+        </div>
+        <div>
+          <label for="logged-preflight-v493-test-url">Test-Supabase URL</label>
+          <input id="logged-preflight-v493-test-url" type="text" placeholder="https://ditt-testprojekt.supabase.co">
+        </div>
+        <div>
+          <label for="logged-preflight-v493-admin-email">Planerad testadmin-e-post</label>
+          <input id="logged-preflight-v493-admin-email" type="email" placeholder="din-testadmin@exempel.se">
+        </div>
+        <div>
+          <label for="logged-preflight-v493-admin-url">Testadmin-URL, valfri</label>
+          <input id="logged-preflight-v493-admin-url" type="text" placeholder="https://taktiktavla-restore-test.vercel.app/admin.html">
+        </div>
+      </div>
+
+      <label for="logged-preflight-v493-file">Backupfil som manifestet ska jämföra mot</label>
+      <input id="logged-preflight-v493-file" type="file" accept="application/json,.json">
+
+      <div class="checklist" aria-label="Inloggad live-preflight manifest v493">
+        <label class="checkline"><input id="logged-preflight-v493-check-separate" type="checkbox"><span>Kommande testkörning ska ske i separat testadmin/testapp, inte i produktion.</span></label>
+        <label class="checkline"><input id="logged-preflight-v493-check-session" type="checkbox"><span>Testadmin ska logga in mot test-Supabase med egen testadmin-e-post.</span></label>
+        <label class="checkline"><input id="logged-preflight-v493-check-readonly" type="checkbox"><span>Inloggad live-preflight får bara läsa tabeller/RPC-status och får inte skriva något.</span></label>
+        <label class="checkline"><input id="logged-preflight-v493-check-empty" type="checkbox"><span>Tomhetskontroll måste stoppa framtida restore om testdatabasen innehåller oväntad data.</span></label>
+        <label class="checkline"><input id="logged-preflight-v493-check-confirm" type="checkbox"><span>En framtida skrivande restore måste ligga i separat version med ny skarp bekräftelse.</span></label>
+      </div>
+
+      <div class="actions" style="margin-top:8px">
+        <button id="btn-clear-logged-preflight-v493" class="small" type="button">Rensa</button>
+        <button id="btn-copy-logged-preflight-v493" class="small" type="button">Kopiera manifest</button>
+      </div>
+      <div id="logged-preflight-v493-status" class="status">Inget inloggat preflight-manifest byggt ännu.</div>
+      <div id="logged-preflight-v493-grid" class="statusgrid"></div>
+      <div id="logged-preflight-v493-details" class="statusnote"></div>
+      <label for="logged-preflight-v493-text">Kopierbart preflight-manifest</label>
+      <textarea id="logged-preflight-v493-text" readonly placeholder="Manifestet skapas här när du trycker på Bygg preflight-manifest."></textarea>
     </section>
 
 
@@ -4428,6 +4479,154 @@
   ['testadmin-session-v492-test-url','testadmin-session-v492-admin-email','testadmin-session-v492-admin-url'].forEach(function(id){if($(id))$(id).addEventListener('input',tas492SetDirty);});
   if($('testadmin-session-v492-file'))$('testadmin-session-v492-file').addEventListener('change',tas492SetDirty);
   tas492Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',tas492SetDirty);});
+
+
+  function lpf493Checks(){
+    return [
+      {id:'logged-preflight-v493-check-separate',txt:'Kommande testkörning sker i separat testadmin/testapp.'},
+      {id:'logged-preflight-v493-check-session',txt:'Testadmin loggar in mot test-Supabase med egen e-post.'},
+      {id:'logged-preflight-v493-check-readonly',txt:'Inloggad live-preflight är read-only.'},
+      {id:'logged-preflight-v493-check-empty',txt:'Tomhetskontroll stoppar framtida restore vid oväntad data.'},
+      {id:'logged-preflight-v493-check-confirm',txt:'Skrivande restore kräver separat version och ny skarp bekräftelse.'}
+    ];
+  }
+  function lpf493SetDirty(){
+    var st=$('logged-preflight-v493-status');
+    if(st){st.textContent='Ändringar gjorda. Tryck Bygg preflight-manifest för att skapa/uppdatera manifestet.';st.className='status warn';}
+  }
+  function lpf493Clear(){
+    ['logged-preflight-v493-test-url','logged-preflight-v493-admin-email','logged-preflight-v493-admin-url'].forEach(function(id){if($(id))$(id).value='';});
+    var f=$('logged-preflight-v493-file'); if(f)f.value='';
+    lpf493Checks().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    if($('logged-preflight-v493-status')){$('logged-preflight-v493-status').textContent='Inget inloggat preflight-manifest byggt ännu.';$('logged-preflight-v493-status').className='status';}
+    if($('logged-preflight-v493-grid'))$('logged-preflight-v493-grid').innerHTML='';
+    if($('logged-preflight-v493-details'))$('logged-preflight-v493-details').innerHTML='';
+    if($('logged-preflight-v493-text'))$('logged-preflight-v493-text').value='';
+  }
+  function lpf493EmailOk(email){return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((email||'').trim());}
+  function lpf493SaveTypeCounts(saves){
+    var out={};
+    (saves||[]).forEach(function(r){var t=(r&&r.type)||'okänd';out[t]=(out[t]||0)+1;});
+    return out;
+  }
+  function lpf493BuildText(info,reasons,warnings,nextAction,typeCounts){
+    var lines=[];
+    lines.push('Taktiktavla inloggad live-preflight-manifest v493');
+    lines.push('Status: '+(reasons.length?'STOPP/KONTROLL':warnings.length?'REDO MED VARNINGAR':'REDO FÖR KOMMANDE INLOGGAT READ-ONLY-STEG'));
+    lines.push('');
+    if(reasons.length){lines.push('Stopporsaker:');reasons.forEach(function(r){lines.push('- '+r);});lines.push('');}
+    if(warnings.length){lines.push('Varningar:');warnings.forEach(function(w){lines.push('- '+w);});lines.push('');}
+    lines.push('Test-Supabase URL: '+(info.testRaw||'saknas'));
+    lines.push('Testadmin-URL: '+(info.adminUrl||'ej angiven'));
+    lines.push('Planerad testadmin-e-post: '+(info.email||'saknas'));
+    lines.push('Backupfil: '+(info.fileName||'saknas'));
+    lines.push('Backupversion: '+(info.backupVersion||'saknas'));
+    lines.push('Adminexport: '+(info.adminExportVersion||'saknas'));
+    lines.push('Appversion: '+(info.appVersion||'saknas'));
+    lines.push('Saves i backup: '+info.saves);
+    lines.push('Allowed users: '+info.allowedUsers);
+    lines.push('App admins: '+info.appAdmins);
+    lines.push('Taveldelningar: '+info.formationShares);
+    lines.push('Filmdelningar: '+info.taktikfilmShares);
+    lines.push('Lagkoder: '+((info.teamCodes||[]).join(', ')||'inga hittade'));
+    lines.push('');
+    lines.push('Saves-typer:');
+    Object.keys(typeCounts||{}).sort().forEach(function(k){lines.push('- '+k+': '+typeCounts[k]);});
+    lines.push('');
+    lines.push('Krav på kommande inloggad live-preflight:');
+    lines.push('1. Ska köras i separat testadmin som pekar på test-Supabase.');
+    lines.push('2. Ska kräva inloggad testadmin-session.');
+    lines.push('3. Ska läsa app_admin-status i testprojektet.');
+    lines.push('4. Ska läsa nödvändiga tabeller: allowed_users, app_admins, saves, formation_team_shares, taktikfilm_team_shares.');
+    lines.push('5. Ska kontrollera tom/förberedd testdatabas innan framtida skrivning.');
+    lines.push('6. Ska kontrollera att delningar i backupen pekar på befintliga saves.');
+    lines.push('7. Ska stoppa utan skrivning om något är fel, saknas eller verkar peka mot produktion.');
+    lines.push('');
+    lines.push('Nästa åtgärd: '+nextAction);
+    lines.push('');
+    lines.push('v493 gör ingen inloggning mot test-Supabase, ingen SQL, ingen restore och ingen skrivning.');
+    return lines.join('\n');
+  }
+  async function lpf493Render(){
+    var st=$('logged-preflight-v493-status'), grid=$('logged-preflight-v493-grid'), details=$('logged-preflight-v493-details'), text=$('logged-preflight-v493-text');
+    if(!st||!grid||!details||!text)return;
+    st.textContent='Inloggat preflight-manifest: kontrollerar val...'; st.className='status warn';
+    grid.innerHTML=''; details.innerHTML=''; text.value='';
+    try{
+      var prodRaw=SUPA_URL||'', prod=lp489Norm(prodRaw);
+      var testRaw=(($('logged-preflight-v493-test-url')&&$('logged-preflight-v493-test-url').value)||'').trim();
+      var test=lp489Norm(testRaw);
+      var email=(($('logged-preflight-v493-admin-email')&&$('logged-preflight-v493-admin-email').value)||'').trim();
+      var adminUrl=(($('logged-preflight-v493-admin-url')&&$('logged-preflight-v493-admin-url').value)||'').trim();
+      var file=$('logged-preflight-v493-file')&&$('logged-preflight-v493-file').files&&$('logged-preflight-v493-file').files[0];
+      var checks=lpf493Checks(), checked=0, total=checks.length;
+      checks.forEach(function(x){if($(x.id)&&$(x.id).checked)checked++;});
+      var reasons=[], warnings=[];
+      if(!testRaw)reasons.push('Test-Supabase URL saknas.');
+      if(testRaw&&!/^https:\/\/[^\s]+\.supabase\.co\/?$/i.test(testRaw))reasons.push('Test-Supabase URL ser inte ut som en Supabase Project URL.');
+      if(testRaw&&prod&&test===prod)reasons.push('Test-Supabase URL är samma som produktions-URL. Stoppa här.');
+      if(!email)reasons.push('Planerad testadmin-e-post saknas.');
+      if(email&&!lpf493EmailOk(email))reasons.push('Planerad testadmin-e-post ser inte giltig ut.');
+      if(!file)reasons.push('Backupfil saknas.');
+      if(checked<total)reasons.push('Alla spärrar för kommande inloggad live-preflight är inte markerade.');
+      var data=null,tables={},teamCodes=[],typeCounts={},saveIds={},badFormation=0,badFilms=0;
+      if(file){
+        data=await readLocalJsonFile(file);
+        tables=backupTables(data);
+        teamCodes=(data&&Array.isArray(data.teamCodesInSaves))?data.teamCodesInSaves:[];
+        if(!data||data.backupType!=='full-disaster-backup')reasons.push('Backupfilen har inte backupType full-disaster-backup.');
+        if(Number(data&&data.backupVersion)!==1)reasons.push('Backupversion är inte 1.');
+        if(Number((data&&data.adminExportVersion)||0)<460)reasons.push('Adminexport är äldre än 460.');
+        if(!Array.isArray(tables.saves)||!tables.saves.length)reasons.push('Backupen innehåller inga saves/appdata.');
+        if(Array.isArray(tables.saves)){
+          tables.saves.forEach(function(r){if(r&&r.id!==undefined&&r.id!==null)saveIds[String(r.id)]=true;});
+          typeCounts=lpf493SaveTypeCounts(tables.saves);
+        }
+        if(Array.isArray(tables.formation_team_shares))tables.formation_team_shares.forEach(function(r){if(r&&r.formation_id!==undefined&&!saveIds[String(r.formation_id)])badFormation++;});
+        if(Array.isArray(tables.taktikfilm_team_shares))tables.taktikfilm_team_shares.forEach(function(r){if(r&&r.taktikfilm_id!==undefined&&!saveIds[String(r.taktikfilm_id)])badFilms++;});
+        if(badFormation)reasons.push('Taveldelningar i backupen pekar på saknade saves: '+badFormation+'.');
+        if(badFilms)reasons.push('Filmdelningar i backupen pekar på saknade saves: '+badFilms+'.');
+      }
+      var saves=Array.isArray(tables.saves)?tables.saves.length:0;
+      var allowedUsers=Array.isArray(tables.allowed_users)?tables.allowed_users.length:0;
+      var appAdmins=Array.isArray(tables.app_admins)?tables.app_admins.length:0;
+      var formationShares=Array.isArray(tables.formation_team_shares)?tables.formation_team_shares.length:0;
+      var taktikfilmShares=Array.isArray(tables.taktikfilm_team_shares)?tables.taktikfilm_team_shares.length:0;
+      if(appAdmins<1)warnings.push('Backupen innehåller inga app_admins. Testmiljön måste ändå ha minst en app_admin.');
+      var nextAction=reasons.length?'Åtgärda stopporsakerna innan nästa steg.':'Nästa version kan bli en riktig inloggad live-preflight i testadmin som läser test-Supabase med testadmin-session, men fortfarande utan restore.';
+      grid.innerHTML=''
+        +statusCard('Test-Supabase',testRaw?testRaw.replace(/^https?:\/\//,''):'saknas',(!testRaw||test===prod)?'bad':'')
+        +statusCard('Testadmin-e-post',email||'saknas',lpf493EmailOk(email)?'':'warn')
+        +statusCard('Backup',file?'vald':'saknas',file?'':'bad')
+        +statusCard('Checklistan',checked+'/'+total,checked===total?'':'warn')
+        +statusCard('Saves',saves,saves?'':'warn')
+        +statusCard('Delningsfel',badFormation+badFilms,(badFormation+badFilms)?'bad':'')
+        +statusCard('Manifest',reasons.length?'STOPP':'REDO',reasons.length?'bad':'');
+      var html='<p><strong>v493 är ett manifest, inte en livekörning.</strong> Det förbereder bara nästa read-only-steg med inloggad testadmin-session.</p>';
+      if(reasons.length)html+='<div class="warntext"><strong>Stopporsaker:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
+      if(warnings.length)html+='<div class="warntext"><strong>Varningar:</strong><ul><li>'+warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+      html+='<h3>Manifest för kommande inloggad live-preflight</h3><ol><li>Läsa testprojektets adminstatus med testadmin-session.</li><li>Kontrollera att testdatabasen har rätt tabeller/RPC:er.</li><li>Kontrollera om tabellerna är tomma/förberedda.</li><li>Jämföra backupens counts och referenser med det som ska kunna återställas.</li><li>Stoppa innan all framtida skrivning om något är fel.</li></ol>';
+      html+='<p><strong>Nästa åtgärd:</strong> '+esc(nextAction)+'</p>';
+      html+='<p><strong>Inget har skrivits:</strong> ingen SQL, ingen restore, ingen import, ingen insert/upsert/delete.</p>';
+      details.innerHTML=html;
+      var info={testRaw:testRaw,adminUrl:adminUrl,email:email,fileName:file&&file.name,backupVersion:data&&data.backupVersion,adminExportVersion:data&&data.adminExportVersion,appVersion:data&&data.appVersion,saves:saves,allowedUsers:allowedUsers,appAdmins:appAdmins,formationShares:formationShares,taktikfilmShares:taktikfilmShares,teamCodes:teamCodes};
+      text.value=lpf493BuildText(info,reasons,warnings,nextAction,typeCounts);
+      var reasonSummary=reasons.length?' Stopporsak: '+reasons.slice(0,3).join(' | ')+(reasons.length>3?' | +'+(reasons.length-3)+' till':''):'':
+      st.textContent=(reasons.length?'Inloggat preflight-manifest: STOPP/KONTROLL. ':'Inloggat preflight-manifest: REDO FÖR KOMMANDE INLOGGAT READ-ONLY-STEG. ')+nextAction+reasonSummary+' Ingen SQL har körts, ingen restore har gjorts och inget har skrivits till Supabase.';
+      st.className=reasons.length?'status warn':'status ok';
+    }catch(e){
+      st.textContent='Inloggat preflight-manifest: tekniskt fel i rutan: '+(e&&e.message?e.message:e);
+      st.className='status bad';
+      details.innerHTML='<div class="badtext"><strong>Tekniskt fel:</strong> '+esc(e&&e.message?e.message:e)+'</div>';
+    }
+  }
+  if($('logged-preflight-v493-prod-url'))$('logged-preflight-v493-prod-url').value=SUPA_URL||'';
+  if($('btn-logged-preflight-v493'))$('btn-logged-preflight-v493').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();lpf493Render();});
+  if($('btn-clear-logged-preflight-v493'))$('btn-clear-logged-preflight-v493').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();lpf493Clear();});
+  if($('btn-copy-logged-preflight-v493'))$('btn-copy-logged-preflight-v493').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('logged-preflight-v493-text')&&$('logged-preflight-v493-text').value)||'');});
+  ['logged-preflight-v493-test-url','logged-preflight-v493-admin-email','logged-preflight-v493-admin-url'].forEach(function(id){if($(id))$(id).addEventListener('input',lpf493SetDirty);});
+  if($('logged-preflight-v493-file'))$('logged-preflight-v493-file').addEventListener('change',lpf493SetDirty);
+  lpf493Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',lpf493SetDirty);});
 
 
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
