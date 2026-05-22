@@ -1038,7 +1038,7 @@
       <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
         <div>
           <h2 style="margin:0">Live-preflight diagnos: test-Supabase</h2>
-          <p>Detaljerad read-only-diagnos inför testrestore. Den får bara läsa testmiljön och rapportera stopp, varningar och nästa åtgärd.</p>
+          <p>Detaljerad read-only-diagnos inför testrestore. Den får bara läsa testmiljön och rapportera stopp, varningar och nästa åtgärd. v491 visar stopporsaken direkt i statusraden.</p>
         </div>
         <button id="btn-live-preflight-v490" class="primary right" type="button">Bygg live-diagnos</button>
       </div>
@@ -4113,7 +4113,7 @@
   }
   function lp490BuildText(info,reasons,warnings,tableResults,rpcResults,nextAction){
     var lines=[];
-    lines.push('Taktiktavla – live-preflight diagnos v490');
+    lines.push('Taktiktavla – live-preflight diagnos v491');
     lines.push('');
     lines.push('Status: '+(reasons.length?'STOPP/KONTROLL':(warnings.length?'DIAGNOS MED VARNINGAR':'DIAGNOS OK')));
     lines.push('Nästa åtgärd: '+nextAction);
@@ -4215,7 +4215,7 @@
         +statusCard('Nät/nyckel-problem',networkIssues,networkIssues?'warn':'')
         +statusCard('Icke tomma tabeller',nonEmpty,nonEmpty?'warn':'')
         +statusCard('Diagnos',reasons.length?'STOPP':(warnings.length?'VARNINGAR':'OK'),reasons.length?'bad':(warnings.length?'warn':''));
-      var html='<p><strong>v490 är en detaljerad read-only-diagnos.</strong> Den hjälper oss avgöra om testmiljön verkar redo för nästa säkra fas.</p>';
+      var html='<p><strong>v491 är en detaljerad read-only-diagnos.</strong> Den hjälper oss avgöra om testmiljön verkar redo för nästa säkra fas.</p>';
       if(reasons.length)html+='<div class="warntext"><strong>Stopporsaker:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
       if(warnings.length)html+='<div class="warntext"><strong>Varningar:</strong><ul><li>'+warnings.map(esc).join('</li><li>')+'</li></ul></div>';
       html+='<p><strong>Nästa åtgärd:</strong> '+esc(nextAction)+'</p>';
@@ -4232,7 +4232,15 @@
       html+='<p><strong>Inget har skrivits:</strong> ingen SQL, ingen restore, ingen import, ingen insert/upsert/delete.</p>';
       details.innerHTML=html;
       text.value=lp490BuildText(info,reasons,warnings,tableResults,rpcResults,nextAction);
-      st.textContent=(reasons.length?'Live-diagnos: STOPP/KONTROLL. ':warnings.length?'Live-diagnos: DIAGNOS MED VARNINGAR. ':'Live-diagnos: OK READ-ONLY. ')+nextAction+' Ingen SQL har körts, ingen restore har gjorts och inget har skrivits till Supabase.';
+      var reasonSummary = '';
+      if(reasons.length){
+        reasonSummary = ' Stopporsak: ' + reasons.slice(0,3).join(' | ') + (reasons.length>3 ? ' | +' + (reasons.length-3) + ' till' : '');
+      }
+      var warningSummary = '';
+      if(!reasons.length && warnings.length){
+        warningSummary = ' Varning: ' + warnings.slice(0,2).join(' | ') + (warnings.length>2 ? ' | +' + (warnings.length-2) + ' till' : '');
+      }
+      st.textContent=(reasons.length?'Live-diagnos: STOPP/KONTROLL. ':warnings.length?'Live-diagnos: DIAGNOS MED VARNINGAR. ':'Live-diagnos: OK READ-ONLY. ')+nextAction+reasonSummary+warningSummary+' Ingen SQL har körts, ingen restore har gjorts och inget har skrivits till Supabase.';
       st.className=reasons.length?'status warn':(warnings.length?'status warn':'status ok');
     }catch(e){
       st.textContent='Live-diagnos: tekniskt fel i rutan: '+(e&&e.message?e.message:e);
