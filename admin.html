@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v490</title>
+<title>Taktiktavla admin v492</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -1082,6 +1082,57 @@
       <div id="live-preflight-v490-details" class="statusnote"></div>
       <label for="live-preflight-v490-text">Kopierbar diagnosrapport</label>
       <textarea id="live-preflight-v490-text" readonly placeholder="Diagnosrapporten skapas här när du trycker på Bygg live-diagnos."></textarea>
+    </section>
+
+
+    <section class="card" id="testadmin-session-v492-card">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+        <div>
+          <h2 style="margin:0">Testadmin-session: plan före inloggad live-preflight</h2>
+          <p>Nästa live-steg behöver kunna läsa testmiljön som riktig testadmin, men fortfarande utan restore. Den här rutan bygger bara en plan och kontrollista.</p>
+        </div>
+        <button id="btn-testadmin-session-v492" class="primary right" type="button">Bygg testadmin-session-plan</button>
+      </div>
+
+      <div class="grid" style="margin-top:8px">
+        <div>
+          <label for="testadmin-session-v492-prod-url">Produktions-Supabase URL, endast jämförelse</label>
+          <input id="testadmin-session-v492-prod-url" type="text" readonly>
+        </div>
+        <div>
+          <label for="testadmin-session-v492-test-url">Test-Supabase URL</label>
+          <input id="testadmin-session-v492-test-url" type="text" placeholder="https://ditt-testprojekt.supabase.co">
+        </div>
+        <div>
+          <label for="testadmin-session-v492-admin-email">Planerad testadmin-e-post</label>
+          <input id="testadmin-session-v492-admin-email" type="email" placeholder="din-testadmin@exempel.se">
+        </div>
+        <div>
+          <label for="testadmin-session-v492-admin-url">Testadmin-URL, valfri</label>
+          <input id="testadmin-session-v492-admin-url" type="text" placeholder="https://taktiktavla-restore-test.vercel.app/admin.html">
+        </div>
+      </div>
+
+      <label for="testadmin-session-v492-file">Backupfil som planen ska jämföra mot</label>
+      <input id="testadmin-session-v492-file" type="file" accept="application/json,.json">
+
+      <div class="checklist" aria-label="Testadmin-session plan v492">
+        <label class="checkline"><input id="testadmin-session-v492-check-separate" type="checkbox"><span>Testadmin ska logga in i separat test-Supabase, inte produktion.</span></label>
+        <label class="checkline"><input id="testadmin-session-v492-check-appadmin" type="checkbox"><span>Testadmin-e-posten ska läggas in i <code>app_admins</code> i testprojektet.</span></label>
+        <label class="checkline"><input id="testadmin-session-v492-check-sql" type="checkbox"><span>Admin-SQL/RPC:er ska vara körda i testprojektet innan inloggad live-preflight.</span></label>
+        <label class="checkline"><input id="testadmin-session-v492-check-readonly" type="checkbox"><span>Nästa live-preflight får fortfarande bara läsa, inte skriva.</span></label>
+        <label class="checkline"><input id="testadmin-session-v492-check-stop" type="checkbox"><span>Om testmiljön inte är tom/förberedd ska skrivande restore stoppas.</span></label>
+      </div>
+
+      <div class="actions" style="margin-top:8px">
+        <button id="btn-clear-testadmin-session-v492" class="small" type="button">Rensa</button>
+        <button id="btn-copy-testadmin-session-v492" class="small" type="button">Kopiera testadmin-session-plan</button>
+      </div>
+      <div id="testadmin-session-v492-status" class="status">Ingen testadmin-session-plan byggd ännu.</div>
+      <div id="testadmin-session-v492-grid" class="statusgrid"></div>
+      <div id="testadmin-session-v492-details" class="statusnote"></div>
+      <label for="testadmin-session-v492-text">Kopierbar testadmin-session-plan</label>
+      <textarea id="testadmin-session-v492-text" readonly placeholder="Planen skapas här när du trycker på Bygg testadmin-session-plan."></textarea>
     </section>
 
 
@@ -4255,6 +4306,128 @@
   ['live-preflight-v490-test-url','live-preflight-v490-test-key','live-preflight-v490-admin-url'].forEach(function(id){if($(id))$(id).addEventListener('input',lp490SetDirty);});
   if($('live-preflight-v490-file'))$('live-preflight-v490-file').addEventListener('change',lp490SetDirty);
   lp490Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',lp490SetDirty);});
+
+
+  function tas492Checks(){
+    return [
+      {id:'testadmin-session-v492-check-separate',txt:'Testadmin loggar in i separat test-Supabase.'},
+      {id:'testadmin-session-v492-check-appadmin',txt:'Testadmin-e-posten finns i app_admins i testprojektet.'},
+      {id:'testadmin-session-v492-check-sql',txt:'Admin-SQL/RPC:er är körda i testprojektet.'},
+      {id:'testadmin-session-v492-check-readonly',txt:'Nästa live-preflight är fortfarande read-only.'},
+      {id:'testadmin-session-v492-check-stop',txt:'Skrivande restore stoppas om testmiljön inte är tom/förberedd.'}
+    ];
+  }
+  function tas492SetDirty(){
+    var st=$('testadmin-session-v492-status');
+    if(st){st.textContent='Ändringar gjorda. Tryck Bygg testadmin-session-plan för att skapa/uppdatera planen.';st.className='status warn';}
+  }
+  function tas492Clear(){
+    ['testadmin-session-v492-test-url','testadmin-session-v492-admin-email','testadmin-session-v492-admin-url'].forEach(function(id){if($(id))$(id).value='';});
+    var f=$('testadmin-session-v492-file'); if(f)f.value='';
+    tas492Checks().forEach(function(x){if($(x.id))$(x.id).checked=false;});
+    if($('testadmin-session-v492-status')){$('testadmin-session-v492-status').textContent='Ingen testadmin-session-plan byggd ännu.';$('testadmin-session-v492-status').className='status';}
+    if($('testadmin-session-v492-grid'))$('testadmin-session-v492-grid').innerHTML='';
+    if($('testadmin-session-v492-details'))$('testadmin-session-v492-details').innerHTML='';
+    if($('testadmin-session-v492-text'))$('testadmin-session-v492-text').value='';
+  }
+  function tas492EmailLooksOk(email){return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((email||'').trim());}
+  function tas492BuildText(info,reasons,warnings,nextAction){
+    var lines=[];
+    lines.push('Taktiktavla testadmin-session-plan v492');
+    lines.push('Status: '+(reasons.length?'STOPP/KONTROLL':warnings.length?'PLAN MED VARNINGAR':'REDO FÖR NÄSTA READ-ONLY-STEG'));
+    lines.push('');
+    if(reasons.length){lines.push('Stopporsaker:');reasons.forEach(function(r){lines.push('- '+r);});lines.push('');}
+    if(warnings.length){lines.push('Varningar:');warnings.forEach(function(w){lines.push('- '+w);});lines.push('');}
+    lines.push('Test-Supabase URL: '+(info.testRaw||'saknas'));
+    lines.push('Testadmin-URL: '+(info.adminUrl||'ej angiven'));
+    lines.push('Planerad testadmin-e-post: '+(info.email||'saknas'));
+    lines.push('Backupfil: '+(info.fileName||'saknas'));
+    lines.push('Backupversion: '+(info.backupVersion||'saknas'));
+    lines.push('Adminexport: '+(info.adminExportVersion||'saknas'));
+    lines.push('Appversion: '+(info.appVersion||'saknas'));
+    lines.push('Saves i backup: '+info.saves);
+    lines.push('Lagkoder: '+((info.teamCodes||[]).join(', ')||'inga hittade'));
+    lines.push('');
+    lines.push('Plan inför nästa fas:');
+    lines.push('1. Skapa/öppna separat test-Supabase.');
+    lines.push('2. Kör grundschema, RLS/policies och admin-SQL i testprojektet.');
+    lines.push('3. Lägg till testadmin-e-posten i app_admins i testprojektet.');
+    lines.push('4. Peka testadmin mot test-Supabase URL och testprojektets public anon key.');
+    lines.push('5. Logga in i testadmin med testadmin-e-posten.');
+    lines.push('6. Kör nästa live-preflight med testadmin-session.');
+    lines.push('7. Stoppa om tabeller saknas, RPC saknas, testdatabasen innehåller oväntad data eller URL/nyckel pekar fel.');
+    lines.push('');
+    lines.push('Nästa åtgärd: '+nextAction);
+    lines.push('');
+    lines.push('v492 är fortfarande read-only. Ingen SQL, ingen restore, ingen import och ingen insert/upsert/delete körs.');
+    return lines.join('\n');
+  }
+  async function tas492Render(){
+    var st=$('testadmin-session-v492-status'), grid=$('testadmin-session-v492-grid'), details=$('testadmin-session-v492-details'), text=$('testadmin-session-v492-text');
+    if(!st||!grid||!details||!text)return;
+    st.textContent='Testadmin-session-plan: kontrollerar val...'; st.className='status warn';
+    grid.innerHTML=''; details.innerHTML=''; text.value='';
+    try{
+      var prodRaw=SUPA_URL||'', prod=lp489Norm(prodRaw);
+      var testRaw=(($('testadmin-session-v492-test-url')&&$('testadmin-session-v492-test-url').value)||'').trim();
+      var test=lp489Norm(testRaw);
+      var email=(($('testadmin-session-v492-admin-email')&&$('testadmin-session-v492-admin-email').value)||'').trim();
+      var adminUrl=(($('testadmin-session-v492-admin-url')&&$('testadmin-session-v492-admin-url').value)||'').trim();
+      var file=$('testadmin-session-v492-file')&&$('testadmin-session-v492-file').files&&$('testadmin-session-v492-file').files[0];
+      var checks=tas492Checks(), checked=0, total=checks.length;
+      checks.forEach(function(x){if($(x.id)&&$(x.id).checked)checked++;});
+      var reasons=[], warnings=[];
+      if(!testRaw)reasons.push('Test-Supabase URL saknas.');
+      if(testRaw&&!/^https:\/\/[^\s]+\.supabase\.co\/?$/i.test(testRaw))reasons.push('Test-Supabase URL ser inte ut som en Supabase Project URL.');
+      if(testRaw&&prod&&test===prod)reasons.push('Test-Supabase URL är samma som produktions-URL. Stoppa här.');
+      if(!email)reasons.push('Planerad testadmin-e-post saknas.');
+      if(email&&!tas492EmailLooksOk(email))reasons.push('Planerad testadmin-e-post ser inte ut som en giltig e-postadress.');
+      if(!file)reasons.push('Backupfil saknas.');
+      if(checked<total)reasons.push('Alla testadmin-session-spärrar är inte markerade.');
+      var data=null,tables={},teamCodes=[];
+      if(file){
+        data=await readLocalJsonFile(file);
+        tables=backupTables(data);
+        teamCodes=(data&&Array.isArray(data.teamCodesInSaves))?data.teamCodesInSaves:[];
+        if(!data||data.backupType!=='full-disaster-backup')reasons.push('Backupfilen har inte backupType full-disaster-backup.');
+        if(Number(data&&data.backupVersion)!==1)reasons.push('Backupversion är inte 1.');
+        if(Number((data&&data.adminExportVersion)||0)<460)reasons.push('Adminexport är äldre än 460.');
+        if(!Array.isArray(tables.saves)||!tables.saves.length)reasons.push('Backupen innehåller inga saves/appdata.');
+        if(Array.isArray(tables.app_admins)&&tables.app_admins.length<1)warnings.push('Backupen innehåller inga app_admins. Testprojektet behöver ändå minst en app_admin för testadmin.');
+      }
+      var nextAction=reasons.length?'Åtgärda stopporsakerna innan nästa live-steg.':'Skapa/förbered testprojektet, lägg in testadmin i app_admins och kör därefter inloggad live-preflight. Fortfarande ingen restore.';
+      grid.innerHTML=''
+        +statusCard('Test-Supabase',testRaw?testRaw.replace(/^https?:\/\//,''):'saknas',(!testRaw||test===prod)?'bad':'')
+        +statusCard('Testadmin-e-post',email||'saknas',tas492EmailLooksOk(email)?'':'warn')
+        +statusCard('Backup',file?'vald':'saknas',file?'':'bad')
+        +statusCard('Checklistan',checked+'/'+total,checked===total?'':'warn')
+        +statusCard('Saves',Array.isArray(tables.saves)?tables.saves.length:'–',Array.isArray(tables.saves)&&tables.saves.length?'':'warn')
+        +statusCard('Plan',reasons.length?'STOPP':'REDO',reasons.length?'bad':'');
+      var html='<p><strong>v492 är en plan inför nästa live-preflight med testadmin-session.</strong> Den gör ingen inloggning mot testprojektet och skriver inget.</p>';
+      if(reasons.length)html+='<div class="warntext"><strong>Stopporsaker:</strong><ul><li>'+reasons.map(esc).join('</li><li>')+'</li></ul></div>';
+      if(warnings.length)html+='<div class="warntext"><strong>Varningar:</strong><ul><li>'+warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+      html+='<p><strong>Nästa åtgärd:</strong> '+esc(nextAction)+'</p>';
+      html+='<h3>Vad nästa live-preflight ska kunna göra</h3><ol><li>Logga in mot test-Supabase med testadmin-e-post.</li><li>Använda testadmin-sessionen för att läsa admin-RPC:er i testprojektet.</li><li>Kontrollera tabeller och tomhetsstatus mer pålitligt än med bara anon key.</li><li>Fortfarande stoppa innan någon skrivning/restore.</li></ol>';
+      html+='<p><strong>Inget har skrivits:</strong> ingen SQL, ingen restore, ingen import, ingen insert/upsert/delete.</p>';
+      details.innerHTML=html;
+      var info={testRaw:testRaw,adminUrl:adminUrl,email:email,fileName:file&&file.name,backupVersion:data&&data.backupVersion,adminExportVersion:data&&data.adminExportVersion,appVersion:data&&data.appVersion,saves:Array.isArray(tables.saves)?tables.saves.length:0,teamCodes:teamCodes};
+      text.value=tas492BuildText(info,reasons,warnings,nextAction);
+      var reasonSummary=reasons.length?' Stopporsak: '+reasons.slice(0,3).join(' | ')+(reasons.length>3?' | +'+(reasons.length-3)+' till':''):'';
+      st.textContent=(reasons.length?'Testadmin-session-plan: STOPP/KONTROLL. ':'Testadmin-session-plan: REDO FÖR NÄSTA READ-ONLY-STEG. ')+nextAction+reasonSummary+' Ingen SQL har körts, ingen restore har gjorts och inget har skrivits till Supabase.';
+      st.className=reasons.length?'status warn':'status ok';
+    }catch(e){
+      st.textContent='Testadmin-session-plan: tekniskt fel i rutan: '+(e&&e.message?e.message:e);
+      st.className='status bad';
+      details.innerHTML='<div class="badtext"><strong>Tekniskt fel:</strong> '+esc(e&&e.message?e.message:e)+'</div>';
+    }
+  }
+  if($('testadmin-session-v492-prod-url'))$('testadmin-session-v492-prod-url').value=SUPA_URL||'';
+  if($('btn-testadmin-session-v492'))$('btn-testadmin-session-v492').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();tas492Render();});
+  if($('btn-clear-testadmin-session-v492'))$('btn-clear-testadmin-session-v492').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();tas492Clear();});
+  if($('btn-copy-testadmin-session-v492'))$('btn-copy-testadmin-session-v492').addEventListener('click',function(ev){if(ev&&ev.preventDefault)ev.preventDefault();copyText(($('testadmin-session-v492-text')&&$('testadmin-session-v492-text').value)||'');});
+  ['testadmin-session-v492-test-url','testadmin-session-v492-admin-email','testadmin-session-v492-admin-url'].forEach(function(id){if($(id))$(id).addEventListener('input',tas492SetDirty);});
+  if($('testadmin-session-v492-file'))$('testadmin-session-v492-file').addEventListener('change',tas492SetDirty);
+  tas492Checks().forEach(function(x){if($(x.id))$(x.id).addEventListener('change',tas492SetDirty);});
 
 
   if($('user-search'))$('user-search').addEventListener('input',renderUsers);
