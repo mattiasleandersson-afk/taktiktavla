@@ -1531,6 +1531,78 @@
   }
 </style>
 
+
+<style id="v523-desktop-fullscreen-rotate-css">
+  /* v523: Dator-only roterad planvy i helskärmsläge. Mobil/iPad påverkas inte. */
+  #fs-rotate-desktop-btn{ display:none; }
+
+  @media (min-width: 1024px) and (pointer: fine){
+    body.fullscreen-portrait #fs-rotate-desktop-btn{
+      display:inline-flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop #pitch-wrapper{
+      box-sizing:border-box !important;
+      padding-top:82px !important;
+      padding-left:10px !important;
+      padding-right:10px !important;
+      padding-bottom:10px !important;
+      overflow:hidden !important;
+      align-items:center !important;
+      justify-content:center !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop.v66-taktik-fs #pitch-wrapper{
+      padding-top:122px !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop #pitch-svg{
+      transform:rotate(90deg) !important;
+      transform-origin:center center !important;
+      width:min(64vw, calc(100vh - 132px)) !important;
+      height:auto !important;
+      max-width:none !important;
+      max-height:none !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop #fs-top-tools{
+      left:calc(env(safe-area-inset-left,0px) + 8px) !important;
+      right:auto !important;
+      top:calc(env(safe-area-inset-top,0px) + 8px) !important;
+      transform:none !important;
+      max-width:calc(100vw - 160px) !important;
+      overflow-x:auto !important;
+      z-index:10006 !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop #fs-rotate-desktop-btn.active{
+      background:#4ae87a !important;
+      color:#0a1a0d !important;
+      border-color:#4ae87a !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop.v66-taktik-fs #fs-portrait-nav{
+      position:fixed !important;
+      left:50% !important;
+      top:calc(env(safe-area-inset-top,0px) + 56px) !important;
+      bottom:auto !important;
+      right:auto !important;
+      transform:translateX(-50%) !important;
+      z-index:10005 !important;
+      max-width:calc(100vw - 24px) !important;
+      width:auto !important;
+      display:flex !important;
+      flex-wrap:nowrap !important;
+      justify-content:center !important;
+      align-items:center !important;
+      gap:6px !important;
+      overflow-x:auto !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 
@@ -2139,7 +2211,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=522"></script>
+<script src="app.js?v=523"></script>
 
 <script>
 (function(){
