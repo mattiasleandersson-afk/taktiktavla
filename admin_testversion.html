@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v502 TEST</title>
+<title>Taktiktavla admin v503 TEST</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -57,7 +57,7 @@
 <div class="wrap">
   <header>
     <div>
-      <h1>⚽ Taktiktavla admin TEST v502</h1>
+      <h1>⚽ Taktiktavla admin TEST v503</h1>
       <p><strong>TESTADMIN:</strong> Denna fil pekar mot separat Supabase-testprojekt. Används för read-only/preflight och admin-test, inte produktion.</p>
     </div>
     <div class="row">
@@ -68,7 +68,7 @@
 
   <div id="status" class="status">Logga in för att hantera vilka e-postadresser som får använda appen.</div>
 
-  <div class="status warn"><strong>Testläge v502:</strong> Denna adminfil använder test-Supabase <span class="mono">zlynggtimbbnsatjejdx</span>. Kör inte restore/import här.</div>
+  <div class="status warn"><strong>Testläge v503:</strong> Denna adminfil använder test-Supabase <span class="mono">zlynggtimbbnsatjejdx</span>. Kör inte restore/import här.</div>
 
   <section id="login-card" class="card">
     <h2>Logga in</h2>
@@ -266,6 +266,24 @@
       <div id="restore-shares-v502-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
       <div id="restore-shares-v502-grid" class="statusgrid" aria-label="Delningsrestore v502"></div>
       <div id="restore-shares-v502-details" class="statusnote"></div>
+    </section>
+
+    <section class="card" id="restore-aftercheck-v503-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Efterkontroll v503 – återställd backup / READ-ONLY</h2>
+          <p>Läser testdatabasen via spärrad read-only RPC och jämför mot backupfilen. Används efter v500–v502.</p>
+        </div>
+      </div>
+      <div class="status ok"><strong>Read-only:</strong> Denna kontroll ändrar inga datarader. Den läser totalantal utan att vanlig REST/RLS döljer vissa <span class="mono">saves</span>-rader.</div>
+      <div class="helpbox"><strong>Förutsättning:</strong> Kör SQL-filen <span class="mono">supabase_test_restore_aftercheck_v503_READONLY.sql</span> i testprojektet först.</div>
+      <input id="restore-aftercheck-v503-file" type="file" accept="application/json,.json" style="margin-top:10px">
+      <div class="row" style="margin-top:10px">
+        <button id="btn-restore-aftercheck-v503" class="small">Kör efterkontroll</button>
+      </div>
+      <div id="restore-aftercheck-v503-status" class="status" style="margin-top:10px">Ingen efterkontroll körd ännu.</div>
+      <div id="restore-aftercheck-v503-grid" class="statusgrid" aria-label="Efterkontroll v503"></div>
+      <div id="restore-aftercheck-v503-details" class="statusnote"></div>
     </section>
 
     <section class="card" id="restore-plan-card">
@@ -3539,6 +3557,117 @@
     }
   }
 
+
+  async function ac503Fetch(path,opts){
+    opts=opts||{};
+    opts.headers=Object.assign(headers(),opts.headers||{});
+    return fetch(SUPA_URL+path,opts);
+  }
+  async function ac503ReadBackupIfSelected(){
+    var input=$('restore-aftercheck-v503-file');
+    if(!input||!input.files||!input.files[0])return null;
+    var txt=await input.files[0].text();
+    return {file:input.files[0],data:JSON.parse(txt)};
+  }
+  function ac503CountFromBackup(data,table){
+    if(!data||!data.tables||!Array.isArray(data.tables[table]))return null;
+    return data.tables[table].length;
+  }
+  function ac503SavesTypesFromBackup(data){
+    var out={};
+    var rows=(data&&data.tables&&Array.isArray(data.tables.saves))?data.tables.saves:[];
+    rows.forEach(function(r){
+      var t=(r&&r.type!=null)?String(r.type):'(null)';
+      out[t]=(out[t]||0)+1;
+    });
+    return out;
+  }
+  function ac503ObjectEqual(a,b){
+    var ka=Object.keys(a||{}).sort(), kb=Object.keys(b||{}).sort();
+    if(ka.length!==kb.length)return false;
+    for(var i=0;i<ka.length;i++){
+      if(ka[i]!==kb[i])return false;
+      if(Number(a[ka[i]])!==Number(b[kb[i]]))return false;
+    }
+    return true;
+  }
+  async function ac503Run(){
+    var st=$('restore-aftercheck-v503-status'), grid=$('restore-aftercheck-v503-grid'), details=$('restore-aftercheck-v503-details');
+    try{
+      if(st){st.textContent='Kör read-only efterkontroll...';st.className='status warn';}
+      var backup=await ac503ReadBackupIfSelected();
+      var r=await ac503Fetch('/rest/v1/rpc/tt_test_restore_aftercheck_v503',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({})
+      });
+      var txt=await r.text();
+      if(!r.ok){
+        if(st){st.textContent='v503 efterkontroll misslyckades. HTTP '+r.status+': '+txt;st.className='status bad';}
+        return;
+      }
+      var res=JSON.parse(txt||'{}');
+      var counts=res.counts||{};
+      var savesByType=res.savesByType||{};
+      var refs=res.referenceChecks||{};
+      var maxIds=res.maxIds||{};
+      var errors=[], warnings=[], ok=[];
+      if(Number(refs.missingFormationShareRefs||0)!==0)errors.push('Saknade saves-referenser i formation_team_shares: '+refs.missingFormationShareRefs+'.');
+      else ok.push('Alla formation_team_shares pekar på befintliga saves.');
+      if(Number(refs.missingTaktikfilmShareRefs||0)!==0)errors.push('Saknade saves-referenser i taktikfilm_team_shares: '+refs.missingTaktikfilmShareRefs+'.');
+      else ok.push('Alla taktikfilm_team_shares pekar på befintliga saves.');
+
+      if(backup&&backup.data){
+        var b=backup.data;
+        var expected={
+          saves:ac503CountFromBackup(b,'saves'),
+          allowed_users:ac503CountFromBackup(b,'allowed_users'),
+          app_admins:ac503CountFromBackup(b,'app_admins'),
+          formation_team_shares:ac503CountFromBackup(b,'formation_team_shares'),
+          taktikfilm_team_shares:ac503CountFromBackup(b,'taktikfilm_team_shares')
+        };
+        Object.keys(expected).forEach(function(k){
+          if(expected[k]==null)return;
+          if(Number(counts[k]||0)===Number(expected[k]))ok.push(k+' matchar backupen: '+expected[k]+' rader.');
+          else errors.push(k+' matchar inte backupen. Live='+Number(counts[k]||0)+', backup='+expected[k]+'.');
+        });
+        var bt=ac503SavesTypesFromBackup(b);
+        if(ac503ObjectEqual(bt,savesByType))ok.push('Typfördelningen i saves matchar backupen.');
+        else errors.push('Typfördelningen i saves matchar inte backupen.');
+      }else{
+        warnings.push('Ingen backupfil vald. Kontrollen visar live-status men kan inte jämföra mot backupfilen.');
+      }
+
+      var decision=errors.length?'STOPP':(warnings.length?'GRANSKA':'KLAR');
+      if(grid){
+        grid.innerHTML=''
+          +statusCard('Beslut',decision)
+          +statusCard('saves',counts.saves==null?'-':counts.saves)
+          +statusCard('allowed_users',counts.allowed_users==null?'-':counts.allowed_users)
+          +statusCard('app_admins',counts.app_admins==null?'-':counts.app_admins)
+          +statusCard('formation shares',counts.formation_team_shares==null?'-':counts.formation_team_shares)
+          +statusCard('taktikfilm shares',counts.taktikfilm_team_shares==null?'-':counts.taktikfilm_team_shares)
+          +statusCard('max saves id',maxIds.saves==null?'-':maxIds.saves);
+      }
+      if(st){
+        st.textContent='v503 efterkontroll klar: '+decision+'.';
+        st.className=decision==='KLAR'?'status ok':(decision==='GRANSKA'?'status warn':'status bad');
+      }
+      var typeLine=Object.keys(savesByType).sort().map(function(k){return esc(k)+': '+esc(String(savesByType[k]));}).join(' · ');
+      var html='<div><strong>Efterkontroll v503 / READ-ONLY</strong></div>';
+      html+='<div><strong>Kontrollerad:</strong> '+esc(res.checkedAt||'')+'</div>';
+      html+='<div><strong>Saves typfördelning:</strong> '+(typeLine||'–')+'</div>';
+      html+='<div><strong>Max-id:</strong> saves='+(maxIds.saves==null?'-':esc(String(maxIds.saves)))+', formation_team_shares='+(maxIds.formation_team_shares==null?'-':esc(String(maxIds.formation_team_shares)))+', taktikfilm_team_shares='+(maxIds.taktikfilm_team_shares==null?'-':esc(String(maxIds.taktikfilm_team_shares)))+'</div>';
+      if(errors.length)html+='<div class="bad" style="margin-top:8px"><strong>Fel:</strong><ul><li>'+errors.map(esc).join('</li><li>')+'</li></ul></div>';
+      if(warnings.length)html+='<div class="warn" style="margin-top:8px"><strong>Varningar:</strong><ul><li>'+warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+      html+='<div style="margin-top:8px"><strong>Godkända kontroller:</strong><ul><li>'+ok.map(esc).join('</li><li>')+'</li></ul></div>';
+      html+='<div class="helpbox" style="margin-top:10px">Om beslutet är KLAR och testappen fungerar är testrestore-spåret v500–v502 bekräftat återställbart i testmiljö.</div>';
+      if(details)details.innerHTML=html;
+    }catch(e){
+      if(st){st.textContent='v503 efterkontroll misslyckades: '+(e.message||e);st.className='status bad';}
+    }
+  }
+
   $('btn-add').onclick=function(){addUser(false);};
   $('btn-add-mail').onclick=function(){addUser(true);};
   $('btn-refresh').onclick=function(){loadUsers().catch(function(e){setStatus('Fel: '+e.message,true);});};
@@ -3566,6 +3695,8 @@
   if($('btn-restore-shares-preview-v502'))$('btn-restore-shares-preview-v502').onclick=function(){sh502Preview();};
   if($('restore-shares-v502-file'))$('restore-shares-v502-file').addEventListener('change',function(){sh502Preview();});
   if($('btn-restore-shares-run-v502'))$('btn-restore-shares-run-v502').onclick=function(){sh502Run();};
+  if($('btn-restore-aftercheck-v503'))$('btn-restore-aftercheck-v503').onclick=function(){ac503Run();};
+  if($('restore-aftercheck-v503-file'))$('restore-aftercheck-v503-file').addEventListener('change',function(){ac503Run();});
   if($('btn-restore-plan'))$('btn-restore-plan').onclick=function(){showRestorePlan();};
   if($('btn-clear-restore-plan'))$('btn-clear-restore-plan').onclick=function(){clearRestorePlan();};
   if($('restore-plan-file'))$('restore-plan-file').addEventListener('change',function(){showRestorePlan();});
