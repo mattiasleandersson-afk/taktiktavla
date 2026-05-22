@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v498 FIX TEST</title>
+<title>Taktiktavla admin v498b TEST</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -57,7 +57,7 @@
 <div class="wrap">
   <header>
     <div>
-      <h1>⚽ Taktiktavla admin TEST v498 FIX</h1>
+      <h1>⚽ Taktiktavla admin TEST v498b</h1>
       <p><strong>TESTADMIN:</strong> Denna fil pekar mot separat Supabase-testprojekt. Används för read-only/preflight och admin-test, inte produktion.</p>
     </div>
     <div class="row">
@@ -68,7 +68,7 @@
 
   <div id="status" class="status">Logga in för att hantera vilka e-postadresser som får använda appen.</div>
 
-  <div class="status warn"><strong>Testläge v498 FIX:</strong> Denna adminfil använder test-Supabase <span class="mono">zlynggtimbbnsatjejdx</span>. Kör inte restore/import här.</div>
+  <div class="status warn"><strong>Testläge v498b:</strong> Denna adminfil använder test-Supabase <span class="mono">zlynggtimbbnsatjejdx</span>. Kör inte restore/import här.</div>
 
   <section id="login-card" class="card">
     <h2>Logga in</h2>
@@ -172,21 +172,21 @@
       <div id="restore-plan-v497-details" class="statusnote"></div>
     </section>
 
-    <section class="card" id="testrestore-live-preflight-v498-card">
+    <section class="card" id="testrestore-live-preflight-v498b-card">
       <div class="row" style="margin-bottom:6px">
         <div>
-          <h2 style="margin:0">Testrestore live-preflight v498 FIX / read-only</h2>
-          <p>Kontrollerar live mot test-Supabase att tabeller/RPC:er finns och att databasen är i rätt läge inför en framtida skrivande testrestore. Den här rutan gör bara SELECT/RPC-läsning och skriver ingenting.</p>
+          <h2 style="margin:0">Testrestore live-preflight v498b / read-only</h2>
+          <p>Fixad live-preflight som kontrollerar RPC:erna med rätt parameternamn och visar vilka <span class="mono">saves</span>-rader som redan finns i testdatabasen. Den här rutan gör bara läsning.</p>
         </div>
       </div>
-      <div class="helpbox"><strong>Ingen restore/import görs i v498 FIX.</strong> Denna fixversion bygger från fungerande v497 och rättar felet <span class="mono">api is not defined</span>.</div>
+      <div class="helpbox"><strong>Ingen restore/import görs i v498b.</strong> Denna version är bara felsökande read-only efter att v498 stoppade på befintlig testdata.</div>
       <div class="row" style="margin-top:10px">
-        <button id="btn-live-preflight-v498" class="primary">Kör live-preflight</button>
-        <button id="btn-clear-live-preflight-v498" class="small">Rensa live-preflight</button>
+        <button id="btn-live-preflight-v498b" class="primary">Kör live-preflight v498b</button>
+        <button id="btn-clear-live-preflight-v498b" class="small">Rensa v498b</button>
       </div>
-      <div id="live-preflight-v498-status" class="status" style="margin-top:10px">Inte kontrollerad ännu.</div>
-      <div id="live-preflight-v498-grid" class="statusgrid" aria-label="Live-preflight v498 fix"></div>
-      <div id="live-preflight-v498-details" class="statusnote"></div>
+      <div id="live-preflight-v498b-status" class="status" style="margin-top:10px">Inte kontrollerad ännu.</div>
+      <div id="live-preflight-v498b-grid" class="statusgrid" aria-label="Live-preflight v498b"></div>
+      <div id="live-preflight-v498b-details" class="statusnote"></div>
     </section>
 
     <section class="card" id="restore-plan-card">
@@ -2579,24 +2579,24 @@
   }
 
 
-  async function lp498RawFetch(path,opts){
+  async function lp498bFetch(path,opts){
     opts=opts||{};
     opts.headers=Object.assign(headers(),opts.headers||{});
     return fetch(SUPA_URL+path,opts);
   }
-  async function lp498FetchTableCount(table){
-    var r=await lp498RawFetch('/rest/v1/'+table+'?select=*',{method:'HEAD',headers:{Prefer:'count=exact'}});
+  async function lp498bCount(table){
+    var r=await lp498bFetch('/rest/v1/'+table+'?select=*',{method:'HEAD',headers:{Prefer:'count=exact'}});
     var cr=r.headers.get('content-range')||'';
-    var count=null;
+    var n=null;
     if(cr.indexOf('/')>=0){
       var tail=cr.split('/').pop();
-      if(tail!=='*')count=Number(tail);
+      if(tail!=='*')n=Number(tail);
     }
-    return {ok:r.ok,status:r.status,count:isNaN(count)?null:count,contentRange:cr};
+    return {ok:r.ok,status:r.status,count:isNaN(n)?null:n,contentRange:cr};
   }
-  async function lp498RpcProbe(name,payload){
+  async function lp498bRpc(name,payload){
     try{
-      var r=await lp498RawFetch('/rest/v1/rpc/'+name,{
+      var r=await lp498bFetch('/rest/v1/rpc/'+name,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify(payload||{})
@@ -2609,42 +2609,54 @@
       return {ok:false,status:'ERR',exists:false,text:e.message||String(e)};
     }
   }
-  function lp498CountValue(obj){return obj&&typeof obj.count==='number'?obj.count:0;}
-  async function lp498Run(){
-    var st=$('live-preflight-v498-status'), grid=$('live-preflight-v498-grid'), details=$('live-preflight-v498-details');
-    if(st){st.textContent='Kör live-preflight v498 FIX mot test-Supabase...';st.className='status';}
+  async function lp498bListSaves(){
+    var r=await lp498bFetch('/rest/v1/saves?select=id,type,name,folder,created_at&order=id.asc&limit=20');
+    var txt=await r.text();
+    if(!r.ok)return {ok:false,status:r.status,rows:[],text:txt};
+    try{return {ok:true,status:r.status,rows:JSON.parse(txt||'[]'),text:txt};}
+    catch(e){return {ok:false,status:r.status,rows:[],text:e.message};}
+  }
+  function lp498bN(x){return x&&typeof x.count==='number'?x.count:0;}
+  async function lp498bRun(){
+    var st=$('live-preflight-v498b-status'), grid=$('live-preflight-v498b-grid'), details=$('live-preflight-v498b-details');
+    if(st){st.textContent='Kör live-preflight v498b mot test-Supabase...';st.className='status';}
     if(grid)grid.innerHTML=''; if(details)details.textContent='';
     var errors=[], warnings=[], ok=[];
     try{
       var tables=['saves','formation_team_shares','taktikfilm_team_shares','allowed_users','app_admins'];
       var counts={};
       for(var i=0;i<tables.length;i++){
-        var t=tables[i];
-        var c=await lp498FetchTableCount(t);
+        var t=tables[i], c=await lp498bCount(t);
         counts[t]=c;
-        if(c.ok){ok.push('Tabellen '+t+' finns och kan räknas: '+String(c.count==null?'okänt antal':c.count)+' rader.');}
-        else{errors.push('Tabellen '+t+' kunde inte räknas. HTTP '+c.status+'.');}
+        if(c.ok)ok.push('Tabellen '+t+' finns och kan räknas: '+String(c.count==null?'okänt antal':c.count)+' rader.');
+        else errors.push('Tabellen '+t+' kunde inte räknas. HTTP '+c.status+'.');
       }
 
-      var access=await lp498RpcProbe('tt_my_team_access',{p_team:'TEST'});
+      var access=await lp498bRpc('tt_my_team_access',{p_team:'TEST'});
       if(access.exists)ok.push('RPC tt_my_team_access finns.'); else errors.push('RPC tt_my_team_access saknas.');
 
-      var statusRpc=await lp498RpcProbe('tt_admin_system_status',{});
+      var statusRpc=await lp498bRpc('tt_admin_system_status',{});
       if(statusRpc.exists&&statusRpc.ok)ok.push('RPC tt_admin_system_status fungerar för inloggad appadmin.');
-      else if(statusRpc.exists){warnings.push('RPC tt_admin_system_status finns men svarade HTTP '+statusRpc.status+'. Det kan bero på behörighet/session.');}
+      else if(statusRpc.exists)warnings.push('RPC tt_admin_system_status finns men svarade HTTP '+statusRpc.status+'.');
       else errors.push('RPC tt_admin_system_status saknas.');
 
-      var formRpc=await lp498RpcProbe('tt_list_team_shared_formations_v365',{p_team:'TEST'});
-      if(formRpc.exists)ok.push('RPC tt_list_team_shared_formations_v365 finns.'); else errors.push('RPC tt_list_team_shared_formations_v365 saknas.');
+      var formRpc=await lp498bRpc('tt_list_team_shared_formations_v365',{p_team_code:'TEST'});
+      if(formRpc.exists)ok.push('RPC tt_list_team_shared_formations_v365 finns med p_team_code.');
+      else errors.push('RPC tt_list_team_shared_formations_v365 saknas.');
 
-      var filmRpc=await lp498RpcProbe('tt_list_team_shared_taktikfilmer_v373',{p_team:'TEST'});
-      if(filmRpc.exists)ok.push('RPC tt_list_team_shared_taktikfilmer_v373 finns.'); else errors.push('RPC tt_list_team_shared_taktikfilmer_v373 saknas.');
+      var filmRpc=await lp498bRpc('tt_list_team_shared_taktikfilmer_v373',{p_team_code:'TEST'});
+      if(filmRpc.exists)ok.push('RPC tt_list_team_shared_taktikfilmer_v373 finns med p_team_code.');
+      else errors.push('RPC tt_list_team_shared_taktikfilmer_v373 saknas.');
 
-      var savesCount=lp498CountValue(counts.saves);
-      var fCount=lp498CountValue(counts.formation_team_shares);
-      var tfCount=lp498CountValue(counts.taktikfilm_team_shares);
-      var allowedCount=lp498CountValue(counts.allowed_users);
-      var adminsCount=lp498CountValue(counts.app_admins);
+      var savesList=await lp498bListSaves();
+      if(savesList.ok)ok.push('Befintliga saves-rader kunde läsas för felsökning.');
+      else warnings.push('Kunde inte läsa saves-radernas innehåll. HTTP '+savesList.status+'. Räkningen kan ändå vara korrekt.');
+
+      var savesCount=lp498bN(counts.saves);
+      var fCount=lp498bN(counts.formation_team_shares);
+      var tfCount=lp498bN(counts.taktikfilm_team_shares);
+      var allowedCount=lp498bN(counts.allowed_users);
+      var adminsCount=lp498bN(counts.app_admins);
 
       if(savesCount!==0)errors.push('STOPP: saves är inte tom ('+savesCount+' rader). Skrivande testrestore ska inte köras ovanpå befintlig appdata.');
       else ok.push('saves är tom.');
@@ -2652,10 +2664,9 @@
       else ok.push('formation_team_shares är tom.');
       if(tfCount!==0)errors.push('STOPP: taktikfilm_team_shares är inte tom ('+tfCount+' rader).');
       else ok.push('taktikfilm_team_shares är tom.');
-
       if(adminsCount<1)errors.push('STOPP: app_admins saknar testadmin.');
       else ok.push('app_admins innehåller minst en rad.');
-      if(allowedCount!==0)warnings.push('allowed_users innehåller '+allowedCount+' rad(er). Det är normalt om testadmin/allowlist redan skapats, men skrivande testrestore måste hantera dubbletter/ersättning säkert.');
+      if(allowedCount!==0)warnings.push('allowed_users innehåller '+allowedCount+' rad(er). Detta kan hanteras i kommande testrestore, men ska göras med dubblettskydd.');
       else ok.push('allowed_users är tom.');
 
       var decision=errors.length?'STOPP':(warnings.length?'GRANSKA':'KLAR');
@@ -2667,32 +2678,40 @@
           +statusCard('Filmdelningar',tfCount)
           +statusCard('Allowed users',allowedCount)
           +statusCard('App admins',adminsCount)
-          +statusCard('RPC tt_my_team_access',access.exists?'finns':'saknas')
-          +statusCard('RPC systemstatus',statusRpc.exists?(statusRpc.ok?'ok':'finns'):'saknas')
           +statusCard('RPC taveldelning',formRpc.exists?'finns':'saknas')
-          +statusCard('RPC filmdelning',filmRpc.exists?'finns':'saknas');
+          +statusCard('RPC filmdelning',filmRpc.exists?'finns':'saknas')
+          +statusCard('Saves-rader läsbara',savesList.ok?'ja':'nej');
       }
       if(st){
-        if(decision==='STOPP'){st.textContent='Live-preflight v498 FIX: STOPP. Testdatabasen är inte klar för skrivande testrestore.';st.className='status bad';}
-        else if(decision==='GRANSKA'){st.textContent='Live-preflight v498 FIX: GRANSKA. Inga stoppfel, men varningar finns. Ingen skrivning har gjorts.';st.className='status warn';}
-        else{st.textContent='Live-preflight v498 FIX: KLAR. Testdatabasen ser redo ut för separat skrivande testrestore-version. Ingen skrivning har gjorts.';st.className='status ok';}
+        if(decision==='STOPP'){st.textContent='Live-preflight v498b: STOPP. Testdatabasen är inte redo för skrivande testrestore. Ingen skrivning har gjorts.';st.className='status bad';}
+        else if(decision==='GRANSKA'){st.textContent='Live-preflight v498b: GRANSKA. Inga stoppfel, men varningar finns. Ingen skrivning har gjorts.';st.className='status warn';}
+        else{st.textContent='Live-preflight v498b: KLAR. Testdatabasen ser redo ut. Ingen skrivning har gjorts.';st.className='status ok';}
       }
+
+      var rows=savesList.rows||[];
+      var rowsHtml=rows.length
+        ? '<table style="width:100%;margin-top:8px;border-collapse:collapse"><thead><tr><th style="text-align:left">id</th><th style="text-align:left">type</th><th style="text-align:left">name</th><th style="text-align:left">folder</th><th style="text-align:left">created_at</th></tr></thead><tbody>'
+          +rows.map(function(r){return '<tr><td>'+esc(String(r.id))+'</td><td>'+esc(r.type||'')+'</td><td>'+esc(r.name||'')+'</td><td>'+esc(r.folder||'')+'</td><td>'+esc(r.created_at||'')+'</td></tr>';}).join('')
+          +'</tbody></table>'
+        : '<div>Inga läsbara saves-rader att visa.</div>';
+
       var html='';
-      html+='<div><strong>v498 FIX är read-only.</strong> Kontrollen har bara räknat tabeller och anropat läs-/status-RPC:er.</div>';
+      html+='<div><strong>v498b är read-only.</strong> Den har bara räknat tabeller, testat RPC:er och läst en liten lista med befintliga saves-rader.</div>';
       html+='<div><strong>Test-Supabase:</strong> '+esc(SUPA_URL)+'</div>';
       if(errors.length)html+='<div class="bad" style="margin-top:8px"><strong>Stoppfel:</strong><ul><li>'+errors.map(esc).join('</li><li>')+'</li></ul></div>';
       if(warnings.length)html+='<div class="warn" style="margin-top:8px"><strong>Varningar:</strong><ul><li>'+warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+      html+='<div style="margin-top:8px"><strong>Befintliga saves-rader i testdatabasen:</strong>'+rowsHtml+'</div>';
       html+='<div style="margin-top:8px"><strong>Godkända kontroller:</strong><ul><li>'+ok.map(esc).join('</li><li>')+'</li></ul></div>';
-      html+='<div class="helpbox" style="margin-top:10px"><strong>Nästa steg endast om beslutet är KLAR/GRANSKA utan stoppfel:</strong> separat v499 som skriver allowed_users/app_admins i testmiljö. Inte produktion.</div>';
+      html+='<div class="helpbox" style="margin-top:10px"><strong>Nästa beslut:</strong> Om saves-raderna bara är testdata kan nästa steg bli en separat test-reset i testprojektet, men bara med tydlig bekräftelse. Alternativt skapas ett nytt tomt testprojekt.</div>';
       if(details)details.innerHTML=html;
     }catch(e){
-      if(st){st.textContent='Live-preflight v498 FIX misslyckades: '+(e.message||e);st.className='status bad';}
+      if(st){st.textContent='Live-preflight v498b misslyckades: '+(e.message||e);st.className='status bad';}
     }
   }
-  function lp498Clear(){
-    if($('live-preflight-v498-status')){$('live-preflight-v498-status').textContent='Inte kontrollerad ännu.';$('live-preflight-v498-status').className='status';}
-    if($('live-preflight-v498-grid'))$('live-preflight-v498-grid').innerHTML='';
-    if($('live-preflight-v498-details'))$('live-preflight-v498-details').textContent='';
+  function lp498bClear(){
+    if($('live-preflight-v498b-status')){$('live-preflight-v498b-status').textContent='Inte kontrollerad ännu.';$('live-preflight-v498b-status').className='status';}
+    if($('live-preflight-v498b-grid'))$('live-preflight-v498b-grid').innerHTML='';
+    if($('live-preflight-v498b-details'))$('live-preflight-v498b-details').textContent='';
   }
 
   $('btn-add').onclick=function(){addUser(false);};
@@ -2709,8 +2728,8 @@
   if($('btn-restore-plan-v497'))$('btn-restore-plan-v497').onclick=function(){rp497Run();};
   if($('restore-plan-v497-file'))$('restore-plan-v497-file').addEventListener('change',function(){rp497Run();});
   if($('btn-clear-restore-plan-v497'))$('btn-clear-restore-plan-v497').onclick=function(){rp497Clear();};
-  if($('btn-live-preflight-v498'))$('btn-live-preflight-v498').onclick=function(){lp498Run();};
-  if($('btn-clear-live-preflight-v498'))$('btn-clear-live-preflight-v498').onclick=function(){lp498Clear();};
+  if($('btn-live-preflight-v498b'))$('btn-live-preflight-v498b').onclick=function(){lp498bRun();};
+  if($('btn-clear-live-preflight-v498b'))$('btn-clear-live-preflight-v498b').onclick=function(){lp498bClear();};
   if($('btn-restore-plan'))$('btn-restore-plan').onclick=function(){showRestorePlan();};
   if($('btn-clear-restore-plan'))$('btn-clear-restore-plan').onclick=function(){clearRestorePlan();};
   if($('restore-plan-file'))$('restore-plan-file').addEventListener('change',function(){showRestorePlan();});
