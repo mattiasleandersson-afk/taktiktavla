@@ -131,7 +131,7 @@
     right: 92px !important;
     left: auto !important;
     z-index: 10010 !important;
-    max-width: min(270px, calc(100vw - 112px)) !important;
+    max-width: min(390px, calc(100vw - 112px)) !important;
     overflow-x: auto !important;
     background: rgba(17,26,20,.94) !important;
     border: 1px solid #2d4a35 !important;
@@ -143,7 +143,7 @@
   body.fullscreen-portrait #arrow-options select,
   body.fullscreen-portrait #zone-options select,
   body.fullscreen-portrait #freehand-options select{
-    max-width: 92px !important;
+    max-width: 120px !important;
     font-size: .68rem !important;
   }
 </style>
@@ -176,7 +176,7 @@
     right:92px !important;
     left:auto !important;
     z-index:10010 !important;
-    max-width:min(270px, calc(100vw - 112px)) !important;
+    max-width:min(390px, calc(100vw - 112px)) !important;
     overflow-x:auto !important;
     background:rgba(17,26,20,.94) !important;
     border:1px solid #2d4a35 !important;
@@ -1716,6 +1716,10 @@
       <option value="solid">&#8212; Hel</option>
       <option value="dashed">&#8229; Streckad</option>
     </select>
+    <select id="arrow-head-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="arrow">&#10132; Pil</option>
+      <option value="line">&#9473; Linje</option>
+    </select>
     <select id="arrow-width-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
       <option value="2">&#9135; Tunn</option>
       <option value="3" selected>&#9473; Normal</option>
@@ -1725,7 +1729,11 @@
   <div id="zone-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:6;pointer-events:auto">
     <select id="zone-shape-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
       <option value="rect">&#9635; Rektangel</option>
-      <option value="circle">&#9711; Cirkel</option>
+      <option value="circle">&#9711; Cirkel/oval</option>
+      <option value="tri-up">&#9651; Triangel upp</option>
+      <option value="tri-down">&#9661; Triangel ned</option>
+      <option value="tri-left">&#9665; Triangel v&#228;nster</option>
+      <option value="tri-right">&#9655; Triangel h&#246;ger</option>
     </select>
     <select id="zone-color-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
       <option value="rgba(232,76,76,0.25)">&#9632; R&#246;d</option>
@@ -1735,6 +1743,17 @@
       <option value="rgba(160,120,255,0.25)">&#9632; Lila</option>
     
       <option value="rgba(0,0,0,0.25)">&#9632; Svart</option>
+    </select>
+    <select id="zone-fill-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="solid">&#9632; Fylld</option>
+      <option value="none">&#9633; Ingen</option>
+      <option value="h">&#9776; Horisontell</option>
+      <option value="v">&#9776; Vertikal</option>
+      <option value="diag">&#9585; Diagonal /</option>
+      <option value="diag2">&#9586; Diagonal \</option>
+      <option value="cross">&#9587; Kryss</option>
+      <option value="grid">&#9638; Rutn&#228;t</option>
+      <option value="dots">&#8759; Prickar</option>
     </select>
   </div>
   <div id="freehand-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:6;pointer-events:auto">
@@ -2243,7 +2262,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=527"></script>
+<script src="app.js?v=528"></script>
 
 <script>
 (function(){
