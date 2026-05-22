@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v494</title>
+<title>Taktiktavla admin v514</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -92,6 +92,33 @@
       <div class="stat"><div id="access-status" class="num">✓</div><div class="label">Adminläge aktivt</div></div>
     </section>
 
+    <section class="card" id="backup-dashboard-v514-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Backup-dashboard v514 / READ-ONLY</h2>
+          <p>Produktionsadminens säkra backupöversikt. Den här rutan skriver ingenting och innehåller ingen restore/import.</p>
+        </div>
+      </div>
+      <div class="status ok"><strong>Produktionsläge:</strong> Den här adminen får användas för read-only systemstatus, backup-export, backupkontroll och planering. Restore/import körs endast i separat testmiljö.</div>
+      <div class="statusgrid" aria-label="Backupstatus v514">
+        <div class="statusitem"><strong>Backup/export</strong><span>Read-only i produktion</span></div>
+        <div class="statusitem"><strong>Restore/import</strong><span>Endast testmiljö</span></div>
+        <div class="statusitem"><strong>Senast verifierat</strong><span>Testrestore v503/v505</span></div>
+        <div class="statusitem"><strong>Testadmin</strong><span>admin_testversion.html</span></div>
+      </div>
+      <div class="helpbox">
+        <strong>Verifierad restorekedja i testmiljö:</strong>
+        v499 rensade testdata, v500 återställde <span class="mono">allowed_users</span>,
+        v501 återställde 25 <span class="mono">saves</span>-rader,
+        v502 återställde delningstabellerna och v503 bekräftade allt read-only.
+      </div>
+      <div class="helpbox">
+        <strong>Vid verklig katastrof:</strong>
+        ta inte in restore/import i denna produktionsadmin. Återställ först i separat Supabase-testprojekt med
+        <span class="mono">admin_testversion.html</span>, kontrollera med v503-efterkontroll och besluta därefter kontrollerad väg framåt.
+      </div>
+    </section>
+
     <section class="card" id="system-status-card">
       <div class="row" style="margin-bottom:6px">
         <div>
@@ -109,7 +136,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Full backup-export</h2>
-          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v467 bygger vidare på v460:s tydliga metadata och logiska counts. Detta är fortfarande bara läsning: inget importeras, återställs, ändras eller tas bort.</p>
+          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v514 behåller read-only exporten och påminner om att restore/import endast görs i separat testmiljö. Inget importeras, återställs, ändras eller tas bort.</p>
         </div>
         <button id="btn-download-backup" class="primary right">Ladda ner full backup</button>
       </div>
@@ -121,7 +148,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Kontrollera backupfil</h2>
-          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v467 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
+          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v514 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
         </div>
       </div>
       <input id="backup-validate-file" type="file" accept="application/json,.json">
