@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v515</title>
+<title>Taktiktavla admin v516</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -95,7 +95,7 @@
     <section class="card" id="backup-dashboard-v514-card">
       <div class="row" style="margin-bottom:6px">
         <div>
-          <h2 style="margin:0">Backup-dashboard v515 / READ-ONLY</h2>
+          <h2 style="margin:0">Backup-dashboard v516 / READ-ONLY</h2>
           <p>Produktionsadminens säkra backupöversikt. Den här rutan skriver ingenting och innehåller ingen restore/import.</p>
         </div>
       </div>
@@ -122,7 +122,7 @@
     <section class="card" id="backup-routine-v515-card">
       <div class="row" style="margin-bottom:6px">
         <div>
-          <h2 style="margin:0">Backup-rutin v515 / READ-ONLY</h2>
+          <h2 style="margin:0">Backup-rutin v516 / READ-ONLY</h2>
           <p>Praktisk körordning för att ta och kontrollera en produktionsbackup utan att skriva till databasen.</p>
         </div>
       </div>
@@ -147,6 +147,39 @@
       </div>
     </section>
 
+    <section class="card" id="disaster-plan-v516-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Katastrofplan v516 / READ-ONLY</h2>
+          <p>Vad vi gör om produktionsdatabasen någon gång kraschar eller behöver ersättas. Detta är bara en säker handlingsplan – ingen restore/import finns i produktionsadminen.</p>
+        </div>
+      </div>
+      <div class="status warn"><strong>Viktig princip:</strong> Återställ aldrig direkt ovanpå produktionsdatabasen från en webbläsarknapp. Verifiera först backupen i separat Supabase-testprojekt.</div>
+      <div class="helpbox">
+        <strong>Om något kraschar:</strong>
+        <ol style="margin:6px 0 0 18px;padding:0">
+          <li>Rör inte produktionsdatabasen i panik.</li>
+          <li>Ta fram senaste sparade backupfilen.</li>
+          <li>Skapa eller öppna separat Supabase-testprojekt.</li>
+          <li>Kör testrestore via <span class="mono">admin_testversion.html</span>.</li>
+          <li>Kör v503-efterkontroll och kontrollera totalsiffror/referenser.</li>
+          <li>Testa testappen mot den återställda testdatabasen.</li>
+          <li>Först när testrestore är verifierad: besluta kontrollerad väg framåt, till exempel nytt produktionsprojekt eller manuell migrering.</li>
+        </ol>
+      </div>
+      <div class="helpbox">
+        <strong>Filer som ska finnas säkert sparade:</strong>
+        <ul style="margin:6px 0 0 18px;padding:0">
+          <li>Senaste fulla backupfilen från produktionsadminen.</li>
+          <li><span class="mono">admin_testversion.html</span></li>
+          <li><span class="mono">app_js_v495_testprojekt.txt</span> och <span class="mono">index_v495_testprojekt.html</span></li>
+          <li>SQL-filerna för v501, v502 och v503 i testrestore-kedjan.</li>
+          <li>Den aktuella produktionsappen och produktionsadminen.</li>
+        </ul>
+      </div>
+      <div class="status ok"><strong>Nuvarande verifierat läge:</strong> Backup från produktion har återställts i testmiljö och kontrollerats med v503. Det räcker som beredskap utan att lägga farliga restore-knappar i produktion.</div>
+    </section>
+
     <section class="card" id="system-status-card">
       <div class="row" style="margin-bottom:6px">
         <div>
@@ -164,7 +197,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Full backup-export</h2>
-          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v515 behåller read-only exporten och påminner om att restore/import endast görs i separat testmiljö. Inget importeras, återställs, ändras eller tas bort.</p>
+          <p>Skapar en komplett JSON-ögonblicksbild av appdata för katastrofbackup. v516 behåller read-only exporten och påminner om att restore/import endast görs i separat testmiljö. Inget importeras, återställs, ändras eller tas bort.</p>
         </div>
         <button id="btn-download-backup" class="primary right">Ladda ner full backup</button>
       </div>
@@ -176,7 +209,7 @@
       <div class="row" style="margin-bottom:6px">
         <div>
           <h2 style="margin:0">Kontrollera backupfil</h2>
-          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v515 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
+          <p>Välj en nedladdad JSON-backup för lokal kontroll i webbläsaren. v516 läser bara filen på din dator och visar sammanfattning, counts och varningar. Ingen import görs och inget skickas till databasen.</p>
         </div>
       </div>
       <input id="backup-validate-file" type="file" accept="application/json,.json">
