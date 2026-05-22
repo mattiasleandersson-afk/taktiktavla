@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v500 TEST</title>
+<title>Taktiktavla admin v501 TEST</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -57,7 +57,7 @@
 <div class="wrap">
   <header>
     <div>
-      <h1>⚽ Taktiktavla admin TEST v500</h1>
+      <h1>⚽ Taktiktavla admin TEST v501</h1>
       <p><strong>TESTADMIN:</strong> Denna fil pekar mot separat Supabase-testprojekt. Används för read-only/preflight och admin-test, inte produktion.</p>
     </div>
     <div class="row">
@@ -68,7 +68,7 @@
 
   <div id="status" class="status">Logga in för att hantera vilka e-postadresser som får använda appen.</div>
 
-  <div class="status warn"><strong>Testläge v500:</strong> Denna adminfil använder test-Supabase <span class="mono">zlynggtimbbnsatjejdx</span>. Kör inte restore/import här.</div>
+  <div class="status warn"><strong>Testläge v501:</strong> Denna adminfil använder test-Supabase <span class="mono">zlynggtimbbnsatjejdx</span>. Kör inte restore/import här.</div>
 
   <section id="login-card" class="card">
     <h2>Logga in</h2>
@@ -226,6 +226,26 @@
       <div id="restore-global-v500-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
       <div id="restore-global-v500-grid" class="statusgrid" aria-label="Global testrestore v500"></div>
       <div id="restore-global-v500-details" class="statusnote"></div>
+    </section>
+
+    <section class="card" id="restore-saves-v501-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Testrestore v501 – saves / TEST ONLY</h2>
+          <p>Återställer <span class="mono">public.saves</span> från backupfilen till test-Supabase med original-id. Delningstabellerna återställs inte i detta steg.</p>
+        </div>
+      </div>
+      <div class="status bad"><strong>Varning:</strong> Kör bara i testprojektet. Detta är ett skrivande testrestore-steg som kräver SQL-RPC:n <span class="mono">tt_test_restore_saves_v501</span>.</div>
+      <div class="helpbox"><strong>Skydd i v501:</strong> backupfilen måste vara grön, <span class="mono">saves</span> och delningstabellerna måste vara tomma, du måste vara appadmin och du måste skriva exakt bekräftelsetext. Funktionen stoppar även på SQL-sidan om <span class="mono">saves</span> inte är tom.</div>
+      <input id="restore-saves-v501-file" type="file" accept="application/json,.json" style="margin-top:10px">
+      <div class="row" style="margin-top:10px">
+        <button id="btn-restore-saves-preview-v501" class="small">Förhandsgranska saves-restore</button>
+        <input id="restore-saves-confirm-v501" type="text" placeholder="Skriv ÅTERSTÄLL SAVES TEST" style="flex:1;min-width:260px">
+        <button id="btn-restore-saves-run-v501" class="danger">Återställ saves</button>
+      </div>
+      <div id="restore-saves-v501-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
+      <div id="restore-saves-v501-grid" class="statusgrid" aria-label="Saves testrestore v501"></div>
+      <div id="restore-saves-v501-details" class="statusnote"></div>
     </section>
 
     <section class="card" id="restore-plan-card">
@@ -3088,6 +3108,209 @@
     }
   }
 
+
+  async function s501Fetch(path,opts){
+    opts=opts||{};
+    opts.headers=Object.assign(headers(),opts.headers||{});
+    return fetch(SUPA_URL+path,opts);
+  }
+  async function s501Count(table){
+    var r=await s501Fetch('/rest/v1/'+table+'?select=*',{method:'HEAD',headers:{Prefer:'count=exact'}});
+    var cr=r.headers.get('content-range')||'';
+    var n=null;
+    if(cr.indexOf('/')>=0){
+      var tail=cr.split('/').pop();
+      if(tail!=='*')n=Number(tail);
+    }
+    return {ok:r.ok,status:r.status,count:isNaN(n)?null:n,contentRange:cr};
+  }
+  async function s501ReadJsonFile(){
+    var input=$('restore-saves-v501-file');
+    if(!input||!input.files||!input.files[0])throw new Error('Välj backupfil först.');
+    var txt=await input.files[0].text();
+    return {file:input.files[0],text:txt,data:JSON.parse(txt)};
+  }
+  function s501TypeCounts(rows){
+    var out={};
+    (rows||[]).forEach(function(r){
+      var t=(r&&r.type!=null)?String(r.type):'(tom typ)';
+      out[t]=(out[t]||0)+1;
+    });
+    return out;
+  }
+  function s501MinMaxId(rows){
+    var ids=(rows||[]).map(function(r){return Number(r.id);}).filter(function(n){return !isNaN(n);}).sort(function(a,b){return a-b;});
+    if(!ids.length)return {min:'-',max:'-'};
+    return {min:ids[0],max:ids[ids.length-1]};
+  }
+  async function s501RpcProbe(){
+    try{
+      var r=await s501Fetch('/rest/v1/rpc/tt_test_restore_saves_v501',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({p_rows:[]})
+      });
+      var txt=await r.text();
+      var low=(txt||'').toLowerCase();
+      var missing=low.indexOf('could not find the function')>=0 || (low.indexOf('schema cache')>=0 && low.indexOf('function')>=0);
+      if(missing)return {exists:false,ok:false,status:r.status,text:txt};
+      // empty_batch betyder att funktionen finns och spärrar korrekt.
+      if(low.indexOf('empty_batch')>=0)return {exists:true,ok:true,status:r.status,text:txt};
+      return {exists:true,ok:r.ok,status:r.status,text:txt};
+    }catch(e){
+      return {exists:false,ok:false,status:'ERR',text:e.message||String(e)};
+    }
+  }
+  async function s501Precheck(data){
+    var errors=[], warnings=[], ok=[];
+    var pre=bpf496Analyze(data);
+    if(pre.errors&&pre.errors.length)errors=errors.concat(pre.errors);
+    if(String(data&&data.backupType||'')!=='full-disaster-backup')errors.push('Backupen är inte full-disaster-backup.');
+    if(String(data&&data.adminExportVersion||'')!=='460')errors.push('adminExportVersion är inte 460.');
+    if(String(data&&data.appVersion||'')!=='455')errors.push('appVersion är inte 455.');
+
+    var savesRows=(data&&data.tables&&Array.isArray(data.tables.saves))?data.tables.saves:[];
+    if(!savesRows.length)errors.push('Backupen innehåller inga saves-rader.');
+    if(savesRows.length>25)errors.push('v501 kan bara skriva max 25 saves-rader i detta teststeg. Backupen har '+savesRows.length+'.');
+    else ok.push('Backupens saves-batch är inom max 25 rader.');
+
+    var liveSaves=await s501Count('saves');
+    var liveFs=await s501Count('formation_team_shares');
+    var liveTs=await s501Count('taktikfilm_team_shares');
+    var liveAllowed=await s501Count('allowed_users');
+    var liveAdmins=await s501Count('app_admins');
+    if(!liveSaves.ok)errors.push('Kunde inte räkna saves. HTTP '+liveSaves.status+'.');
+    if(!liveFs.ok)errors.push('Kunde inte räkna formation_team_shares. HTTP '+liveFs.status+'.');
+    if(!liveTs.ok)errors.push('Kunde inte räkna taktikfilm_team_shares. HTTP '+liveTs.status+'.');
+    if(!liveAllowed.ok)errors.push('Kunde inte räkna allowed_users. HTTP '+liveAllowed.status+'.');
+    if(!liveAdmins.ok)errors.push('Kunde inte räkna app_admins. HTTP '+liveAdmins.status+'.');
+
+    if((liveSaves.count||0)!==0)errors.push('STOPP: saves måste vara tom före v501, men har '+(liveSaves.count||0)+' rader.');
+    else ok.push('saves är tom före restore.');
+    if((liveFs.count||0)!==0)errors.push('STOPP: formation_team_shares måste vara tom före v501, men har '+(liveFs.count||0)+' rader.');
+    else ok.push('formation_team_shares är tom före restore.');
+    if((liveTs.count||0)!==0)errors.push('STOPP: taktikfilm_team_shares måste vara tom före v501, men har '+(liveTs.count||0)+' rader.');
+    else ok.push('taktikfilm_team_shares är tom före restore.');
+    if((liveAllowed.count||0)<1)warnings.push('allowed_users har 0 rader. v500 bör normalt ha körts först.');
+    else ok.push('allowed_users innehåller '+(liveAllowed.count||0)+' rader.');
+    if((liveAdmins.count||0)<1)errors.push('STOPP: app_admins saknar testadmin.');
+    else ok.push('app_admins innehåller minst en rad.');
+
+    var rpc=await s501RpcProbe();
+    if(!rpc.exists)errors.push('RPC tt_test_restore_saves_v501 saknas. Kör SQL-filen supabase_test_restore_saves_v501_TEST_ONLY.sql i testprojektet först.');
+    else ok.push('RPC tt_test_restore_saves_v501 finns.');
+
+    return {errors:errors,warnings:warnings,ok:ok,counts:{saves:liveSaves.count||0,formation:liveFs.count||0,taktikfilm:liveTs.count||0,allowed:liveAllowed.count||0,admins:liveAdmins.count||0},rpc:rpc,savesRows:savesRows,preflight:pre};
+  }
+  function s501RenderPreview(data,checks,fileName){
+    var grid=$('restore-saves-v501-grid'), details=$('restore-saves-v501-details'), st=$('restore-saves-v501-status');
+    var rows=checks.savesRows||[];
+    var tc=s501TypeCounts(rows), mm=s501MinMaxId(rows);
+    var decision=checks.errors.length?'STOPP':(checks.warnings.length?'GRANSKA':'KLAR');
+    if(grid){
+      grid.innerHTML=''
+        +statusCard('Beslut',decision)
+        +statusCard('Backup saves',rows.length)
+        +statusCard('Live saves',checks.counts.saves)
+        +statusCard('Live allowed_users',checks.counts.allowed)
+        +statusCard('Live app_admins',checks.counts.admins)
+        +statusCard('Lägsta id',mm.min)
+        +statusCard('Högsta id',mm.max)
+        +statusCard('RPC v501',checks.rpc.exists?'finns':'saknas');
+    }
+    if(st){
+      if(decision==='STOPP'){st.textContent='v501 saves-restore: STOPP före skrivning. Fil: '+fileName+'.';st.className='status bad';}
+      else if(decision==='GRANSKA'){st.textContent='v501 saves-restore: GRANSKA. Förhandsgranskning klar, varningar finns. Ingen skrivning har gjorts.';st.className='status warn';}
+      else{st.textContent='v501 saves-restore: KLAR för skrivande saves-teststeg. Ingen skrivning har gjorts ännu.';st.className='status ok';}
+    }
+    var typeLine=Object.keys(tc).sort().map(function(k){return esc(k)+': '+esc(String(tc[k]));}).join(' · ');
+    var sampleRows=rows.slice(0,8);
+    var table=sampleRows.length
+      ? '<table style="width:100%;margin-top:8px;border-collapse:collapse"><thead><tr><th style="text-align:left">id</th><th style="text-align:left">type</th><th style="text-align:left">name</th><th style="text-align:left">folder</th><th style="text-align:left">created_at</th></tr></thead><tbody>'
+        +sampleRows.map(function(r){return '<tr><td>'+esc(String(r.id))+'</td><td>'+esc(r.type||'')+'</td><td>'+esc(r.name||'')+'</td><td>'+esc(r.folder||'')+'</td><td>'+esc(r.created_at||'')+'</td></tr>';}).join('')
+        +'</tbody></table>'
+      : '<div>Inga saves-rader att visa.</div>';
+    var html='';
+    html+='<div><strong>v501 TEST ONLY.</strong> Detta steg får bara skriva public.saves i test-Supabase via RPC.</div>';
+    html+='<div><strong>Backupfil:</strong> '+esc(fileName||'–')+'</div>';
+    html+='<div><strong>Saves-typer:</strong> '+(typeLine||'–')+'</div>';
+    html+='<div><strong>Id-intervall:</strong> '+esc(String(mm.min))+' – '+esc(String(mm.max))+'</div>';
+    html+='<div style="margin-top:8px"><strong>Exempel på saves-rader som ska skrivas:</strong>'+table+'</div>';
+    if(checks.errors.length)html+='<div class="bad" style="margin-top:8px"><strong>Stoppfel:</strong><ul><li>'+checks.errors.map(esc).join('</li><li>')+'</li></ul></div>';
+    if(checks.warnings.length)html+='<div class="warn" style="margin-top:8px"><strong>Varningar:</strong><ul><li>'+checks.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+    html+='<div style="margin-top:8px"><strong>Godkända kontroller:</strong><ul><li>'+checks.ok.map(esc).join('</li><li>')+'</li></ul></div>';
+    html+='<div class="helpbox" style="margin-top:10px">För att skriva detta teststeg: skriv exakt <span class="mono">ÅTERSTÄLL SAVES TEST</span>. v501 återställer inte delningstabellerna; de kommer i separat version.</div>';
+    if(details)details.innerHTML=html;
+  }
+  async function s501Preview(){
+    try{
+      var pack=await s501ReadJsonFile();
+      var checks=await s501Precheck(pack.data);
+      s501RenderPreview(pack.data,checks,pack.file.name);
+    }catch(e){
+      var st=$('restore-saves-v501-status');
+      if(st){st.textContent='v501 förhandsgranskning misslyckades: '+(e.message||e);st.className='status bad';}
+    }
+  }
+  async function s501Run(){
+    var st=$('restore-saves-v501-status'), conf=$('restore-saves-confirm-v501');
+    if(!conf||conf.value!=='ÅTERSTÄLL SAVES TEST'){
+      if(st){st.textContent='STOPP: Skriv exakt ÅTERSTÄLL SAVES TEST innan v501 får skriva.';st.className='status bad';}
+      return;
+    }
+    try{
+      var pack=await s501ReadJsonFile();
+      var checks=await s501Precheck(pack.data);
+      if(checks.errors.length){
+        s501RenderPreview(pack.data,checks,pack.file.name);
+        if(st){st.textContent='v501 stoppad före skrivning. Stoppfel finns.';st.className='status bad';}
+        return;
+      }
+      var rows=checks.savesRows||[];
+      if(st){st.textContent='Skriver '+rows.length+' saves-rader med original-id i testprojektet...';st.className='status warn';}
+      var r=await s501Fetch('/rest/v1/rpc/tt_test_restore_saves_v501',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({p_rows:rows})
+      });
+      var txt=await r.text();
+      if(!r.ok){
+        if(st){st.textContent='v501 skrivning misslyckades. HTTP '+r.status+': '+txt;st.className='status bad';}
+        return;
+      }
+      var result={};
+      try{result=JSON.parse(txt||'{}');}catch(e){result={raw:txt};}
+      var liveSaves=await s501Count('saves');
+      var liveFs=await s501Count('formation_team_shares');
+      var liveTs=await s501Count('taktikfilm_team_shares');
+      var grid=$('restore-saves-v501-grid'), details=$('restore-saves-v501-details');
+      var okCount=(liveSaves.count||0)===rows.length;
+      if(grid){
+        grid.innerHTML=''
+          +statusCard('Beslut',okCount?'KLAR':'GRANSKA')
+          +statusCard('Backup saves',rows.length)
+          +statusCard('Live saves',liveSaves.count||0)
+          +statusCard('Taveldelningar live',liveFs.count||0)
+          +statusCard('Filmdelningar live',liveTs.count||0)
+          +statusCard('Max id',result.maxId==null?'-':result.maxId)
+          +statusCard('Sekvens justerad',result.sequenceAdjusted?'ja':'nej');
+      }
+      if(st){
+        st.textContent='v501 saves-testrestore klar. saves har skrivits i testprojektet med original-id. Delningstabellerna har inte rörts.';
+        st.className=okCount?'status ok':'status warn';
+      }
+      var html='<div><strong>v501 har skrivit public.saves i testprojektet.</strong></div>';
+      html+='<div><strong>RPC-resultat:</strong> '+esc(JSON.stringify(result))+'</div>';
+      html+='<div><strong>Live saves efteråt:</strong> '+esc(String(liveSaves.count||0))+'</div>';
+      html+='<div><strong>Delningstabeller:</strong> formation_team_shares='+(liveFs.count||0)+', taktikfilm_team_shares='+(liveTs.count||0)+'; inte återställda ännu.</div>';
+      if(!okCount)html+='<div class="warn" style="margin-top:8px">Live saves matchar inte backupantalet. Kontrollera innan nästa steg.</div>';
+      html+='<div class="helpbox" style="margin-top:10px"><strong>Nästa steg:</strong> kör systemstatus och öppna testappen. Lag/Trupp/Matcher bör börja synas, men lagdelade Utgångslägen/Taktikfilmer kan kräva v502 eftersom delningstabellerna inte är återställda ännu.</div>';
+      if(details)details.innerHTML=html;
+    }catch(e){
+      if(st){st.textContent='v501 misslyckades: '+(e.message||e);st.className='status bad';}
+    }
+  }
+
   $('btn-add').onclick=function(){addUser(false);};
   $('btn-add-mail').onclick=function(){addUser(true);};
   $('btn-refresh').onclick=function(){loadUsers().catch(function(e){setStatus('Fel: '+e.message,true);});};
@@ -3109,6 +3332,9 @@
   if($('btn-restore-global-preview-v500'))$('btn-restore-global-preview-v500').onclick=function(){g500Preview();};
   if($('restore-global-v500-file'))$('restore-global-v500-file').addEventListener('change',function(){g500Preview();});
   if($('btn-restore-global-run-v500'))$('btn-restore-global-run-v500').onclick=function(){g500Run();};
+  if($('btn-restore-saves-preview-v501'))$('btn-restore-saves-preview-v501').onclick=function(){s501Preview();};
+  if($('restore-saves-v501-file'))$('restore-saves-v501-file').addEventListener('change',function(){s501Preview();});
+  if($('btn-restore-saves-run-v501'))$('btn-restore-saves-run-v501').onclick=function(){s501Run();};
   if($('btn-restore-plan'))$('btn-restore-plan').onclick=function(){showRestorePlan();};
   if($('btn-clear-restore-plan'))$('btn-clear-restore-plan').onclick=function(){clearRestorePlan();};
   if($('restore-plan-file'))$('restore-plan-file').addEventListener('change',function(){showRestorePlan();});
