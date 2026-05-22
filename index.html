@@ -1620,8 +1620,9 @@
 </style>
 
 
-<style id="v526-textrotation-css">
-  #edit-text-rot.on{
+<style id="v527-textrotation-css">
+  #edit-text-rot.on,
+  #text-rot.on{
     background:#4ae87a !important;
     color:#0a1a0d !important;
     border-color:#4ae87a !important;
@@ -2031,10 +2032,13 @@
       <button class="btn" data-sz="18">L</button>
       <button class="btn" data-sz="24">XL</button>
     </div>
-    <div style="display:flex;gap:5px;margin-bottom:13px" id="align-btns">
+    <div style="display:flex;gap:5px;margin-bottom:8px" id="align-btns">
       <button class="btn" data-align="left">V&#228;nster</button>
       <button class="btn on" data-align="center">Centrera</button>
       <button class="btn" data-align="right">H&#246;ger</button>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:13px">
+      <button class="btn" id="text-rot" type="button" data-rot="0">Rotera text -90&#176;</button>
     </div>
     <div class="mactions">
       <button class="btn" id="text-cancel">Avbryt</button>
@@ -2239,7 +2243,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=526"></script>
+<script src="app.js?v=527"></script>
 
 <script>
 (function(){
