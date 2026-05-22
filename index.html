@@ -1629,6 +1629,18 @@
   }
 </style>
 
+
+<style id="v529-forms-line-fix-css">
+  #arrow-head-sel,
+  #zone-fill-sel{
+    min-width:86px;
+  }
+  body.fullscreen-portrait #arrow-options,
+  body.fullscreen-portrait #zone-options{
+    max-width:min(460px, calc(100vw - 112px)) !important;
+  }
+</style>
+
 </head>
 <body>
 
@@ -2262,7 +2274,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=528"></script>
+<script src="app.js?v=529"></script>
 
 <script>
 (function(){
