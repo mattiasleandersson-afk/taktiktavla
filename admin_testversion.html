@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Taktiktavla admin v499 TEST</title>
+<title>Taktiktavla admin v500 TEST</title>
 <style>
   :root{
     --bg:#07110a;--card:#101812;--card2:#0b140e;--line:#2d4a35;--text:#edf5ee;--muted:#8fb99a;
@@ -57,7 +57,7 @@
 <div class="wrap">
   <header>
     <div>
-      <h1>⚽ Taktiktavla admin TEST v499</h1>
+      <h1>⚽ Taktiktavla admin TEST v500</h1>
       <p><strong>TESTADMIN:</strong> Denna fil pekar mot separat Supabase-testprojekt. Används för read-only/preflight och admin-test, inte produktion.</p>
     </div>
     <div class="row">
@@ -68,7 +68,7 @@
 
   <div id="status" class="status">Logga in för att hantera vilka e-postadresser som får använda appen.</div>
 
-  <div class="status warn"><strong>Testläge v499:</strong> Denna adminfil använder test-Supabase <span class="mono">zlynggtimbbnsatjejdx</span>. Kör inte restore/import här.</div>
+  <div class="status warn"><strong>Testläge v500:</strong> Denna adminfil använder test-Supabase <span class="mono">zlynggtimbbnsatjejdx</span>. Kör inte restore/import här.</div>
 
   <section id="login-card" class="card">
     <h2>Logga in</h2>
@@ -206,6 +206,26 @@
       <div id="reset-v499-status" class="status" style="margin-top:10px">Inte körd ännu.</div>
       <div id="reset-v499-grid" class="statusgrid" aria-label="Test-reset v499"></div>
       <div id="reset-v499-details" class="statusnote"></div>
+    </section>
+
+    <section class="card" id="restore-global-v500-card">
+      <div class="row" style="margin-bottom:6px">
+        <div>
+          <h2 style="margin:0">Testrestore v500 – globala tabeller / TEST ONLY</h2>
+          <p>Första skrivande testrestore-steget. Läser backupfilen och återställer bara <span class="mono">allowed_users</span>. <span class="mono">app_admins</span> kontrolleras mot backupen men skrivs inte om, eftersom testadmin redan bootstrapades säkert i v452.</p>
+        </div>
+      </div>
+      <div class="status bad"><strong>Varning:</strong> Kör bara i testprojektet. Den här rutan skriver till <span class="mono">allowed_users</span> i test-Supabase men rör inte <span class="mono">saves</span>, delningstabeller eller produktion.</div>
+      <div class="helpbox"><strong>Skydd i v500:</strong> backupfil måste vara grön, <span class="mono">saves</span>/delningstabeller måste vara tomma, du måste vara appadmin och du måste skriva exakt bekräftelsetext.</div>
+      <input id="restore-global-v500-file" type="file" accept="application/json,.json" style="margin-top:10px">
+      <div class="row" style="margin-top:10px">
+        <button id="btn-restore-global-preview-v500" class="small">Förhandsgranska global restore</button>
+        <input id="restore-global-confirm-v500" type="text" placeholder="Skriv ÅTERSTÄLL GLOBALT TEST" style="flex:1;min-width:260px">
+        <button id="btn-restore-global-run-v500" class="danger">Återställ globala tabeller</button>
+      </div>
+      <div id="restore-global-v500-status" class="status" style="margin-top:10px">Ingen backupfil vald ännu.</div>
+      <div id="restore-global-v500-grid" class="statusgrid" aria-label="Global testrestore v500"></div>
+      <div id="restore-global-v500-details" class="statusnote"></div>
     </section>
 
     <section class="card" id="restore-plan-card">
@@ -2866,6 +2886,208 @@
     }
   }
 
+
+  async function g500Fetch(path,opts){
+    opts=opts||{};
+    opts.headers=Object.assign(headers(),opts.headers||{});
+    return fetch(SUPA_URL+path,opts);
+  }
+  async function g500Count(table){
+    var r=await g500Fetch('/rest/v1/'+table+'?select=*',{method:'HEAD',headers:{Prefer:'count=exact'}});
+    var cr=r.headers.get('content-range')||'';
+    var n=null;
+    if(cr.indexOf('/')>=0){
+      var tail=cr.split('/').pop();
+      if(tail!=='*')n=Number(tail);
+    }
+    return {ok:r.ok,status:r.status,count:isNaN(n)?null:n,contentRange:cr};
+  }
+  async function g500ReadJsonFile(){
+    var input=$('restore-global-v500-file');
+    if(!input||!input.files||!input.files[0])throw new Error('Välj backupfil först.');
+    var txt=await input.files[0].text();
+    return {file:input.files[0],text:txt,data:JSON.parse(txt)};
+  }
+  async function g500GetAppAdmins(){
+    var r=await g500Fetch('/rest/v1/app_admins?select=email,created_at&order=email.asc');
+    var txt=await r.text();
+    if(!r.ok)return {ok:false,status:r.status,rows:[],text:txt};
+    try{return {ok:true,status:r.status,rows:JSON.parse(txt||'[]'),text:txt};}
+    catch(e){return {ok:false,status:r.status,rows:[],text:e.message};}
+  }
+  async function g500GetAllowedUsers(){
+    var r=await g500Fetch('/rest/v1/allowed_users?select=email,note,is_active,created_at,created_by,updated_at,updated_by,deactivated_at,deactivated_by&order=email.asc');
+    var txt=await r.text();
+    if(!r.ok)return {ok:false,status:r.status,rows:[],text:txt};
+    try{return {ok:true,status:r.status,rows:JSON.parse(txt||'[]'),text:txt};}
+    catch(e){return {ok:false,status:r.status,rows:[],text:e.message};}
+  }
+  function g500NormalizeAllowedRows(rows){
+    return (rows||[]).map(function(r){
+      return {
+        email:String(r.email||'').trim().toLowerCase(),
+        note:r.note==null?'':String(r.note),
+        is_active:!!r.is_active,
+        created_at:r.created_at||null,
+        created_by:r.created_by||null,
+        updated_at:r.updated_at||null,
+        updated_by:r.updated_by||null,
+        deactivated_at:r.deactivated_at||null,
+        deactivated_by:r.deactivated_by||null
+      };
+    }).filter(function(r){return r.email.indexOf('@')>0;});
+  }
+  function g500Emails(rows){return (rows||[]).map(function(r){return String(r.email||'').toLowerCase();}).sort();}
+  function g500SameEmailSet(a,b){
+    var aa=g500Emails(a), bb=g500Emails(b);
+    return aa.length===bb.length && aa.every(function(x,i){return x===bb[i];});
+  }
+  async function g500Precheck(data){
+    var errors=[], warnings=[], ok=[];
+    var pre=bpf496Analyze(data);
+    if(pre.errors&&pre.errors.length)errors=errors.concat(pre.errors);
+    if(String(data&&data.backupType||'')!=='full-disaster-backup')errors.push('Backupen är inte full-disaster-backup.');
+    if(String(data&&data.adminExportVersion||'')!=='460')errors.push('adminExportVersion är inte 460.');
+    if(String(data&&data.appVersion||'')!=='455')errors.push('appVersion är inte 455.');
+    var saves=await g500Count('saves');
+    var fs=await g500Count('formation_team_shares');
+    var ts=await g500Count('taktikfilm_team_shares');
+    var allowed=await g500Count('allowed_users');
+    var admins=await g500Count('app_admins');
+    if(!saves.ok)errors.push('Kunde inte räkna saves. HTTP '+saves.status+'.');
+    if(!fs.ok)errors.push('Kunde inte räkna formation_team_shares. HTTP '+fs.status+'.');
+    if(!ts.ok)errors.push('Kunde inte räkna taktikfilm_team_shares. HTTP '+ts.status+'.');
+    if(!allowed.ok)errors.push('Kunde inte räkna allowed_users. HTTP '+allowed.status+'.');
+    if(!admins.ok)errors.push('Kunde inte räkna app_admins. HTTP '+admins.status+'.');
+    if((saves.count||0)!==0)errors.push('STOPP: saves måste vara tom före v500, men har '+(saves.count||0)+' rader.');
+    else ok.push('saves är tom.');
+    if((fs.count||0)!==0)errors.push('STOPP: formation_team_shares måste vara tom före v500, men har '+(fs.count||0)+' rader.');
+    else ok.push('formation_team_shares är tom.');
+    if((ts.count||0)!==0)errors.push('STOPP: taktikfilm_team_shares måste vara tom före v500, men har '+(ts.count||0)+' rader.');
+    else ok.push('taktikfilm_team_shares är tom.');
+    if((admins.count||0)<1)errors.push('STOPP: app_admins saknar testadmin.');
+    else ok.push('app_admins innehåller minst en rad.');
+    if((allowed.count||0)!==0)warnings.push('allowed_users är inte tom ('+(allowed.count||0)+' rader). v500 använder upsert med e-post som nyckel.');
+    else ok.push('allowed_users är tom.');
+
+    var liveAdmins=await g500GetAppAdmins();
+    if(!liveAdmins.ok)errors.push('Kunde inte läsa app_admins. HTTP '+liveAdmins.status+'.');
+    var backupAdmins=(data&&data.tables&&Array.isArray(data.tables.app_admins))?data.tables.app_admins:[];
+    if(liveAdmins.ok && !g500SameEmailSet(liveAdmins.rows,backupAdmins)){
+      warnings.push('app_admins i testprojektet matchar inte exakt backupens app_admins. v500 skriver inte om app_admins; den befintliga testadmin behålls för säker inloggning.');
+    }else if(liveAdmins.ok){
+      ok.push('app_admins matchar backupens e-postlista.');
+    }
+    return {errors:errors,warnings:warnings,ok:ok,counts:{saves:saves.count||0,formation:fs.count||0,taktikfilm:ts.count||0,allowed:allowed.count||0,admins:admins.count||0},liveAdmins:liveAdmins.rows||[]};
+  }
+  function g500RenderPreview(data,checks,fileName){
+    var grid=$('restore-global-v500-grid'), details=$('restore-global-v500-details'), st=$('restore-global-v500-status');
+    var allowed=g500NormalizeAllowedRows(data.tables&&data.tables.allowed_users);
+    var admins=(data.tables&&Array.isArray(data.tables.app_admins))?data.tables.app_admins:[];
+    var decision=checks.errors.length?'STOPP':(checks.warnings.length?'GRANSKA':'KLAR');
+    if(grid){
+      grid.innerHTML=''
+        +statusCard('Beslut',decision)
+        +statusCard('Backup allowed_users',allowed.length)
+        +statusCard('Backup app_admins',admins.length)
+        +statusCard('Live saves',checks.counts.saves)
+        +statusCard('Live allowed_users',checks.counts.allowed)
+        +statusCard('Live app_admins',checks.counts.admins);
+    }
+    if(st){
+      if(decision==='STOPP'){st.textContent='v500 global testrestore: STOPP före skrivning. Fil: '+fileName+'.';st.className='status bad';}
+      else if(decision==='GRANSKA'){st.textContent='v500 global testrestore: GRANSKA. Förhandsgranskning klar, varningar finns. Ingen skrivning har gjorts.';st.className='status warn';}
+      else{st.textContent='v500 global testrestore: KLAR för skrivande globalt teststeg. Ingen skrivning har gjorts ännu.';st.className='status ok';}
+    }
+    var rows=allowed.length
+      ? '<table style="width:100%;margin-top:8px;border-collapse:collapse"><thead><tr><th style="text-align:left">email</th><th style="text-align:left">active</th><th style="text-align:left">note</th><th style="text-align:left">created_at</th></tr></thead><tbody>'
+        +allowed.map(function(r){return '<tr><td>'+esc(r.email)+'</td><td>'+esc(String(r.is_active))+'</td><td>'+esc(r.note||'')+'</td><td>'+esc(r.created_at||'')+'</td></tr>';}).join('')
+        +'</tbody></table>'
+      : '<div>Backupen innehåller inga allowed_users.</div>';
+    var adminRows=admins.length?admins.map(function(r){return esc(String(r.email||''));}).join(', '):'–';
+    var html='';
+    html+='<div><strong>v500 TEST ONLY.</strong> Detta steg får bara skriva allowed_users i test-Supabase.</div>';
+    html+='<div><strong>Backupfil:</strong> '+esc(fileName||'–')+'</div>';
+    html+='<div><strong>Backup app_admins:</strong> '+adminRows+'</div>';
+    html+='<div style="margin-top:8px"><strong>allowed_users som ska upsertas:</strong>'+rows+'</div>';
+    if(checks.errors.length)html+='<div class="bad" style="margin-top:8px"><strong>Stoppfel:</strong><ul><li>'+checks.errors.map(esc).join('</li><li>')+'</li></ul></div>';
+    if(checks.warnings.length)html+='<div class="warn" style="margin-top:8px"><strong>Varningar:</strong><ul><li>'+checks.warnings.map(esc).join('</li><li>')+'</li></ul></div>';
+    html+='<div style="margin-top:8px"><strong>Godkända kontroller:</strong><ul><li>'+checks.ok.map(esc).join('</li><li>')+'</li></ul></div>';
+    html+='<div class="helpbox" style="margin-top:10px">För att skriva detta teststeg: skriv exakt <span class="mono">ÅTERSTÄLL GLOBALT TEST</span>. v500 rör inte saves eller delningstabeller.</div>';
+    if(details)details.innerHTML=html;
+  }
+  async function g500Preview(){
+    try{
+      var pack=await g500ReadJsonFile();
+      var checks=await g500Precheck(pack.data);
+      g500RenderPreview(pack.data,checks,pack.file.name);
+    }catch(e){
+      var st=$('restore-global-v500-status');
+      if(st){st.textContent='v500 förhandsgranskning misslyckades: '+(e.message||e);st.className='status bad';}
+    }
+  }
+  async function g500UpsertAllowedRows(rows){
+    if(!rows.length)return {ok:true,status:200,text:'[]'};
+    var r=await g500Fetch('/rest/v1/allowed_users?on_conflict=email',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=representation'},
+      body:JSON.stringify(rows)
+    });
+    var txt=await r.text();
+    return {ok:r.ok,status:r.status,text:txt};
+  }
+  async function g500Run(){
+    var st=$('restore-global-v500-status'), conf=$('restore-global-confirm-v500');
+    if(!conf||conf.value!=='ÅTERSTÄLL GLOBALT TEST'){
+      if(st){st.textContent='STOPP: Skriv exakt ÅTERSTÄLL GLOBALT TEST innan v500 får skriva.';st.className='status bad';}
+      return;
+    }
+    try{
+      var pack=await g500ReadJsonFile();
+      var checks=await g500Precheck(pack.data);
+      if(checks.errors.length){
+        g500RenderPreview(pack.data,checks,pack.file.name);
+        if(st){st.textContent='v500 stoppad före skrivning. Stoppfel finns.';st.className='status bad';}
+        return;
+      }
+      var rows=g500NormalizeAllowedRows(pack.data.tables&&pack.data.tables.allowed_users);
+      if(st){st.textContent='Skriver allowed_users i testprojektet...';st.className='status warn';}
+      var wr=await g500UpsertAllowedRows(rows);
+      if(!wr.ok){
+        if(st){st.textContent='v500 skrivning misslyckades. HTTP '+wr.status+': '+wr.text;st.className='status bad';}
+        return;
+      }
+      var liveAllowed=await g500GetAllowedUsers();
+      var liveAdmins=await g500GetAppAdmins();
+      var details=$('restore-global-v500-details'), grid=$('restore-global-v500-grid');
+      var allowedOk=liveAllowed.ok && g500SameEmailSet(liveAllowed.rows,rows);
+      var adminsBackup=(pack.data.tables&&Array.isArray(pack.data.tables.app_admins))?pack.data.tables.app_admins:[];
+      var adminsOk=liveAdmins.ok && g500SameEmailSet(liveAdmins.rows,adminsBackup);
+      if(grid){
+        grid.innerHTML=''
+          +statusCard('Beslut',allowedOk?'KLAR':'GRANSKA')
+          +statusCard('Allowed users live',liveAllowed.rows?liveAllowed.rows.length:'?')
+          +statusCard('Allowed users backup',rows.length)
+          +statusCard('App admins live',liveAdmins.rows?liveAdmins.rows.length:'?')
+          +statusCard('App admins matchar backup',adminsOk?'ja':'nej');
+      }
+      if(st){
+        st.textContent='v500 global testrestore klar. allowed_users har skrivits i testprojektet. app_admins har behållits/kontrollerats. saves har inte rörts.';
+        st.className=allowedOk?'status ok':'status warn';
+      }
+      var html='<div><strong>v500 har skrivit endast allowed_users i testprojektet.</strong></div>';
+      html+='<div><strong>Rader skrivna/upsertade:</strong> '+esc(String(rows.length))+'</div>';
+      html+='<div><strong>app_admins:</strong> inte omskrivna; befintlig testadmin behölls för säker inloggning.</div>';
+      html+='<div><strong>saves/delningstabeller:</strong> inte rörda.</div>';
+      if(!allowedOk)html+='<div class="warn" style="margin-top:8px">allowed_users live matchar inte backupens e-postlista exakt. Kontrollera listan innan nästa steg.</div>';
+      if(!adminsOk)html+='<div class="warn" style="margin-top:8px">app_admins live matchar inte backupens e-postlista exakt. Detta kan vara okej i testmiljön om testadmin behöver vara kvar.</div>';
+      html+='<div class="helpbox" style="margin-top:10px"><strong>Nästa steg:</strong> kör systemstatus/allowlist-kontroll. Om allt ser rätt ut bygger vi v501 för restoreskrivning av saves med original-id.</div>';
+      if(details)details.innerHTML=html;
+    }catch(e){
+      if(st){st.textContent='v500 misslyckades: '+(e.message||e);st.className='status bad';}
+    }
+  }
+
   $('btn-add').onclick=function(){addUser(false);};
   $('btn-add-mail').onclick=function(){addUser(true);};
   $('btn-refresh').onclick=function(){loadUsers().catch(function(e){setStatus('Fel: '+e.message,true);});};
@@ -2884,6 +3106,9 @@
   if($('btn-clear-live-preflight-v498b'))$('btn-clear-live-preflight-v498b').onclick=function(){lp498bClear();};
   if($('btn-reset-preview-v499'))$('btn-reset-preview-v499').onclick=function(){r499Preview();};
   if($('btn-reset-run-v499'))$('btn-reset-run-v499').onclick=function(){r499Run();};
+  if($('btn-restore-global-preview-v500'))$('btn-restore-global-preview-v500').onclick=function(){g500Preview();};
+  if($('restore-global-v500-file'))$('restore-global-v500-file').addEventListener('change',function(){g500Preview();});
+  if($('btn-restore-global-run-v500'))$('btn-restore-global-run-v500').onclick=function(){g500Run();};
   if($('btn-restore-plan'))$('btn-restore-plan').onclick=function(){showRestorePlan();};
   if($('btn-clear-restore-plan'))$('btn-clear-restore-plan').onclick=function(){clearRestorePlan();};
   if($('restore-plan-file'))$('restore-plan-file').addEventListener('change',function(){showRestorePlan();});
