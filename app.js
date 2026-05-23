@@ -29289,7 +29289,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt301SoftTeamAccessGate)return;
   window.__tt301SoftTeamAccessGate=true;
 
-  var VERSION='557';
+  var VERSION='558';
   var MEMBER_TYPE='team_member';
   var cacheKey='';
   var cacheAt=0;
@@ -29545,7 +29545,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt302RlsReadyAuthToken)return;
   window.__tt302RlsReadyAuthToken=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion302(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
@@ -29590,7 +29590,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt303NewTaktikDraftEditableGuard)return;
   window.__tt303NewTaktikDraftEditableGuard=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion303(){
     try{
@@ -29880,7 +29880,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt310AuthIdentitySourceFix)return;
   window.__tt310AuthIdentitySourceFix=true;
 
-  var VERSION='557';
+  var VERSION='558';
   var ALIAS_KEY='tt310_display_name_aliases_v1';
 
   function setVersion310(){
@@ -30107,7 +30107,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt312AdminUnshareAndTeamRestore)return;
   window.__tt312AdminUnshareAndTeamRestore=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion312(){
     try{
@@ -30309,7 +30309,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt313TeamListRestoreAfterViewExit)return;
   window.__tt313TeamListRestoreAfterViewExit=true;
-  var VERSION='557';
+  var VERSION='558';
   var lastTeamOpen=false;
   var lastFolder='Alla';
   var lastSearch='';
@@ -30436,7 +30436,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt316SafeFormationShareOwnerPreserve)return;
   window.__tt316SafeFormationShareOwnerPreserve=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion316(){
     try{
@@ -30633,7 +30633,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt317AdminFormationUnshareFromTeamFix)return;
   window.__tt317AdminFormationUnshareFromTeamFix=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion317(){
     try{
@@ -30826,7 +30826,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt318DeleteRefreshAndIconPolish)return;
   window.__tt318DeleteRefreshAndIconPolish=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion318(){
     try{
@@ -31057,7 +31057,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt319DeleteFormationKeyAndCenteredIcon)return;
   window.__tt319DeleteFormationKeyAndCenteredIcon=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion319(){
     try{
@@ -31227,7 +31227,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt322AccountTeamUiPolish)return;
   window.__tt322AccountTeamUiPolish=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion323(){
     try{
@@ -32166,7 +32166,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt342StrictFormationTeamScope)return;
   window.__tt342StrictFormationTeamScope=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion342(){
     try{
@@ -32300,7 +32300,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Bas: v342. Fixar adminlösa lag: medlem i lag med noll admins kan återställa sig själv till admin.
    Behåller v342:s strikta Taktiktavlor/Lagets-filter. */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
   function setV343(){try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;});
@@ -32314,7 +32314,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v344-adminless-team-recovery-rpc-version-note ===
    Bas: v343. Återställning av adminlöst lag använder säker Supabase-RPC så RLS inte blockerar medlemmen. */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
   function setV344(){try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;});
@@ -32328,7 +32328,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* v367: SAFE READ-ONLY probe for future Taktiktavlor team-share table.
    Built from stable v360. This block must not modify formations, sharing, lists or database data. */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
   function setVersion364(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -32396,7 +32396,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    This block must not modify original saves rows, create duplicate formations, delete formations,
    or change Lagets rendering yet. */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion364(){
     try{
@@ -32865,7 +32865,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt367FormationTeamViewClean)return;
   window.__tt367FormationTeamViewClean=true;
-  var VERSION='557';
+  var VERSION='558';
   var lastLoadedTeam='';
   var lastLoadedAt=0;
   var loading=false;
@@ -32932,9 +32932,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function currentFolderSafe(){try{return (typeof currentFolder!=='undefined'?currentFolder:'Alla')||'Alla';}catch(e){return 'Alla';}}
   function visibleTeamItems(){
     var q=low(typeof searchQuery!=='undefined'?searchQuery:'');
-    var cf=currentFolderSafe();
     return (window.tt367TeamSharedFormations||[]).filter(function(s){
-      if(cf!=='Alla'&&(s.folder||'Allmänt')!==cf)return false;
+      // v558: Taktiktavla → Lagets visar alla mappar samtidigt som fällbara grupper.
+      // Därför används inte currentFolder-filter här längre.
       if(q&&low(s.name).indexOf(q)<0)return false;
       return true;
     }).sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''),'sv');});
@@ -32948,14 +32948,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       list.classList.add('tt367-team-list');
       if(typeof addScopeTabsV10==='function')addScopeTabsV10(list,saveScope,function(v){saveScope=v;if(typeof renderSavesList==='function')renderSavesList();});
       var all=window.tt367TeamSharedFormations||[];
-      var counts={'Alla':all.length}, seen={};
-      all.forEach(function(s){var f=s.folder||'Allmänt';counts[f]=(counts[f]||0)+1;seen[f]=true;});
-      var filter=document.createElement('div');filter.className='tt367-folder-filter';filter.style.cssText='display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;width:100%';
-      ['Alla'].concat(Object.keys(seen).sort(function(a,b){return a.localeCompare(b,'sv');})).forEach(function(f){
-        var b=document.createElement('button');b.type='button';b.className='tab'+(currentFolderSafe()===f?' on':'');b.textContent=f+' ('+(counts[f]||0)+')';b.style.fontSize='0.62rem';b.style.padding='2px 6px';
-        b.addEventListener('click',function(e){e.preventDefault();try{currentFolder=f;}catch(_e){}renderTeamView366();});filter.appendChild(b);
-      });
-      list.appendChild(filter);
+      try{currentFolder='Alla';}catch(_e){}
+      // v558: gamla mappfilterknappar i Lagets byggs inte längre.
+      // Mina/Lagets-raden ovan behålls, och filerna grupperas i fällbara mappar nedan.
       if(loading && !all.length){var l=document.createElement('span');l.style.cssText='color:#7aaa88;font-size:0.8rem';l.textContent='Laddar delade lagfiler...';list.appendChild(l);return true;}
       var items=visibleTeamItems();
       if(!items.length){var e=document.createElement('span');e.style.cssText='color:#7aaa88;font-size:0.8rem';e.textContent='Inga delade lagfiler';list.appendChild(e);return true;}
@@ -32974,6 +32969,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         }
         list.appendChild(row);
       });
+      try{if(window.tt558GroupFormationTeamRows)window.tt558GroupFormationTeamRows();}catch(_e){}
       return true;
     }catch(e){try{console.warn('v367 team render failed',e);}catch(_e){}return false;}
   }
@@ -33032,7 +33028,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Built from stable v367. Safe read-only probe for future Taktikfilm team-share table.
    This block must not modify films, sharing, lists, buttons or database data. */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
   function setVersion371(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -33099,7 +33095,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Built from working v370. Opens a team-share modal for Taktikfilmer and saves checkbox rows to taktikfilm_team_shares.
    This block must not modify saves rows or change Lagets rendering yet. */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
   function setVersion371(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -33377,7 +33373,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt374TaktikfilmTeamView)return;
   window.__tt374TaktikfilmTeamView=true;
-  var VERSION='557';
+  var VERSION='558';
   var lastLoadedTeam='';
   var lastLoadedAt=0;
   var loading=false;
@@ -33598,7 +33594,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt379HelpManual)return;
   window.__tt379HelpManual=true;
-  var VERSION='557';
+  var VERSION='558';
   var SHOW_KEY='tt_help_show_on_start_v1';
   var LOAD_SHOWN_KEY='tt_help_shown_this_load_v1';
   var currentStep=0;
@@ -34265,7 +34261,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 (function(){
   'use strict';
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion385(){
     try{
@@ -34532,7 +34528,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Endast versionsvisning/cache. Ingen ändring i Taktikfilm-logiken från v385.
    Syfte: gamla sena setTimeout-versioner får inte skriva tillbaka 384/äldre efter laddning. */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
   var running=false;
   function nodes388(){
     var ids=['app-version','version','version-label','app-version-label','ver','build-version'];
@@ -34573,7 +34569,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 (function(){
   'use strict';
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion388(){
     try{
@@ -34741,7 +34737,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 (function(){
   'use strict';
-  var VERSION='557';
+  var VERSION='558';
   var dragState=null;
 
   function setVersion392(){
@@ -34920,7 +34916,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt394TaktikfilmEditTools)return;
   window.__tt394TaktikfilmEditTools=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion394(){
     try{
@@ -35154,7 +35150,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Ändrar inte stegdata, sparning, drag-and-drop eller manuella stegknappar.
 */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
   var autoPlaying396=false;
   var autoTimer396=null;
   var autoPoll396=null;
@@ -35354,7 +35350,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Återanvänder v397/v396-autouppspelningen via window-funktionerna och ändrar inte steg-/animationslogik.
 */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion398(){
     try{
@@ -35519,7 +35515,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt399SquadPanelTavla)return;
   window.__tt399SquadPanelTavla=true;
-  var VERSION='557';
+  var VERSION='558';
   var dragEl=null;
   var draggingSquadPlayer=null;
 
@@ -35849,7 +35845,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt400TavlaTruppVisning)return;
   window.__tt400TavlaTruppVisning=true;
-  var VERSION='557';
+  var VERSION='558';
   var LS_SYMBOL='tt404_tavla_symbol';
   var LS_NUMBERS='tt404_tavla_numbers';
   var LS_NAME_SIZE='tt400_tavla_name_size';
@@ -36045,7 +36041,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt401TavlaSquadPicker)return;
   window.__tt401TavlaSquadPicker=true;
-  var VERSION='557';
+  var VERSION='558';
   var touchCandidate=null;
 
   function setVersion401(){
@@ -36281,7 +36277,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt404TavlaSquadPolish)return;
   window.__tt404TavlaSquadPolish=true;
-  var VERSION='557';
+  var VERSION='558';
   var LS_SYMBOL='tt404_tavla_symbol';
 
   function setVersion404(){
@@ -36361,7 +36357,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Endast versionsvisning. Inga funktionsändringar.
    Samlar ihop gamla sena versionsskrivare så att de inte kan skriva tillbaka äldre nummer. */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
   function nodes406(){
     var out=[];
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -36409,7 +36405,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt409FsStepbarLayout)return;
   window.__tt409FsStepbarLayout=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion409(){
     try{
@@ -36486,7 +36482,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt410AdminMatchTruppSoftGuard)return;
   window.__tt410AdminMatchTruppSoftGuard=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion410(){
     try{
@@ -36697,7 +36693,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt411ShareAuthTokenRepair)return;
   window.__tt411ShareAuthTokenRepair=true;
-  var VERSION='557';
+  var VERSION='558';
   var AUTH_KEY='tt_auth_session_v1';
 
   function setVersion411(){
@@ -36835,7 +36831,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt412StatistikMemberGuard)return;
   window.__tt412StatistikMemberGuard=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion412(){
     try{
@@ -36962,7 +36958,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt414PublicAdminNameRpcClient)return;
   window.__tt414PublicAdminNameRpcClient=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion414(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
@@ -37025,7 +37021,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt415TaktikfilmSquad)return;
   window.__tt415TaktikfilmSquad=true;
-  var VERSION='557';
+  var VERSION='558';
   // v427: Taktikfilm ska använda egna visningsval. Tidigare läste v415 från Taktiktavlans
   // tt404/tt400-nycklar och skrev därför över v425-valen efter normal render.
   var LS_SYMBOL='tt425_taktikfilm_symbol';
@@ -37308,7 +37304,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Inga funktionsändringar; låser bara synlig version till 418.
 */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
   function setVersion418(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -37340,7 +37336,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    att den befintliga v415-visningen appliceras synkront efter render vid Taktikfilm.
 */
 (function(){
-  var VERSION='557';
+  var VERSION='558';
   function setVersion423(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -37403,7 +37399,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt424NameFrameSync)return;
   window.__tt424NameFrameSync=true;
-  var VERSION='557';
+  var VERSION='558';
   var LS_SYMBOL='tt404_tavla_symbol';
   var LS_NUMBERS='tt404_tavla_numbers';
   var LS_NAME_SIZE='tt400_tavla_name_size';
@@ -37534,7 +37530,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt425TaktikfilmVisualControls)return;
   window.__tt425TaktikfilmVisualControls=true;
-  var VERSION='557';
+  var VERSION='558';
   var LS_SYMBOL='tt425_taktikfilm_symbol';
   var LS_NUMBERS='tt425_taktikfilm_numbers';
   var LS_NAMES='tt425_taktikfilm_names';
@@ -37713,7 +37709,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt427UnifiedTaktikfilmVisuals)return;
   window.__tt427UnifiedTaktikfilmVisuals=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion427(){try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -37748,7 +37744,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt428TaktikfilmTextSizeSync)return;
   window.__tt428TaktikfilmTextSizeSync=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion428(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -37831,7 +37827,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt429TaktikfilmNumberPolish)return;
   window.__tt429TaktikfilmNumberPolish=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion429(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -37917,7 +37913,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt430StartToastAndNumberPolish)return;
   window.__tt430StartToastAndNumberPolish=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion430(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -38007,7 +38003,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt431TaktikfilmJerseyNumberFix)return;
   window.__tt431TaktikfilmJerseyNumberFix=true;
-  var VERSION='557';
+  var VERSION='558';
   var LS_SYMBOL='tt425_taktikfilm_symbol';
   var LS_DEFAULT_MARK='tt431_default_circle_applied';
 
@@ -38100,7 +38096,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt433TaktikfilmFinalNumberSync)return;
   window.__tt433TaktikfilmFinalNumberSync=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion433(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -38177,7 +38173,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt433DefaultCircleOnStart)return;
   window.__tt433DefaultCircleOnStart=true;
-  var VERSION='557';
+  var VERSION='558';
   var LS_SYMBOL='tt425_taktikfilm_symbol';
   function setVersion433(){
     try{
@@ -38217,7 +38213,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt434ImportMatchLineupToTavla)return;
   window.__tt434ImportMatchLineupToTavla=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function setVersion434(){
     try{
@@ -38387,7 +38383,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt436SafeVersionLockNoObserver)return;
   window.__tt436SafeVersionLockNoObserver=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion436(){
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
@@ -38427,7 +38423,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt437ImportMatchToTaktikfilm)return;
   window.__tt437ImportMatchToTaktikfilm=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion437(){
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
@@ -38583,7 +38579,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt442TaktikfilmSymbolOnlyButtons)return;
   window.__tt442TaktikfilmSymbolOnlyButtons=true;
-  var VERSION='557';
+  var VERSION='558';
   var labels={
     'btn-tb-arrow':'↗',
     'btn-tb-freehand':'✎',
@@ -38640,7 +38636,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt444TaktikfilmIphoneToprowClean)return;
   window.__tt444TaktikfilmIphoneToprowClean=true;
-  var VERSION='557';
+  var VERSION='558';
   function isSmall444(){try{return window.matchMedia&&window.matchMedia('(max-width: 760px)').matches;}catch(e){return window.innerWidth<=760;}}
   function setVersion444(){
     try{
@@ -38686,7 +38682,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt445TaktikfilmIphoneToprowPrune)return;
   window.__tt445TaktikfilmIphoneToprowPrune=true;
-  var VERSION='557';
+  var VERSION='558';
   function small445(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
   function setVersion445(){
     try{
@@ -38751,7 +38747,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt446TaktikfilmCameraStableStopfix)return;
   window.__tt446TaktikfilmCameraStableStopfix=true;
-  var VERSION='557';
+  var VERSION='558';
 
   function small446(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
   function setVersion446(){
@@ -38847,7 +38843,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt448SafeCameraCssLock)return;
   window.__tt448SafeCameraCssLock=true;
-  var VERSION='557';
+  var VERSION='558';
   function small448(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
   function setVersion448(){
     try{
@@ -38920,7 +38916,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt449VersionDisplayCleanup)return;
   window.__tt449VersionDisplayCleanup=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion449(){
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
@@ -38959,7 +38955,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt450PlayAllButtonUnified)return;
   window.__tt450PlayAllButtonUnified=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion450(){
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
@@ -39029,7 +39025,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt451IphonePlayAllCameraCenterfix)return;
   window.__tt451IphonePlayAllCameraCenterfix=true;
-  var VERSION='557';
+  var VERSION='558';
   function setVersion451(){
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
@@ -39093,7 +39089,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 /* === v455-global-allowlist-adminputs-spärr ===
-   v557: Stabiliserar Taktikfilm → Lagets-mappar genom att även direkta v374-renderingar grupperas. v556 Taktiktavla → Mina behålls.
+   v558: Lägger till fällbara mappar i Taktiktavla → Lagets. v557 Taktikfilm och v556 Taktiktavla → Mina behålls.
    Bas: stabil v454.
    Syfte:
    - Behåll global allowlist-kontroll mot allowed_users.
@@ -39104,7 +39100,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt455GlobalAllowlistGate)return;
   window.__tt455GlobalAllowlistGate=true;
-  var VERSION='557';
+  var VERSION='558';
   var cacheKey='';
   var cacheAt=0;
   var cacheState=null;
@@ -39269,7 +39265,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 (function(){
   'use strict';
-  var VERSION='557';
+  var VERSION='558';
   var LS_SCALE='tt_player_ball_scale_v535';
   var scale535=100;
 
@@ -39482,7 +39478,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 (function(){
   'use strict';
-  var VERSION='557';
+  var VERSION='558';
   var collapsedTeam547={};
   var applying547=false;
 
@@ -39825,3 +39821,130 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   });
 })();
 /* === slut v557-taktikfilm-lagets-stabil-mappar === */
+
+
+
+/* === v558-taktiktavla-lagets-mappar ===
+   Bas: bekräftad v557.
+   Endast Taktiktavla → Lagets:
+   - tar bort gamla mappfilterknappar i Lagets-rendern
+   - grupperar Lagets-filer i fällbara mappar
+   - använder ren text i mapphuvudet, samma princip som v556
+   Rör inte Taktikfilm eller Taktiktavla → Mina.
+*/
+(function(){
+  'use strict';
+  var collapsed558={};
+
+  function isTeam558(){
+    try{return typeof saveScope!=='undefined' && saveScope==='team';}catch(e){return false;}
+  }
+
+  function ensureStyle558(){
+    if(document.getElementById('tt558-style'))return;
+    var st=document.createElement('style');
+    st.id='tt558-style';
+    st.textContent=[
+      '.tt558-folder-group{width:100%;display:flex;flex-direction:column;gap:4px;margin:5px 0 7px 0}',
+      '.tt558-folder-head{width:100%;display:block!important;text-align:left!important;border:1px solid #2d4a35;background:rgba(74,232,122,.07);color:#edf5ee!important;border-radius:9px;padding:6px 8px;cursor:pointer;font-family:Arial Narrow,Arial,sans-serif;box-sizing:border-box;min-height:30px;font-size:.82rem!important;font-weight:900!important;line-height:1.2!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.tt558-folder-head:hover{border-color:#4ae87a;background:rgba(74,232,122,.11)}',
+      '.tt558-folder-body{display:flex;flex-direction:column;gap:4px;padding-left:10px;border-left:1px solid rgba(74,232,122,.18);margin-left:8px}',
+      '.tt558-folder-group.collapsed .tt558-folder-body{display:none!important}',
+      '@media(max-width:760px){.tt558-folder-head{padding:7px 8px}.tt558-folder-body{padding-left:7px;margin-left:6px}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function folderFromFormationRow558(row){
+    try{
+      var sub=row.querySelector('.row-sub');
+      var raw=String(sub&&sub.textContent||'Allmänt').replace(/\s+/g,' ').trim();
+      var f=raw.split('·')[0].trim();
+      return f||'Allmänt';
+    }catch(e){return 'Allmänt';}
+  }
+
+  function sortFolders558(names){
+    return names.sort(function(a,b){
+      if(a==='Allmänt'&&b!=='Allmänt')return -1;
+      if(b==='Allmänt'&&a!=='Allmänt')return 1;
+      return String(a).localeCompare(String(b),'sv');
+    });
+  }
+
+  function makeGroup558(folder,rows){
+    folder=String(folder||'Allmänt');
+    var group=document.createElement('div');
+    group.className='tt558-folder-group'+(collapsed558[folder]?' collapsed':'');
+    group.setAttribute('data-tt558-folder',folder);
+
+    var head=document.createElement('div');
+    head.className='tt558-folder-head';
+    head.setAttribute('role','button');
+    head.setAttribute('tabindex','0');
+    head.setAttribute('aria-label','Mapp '+folder);
+    head.title=folder;
+
+    function setHeadText(){
+      var arrow=collapsed558[folder]?'▸':'▾';
+      head.textContent=arrow+' 📁 '+folder+' ('+rows.length+' filer)';
+    }
+    setHeadText();
+
+    var body=document.createElement('div');
+    body.className='tt558-folder-body';
+    rows.forEach(function(row){body.appendChild(row);});
+
+    function toggle(e){
+      if(e){e.preventDefault();e.stopPropagation();}
+      collapsed558[folder]=!collapsed558[folder];
+      group.classList.toggle('collapsed',!!collapsed558[folder]);
+      setHeadText();
+    }
+    head.addEventListener('click',toggle);
+    head.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){toggle(e);}});
+
+    group.appendChild(head);
+    group.appendChild(body);
+    return group;
+  }
+
+  window.tt558GroupFormationTeamRows=function(){
+    if(!isTeam558())return;
+    ensureStyle558();
+
+    var list=document.getElementById('saves-list');
+    if(!list)return;
+
+    Array.prototype.slice.call(list.children).forEach(function(el){
+      if(el && el.classList && el.classList.contains('tt558-folder-group')){
+        try{el.remove();}catch(e){}
+      }
+      if(el && el.classList && el.classList.contains('tt367-folder-filter')){
+        try{el.remove();}catch(e){}
+      }
+    });
+
+    var rows=Array.prototype.slice.call(list.children).filter(function(el){
+      return el && el.classList && el.classList.contains('row') && !el.closest('.tt558-folder-group');
+    });
+    if(!rows.length)return;
+
+    var groups={};
+    rows.forEach(function(row){
+      var folder=folderFromFormationRow558(row);
+      if(!groups[folder])groups[folder]=[];
+      groups[folder].push(row);
+    });
+
+    sortFolders558(Object.keys(groups)).forEach(function(folder){
+      list.appendChild(makeGroup558(folder,groups[folder]));
+    });
+  };
+
+  // Efterkontroller för laddning/växling, utan att röra datalogik.
+  [0,80,300,900,1600].forEach(function(ms){
+    setTimeout(function(){try{window.tt558GroupFormationTeamRows();}catch(e){}},ms);
+  });
+})();
+/* === slut v558-taktiktavla-lagets-mappar === */
