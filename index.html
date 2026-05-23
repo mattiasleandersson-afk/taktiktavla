@@ -1642,18 +1642,26 @@
 </style>
 
 
-<style id="v530-step-move-mark-css">
-  #edit-taktik-steps .row.tt530-step-dragging{
+<style id="v531-step-move-dragdrop-css">
+  #edit-taktik-steps .row[draggable="true"]{
+    user-select:none;
+  }
+  #edit-taktik-steps .row.tt531-step-dragging{
     opacity:.72 !important;
     background:rgba(232,200,74,.20) !important;
     border-color:#e8c84a !important;
     box-shadow:0 0 0 2px rgba(232,200,74,.45), 0 8px 20px rgba(0,0,0,.35) !important;
     transform:scale(.992);
   }
-  #edit-taktik-steps .row.tt530-step-moved{
-    animation:tt530StepMovedFlash .85s ease-out;
+  #edit-taktik-steps .row.tt531-step-drop-target{
+    background:rgba(74,232,122,.16) !important;
+    border-color:#4ae87a !important;
+    box-shadow:inset 0 0 0 2px rgba(74,232,122,.42) !important;
   }
-  @keyframes tt530StepMovedFlash{
+  #edit-taktik-steps .row.tt531-step-moved{
+    animation:tt531StepMovedFlash .85s ease-out;
+  }
+  @keyframes tt531StepMovedFlash{
     0%{
       background:rgba(74,232,122,.26);
       box-shadow:0 0 0 2px rgba(74,232,122,.55), 0 7px 18px rgba(0,0,0,.34);
@@ -2298,7 +2306,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=530"></script>
+<script src="app.js?v=531"></script>
 
 <script>
 (function(){
