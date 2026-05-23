@@ -1641,6 +1641,23 @@
   }
 </style>
 
+
+<style id="v534-step-move-original-css">
+  #edit-taktik-steps .row.tt534-step-moved{
+    animation:tt534StepMovedFlash .85s ease-out;
+  }
+  @keyframes tt534StepMovedFlash{
+    0%{
+      background:rgba(74,232,122,.26);
+      box-shadow:0 0 0 2px rgba(74,232,122,.55), 0 7px 18px rgba(0,0,0,.34);
+    }
+    100%{
+      background:transparent;
+      box-shadow:none;
+    }
+  }
+</style>
+
 </head>
 <body>
 
@@ -2274,7 +2291,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=529"></script>
+<script src="app.js?v=534"></script>
 
 <script>
 (function(){
