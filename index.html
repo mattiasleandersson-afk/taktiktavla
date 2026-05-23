@@ -1641,6 +1641,30 @@
   }
 </style>
 
+
+<style id="v530-step-move-mark-css">
+  #edit-taktik-steps .row.tt530-step-dragging{
+    opacity:.72 !important;
+    background:rgba(232,200,74,.20) !important;
+    border-color:#e8c84a !important;
+    box-shadow:0 0 0 2px rgba(232,200,74,.45), 0 8px 20px rgba(0,0,0,.35) !important;
+    transform:scale(.992);
+  }
+  #edit-taktik-steps .row.tt530-step-moved{
+    animation:tt530StepMovedFlash .85s ease-out;
+  }
+  @keyframes tt530StepMovedFlash{
+    0%{
+      background:rgba(74,232,122,.26);
+      box-shadow:0 0 0 2px rgba(74,232,122,.55), 0 7px 18px rgba(0,0,0,.34);
+    }
+    100%{
+      background:transparent;
+      box-shadow:none;
+    }
+  }
+</style>
+
 </head>
 <body>
 
@@ -2274,7 +2298,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=529"></script>
+<script src="app.js?v=530"></script>
 
 <script>
 (function(){
