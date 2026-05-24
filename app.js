@@ -40940,65 +40940,79 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v575 === */
 
-
-/* === v576-taktiktavla-mina-mapphuvud-knappar-stabil ===
-   Bas: fungerande v575.
-   Endast stabilisering av Taktiktavla → Mina-mapphuvuden:
-   - När en mapp fälls ihop/ut sätter v554 om head.textContent och kan då radera v568-knapparna.
-   - v576 återapplicerar ✎ och × idempotent efter varje toggle/render utan att röra filrader, delning eller flytt.
+/* === v577-taktiktavla-mina-mapphuvud-inline-stabil ===
+   Bas: fungerande v575. v576 kasseras.
+   Fix:
+   - inga MutationObservers eller eftermonterade mapphuvudknappar
+   - ✎ och × byggs direkt i tt554MakeFormationFolderGroup så toggle inte kan skriva över dem
+   - versionsvisning låses till 577 efter äldre v571-timers
+   Rör inte delning, flytt, Lagets, Taktikfilm, Matcher eller SQL.
 */
 (function(){
   'use strict';
-  if(window.__tt576FolderActionStable)return;
-  window.__tt576FolderActionStable=true;
-  var VERSION='576';
+  if(window.__tt577FolderHeadInlineStable)return;
+  window.__tt577FolderHeadInlineStable=true;
+  var VERSION='577';
   var LS_KEY='tt568_empty_formation_folders_v1';
 
-  function norm(v){return String(v||'').trim();}
+  function norm(v){return String(v==null?'':v).trim();}
   function lower(v){return norm(v).toLowerCase();}
-  function isMineFormation576(s){
+  function setVersion577(){try{
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+
+  function isMineFormation577(s){
     try{if(typeof tt131IsMineFormation==='function')return !!tt131IsMineFormation(s);}catch(e){}
     try{if(window.tt316FormationMine)return !!window.tt316FormationMine(s);}catch(e){}
     try{if(typeof isMineV10==='function')return !!isMineV10(s);}catch(e){}
     return true;
   }
-  function loadEmptyFolders576(){
+  function loadEmptyFolders577(){
     try{var arr=JSON.parse(localStorage.getItem(LS_KEY)||'[]');return Array.isArray(arr)?arr.map(norm).filter(Boolean):[];}catch(e){return [];}
   }
-  function saveEmptyFolders576(arr){
-    var seen={},clean=[];(arr||[]).forEach(function(f){f=norm(f);if(!f||seen[lower(f)])return;seen[lower(f)]=true;clean.push(f);});
+  function saveEmptyFolders577(arr){
+    var seen={},clean=[];
+    (arr||[]).forEach(function(f){f=norm(f);if(!f||seen[lower(f)])return;seen[lower(f)]=true;clean.push(f);});
     try{localStorage.setItem(LS_KEY,JSON.stringify(clean));}catch(e){}
     return clean;
   }
-  function currentMineFolders576(){
+  function countMineInFolder577(folder){
+    folder=norm(folder)||'Allmänt';
+    return (savedFormations||[]).filter(function(s){return isMineFormation577(s) && (norm(s.folder||'Allmänt')||'Allmänt')===folder;}).length;
+  }
+  function currentMineFolders577(){
     var seen={},out=[];
-    (savedFormations||[]).forEach(function(s){if(!isMineFormation576(s))return;var f=norm(s.folder||'Allmänt')||'Allmänt';if(!seen[lower(f)]){seen[lower(f)]=true;out.push(f);}});
-    loadEmptyFolders576().forEach(function(f){if(!seen[lower(f)]){seen[lower(f)]=true;out.push(f);}});
+    (savedFormations||[]).forEach(function(s){
+      if(!isMineFormation577(s))return;
+      var f=norm(s.folder||'Allmänt')||'Allmänt';
+      if(!seen[lower(f)]){seen[lower(f)]=true;out.push(f);}
+    });
+    loadEmptyFolders577().forEach(function(f){if(!seen[lower(f)]){seen[lower(f)]=true;out.push(f);}});
     if(!seen['allmänt'])out.unshift('Allmänt');
     return out;
   }
-  function countMineInFolder576(folder){
-    folder=norm(folder)||'Allmänt';
-    return (savedFormations||[]).filter(function(s){return isMineFormation576(s) && (norm(s.folder||'Allmänt')||'Allmänt')===folder;}).length;
-  }
-  function removeEmptyFolder576(folder){
-    folder=norm(folder); if(!folder||folder==='Allmänt')return;
-    if(countMineInFolder576(folder)>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(e){} return;}
-    saveEmptyFolders576(loadEmptyFolders576().filter(function(f){return lower(f)!==lower(folder);}));
+  function removeEmptyFolder577(folder){
+    folder=norm(folder);if(!folder||folder==='Allmänt')return;
+    if(countMineInFolder577(folder)>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(e){}return;}
+    saveEmptyFolders577(loadEmptyFolders577().filter(function(f){return lower(f)!==lower(folder);}));
     try{showToast('Tom mapp borttagen');}catch(e){}
     try{renderSavesList();}catch(e){}
   }
-  function renameFolder576(oldName,newName){
-    oldName=norm(oldName)||'Allmänt'; newName=norm(newName);
+  function renameFolder577(oldName,newName){
+    oldName=norm(oldName)||'Allmänt';newName=norm(newName);
     if(!newName||lower(newName)===lower(oldName))return;
-    var exists=currentMineFolders576().some(function(f){return lower(f)===lower(newName)&&lower(f)!==lower(oldName);});
-    if(exists){try{showToast('Det finns redan en mapp med det namnet',false);}catch(e){} return;}
-    var count=countMineInFolder576(oldName);
+    var exists=currentMineFolders577().some(function(f){return lower(f)===lower(newName)&&lower(f)!==lower(oldName);});
+    if(exists){try{showToast('Det finns redan en mapp med det namnet',false);}catch(e){}return;}
+    var count=countMineInFolder577(oldName);
     if(count>0 && !confirm('Byt namn på mappen "'+oldName+'" till "'+newName+'" för '+count+' filer?'))return;
     if(count===0){
-      var arr=loadEmptyFolders576().map(function(f){return lower(f)===lower(oldName)?newName:f;});
+      var arr=loadEmptyFolders577().map(function(f){return lower(f)===lower(oldName)?newName:f;});
       if(!arr.some(function(f){return lower(f)===lower(newName);}))arr.push(newName);
-      saveEmptyFolders576(arr);
+      saveEmptyFolders577(arr);
       try{showToast('Mappnamn ändrat');}catch(e){}
       try{renderSavesList();}catch(e){}
       return;
@@ -41010,89 +41024,97 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       body:JSON.stringify({folder:newName})
     }).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error('HTTP '+r.status+' '+t);});return r.json();})
       .then(function(){
-        saveEmptyFolders576(loadEmptyFolders576().filter(function(f){return lower(f)!==lower(oldName);}));
-        try{if(typeof currentFolder!=='undefined'&&currentFolder===oldName)currentFolder='Alla';}catch(e){}
+        saveEmptyFolders577(loadEmptyFolders577().filter(function(f){return lower(f)!==lower(oldName);}));
         try{cloudStatus('✅ Mappnamn ändrat','#4ae87a');showToast('Mappnamn ändrat');}catch(e){}
         try{cloudLoadSaves();}catch(e){try{renderSavesList();}catch(_e){}}
       }).catch(function(err){try{cloudStatus('❌ Fel: '+String(err.message||err),'#e84a4a');showToast('Kunde inte byta namn',false);}catch(e){}});
   }
-  function setVersion576(){try{
-    if(document.body)document.body.setAttribute('data-app-version',VERSION);
-    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
-    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
-      var t=String(el.textContent||'').trim();
-      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
-    });
-  }catch(e){}}
-  function ensureStyle576(){try{
-    if(document.getElementById('tt576-folder-action-style'))return;
-    var st=document.createElement('style');
-    st.id='tt576-folder-action-style';
+
+  function ensureStyle577(){
+    if(document.getElementById('tt577-folder-inline-style'))return;
+    var st=document.createElement('style');st.id='tt577-folder-inline-style';
     st.textContent=[
-      '#saves-list .tt554-folder-head.tt576-admin-head{display:flex!important;align-items:center!important;gap:6px!important}',
-      '#saves-list .tt576-head-title{flex:1!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}',
-      '#saves-list .tt576-folder-actions{display:inline-flex!important;gap:3px!important;align-items:center!important;flex:0 0 auto!important}',
-      '#saves-list .tt576-folder-actions button{min-width:24px!important;width:24px!important;height:22px!important;padding:0!important;font-size:.68rem!important;line-height:1!important;border:1px solid #2d4a35!important;border-radius:6px!important;background:#111a14!important;color:#7aaa88!important}',
-      '#saves-list .tt576-folder-actions button.tt576-del{color:#e84a4a!important}'
+      '.tt554-folder-head.tt577-inline-head{display:flex!important;align-items:center!important;gap:6px!important;white-space:nowrap!important;overflow:hidden!important;transition:none!important}',
+      '.tt577-head-title{flex:1 1 auto!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}',
+      '.tt577-folder-actions{display:inline-flex!important;gap:3px!important;align-items:center!important;flex:0 0 auto!important}',
+      '.tt577-folder-actions button{min-width:24px!important;width:24px!important;height:22px!important;padding:0!important;font-size:.68rem!important;line-height:1!important;border:1px solid #2d4a35!important;border-radius:6px!important;background:#111a14!important;color:#7aaa88!important}',
+      '.tt577-folder-actions button.tt577-del{color:#e84a4a!important}',
+      '#saves-list .tt568-folder-toolbar{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}'
     ].join('\n');
     document.head.appendChild(st);
-  }catch(e){}}
-  function applyFolderHeadActions576(){try{
-    ensureStyle576();
-    if(typeof saveScope!=='undefined' && saveScope!=='mine')return;
-    document.querySelectorAll('#saves-list .tt554-folder-group').forEach(function(group){
-      var head=group.querySelector('.tt554-folder-head'); if(!head)return;
-      var folder=norm(group.getAttribute('data-tt554-folder')||head.title||'Allmänt')||'Allmänt';
-      var already=head.querySelector('.tt576-folder-actions');
-      // v554:s toggle kan ha återställt head.textContent men lämnat gamla dataset/class kvar.
-      // Bygg därför upp innehållet på nytt varje gång knappar saknas.
-      if(!already){
-        var raw=norm(head.textContent||'');
-        if(!raw)raw=(group.classList.contains('collapsed')?'▸':'▾')+' 📁 '+folder+' ('+countMineInFolder576(folder)+' filer)';
-        head.textContent='';
-        head.classList.add('tt576-admin-head','tt568-admin-head');
+  }
+
+  if(typeof tt554MakeFormationFolderGroup==='function'){
+    tt554MakeFormationFolderGroup=function(folder,rows){
+      ensureStyle577();
+      var folderTitle=norm(folder||'Allmänt')||'Allmänt';
+      var group=document.createElement('div');
+      group.className='tt554-folder-group'+(tt554CollapsedFormationMine[folderTitle]?' collapsed':'');
+      group.setAttribute('data-tt554-folder',folderTitle);
+
+      var head=document.createElement('div');
+      head.className='tt554-folder-head tt568-admin-head tt577-inline-head';
+      head.dataset.tt568Decorated='1';
+      head.setAttribute('role','button');
+      head.setAttribute('tabindex','0');
+      head.setAttribute('aria-label','Mapp '+folderTitle);
+      head.title=folderTitle;
+
+      function setHead(){
+        var arrow=tt554CollapsedFormationMine[folderTitle]?'▸':'▾';
+        head.innerHTML='';
         var title=document.createElement('span');
-        title.className='tt576-head-title tt568-head-title';
-        title.textContent=raw;
+        title.className='tt568-head-title tt577-head-title';
+        title.textContent=arrow+' 📁 '+folderTitle+' ('+(rows?rows.length:0)+' filer)';
         head.appendChild(title);
+
         var actions=document.createElement('span');
-        actions.className='tt576-folder-actions tt568-folder-actions';
+        actions.className='tt568-folder-actions tt577-folder-actions';
         var rn=document.createElement('button');
-        rn.type='button'; rn.textContent='✎'; rn.title='Byt namn på mapp';
-        rn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var nn=prompt('Nytt namn på mappen:',folder);if(nn!==null)renameFolder576(folder,nn);});
+        rn.type='button';rn.textContent='✎';rn.title='Byt namn på mapp';
+        rn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var nn=prompt('Nytt namn på mappen:',folderTitle);if(nn!==null)renameFolder577(folderTitle,nn);});
         actions.appendChild(rn);
-        if(folder!=='Allmänt'){
+        if(folderTitle!=='Allmänt'){
           var del=document.createElement('button');
-          del.type='button'; del.className='tt576-del tt568-del'; del.textContent='×'; del.title='Ta bort tom mapp';
-          del.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(countMineInFolder576(folder)>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(_e){}return;} if(confirm('Ta bort den tomma mappen "'+folder+'"?'))removeEmptyFolder576(folder);});
+          del.type='button';del.className='tt568-del tt577-del';del.textContent='×';del.title='Ta bort tom mapp';
+          del.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(countMineInFolder577(folderTitle)>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(_e){}return;}if(confirm('Ta bort den tomma mappen "'+folderTitle+'"?'))removeEmptyFolder577(folderTitle);});
           actions.appendChild(del);
         }
         head.appendChild(actions);
       }
-      if(head.dataset.tt576Watched!=='1'){
-        head.dataset.tt576Watched='1';
-        head.addEventListener('click',function(){setTimeout(applyFolderHeadActions576,0);setTimeout(applyFolderHeadActions576,40);});
-        head.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){setTimeout(applyFolderHeadActions576,0);setTimeout(applyFolderHeadActions576,40);}});
+      setHead();
+
+      var body=document.createElement('div');
+      body.className='tt554-folder-body';
+      (rows||[]).forEach(function(row){body.appendChild(row);});
+
+      function toggle(e){
+        if(e){e.preventDefault();e.stopPropagation();}
+        tt554CollapsedFormationMine[folderTitle]=!tt554CollapsedFormationMine[folderTitle];
+        group.classList.toggle('collapsed',!!tt554CollapsedFormationMine[folderTitle]);
+        setHead();
       }
-    });
-    setVersion576();
-  }catch(e){}}
+      head.addEventListener('click',toggle);
+      head.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){toggle(e);}});
+      group.appendChild(head);group.appendChild(body);
+      return group;
+    };
+  }
 
   var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
-  if(oldRender && !oldRender._tt576Wrapped){
+  if(oldRender && !oldRender._tt577Wrapped){
     renderSavesList=function(){
       var r=oldRender.apply(this,arguments);
-      applyFolderHeadActions576();
-      setTimeout(applyFolderHeadActions576,0);
-      setTimeout(applyFolderHeadActions576,120);
-      setVersion576();
+      ensureStyle577();
+      setVersion577();
       return r;
     };
-    renderSavesList._tt576Wrapped=true;
+    renderSavesList._tt577Wrapped=true;
   }
-  ensureStyle576();
-  applyFolderHeadActions576();
-  setVersion576();
-  [80,260,700,1500,2800].forEach(function(ms){setTimeout(function(){applyFolderHeadActions576();setVersion576();},ms);});
+
+  ensureStyle577();
+  try{if(typeof renderSavesList==='function')renderSavesList();}catch(e){}
+  setVersion577();
+  [0,250,900,1800,3200,5200,7600,10500].forEach(function(ms){setTimeout(setVersion577,ms);});
 })();
-/* === slut v576 === */
+/* === slut v577 === */
