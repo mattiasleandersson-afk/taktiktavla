@@ -40788,3 +40788,311 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [0,120,500,1200,2500,4500].forEach(function(ms){setTimeout(function(){movePlusMappIntoSameRow574();setVersion574();},ms);});
 })();
 /* === slut v574 === */
+
+
+/* === v575-taktiktavla-mina-tabs-stabil-fix ===
+   Bas: fungerande v574.
+   Endast grafisk stabilisering:
+   - Mina/Lagets/+ Mapp-raden ska inte hoppa när man växlar mellan Mina och Lagets.
+   - Den tillfälliga Mina/Lagets-raden som renderas inne i saves-list döljs direkt och flyttas synkront till den fasta raden.
+   - Ingen ändring i delning, flytt, mappar, Supabase, Taktikfilm, Matcher eller Trupp.
+*/
+(function(){
+  'use strict';
+  if(window.__tt575StableSavesTabs)return;
+  window.__tt575StableSavesTabs=true;
+  var VERSION='575';
+
+  function setVersion575(){try{
+    if(document.body)document.body.setAttribute('data-app-version',VERSION);
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+
+  function ensureStyle575(){try{
+    if(document.getElementById('tt575-tabs-stabil-style'))return;
+    var st=document.createElement('style');
+    st.id='tt575-tabs-stabil-style';
+    st.textContent=[
+      '#saves-list > .tt575-scope-tabs-row{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;}',
+      '#tt572-saves-scope-fixed{min-height:34px!important;display:block!important;box-sizing:border-box!important;overflow:hidden!important;transition:none!important;}',
+      '#tt572-saves-scope-fixed .tt575-scope-tabs-row,#tt572-saves-scope-fixed .tt572-fixed-scope-row{display:flex!important;visibility:visible!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;width:100%!important;min-height:29px!important;height:auto!important;margin:0!important;padding:0!important;box-sizing:border-box!important;transition:none!important;}',
+      '#tt572-saves-scope-fixed .tt575-scope-tabs-row .tab,#tt572-saves-scope-fixed .tt572-fixed-scope-row .tab{flex:0 0 auto!important;font-size:.72rem!important;padding:4px 10px!important;}',
+      '#tt572-saves-scope-fixed .tt574-fixed-add-folder,#tt572-saves-scope-fixed .tt575-fixed-add-folder{font-size:.72rem!important;padding:4px 10px!important;background:#111a14!important;color:#4ae87a!important;border:1px solid #4ae87a!important;border-radius:6px!important;cursor:pointer!important;margin-left:auto!important;white-space:nowrap!important;flex:0 0 auto!important;}',
+      '@media(max-width:760px){#tt572-saves-scope-fixed{min-height:36px!important}#tt572-saves-scope-fixed .tt575-scope-tabs-row,#tt572-saves-scope-fixed .tt572-fixed-scope-row{gap:3px!important;min-height:31px!important}#tt572-saves-scope-fixed .tt575-scope-tabs-row .tab,#tt572-saves-scope-fixed .tt572-fixed-scope-row .tab,#tt572-saves-scope-fixed .tt574-fixed-add-folder,#tt572-saves-scope-fixed .tt575-fixed-add-folder{font-size:.74rem!important;padding:5px 10px!important}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }catch(e){}}
+
+  function ensureHolder575(){
+    var holder=document.getElementById('tt572-saves-scope-fixed');
+    if(holder)return holder;
+    var list=document.getElementById('saves-list');
+    if(!list||!list.parentNode)return null;
+    holder=document.createElement('div');
+    holder.id='tt572-saves-scope-fixed';
+    var status=document.getElementById('cloud-status');
+    if(status&&status.parentNode===list.parentNode)status.parentNode.insertBefore(holder,status.nextSibling);
+    else list.parentNode.insertBefore(holder,list);
+    return holder;
+  }
+
+  function isScopeRow575(row){
+    if(!row||!row.querySelectorAll)return false;
+    var buttons=Array.prototype.slice.call(row.querySelectorAll('button'));
+    if(buttons.length<2)return false;
+    var hasMine=buttons.some(function(b){return String(b.textContent||'').trim()==='Mina';});
+    var hasTeam=buttons.some(function(b){return String(b.textContent||'').trim()==='Lagets';});
+    return hasMine&&hasTeam;
+  }
+
+  function isPlusMapp575(btn){
+    return !!(btn&&String(btn.textContent||'').replace(/\s+/g,' ').trim()==='+ Mapp');
+  }
+
+  function stabilizeTabs575(){try{
+    ensureStyle575();
+    var holder=ensureHolder575();
+    var list=document.getElementById('saves-list');
+    if(!holder||!list)return;
+
+    var row=null;
+    Array.prototype.slice.call(list.children).some(function(ch){
+      if(isScopeRow575(ch)){row=ch;return true;}
+      return false;
+    });
+    if(!row){
+      row=holder.querySelector('.tt575-scope-tabs-row,.tt572-fixed-scope-row');
+    }
+    if(!row)return;
+
+    row.classList.add('tt575-scope-tabs-row','tt572-fixed-scope-row');
+
+    // Flytta först knappen + Mapp till raden, så holder aldrig behöver visa två rader.
+    var plus=Array.prototype.slice.call(row.querySelectorAll('button')).filter(isPlusMapp575)[0];
+    if(!plus){
+      plus=Array.prototype.slice.call(holder.querySelectorAll('button')).filter(isPlusMapp575)[0];
+    }
+    if(!plus){
+      plus=Array.prototype.slice.call(list.querySelectorAll('button')).filter(isPlusMapp575)[0];
+    }
+    if(plus){
+      plus.classList.remove('tt573-fixed-add-folder');
+      plus.classList.add('tt574-fixed-add-folder','tt575-fixed-add-folder');
+      row.appendChild(plus);
+    }
+
+    var oldRows=Array.prototype.slice.call(holder.querySelectorAll('.tt575-scope-tabs-row,.tt572-fixed-scope-row'));
+    oldRows.forEach(function(old){if(old!==row)old.remove();});
+    if(row.parentNode!==holder)holder.appendChild(row);
+
+    // Ta bort eventuella tomma wrappers som bara blev kvar efter att + Mapp flyttats.
+    Array.prototype.slice.call(list.children).forEach(function(ch){
+      if(!ch||!ch.querySelectorAll)return;
+      var txt=String(ch.textContent||'').replace(/\s+/g,' ').trim();
+      if(txt==='+ Mapp')ch.remove();
+    });
+  }catch(e){}}
+
+  // Ersätt addScopeTabsV10 med en variant som markerar raden direkt.
+  // Då kan CSS dölja den tillfälliga raden i saves-list innan webbläsaren hinner måla om.
+  if(typeof addScopeTabsV10==='function' && !addScopeTabsV10._tt575Wrapped){
+    var oldAddScopeTabs575=addScopeTabsV10;
+    addScopeTabsV10=function(container,scope,setter){
+      if(!container || container.id!=='saves-list')return oldAddScopeTabs575.apply(this,arguments);
+      var row=document.createElement('div');
+      row.className='tt575-scope-tabs-row tt572-fixed-scope-row';
+      row.style.cssText='display:flex;gap:4px;flex-wrap:nowrap;margin-bottom:6px;width:100%;align-items:center';
+      [['mine','Mina'],['team','Lagets']].forEach(function(pair){
+        var b=document.createElement('button');
+        b.className='tab'+(scope===pair[0]?' on':'');
+        b.textContent=pair[1];
+        b.style.cssText='font-size:0.68rem;padding:3px 8px';
+        b.addEventListener('click',function(){setter(pair[0]);});
+        row.appendChild(b);
+      });
+      container.appendChild(row);
+    };
+    addScopeTabsV10._tt575Wrapped=true;
+  }
+
+  var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
+  if(oldRender && !oldRender._tt575Wrapped){
+    renderSavesList=function(){
+      ensureStyle575();
+      ensureHolder575();
+      var r=oldRender.apply(this,arguments);
+      stabilizeTabs575();
+      setVersion575();
+      return r;
+    };
+    renderSavesList._tt575Wrapped=true;
+  }
+
+  ensureStyle575();
+  ensureHolder575();
+  setVersion575();
+  stabilizeTabs575();
+  [80,260,700,1400,2600].forEach(function(ms){setTimeout(function(){stabilizeTabs575();setVersion575();},ms);});
+})();
+/* === slut v575 === */
+
+
+/* === v576-taktiktavla-mina-mapphuvud-knappar-stabil ===
+   Bas: fungerande v575.
+   Endast stabilisering av Taktiktavla → Mina-mapphuvuden:
+   - När en mapp fälls ihop/ut sätter v554 om head.textContent och kan då radera v568-knapparna.
+   - v576 återapplicerar ✎ och × idempotent efter varje toggle/render utan att röra filrader, delning eller flytt.
+*/
+(function(){
+  'use strict';
+  if(window.__tt576FolderActionStable)return;
+  window.__tt576FolderActionStable=true;
+  var VERSION='576';
+  var LS_KEY='tt568_empty_formation_folders_v1';
+
+  function norm(v){return String(v||'').trim();}
+  function lower(v){return norm(v).toLowerCase();}
+  function isMineFormation576(s){
+    try{if(typeof tt131IsMineFormation==='function')return !!tt131IsMineFormation(s);}catch(e){}
+    try{if(window.tt316FormationMine)return !!window.tt316FormationMine(s);}catch(e){}
+    try{if(typeof isMineV10==='function')return !!isMineV10(s);}catch(e){}
+    return true;
+  }
+  function loadEmptyFolders576(){
+    try{var arr=JSON.parse(localStorage.getItem(LS_KEY)||'[]');return Array.isArray(arr)?arr.map(norm).filter(Boolean):[];}catch(e){return [];}
+  }
+  function saveEmptyFolders576(arr){
+    var seen={},clean=[];(arr||[]).forEach(function(f){f=norm(f);if(!f||seen[lower(f)])return;seen[lower(f)]=true;clean.push(f);});
+    try{localStorage.setItem(LS_KEY,JSON.stringify(clean));}catch(e){}
+    return clean;
+  }
+  function currentMineFolders576(){
+    var seen={},out=[];
+    (savedFormations||[]).forEach(function(s){if(!isMineFormation576(s))return;var f=norm(s.folder||'Allmänt')||'Allmänt';if(!seen[lower(f)]){seen[lower(f)]=true;out.push(f);}});
+    loadEmptyFolders576().forEach(function(f){if(!seen[lower(f)]){seen[lower(f)]=true;out.push(f);}});
+    if(!seen['allmänt'])out.unshift('Allmänt');
+    return out;
+  }
+  function countMineInFolder576(folder){
+    folder=norm(folder)||'Allmänt';
+    return (savedFormations||[]).filter(function(s){return isMineFormation576(s) && (norm(s.folder||'Allmänt')||'Allmänt')===folder;}).length;
+  }
+  function removeEmptyFolder576(folder){
+    folder=norm(folder); if(!folder||folder==='Allmänt')return;
+    if(countMineInFolder576(folder)>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(e){} return;}
+    saveEmptyFolders576(loadEmptyFolders576().filter(function(f){return lower(f)!==lower(folder);}));
+    try{showToast('Tom mapp borttagen');}catch(e){}
+    try{renderSavesList();}catch(e){}
+  }
+  function renameFolder576(oldName,newName){
+    oldName=norm(oldName)||'Allmänt'; newName=norm(newName);
+    if(!newName||lower(newName)===lower(oldName))return;
+    var exists=currentMineFolders576().some(function(f){return lower(f)===lower(newName)&&lower(f)!==lower(oldName);});
+    if(exists){try{showToast('Det finns redan en mapp med det namnet',false);}catch(e){} return;}
+    var count=countMineInFolder576(oldName);
+    if(count>0 && !confirm('Byt namn på mappen "'+oldName+'" till "'+newName+'" för '+count+' filer?'))return;
+    if(count===0){
+      var arr=loadEmptyFolders576().map(function(f){return lower(f)===lower(oldName)?newName:f;});
+      if(!arr.some(function(f){return lower(f)===lower(newName);}))arr.push(newName);
+      saveEmptyFolders576(arr);
+      try{showToast('Mappnamn ändrat');}catch(e){}
+      try{renderSavesList();}catch(e){}
+      return;
+    }
+    try{cloudStatus('Byter mappnamn...','#7aaa88');}catch(e){}
+    fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?type=eq.uppstallning&folder=eq.'+encodeURIComponent(oldName),{
+      method:'PATCH',
+      headers:Object.assign({},supaHeaders(),{'Content-Type':'application/json','Prefer':'return=representation'}),
+      body:JSON.stringify({folder:newName})
+    }).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error('HTTP '+r.status+' '+t);});return r.json();})
+      .then(function(){
+        saveEmptyFolders576(loadEmptyFolders576().filter(function(f){return lower(f)!==lower(oldName);}));
+        try{if(typeof currentFolder!=='undefined'&&currentFolder===oldName)currentFolder='Alla';}catch(e){}
+        try{cloudStatus('✅ Mappnamn ändrat','#4ae87a');showToast('Mappnamn ändrat');}catch(e){}
+        try{cloudLoadSaves();}catch(e){try{renderSavesList();}catch(_e){}}
+      }).catch(function(err){try{cloudStatus('❌ Fel: '+String(err.message||err),'#e84a4a');showToast('Kunde inte byta namn',false);}catch(e){}});
+  }
+  function setVersion576(){try{
+    if(document.body)document.body.setAttribute('data-app-version',VERSION);
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+  function ensureStyle576(){try{
+    if(document.getElementById('tt576-folder-action-style'))return;
+    var st=document.createElement('style');
+    st.id='tt576-folder-action-style';
+    st.textContent=[
+      '#saves-list .tt554-folder-head.tt576-admin-head{display:flex!important;align-items:center!important;gap:6px!important}',
+      '#saves-list .tt576-head-title{flex:1!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}',
+      '#saves-list .tt576-folder-actions{display:inline-flex!important;gap:3px!important;align-items:center!important;flex:0 0 auto!important}',
+      '#saves-list .tt576-folder-actions button{min-width:24px!important;width:24px!important;height:22px!important;padding:0!important;font-size:.68rem!important;line-height:1!important;border:1px solid #2d4a35!important;border-radius:6px!important;background:#111a14!important;color:#7aaa88!important}',
+      '#saves-list .tt576-folder-actions button.tt576-del{color:#e84a4a!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }catch(e){}}
+  function applyFolderHeadActions576(){try{
+    ensureStyle576();
+    if(typeof saveScope!=='undefined' && saveScope!=='mine')return;
+    document.querySelectorAll('#saves-list .tt554-folder-group').forEach(function(group){
+      var head=group.querySelector('.tt554-folder-head'); if(!head)return;
+      var folder=norm(group.getAttribute('data-tt554-folder')||head.title||'Allmänt')||'Allmänt';
+      var already=head.querySelector('.tt576-folder-actions');
+      // v554:s toggle kan ha återställt head.textContent men lämnat gamla dataset/class kvar.
+      // Bygg därför upp innehållet på nytt varje gång knappar saknas.
+      if(!already){
+        var raw=norm(head.textContent||'');
+        if(!raw)raw=(group.classList.contains('collapsed')?'▸':'▾')+' 📁 '+folder+' ('+countMineInFolder576(folder)+' filer)';
+        head.textContent='';
+        head.classList.add('tt576-admin-head','tt568-admin-head');
+        var title=document.createElement('span');
+        title.className='tt576-head-title tt568-head-title';
+        title.textContent=raw;
+        head.appendChild(title);
+        var actions=document.createElement('span');
+        actions.className='tt576-folder-actions tt568-folder-actions';
+        var rn=document.createElement('button');
+        rn.type='button'; rn.textContent='✎'; rn.title='Byt namn på mapp';
+        rn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var nn=prompt('Nytt namn på mappen:',folder);if(nn!==null)renameFolder576(folder,nn);});
+        actions.appendChild(rn);
+        if(folder!=='Allmänt'){
+          var del=document.createElement('button');
+          del.type='button'; del.className='tt576-del tt568-del'; del.textContent='×'; del.title='Ta bort tom mapp';
+          del.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(countMineInFolder576(folder)>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(_e){}return;} if(confirm('Ta bort den tomma mappen "'+folder+'"?'))removeEmptyFolder576(folder);});
+          actions.appendChild(del);
+        }
+        head.appendChild(actions);
+      }
+      if(head.dataset.tt576Watched!=='1'){
+        head.dataset.tt576Watched='1';
+        head.addEventListener('click',function(){setTimeout(applyFolderHeadActions576,0);setTimeout(applyFolderHeadActions576,40);});
+        head.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){setTimeout(applyFolderHeadActions576,0);setTimeout(applyFolderHeadActions576,40);}});
+      }
+    });
+    setVersion576();
+  }catch(e){}}
+
+  var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
+  if(oldRender && !oldRender._tt576Wrapped){
+    renderSavesList=function(){
+      var r=oldRender.apply(this,arguments);
+      applyFolderHeadActions576();
+      setTimeout(applyFolderHeadActions576,0);
+      setTimeout(applyFolderHeadActions576,120);
+      setVersion576();
+      return r;
+    };
+    renderSavesList._tt576Wrapped=true;
+  }
+  ensureStyle576();
+  applyFolderHeadActions576();
+  setVersion576();
+  [80,260,700,1500,2800].forEach(function(ms){setTimeout(function(){applyFolderHeadActions576();setVersion576();},ms);});
+})();
+/* === slut v576 === */
