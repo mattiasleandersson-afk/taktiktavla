@@ -1619,6 +1619,30 @@
   }
 </style>
 
+<style id="v559-rotated-desktop-nav-center-css">
+  /* v559: Dator + roterad helskärmsvy.
+     Flytta stegnavigering/spola fram-tillbaka till mitten så den inte ligger över Återställ. */
+  @media (min-width: 1024px) and (pointer: fine){
+    body.fullscreen-portrait.tt523-fs-rotated-desktop.v66-taktik-fs #fs-portrait-nav{
+      left:50% !important;
+      right:auto !important;
+      top:calc(env(safe-area-inset-top,0px) + 8px) !important;
+      bottom:auto !important;
+      transform:translateX(-50%) !important;
+      z-index:10005 !important;
+      max-width:min(430px, calc(100vw - 300px)) !important;
+      width:auto !important;
+      display:flex !important;
+      flex-wrap:nowrap !important;
+      justify-content:center !important;
+      align-items:center !important;
+      gap:5px !important;
+      overflow-x:auto !important;
+    }
+  }
+</style>
+
+
 
 <style id="v527-textrotation-css">
   #edit-text-rot.on,
@@ -1671,7 +1695,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">558</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">559</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2298,7 +2322,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app.js?v=558"></script>
+<script src="app.js?v=559"></script>
 
 <script>
 (function(){
