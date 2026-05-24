@@ -40160,7 +40160,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   if(window.__tt568FormationMineFolderAdmin)return;
   window.__tt568FormationMineFolderAdmin=true;
-  var VERSION='568';
+  var VERSION='569';
   var LS_KEY='tt568_empty_formation_folders_v1';
 
   function setVersion568(){
@@ -40320,3 +40320,158 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   setVersion568();setTimeout(afterRender568,600);setTimeout(setVersion568,1200);setTimeout(setVersion568,2600);
 })();
 /* === slut v568 === */
+
+
+/* === v569-taktiktavla-mina-share-id-fix ===
+   Bas: stabil v563 + försiktig mapphantering utan delningsomskrivning.
+   Fixar fel fil vid delning i Taktiktavla → Mina.
+   Orsak: äldre tt364-rebind matchade rad mot fil via synligt listindex. Efter fällbara mappar ändras radordningen.
+   v569 binder därför varje delningsknapp mot rätt saves-id via mapp + filnamn i DOM, och öppnar tt364OpenFormationShareModal med exakt filobjekt.
+   Rör inte formation_team_shares-logiken, Lagets-rendering, Taktikfilm, Matcher eller SQL.
+*/
+(function(){
+  'use strict';
+  if(window.__tt569FormationShareIdFix)return;
+  window.__tt569FormationShareIdFix=true;
+  var VERSION='569';
+
+  function setVersion569(){try{
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+
+  function norm(v){return String(v==null?'':v).trim();}
+  function key(folder,name){return norm(folder||'Allmänt')+'\u0001'+norm(name||'Namnlös');}
+  function isMine569(s){
+    try{if(typeof tt131IsMineFormation==='function')return !!tt131IsMineFormation(s);}catch(e){}
+    try{if(window.tt316FormationMine)return !!window.tt316FormationMine(s);}catch(e){}
+    try{if(typeof isMineV10==='function')return !!isMineV10(s);}catch(e){}
+    return true;
+  }
+  function visibleMineMap569(){
+    var map={};
+    var q='';
+    try{q=String(searchQuery||'').toLowerCase();}catch(e){}
+    var arr=(window.savedFormations||savedFormations||[]).filter(function(s){
+      if(!s)return false;
+      if(!isMine569(s))return false;
+      if(q && String(s.name||'').toLowerCase().indexOf(q)<0)return false;
+      return true;
+    }).sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''),'sv');});
+    arr.forEach(function(s){
+      var k=key(s.folder||'Allmänt',s.name||'Namnlös');
+      if(!map[k])map[k]=[];
+      map[k].push(s);
+    });
+    return map;
+  }
+  function rowFolder569(row){
+    var g=row&&row.closest?row.closest('.tt554-folder-group,.tt558-folder-group'):null;
+    if(g)return norm(g.getAttribute('data-tt554-folder')||g.getAttribute('data-tt558-folder')||'Allmänt')||'Allmänt';
+    var sub=row&&row.querySelector?row.querySelector('.row-sub'):null;
+    var txt=norm(sub&&sub.textContent||'Allmänt');
+    txt=txt.split('·')[0].trim();
+    return txt||'Allmänt';
+  }
+  function rowName569(row){
+    var nm=row&&row.querySelector?row.querySelector('.row-name'):null;
+    return norm(nm&&nm.textContent||'Namnlös')||'Namnlös';
+  }
+  function isShareButton569(btn){
+    if(!btn)return false;
+    var txt=norm(btn.textContent);
+    var title=String(btn.title||btn.getAttribute('aria-label')||'').toLowerCase();
+    if(btn.dataset && btn.dataset.tt569ShareModal==='1')return true;
+    if(txt==='👥' || txt==='🙈' || txt==='Dela' || txt==='Dölj')return true;
+    if(title.indexOf('dela med laget')>=0 || title.indexOf('sluta dela')>=0 || title.indexOf('vilka lag')>=0)return true;
+    return false;
+  }
+  function bindShareButton569(btn,s){
+    if(!btn||!s||!s.id)return;
+    if(btn.dataset && btn.dataset.tt569ShareId===String(s.id))return;
+    var clone=btn.cloneNode(true);
+    clone.dataset.tt569ShareModal='1';
+    clone.dataset.tt569ShareId=String(s.id);
+    clone.textContent='👥';
+    clone.title='Välj vilka lag taktiktavlan delas till';
+    clone.setAttribute('aria-label','Välj vilka lag taktiktavlan delas till');
+    clone.addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      try{clone.dataset.tt569ClickedId=String(s.id);}catch(_e){}
+      var opener=window.tt364OpenFormationShareModal||window.tt367OpenFormationShareModal;
+      if(opener)opener(s);else if(typeof showToast==='function')showToast('Delningsrutan kunde inte öppnas',false);
+      return false;
+    },true);
+    btn.parentNode.replaceChild(clone,btn);
+  }
+  function rebindShareRows569(){
+    try{
+      setVersion569();
+      if(typeof saveScope!=='undefined' && saveScope!=='mine')return;
+      var list=document.getElementById('saves-list');if(!list)return;
+      var map=visibleMineMap569();
+      var used={};
+      Array.prototype.slice.call(list.querySelectorAll('.row')).forEach(function(row){
+        if(!row || row.closest('.tt558-folder-group'))return; // v558 är Lagets, inte Mina
+        var k=key(rowFolder569(row),rowName569(row));
+        var idx=used[k]||0;used[k]=idx+1;
+        var s=(map[k]||[])[idx];
+        if(!s)return;
+        row.dataset.tt569FormationId=String(s.id||'');
+        Array.prototype.slice.call(row.querySelectorAll('button')).forEach(function(btn){
+          if(isShareButton569(btn))bindShareButton569(btn,s);
+        });
+      });
+    }catch(e){try{console.warn('[v569] share-id-bind fel',e);}catch(_e){}}
+  }
+  function refreshTeamViewAfterShare569(){
+    try{
+      if(typeof saveScope!=='undefined' && saveScope==='team'){
+        if(window.tt367LoadFormationTeamShares){
+          window.tt367LoadFormationTeamShares(true).then(function(){try{if(typeof renderSavesList==='function')renderSavesList();}catch(e){}});
+        }else if(typeof renderSavesList==='function')renderSavesList();
+      }
+    }catch(e){}
+  }
+  function bindSaveRefresh569(){
+    try{
+      var btn=document.getElementById('tt364-save');
+      if(!btn||btn.dataset.tt569RefreshBound==='1')return;
+      btn.dataset.tt569RefreshBound='1';
+      btn.addEventListener('click',function(){
+        setTimeout(refreshTeamViewAfterShare569,900);
+        setTimeout(refreshTeamViewAfterShare569,1800);
+      },false);
+    }catch(e){}
+  }
+  var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
+  if(oldRender && !oldRender._tt569Wrapped){
+    renderSavesList=function(){
+      var r=oldRender.apply(this,arguments);
+      setTimeout(rebindShareRows569,20);
+      setTimeout(rebindShareRows569,220);
+      setTimeout(rebindShareRows569,520);
+      setTimeout(bindSaveRefresh569,80);
+      return r;
+    };
+    renderSavesList._tt569Wrapped=true;
+  }
+  if(window.tt364OpenFormationShareModal && !window.tt364OpenFormationShareModal._tt569SaveRefresh){
+    var oldOpen=window.tt364OpenFormationShareModal;
+    var wrappedOpen=function(file){
+      var res=oldOpen.apply(this,arguments);
+      setTimeout(bindSaveRefresh569,80);
+      setTimeout(bindSaveRefresh569,350);
+      return res;
+    };
+    wrappedOpen._tt569SaveRefresh=true;
+    window.tt364OpenFormationShareModal=wrappedOpen;
+    try{window.tt367OpenFormationShareModal=wrappedOpen;}catch(e){}
+  }
+  setVersion569();
+  [0,120,400,1000,2000,3500].forEach(function(ms){setTimeout(function(){rebindShareRows569();bindSaveRefresh569();setVersion569();},ms);});
+})();
+/* === slut v569 === */
