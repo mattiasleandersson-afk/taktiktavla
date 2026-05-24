@@ -28879,7 +28879,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       +'<div id="tt298-auth-actions">'
       +'<button class="btn" id="tt298-auth-login" style="color:#4ae87a;border-color:#4ae87a">Logga in</button>'
       +'<button class="btn" id="tt298-auth-signup">Skapa konto</button>'
-      +'<button class="btn" id="tt322-forgot-password">Glömt lösenord?</button>'
+      +'<button class="btn" id="tt322-forgot-password">Glömt/byta lösenord?</button>'
       +'<button class="btn" id="tt298-auth-logout" style="color:#ff8b8b;border-color:#ff8b8b">Logga ut</button>'
       +'<button class="btn" id="tt298-auth-close">Stäng</button>'
       +'</div><div id="tt298-auth-status"></div></div>';
@@ -41430,7 +41430,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v581-match-lineup-symbol-toggle-fix ===
+/* === v582-glomt-byta-losenord-text ===
    Bas: v579 stabil.
    Ersätter inte v223, utan lägger en smal korrigering i laguppställningsläget:
    - Cirkel ska alltid visa cirkel och dölja alla tröj-paths.
@@ -41438,13 +41438,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Andra tröjvisningar från tavla/taktikfilm får inte läcka in i Matcher -> laguppställning.
 */
 (function(){
-  if(window.__tt581MatchLineupSymbolToggleFix)return;
-  window.__tt581MatchLineupSymbolToggleFix=true;
-  var VERSION='581';
+  if(window.__tt582MatchLineupSymbolToggleFix)return;
+  window.__tt582MatchLineupSymbolToggleFix=true;
+  var VERSION='582';
   var LS_SYMBOL='tt223_match_symbol';
   var LS_NUMBERS='tt223_match_numbers';
 
-  function setVersion581(){try{
+  function setVersion582(){try{
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -41453,51 +41453,51 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     });
   }catch(e){}}
 
-  function isLineup581(){try{return !!((matchRoster||[]).length && document.getElementById('bench-bar') && document.getElementById('bench-bar').classList.contains('active'));}catch(e){return false;}}
-  function getSymbol581(){try{return localStorage.getItem(LS_SYMBOL)||'circle';}catch(e){return 'circle';}}
-  function showNumbers581(){try{var v=localStorage.getItem(LS_NUMBERS);return v===null?true:v!=='off';}catch(e){return true;}}
-  function esc581(id){try{if(window.CSS&&CSS.escape)return CSS.escape(String(id));}catch(e){}return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
-  function jerseyD581(x,y){return ['M',x-18,y-12,'L',x-9,y-22,'L',x-3,y-16,'L',x+3,y-16,'L',x+9,y-22,'L',x+18,y-12,'L',x+13,y-3,'L',x+10,y-6,'L',x+10,y+18,'L',x-10,y+18,'L',x-10,y-6,'L',x-13,y-3,'Z'].join(' ');}
+  function isLineup582(){try{return !!((matchRoster||[]).length && document.getElementById('bench-bar') && document.getElementById('bench-bar').classList.contains('active'));}catch(e){return false;}}
+  function getSymbol582(){try{return localStorage.getItem(LS_SYMBOL)||'circle';}catch(e){return 'circle';}}
+  function showNumbers582(){try{var v=localStorage.getItem(LS_NUMBERS);return v===null?true:v!=='off';}catch(e){return true;}}
+  function esc582(id){try{if(window.CSS&&CSS.escape)return CSS.escape(String(id));}catch(e){}return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+  function jerseyD582(x,y){return ['M',x-18,y-12,'L',x-9,y-22,'L',x-3,y-16,'L',x+3,y-16,'L',x+9,y-22,'L',x+18,y-12,'L',x+13,y-3,'L',x+10,y-6,'L',x+10,y+18,'L',x-10,y+18,'L',x-10,y-6,'L',x-13,y-3,'Z'].join(' ');}
 
-  function ensureStyle581(){
-    if(document.getElementById('tt581-style'))return;
-    var st=document.createElement('style');st.id='tt581-style';
+  function ensureStyle582(){
+    if(document.getElementById('tt582-style'))return;
+    var st=document.createElement('style');st.id='tt582-style';
     st.textContent=[
-      'body.tt581-match-lineup.tt581-match-circle .player-token circle{opacity:1!important;visibility:visible!important;display:inline!important}',
-      'body.tt581-match-lineup.tt581-match-circle .player-token path[class*="jersey"]{display:none!important;visibility:hidden!important;opacity:0!important}',
-      'body.tt581-match-lineup.tt581-match-jersey .player-token path.tt223-jersey{display:inline!important;visibility:visible!important;opacity:1!important}',
-      'body.tt581-match-lineup.tt581-match-jersey .player-token path.tt399-jersey,body.tt581-match-lineup.tt581-match-jersey .player-token path.tt400-jersey,body.tt581-match-lineup.tt581-match-jersey .player-token path.tt415-jersey{display:none!important;visibility:hidden!important;opacity:0!important}',
-      'body.tt581-match-lineup.tt581-match-jersey .player-token circle{opacity:.01!important;visibility:visible!important;display:inline!important}'
+      'body.tt582-match-lineup.tt582-match-circle .player-token circle{opacity:1!important;visibility:visible!important;display:inline!important}',
+      'body.tt582-match-lineup.tt582-match-circle .player-token path[class*="jersey"]{display:none!important;visibility:hidden!important;opacity:0!important}',
+      'body.tt582-match-lineup.tt582-match-jersey .player-token path.tt223-jersey{display:inline!important;visibility:visible!important;opacity:1!important}',
+      'body.tt582-match-lineup.tt582-match-jersey .player-token path.tt399-jersey,body.tt582-match-lineup.tt582-match-jersey .player-token path.tt400-jersey,body.tt582-match-lineup.tt582-match-jersey .player-token path.tt415-jersey{display:none!important;visibility:hidden!important;opacity:0!important}',
+      'body.tt582-match-lineup.tt582-match-jersey .player-token circle{opacity:.01!important;visibility:visible!important;display:inline!important}'
     ].join('\n');
     document.head.appendChild(st);
   }
 
-  function syncControl581(){try{
+  function syncControl582(){try{
     var wrap=document.getElementById('tt223-symbol-controls');if(!wrap)return;
-    var sym=getSymbol581(), nums=showNumbers581();
+    var sym=getSymbol582(), nums=showNumbers582();
     wrap.querySelectorAll('[data-tt223-symbol]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-tt223-symbol')===sym);});
     var n=wrap.querySelector('[data-tt223-numbers]');if(n){n.classList.toggle('on',nums);n.textContent=nums?'Nr på':'Nr av';}
   }catch(e){}}
 
-  function cleanNonLineup581(){try{
-    document.body.classList.remove('tt581-match-lineup','tt581-match-circle','tt581-match-jersey');
+  function cleanNonLineup582(){try{
+    document.body.classList.remove('tt582-match-lineup','tt582-match-circle','tt582-match-jersey');
     document.querySelectorAll('.player-token path.tt223-jersey').forEach(function(p){p.remove();});
     document.querySelectorAll('.player-token circle').forEach(function(c){c.style.removeProperty('opacity');c.style.removeProperty('visibility');c.style.removeProperty('display');});
     document.querySelectorAll('.player-token text.token-text').forEach(function(t){t.style.display='';});
   }catch(e){}}
 
-  function apply581(){
-    setVersion581();ensureStyle581();syncControl581();
-    var active=isLineup581();
-    if(!active){cleanNonLineup581();return;}
-    var sym=getSymbol581(), nums=showNumbers581();
+  function apply582(){
+    setVersion582();ensureStyle582();syncControl582();
+    var active=isLineup582();
+    if(!active){cleanNonLineup582();return;}
+    var sym=getSymbol582(), nums=showNumbers582();
     try{
-      document.body.classList.add('tt581-match-lineup');
-      document.body.classList.toggle('tt581-match-circle',sym!=='jersey');
-      document.body.classList.toggle('tt581-match-jersey',sym==='jersey');
+      document.body.classList.add('tt582-match-lineup');
+      document.body.classList.toggle('tt582-match-circle',sym!=='jersey');
+      document.body.classList.toggle('tt582-match-jersey',sym==='jersey');
       (players||[]).forEach(function(p){
         if(!p||p.team!=='home')return;
-        var g=document.querySelector(".player-token[data-id='"+esc581(p.id)+"']");if(!g)return;
+        var g=document.querySelector(".player-token[data-id='"+esc582(p.id)+"']");if(!g)return;
         var c=g.querySelector('circle');
         var t=g.querySelector('text.token-text')||g.querySelector('text');
         var oldJerseys=g.querySelectorAll('path.tt399-jersey,path.tt400-jersey,path.tt415-jersey');
@@ -41509,7 +41509,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
             jersey.setAttribute('class','tt223-jersey');jersey.setAttribute('pointer-events','none');
             if(t)g.insertBefore(jersey,t);else g.appendChild(jersey);
           }
-          jersey.setAttribute('d',jerseyD581(p.x,p.y));
+          jersey.setAttribute('d',jerseyD582(p.x,p.y));
           jersey.setAttribute('fill',(c&&c.getAttribute('fill'))||(p.team==='home'?homeColor:awayColor));
           jersey.setAttribute('stroke',(c&&c.getAttribute('stroke'))||'#fff');
           jersey.setAttribute('stroke-width','2');jersey.setAttribute('stroke-linejoin','round');
@@ -41530,19 +41530,19 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){}
   }
 
-  if(typeof render==='function'&&!render.__tt581MatchLineupSymbolToggleFix){
-    var oldRender581=render;
-    render=function(){var r=oldRender581.apply(this,arguments);try{apply581();}catch(e){}return r;};
-    render.__tt581MatchLineupSymbolToggleFix=true;window.render=render;
+  if(typeof render==='function'&&!render.__tt582MatchLineupSymbolToggleFix){
+    var oldRender582=render;
+    render=function(){var r=oldRender582.apply(this,arguments);try{apply582();}catch(e){}return r;};
+    render.__tt582MatchLineupSymbolToggleFix=true;window.render=render;
   }
-  if(typeof moveDrag==='function'&&!moveDrag.__tt581MatchLineupSymbolToggleFix){
-    var oldMove581=moveDrag;
-    moveDrag=function(){var r=oldMove581.apply(this,arguments);try{apply581();}catch(e){}return r;};
-    moveDrag.__tt581MatchLineupSymbolToggleFix=true;window.moveDrag=moveDrag;
+  if(typeof moveDrag==='function'&&!moveDrag.__tt582MatchLineupSymbolToggleFix){
+    var oldMove582=moveDrag;
+    moveDrag=function(){var r=oldMove582.apply(this,arguments);try{apply582();}catch(e){}return r;};
+    moveDrag.__tt582MatchLineupSymbolToggleFix=true;window.moveDrag=moveDrag;
   }
-  ['click','touchend','pointerup','change'].forEach(function(ev){document.addEventListener(ev,function(){try{apply581();setTimeout(apply581,0);}catch(e){}},true);});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply581);else apply581();
-  [100,400,1000,2500,5000].forEach(function(ms){setTimeout(apply581,ms);});
-  window.tt581ApplyMatchLineupSymbolToggleFix=apply581;
+  ['click','touchend','pointerup','change'].forEach(function(ev){document.addEventListener(ev,function(){try{apply582();setTimeout(apply582,0);}catch(e){}},true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply582);else apply582();
+  [100,400,1000,2500,5000].forEach(function(ms){setTimeout(apply582,ms);});
+  window.tt582ApplyMatchLineupSymbolToggleFix=apply582;
 })();
-/* === slut v581 === */
+/* === slut v582 === */
