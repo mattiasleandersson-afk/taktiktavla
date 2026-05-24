@@ -40475,3 +40475,98 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [0,120,400,1000,2000,3500].forEach(function(ms){setTimeout(function(){rebindShareRows569();bindSaveRefresh569();setVersion569();},ms);});
 })();
 /* === slut v569 === */
+
+
+/* === v570-taktiktavla-mina-empty-folder-move-fix ===
+   Bas: fungerande v569.
+   Fixar att nyskapade tomma/virtuella mappar i Taktiktavla → Mina inte syntes i flyttdialogen.
+   Ändrar inte delningsdialogen eller share-id-fixen från v569.
+*/
+(function(){
+  'use strict';
+  if(window.__tt570EmptyFolderMoveFix)return;
+  window.__tt570EmptyFolderMoveFix=true;
+  var VERSION='570';
+  var LS_KEY='tt568_empty_formation_folders_v1';
+
+  function norm(v){return String(v==null?'':v).trim();}
+  function low(v){return norm(v).toLowerCase();}
+  function setVersion570(){try{
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+  function loadEmptyFolders570(){
+    try{var arr=JSON.parse(localStorage.getItem(LS_KEY)||'[]');return Array.isArray(arr)?arr.map(norm).filter(Boolean):[];}catch(e){return [];}
+  }
+  function syncEmptyFoldersIntoGlobal570(){
+    try{
+      if(typeof folders==='undefined' || !Array.isArray(folders))return;
+      var seen={};
+      folders.forEach(function(f){seen[low(f)]=true;});
+      loadEmptyFolders570().forEach(function(f){
+        if(!f || seen[low(f)])return;
+        seen[low(f)]=true;
+        folders.push(f);
+      });
+    }catch(e){}
+  }
+  function injectMissingEmptyFolderButtons570(currentFile){
+    try{
+      var container=document.getElementById('move-folder-list');
+      if(!container)return;
+      var existing={};
+      Array.prototype.slice.call(container.querySelectorAll('button')).forEach(function(b){existing[low(b.textContent||'')]=true;});
+      var newBtn=null;
+      Array.prototype.slice.call(container.querySelectorAll('button')).forEach(function(b){if(norm(b.textContent)==='+ Ny mapp')newBtn=b;});
+      loadEmptyFolders570().forEach(function(f){
+        if(!f || existing[low(f)])return;
+        existing[low(f)]=true;
+        var btn=document.createElement('button');
+        btn.className='btn'+((currentFile&&(currentFile.folder||'Allmänt')===f)?' on':'');
+        btn.textContent=f;
+        btn.style.cssText='width:100%;text-align:left;margin-bottom:2px';
+        btn.addEventListener('click',function(){
+          if(currentFile&&currentFile.id){
+            cloudMoveToFolder(currentFile.id,f);
+          }
+          document.getElementById('modal-move-folder').classList.add('hidden');
+          try{movingId=null;}catch(e){}
+        });
+        if(newBtn&&newBtn.parentNode===container)container.insertBefore(btn,newBtn);
+        else container.appendChild(btn);
+      });
+    }catch(e){try{console.warn('[v570] kunde inte lägga till tomma mappar i flyttdialog',e);}catch(_e){}}
+  }
+
+  var oldOpen=typeof openMoveFolder==='function'?openMoveFolder:null;
+  if(oldOpen && !oldOpen._tt570Wrapped){
+    openMoveFolder=function(s){
+      syncEmptyFoldersIntoGlobal570();
+      var r=oldOpen.apply(this,arguments);
+      setTimeout(function(){injectMissingEmptyFolderButtons570(s);},0);
+      setTimeout(function(){injectMissingEmptyFolderButtons570(s);},160);
+      setVersion570();
+      return r;
+    };
+    openMoveFolder._tt570Wrapped=true;
+  }
+
+  var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
+  if(oldRender && !oldRender._tt570Wrapped){
+    renderSavesList=function(){
+      syncEmptyFoldersIntoGlobal570();
+      var r=oldRender.apply(this,arguments);
+      setVersion570();
+      return r;
+    };
+    renderSavesList._tt570Wrapped=true;
+  }
+
+  syncEmptyFoldersIntoGlobal570();
+  setVersion570();
+  [300,1000,2500].forEach(function(ms){setTimeout(function(){syncEmptyFoldersIntoGlobal570();setVersion570();},ms);});
+})();
+/* === slut v570 === */
