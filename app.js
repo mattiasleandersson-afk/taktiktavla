@@ -41428,3 +41428,139 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v579 === */
 
+
+/* === v580-match-lineup-jersey-symbol-fix ===
+   Bas: v579 fungerande mappbas.
+   Problem:
+   - I laguppställningsläge kunde val av Tröja göra att spelarsymbolen försvann.
+   Orsak:
+   - Äldre tavla-/taktikfilm-visuella klasser kunde dölja cirkeln medan laguppställningens
+     egen tt223-tröja inte alltid återritades sist.
+   Fix:
+   - Endast i aktiv laguppställning: synka laguppställningens egen tröja/cirkel sist.
+   - Binder inte om match-/mapp-/delningslogik.
+*/
+(function(){
+  if(window.__tt580MatchLineupJerseyFix)return;
+  window.__tt580MatchLineupJerseyFix=true;
+  var VERSION='580';
+  var LS_SYMBOL='tt223_match_symbol';
+  var LS_NUMBERS='tt223_match_numbers';
+
+  function setVersion580(){
+    try{
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+      if(document.body)document.body.setAttribute('data-app-version',VERSION);
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+    }catch(e){}
+  }
+
+  function isMatchLineup580(){
+    try{
+      return !!((matchRoster||[]).length && document.getElementById('bench-bar') && document.getElementById('bench-bar').classList.contains('active'));
+    }catch(e){return false;}
+  }
+  function getSymbol580(){try{return localStorage.getItem(LS_SYMBOL)||'circle';}catch(e){return 'circle';}}
+  function showNumbers580(){try{var v=localStorage.getItem(LS_NUMBERS);return v===null?true:v!=='off';}catch(e){return true;}}
+  function jerseyD580(x,y){return ['M',x-18,y-12,'L',x-9,y-22,'L',x-3,y-16,'L',x+3,y-16,'L',x+9,y-22,'L',x+18,y-12,'L',x+13,y-3,'L',x+10,y-6,'L',x+10,y+18,'L',x-10,y+18,'L',x-10,y-6,'L',x-13,y-3,'Z'].join(' ');}
+  function esc580(id){return String(id).replace(/\\/g,'\\\\').replace(/"/g,'\\"');}
+
+  function ensureStyle580(){
+    if(document.getElementById('tt580-style'))return;
+    var st=document.createElement('style');st.id='tt580-style';
+    st.textContent=[
+      'body.tt580-match-lineup .player-token path.tt223-jersey{display:inline!important;opacity:1!important;visibility:visible!important}',
+      'body.tt580-match-lineup.tt580-match-circle .player-token circle{opacity:1!important;visibility:visible!important}',
+      'body.tt580-match-lineup.tt580-match-jersey .player-token circle{opacity:.01!important;visibility:visible!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function syncControl580(){
+    try{
+      var wrap=document.getElementById('tt223-symbol-controls');if(!wrap)return;
+      var sym=getSymbol580(), nums=showNumbers580();
+      wrap.querySelectorAll('[data-tt223-symbol]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-tt223-symbol')===sym);});
+      var n=wrap.querySelector('[data-tt223-numbers]');
+      if(n){n.classList.toggle('on',nums);n.textContent=nums?'Nr på':'Nr av';}
+    }catch(e){}
+  }
+
+  function apply580(){
+    setVersion580();ensureStyle580();
+    var active=isMatchLineup580();
+    try{
+      document.body.classList.toggle('tt580-match-lineup',active);
+      document.body.classList.toggle('tt580-match-jersey',active && getSymbol580()==='jersey');
+      document.body.classList.toggle('tt580-match-circle',active && getSymbol580()!=='jersey');
+    }catch(e){}
+    syncControl580();
+    if(!active){
+      try{document.querySelectorAll('path.tt223-jersey').forEach(function(p){p.remove();});}catch(e){}
+      return;
+    }
+    try{
+      var sym=getSymbol580(), nums=showNumbers580();
+      (players||[]).forEach(function(p){
+        if(!p || p.team!=='home')return;
+        var g=document.querySelector('.player-token[data-id="'+esc580(p.id)+'"]');if(!g)return;
+        var c=g.querySelector('circle');
+        var t=g.querySelector('text.token-text')||g.querySelector('text');
+        var jersey=g.querySelector('path.tt223-jersey');
+        if(sym==='jersey'){
+          if(!jersey){
+            jersey=document.createElementNS('http://www.w3.org/2000/svg','path');
+            jersey.setAttribute('class','tt223-jersey');
+            jersey.setAttribute('pointer-events','none');
+            if(t)g.insertBefore(jersey,t);else g.appendChild(jersey);
+          }
+          jersey.setAttribute('d',jerseyD580(p.x,p.y));
+          jersey.setAttribute('fill',(c&&c.getAttribute('fill'))||(p.team==='home'?homeColor:awayColor));
+          jersey.setAttribute('stroke',(c&&c.getAttribute('stroke'))||'#fff');
+          jersey.setAttribute('stroke-width','2');
+          jersey.setAttribute('stroke-linejoin','round');
+          if(c){c.style.setProperty('opacity','0.01','important');c.setAttribute('pointer-events','all');}
+        }else{
+          if(jersey)jersey.remove();
+          if(c){c.style.setProperty('opacity','1','important');c.setAttribute('pointer-events','all');}
+        }
+        if(t){
+          t.style.display=nums?'':'none';
+          t.setAttribute('x',p.x);t.setAttribute('y',p.y);
+          t.setAttribute('dy','0');
+          t.setAttribute('text-anchor','middle');
+          t.setAttribute('dominant-baseline','central');
+          t.setAttribute('alignment-baseline','middle');
+          t.setAttribute('font-family','Arial Narrow, Arial, sans-serif');
+          t.setAttribute('font-size',sym==='jersey'?'13':'14');
+          t.setAttribute('font-weight','900');
+          t.setAttribute('fill','#fff');
+          t.setAttribute('stroke','rgba(0,0,0,.75)');
+          t.setAttribute('stroke-width','1.2');
+          t.setAttribute('paint-order','stroke');
+        }
+      });
+    }catch(e){}
+  }
+
+  if(typeof render==='function'&&!render.__tt580MatchLineupJerseyFix){
+    var oldRender580=render;
+    render=function(){var r=oldRender580.apply(this,arguments);try{apply580();}catch(e){}return r;};
+    render.__tt580MatchLineupJerseyFix=true;window.render=render;
+  }
+  if(typeof moveDrag==='function'&&!moveDrag.__tt580MatchLineupJerseyFix){
+    var oldMove580=moveDrag;
+    moveDrag=function(){var r=oldMove580.apply(this,arguments);try{apply580();}catch(e){}return r;};
+    moveDrag.__tt580MatchLineupJerseyFix=true;window.moveDrag=moveDrag;
+  }
+  ['click','touchend','pointerup','mouseup','change'].forEach(function(ev){document.addEventListener(ev,function(){try{apply580();setTimeout(apply580,0);setTimeout(apply580,80);}catch(e){}},true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply580);else apply580();
+  [0,150,500,1200,2500,5000,9000,13000,17000].forEach(function(ms){setTimeout(apply580,ms);});
+  window.tt580ApplyMatchLineupJerseyFix=apply580;
+})();
+/* === slut v580 === */
