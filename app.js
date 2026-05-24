@@ -41166,3 +41166,265 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [0,120,400,900,1800,3200,5600,9000,12500].forEach(function(ms){setTimeout(setVersion578,ms);});
 })();
 /* === slut v578 === */
+
+
+/* === v579-taktikfilm-mappar-motsvarande-v578 ===
+   Bas: stabil v578.
+   Syfte: göra motsvarande mapp-UX för Taktikfilm som nu fungerar i Taktiktavla → Mina.
+   Viktiga lärdomar från v564–v578:
+   - bygg inte om filradernas delningslogik
+   - bind inte delning/flytt via listindex
+   - inga aggressiva efter-render-loopar som skapar blink
+   - bygg mapphuvudsknappar direkt i Taktikfilms mappgrupper
+   - tomma/virtuella mappar ska följa med i Flytta och metadata-/mappval
+*/
+(function(){
+  'use strict';
+  if(window.__tt579TaktikfilmFolderUx)return;
+  window.__tt579TaktikfilmFolderUx=true;
+
+  var VERSION='579';
+  var LS_KEY='tt579_empty_taktikfilm_folders_v1';
+
+  function norm(v){return String(v==null?'':v).trim();}
+  function low(v){return norm(v).toLowerCase();}
+  function rootSort(a,b){
+    if(a==='Taktik'&&b!=='Taktik')return -1;
+    if(b==='Taktik'&&a!=='Taktik')return 1;
+    if(a==='Träning'&&b!=='Träning')return -1;
+    if(b==='Träning'&&a!=='Träning')return 1;
+    return String(a).localeCompare(String(b),'sv');
+  }
+  function setVersion579(){try{
+    if(document.body)document.body.setAttribute('data-app-version',VERSION);
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+
+  function mineTk579(tk){
+    try{if(typeof isMineV10==='function')return !!isMineV10(tk);}catch(e){}
+    try{if(typeof tt120IsMine==='function')return !!tt120IsMine(tk);}catch(e){}
+    return !(tk&&tk._readOnly);
+  }
+  function loadEmpty579(){
+    try{var arr=JSON.parse(localStorage.getItem(LS_KEY)||'[]');return Array.isArray(arr)?arr.map(norm).filter(Boolean):[];}catch(e){return [];}
+  }
+  function saveEmpty579(arr){
+    var seen={},clean=[];
+    (arr||[]).forEach(function(f){f=norm(f);if(!f||seen[low(f)])return;seen[low(f)]=true;clean.push(f);});
+    try{localStorage.setItem(LS_KEY,JSON.stringify(clean));}catch(e){}
+    return clean;
+  }
+  function ensureTaktikFolderArray579(){
+    try{if(typeof taktikFolders==='undefined'||!Array.isArray(taktikFolders))window.taktikFolders=['Taktik','Träning'];}catch(e){}
+    try{
+      var seen={};
+      (taktikFolders||[]).forEach(function(f){if(f)seen[low(f)]=true;});
+      ['Taktik','Träning'].forEach(function(f){if(!seen[low(f)]){taktikFolders.push(f);seen[low(f)]=true;}});
+      loadEmpty579().forEach(function(f){if(!seen[low(f)]){taktikFolders.push(f);seen[low(f)]=true;}});
+    }catch(e){}
+  }
+  function allMineFolders579(){
+    ensureTaktikFolderArray579();
+    var seen={},out=[];
+    function add(f){f=norm(f)||'Taktik';if(!seen[low(f)]){seen[low(f)]=true;out.push(f);}}
+    add('Taktik');add('Träning');
+    try{(taktikFolders||[]).forEach(add);}catch(e){}
+    try{(taktikFilmer||[]).forEach(function(tk){if(mineTk579(tk))add(tk.folder||'Taktik');});}catch(e){}
+    loadEmpty579().forEach(add);
+    return out.sort(rootSort);
+  }
+  function countMineInFolder579(folder){
+    folder=norm(folder)||'Taktik';
+    try{return (taktikFilmer||[]).filter(function(tk){return mineTk579(tk)&&(norm(tk.folder||'Taktik')||'Taktik')===folder;}).length;}catch(e){return 0;}
+  }
+  function addEmptyFolder579(folder){
+    folder=norm(folder);if(!folder)return;
+    var exists=allMineFolders579().some(function(f){return low(f)===low(folder);});
+    if(exists){try{showToast('Mappen finns redan',false);}catch(e){}return;}
+    var arr=loadEmpty579();arr.push(folder);saveEmpty579(arr);
+    ensureTaktikFolderArray579();
+    try{showToast('Mapp skapad');}catch(e){}
+    try{renderTaktikList();}catch(e){}
+  }
+  function removeEmptyFolder579(folder){
+    folder=norm(folder);if(!folder||folder==='Taktik'||folder==='Träning')return;
+    if(countMineInFolder579(folder)>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(e){}return;}
+    saveEmpty579(loadEmpty579().filter(function(f){return low(f)!==low(folder);}));
+    try{taktikFolders=taktikFolders.filter(function(f){return low(f)!==low(folder);});}catch(e){}
+    try{showToast('Tom mapp borttagen');}catch(e){}
+    try{renderTaktikList();}catch(e){}
+  }
+  function renameFolder579(oldName,newName){
+    oldName=norm(oldName)||'Taktik';newName=norm(newName);
+    if(!newName||low(newName)===low(oldName))return;
+    if(allMineFolders579().some(function(f){return low(f)===low(newName)&&low(f)!==low(oldName);})){try{showToast('Det finns redan en mapp med det namnet',false);}catch(e){}return;}
+    var items=[];
+    try{items=(taktikFilmer||[]).filter(function(tk){return mineTk579(tk)&&(norm(tk.folder||'Taktik')||'Taktik')===oldName;});}catch(e){}
+    if(items.length>0 && !confirm('Byt namn på mappen "'+oldName+'" till "'+newName+'" för '+items.length+' filmer?'))return;
+    if(!items.length){
+      var arr=loadEmpty579().map(function(f){return low(f)===low(oldName)?newName:f;});
+      if(!arr.some(function(f){return low(f)===low(newName);}))arr.push(newName);
+      saveEmpty579(arr);
+      try{taktikFolders=taktikFolders.map(function(f){return low(f)===low(oldName)?newName:f;});}catch(e){}
+      try{showToast('Mappnamn ändrat');}catch(e){}
+      try{renderTaktikList();}catch(e){}
+      return;
+    }
+    try{cloudStatus('Byter mappnamn...','#7aaa88');}catch(e){}
+    var jobs=items.map(function(tk){
+      tk.folder=newName;
+      var body={folder:newName,data:tk};
+      if(!tk.dbId)return Promise.resolve();
+      return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?id=eq.'+tk.dbId,{method:'PATCH',headers:Object.assign({},supaHeaders(),{'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify(body)}).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error('HTTP '+r.status+' '+t);});return r.json();});
+    });
+    Promise.all(jobs).then(function(){
+      saveEmpty579(loadEmpty579().filter(function(f){return low(f)!==low(oldName);}));
+      try{taktikFolders=taktikFolders.map(function(f){return low(f)===low(oldName)?newName:f;});}catch(e){}
+      try{if(typeof currentTaktikFolder!=='undefined'&&currentTaktikFolder===oldName)currentTaktikFolder='Alla';}catch(e){}
+      try{cloudStatus('✅ Mappnamn ändrat','#4ae87a');showToast('Mappnamn ändrat');}catch(e){}
+      try{cloudLoadTaktik();}catch(e){try{renderTaktikList();}catch(_e){}}
+    }).catch(function(err){try{cloudStatus('❌ Fel: '+String(err&&err.message||err),'#e84a4a');showToast('Kunde inte byta namn',false);}catch(e){}});
+  }
+
+  function ensureStyle579(){
+    if(document.getElementById('tt579-taktik-folder-style'))return;
+    var st=document.createElement('style');st.id='tt579-taktik-folder-style';
+    st.textContent=[
+      '#taktik-search{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important}',
+      '#taktik-folder-filter{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important}',
+      '#tt579-taktik-scope-fixed{display:block!important;width:100%!important;min-height:34px!important;box-sizing:border-box!important;overflow:hidden!important;margin:0 0 6px 0!important;padding:0 0 5px 0!important;background:#111a14!important;position:sticky!important;top:0!important;z-index:12!important;border-bottom:1px solid rgba(45,74,53,.65)!important;transition:none!important}',
+      '#tt579-taktik-scope-fixed .tt579-row{display:flex!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;width:100%!important;min-height:29px!important;margin:0!important;padding:0!important;box-sizing:border-box!important;transition:none!important}',
+      '#tt579-taktik-scope-fixed .tab{flex:0 0 auto!important;font-size:.72rem!important;padding:4px 10px!important}',
+      '#tt579-taktik-scope-fixed .tt579-plus{font-size:.72rem!important;padding:4px 10px!important;background:#111a14!important;color:#4ae87a!important;border:1px solid #4ae87a!important;border-radius:6px!important;cursor:pointer!important;margin-left:auto!important;white-space:nowrap!important;flex:0 0 auto!important}',
+      '.tt545-folder-head.tt579-inline-head{display:flex!important;align-items:center!important;gap:6px!important;white-space:nowrap!important;overflow:hidden!important;transition:none!important}',
+      '.tt579-head-title{flex:1 1 auto!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}',
+      '.tt579-folder-actions{display:inline-flex!important;gap:3px!important;align-items:center!important;flex:0 0 auto!important}',
+      '.tt579-folder-actions button{min-width:24px!important;width:24px!important;height:22px!important;padding:0!important;font-size:.68rem!important;line-height:1!important;border:1px solid #2d4a35!important;border-radius:6px!important;background:#111a14!important;color:#7aaa88!important}',
+      '.tt579-folder-actions button.tt579-del{color:#e84a4a!important}',
+      '@media(max-width:760px){#tt579-taktik-scope-fixed{min-height:36px!important}#tt579-taktik-scope-fixed .tt579-row{gap:3px!important;min-height:31px!important}#tt579-taktik-scope-fixed .tab,#tt579-taktik-scope-fixed .tt579-plus{font-size:.74rem!important;padding:5px 10px!important}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function ensureFixedScope579(){
+    try{
+      ensureStyle579();
+      try{taktikSearch='';}catch(e){}
+      var inp=document.getElementById('taktik-search');if(inp)inp.value='';
+      var list=document.getElementById('taktik-list');if(!list||!list.parentNode)return;
+      var holder=document.getElementById('tt579-taktik-scope-fixed');
+      if(!holder){holder=document.createElement('div');holder.id='tt579-taktik-scope-fixed';list.parentNode.insertBefore(holder,list);} 
+      var row=holder.querySelector('.tt579-row');
+      if(!row){row=document.createElement('div');row.className='tt579-row';holder.appendChild(row);}else{row.innerHTML='';}
+      function tab(label,scope){
+        var b=document.createElement('button');b.type='button';b.className='tab'+((typeof taktikScope!=='undefined'&&taktikScope===scope)?' on':'');b.textContent=label;
+        b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();try{taktikScope=scope;currentTaktikFolder='Alla';}catch(_e){}try{renderTaktikList();}catch(_e){}});
+        row.appendChild(b);
+      }
+      tab('Mina','mine');tab('Lagets','team');
+      var plus=document.createElement('button');plus.type='button';plus.className='tt579-plus';plus.textContent='+ Mapp';plus.title='Skapa tom mapp i Taktikfilm → Mina';
+      plus.style.display=(typeof taktikScope!=='undefined'&&taktikScope==='team')?'none':'';
+      plus.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var name=prompt('Namn på ny mapp:','');if(name!==null)addEmptyFolder579(name);});
+      row.appendChild(plus);
+    }catch(e){}
+  }
+
+  function makeTaktikGroup579(folder,rows){
+    ensureStyle579();
+    var collapsed=window.tt545CollapsedTaktikMine||{};
+    try{window.tt545CollapsedTaktikMine=collapsed;}catch(e){}
+    var group=document.createElement('div');
+    group.className='tt545-folder-group'+(collapsed[folder]?' collapsed':'');
+    group.setAttribute('data-tt545-folder',folder);
+
+    var head=document.createElement('div');head.className='tt545-folder-head tt579-inline-head';head.setAttribute('role','button');head.setAttribute('tabindex','0');
+    var arrow=document.createElement('span');arrow.className='tt545-folder-arrow';arrow.textContent=collapsed[folder]?'▸':'▾';
+    var title=document.createElement('span');title.className='tt545-folder-label tt579-head-title';title.textContent='📁 '+folder;
+    var count=document.createElement('span');count.className='tt545-folder-count';count.textContent=rows.length+' filer';
+    var actions=document.createElement('span');actions.className='tt579-folder-actions';
+    var rn=document.createElement('button');rn.type='button';rn.textContent='✎';rn.title='Byt namn på mapp';
+    rn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var nn=prompt('Nytt namn på mappen:',folder);if(nn!==null)renameFolder579(folder,nn);});
+    actions.appendChild(rn);
+    if(folder!=='Taktik'&&folder!=='Träning'){
+      var del=document.createElement('button');del.type='button';del.className='tt579-del';del.textContent='×';del.title='Ta bort tom mapp';
+      del.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(countMineInFolder579(folder)>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(_e){}return;}if(confirm('Ta bort den tomma mappen "'+folder+'"?'))removeEmptyFolder579(folder);});
+      actions.appendChild(del);
+    }
+    var body=document.createElement('div');body.className='tt545-folder-body';rows.forEach(function(row){body.appendChild(row);});
+    function toggle(e){if(e){e.preventDefault();e.stopPropagation();}collapsed[folder]=!collapsed[folder];group.classList.toggle('collapsed',!!collapsed[folder]);arrow.textContent=collapsed[folder]?'▸':'▾';}
+    head.addEventListener('click',toggle);head.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){toggle(e);}});
+    head.appendChild(arrow);head.appendChild(title);head.appendChild(count);head.appendChild(actions);group.appendChild(head);group.appendChild(body);
+    return group;
+  }
+
+  function appendTaktikMineRows579(list,items){
+    ensureTaktikFolderArray579();
+    var groups={};
+    (items||[]).forEach(function(item){var folder=norm(item.folder||'Taktik')||'Taktik';if(!groups[folder])groups[folder]=[];groups[folder].push(item.row);});
+    loadEmpty579().forEach(function(f){if(!groups[f] && countMineInFolder579(f)===0)groups[f]=[];});
+    Object.keys(groups).sort(rootSort).forEach(function(folder){list.appendChild(makeTaktikGroup579(folder,groups[folder]||[]));});
+  }
+
+  if(typeof tt545MakeTaktikFolderGroup==='function'){
+    tt545MakeTaktikFolderGroup=makeTaktikGroup579;
+    try{window.tt545MakeTaktikFolderGroup=tt545MakeTaktikFolderGroup;}catch(e){}
+  }
+  if(typeof tt545AppendTaktikMineRows==='function'){
+    tt545AppendTaktikMineRows=appendTaktikMineRows579;
+    try{window.tt545AppendTaktikMineRows=tt545AppendTaktikMineRows;}catch(e){}
+  }
+
+  if(typeof openMoveTaktikFolder==='function' && !openMoveTaktikFolder._tt579Wrapped){
+    var oldMove579=openMoveTaktikFolder;
+    openMoveTaktikFolder=function(tk){
+      ensureTaktikFolderArray579();
+      return oldMove579.apply(this,arguments);
+    };
+    openMoveTaktikFolder._tt579Wrapped=true;
+    try{window.openMoveTaktikFolder=openMoveTaktikFolder;}catch(e){}
+  }
+
+  function refreshTaktikFolderSelect579(){
+    try{
+      ensureTaktikFolderArray579();
+      var sel=document.getElementById('edit-taktik-folder');if(!sel)return;
+      var cur=sel.value||'Taktik';var folders=allMineFolders579();
+      sel.innerHTML='';
+      folders.forEach(function(f){var o=document.createElement('option');o.value=f;o.textContent=f;if(f===cur)o.selected=true;sel.appendChild(o);});
+    }catch(e){}
+  }
+  var metaBtn=document.getElementById('btn-edit-taktik-meta');
+  if(metaBtn && !metaBtn._tt579FolderSelect){
+    metaBtn.addEventListener('click',function(){setTimeout(refreshTaktikFolderSelect579,0);setTimeout(refreshTaktikFolderSelect579,120);},false);
+    metaBtn._tt579FolderSelect=true;
+  }
+
+  if(typeof renderTaktikList==='function' && !renderTaktikList._tt579Wrapped){
+    var oldRender579=renderTaktikList;
+    renderTaktikList=function(){
+      ensureTaktikFolderArray579();
+      setVersion579();
+      var r=oldRender579.apply(this,arguments);
+      ensureFixedScope579();
+      setVersion579();
+      return r;
+    };
+    renderTaktikList._tt579Wrapped=true;
+    try{window.renderTaktikList=renderTaktikList;}catch(e){}
+  }
+
+  function start579(){
+    ensureTaktikFolderArray579();
+    ensureStyle579();
+    ensureFixedScope579();
+    setVersion579();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start579);else start579();
+  [200,800,1800,3500].forEach(function(ms){setTimeout(function(){ensureTaktikFolderArray579();ensureFixedScope579();setVersion579();},ms);});
+})();
+/* === slut v579 === */
+
