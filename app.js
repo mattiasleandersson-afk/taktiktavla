@@ -40150,248 +40150,173 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v563-match-byt-formation === */
 
-
-/* === v567-taktiktavla-mina-mapphantering-safe ===
-   Bas: stabil v563. Bygger INTE vidare på v564-v566.
-   Syfte: försiktig mapphantering endast i Taktiktavla → Mina.
-   Viktigt:
-   - skriver inte om filraderna från v563/v554
-   - bevarar tt364OpenFormationShareModal och formation_team_shares-logiken
-   - flytt av fil gör endast PATCH på befintlig saves-rad, aldrig POST/kopia
-   - Lagets/Taktikfilm/Matcher/Trupp lämnas orörda
+/* === v568-taktiktavla-mina-mapphantering-safe2 ===
+   Bas: stabil v563.
+   Återställ efter trasiga v564-v567: bygg inte om filrader och rör inte delningsflödet.
+   - Delningsknappar/delningstabell lämnas till befintlig v563-logik (tt364OpenFormationShareModal + rebind).
+   - Lägger bara till försiktig mapphantering runt v554:s befintliga fällbara mappar i Taktiktavla → Mina.
+   - Flytt använder befintlig cloudMoveToFolder/PATCH på befintligt id. Ingen POST/kopia.
 */
 (function(){
-  'use strict';
-  if(window.__tt567FormationMineFolderSafe)return;
-  window.__tt567FormationMineFolderSafe=true;
-  var VERSION='567';
-  var LS_KEY='tt567_virtual_formation_folders_v1';
-  var movingFormation567=null;
+  if(window.__tt568FormationMineFolderAdmin)return;
+  window.__tt568FormationMineFolderAdmin=true;
+  var VERSION='568';
+  var LS_KEY='tt568_empty_formation_folders_v1';
 
-  function setVersion567(){try{
-    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
-    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
-      var t=String(el.textContent||'').trim();
-      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
-    });
-  }catch(e){}}
-
-  function isMine567(){try{return typeof saveScope==='undefined'||saveScope==='mine';}catch(e){return true;}}
-  function normFolder567(v){v=String(v==null?'':v).trim();return v||'Allmänt';}
-  function esc567(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function loadVirtual567(){try{var a=JSON.parse(localStorage.getItem(LS_KEY)||'[]');return Array.isArray(a)?a.map(normFolder567).filter(Boolean):[];}catch(e){return [];}}
-  function saveVirtual567(a){try{var seen={},out=[];(a||[]).forEach(function(f){f=normFolder567(f);if(!seen[f]){seen[f]=true;out.push(f);}});localStorage.setItem(LS_KEY,JSON.stringify(out));}catch(e){}}
-  function allMineFolderNames567(){
+  function setVersion568(){
+    try{
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+      });
+    }catch(e){}
+  }
+  function norm(v){return String(v||'').trim();}
+  function lower(v){return norm(v).toLowerCase();}
+  function isMineFormation568(s){
+    try{if(typeof tt131IsMineFormation==='function')return !!tt131IsMineFormation(s);}catch(e){}
+    try{if(window.tt316FormationMine)return !!window.tt316FormationMine(s);}catch(e){}
+    try{if(typeof isMineV10==='function')return !!isMineV10(s);}catch(e){}
+    return true;
+  }
+  function loadEmptyFolders568(){
+    try{var arr=JSON.parse(localStorage.getItem(LS_KEY)||'[]');return Array.isArray(arr)?arr.map(norm).filter(Boolean):[];}catch(e){return [];}
+  }
+  function saveEmptyFolders568(arr){
+    var seen={},clean=[];(arr||[]).forEach(function(f){f=norm(f);if(!f||seen[lower(f)])return;seen[lower(f)]=true;clean.push(f);});
+    try{localStorage.setItem(LS_KEY,JSON.stringify(clean));}catch(e){}
+    return clean;
+  }
+  function currentMineFolders568(){
     var seen={},out=[];
-    function add(f){f=normFolder567(f);if(!seen[f]){seen[f]=true;out.push(f);}}
-    add('Allmänt');
-    try{(savedFormations||[]).forEach(function(s){if(s&&(!window.tt131IsMineFormation || window.tt131IsMineFormation(s)))add(s.folder||'Allmänt');});}catch(e){}
-    loadVirtual567().forEach(add);
-    return out.sort(function(a,b){if(a==='Allmänt'&&b!=='Allmänt')return -1;if(b==='Allmänt'&&a!=='Allmänt')return 1;return a.localeCompare(b,'sv');});
+    (savedFormations||[]).forEach(function(s){if(!isMineFormation568(s))return;var f=norm(s.folder||'Allmänt')||'Allmänt';if(!seen[lower(f)]){seen[lower(f)]=true;out.push(f);}});
+    loadEmptyFolders568().forEach(function(f){if(!seen[lower(f)]){seen[lower(f)]=true;out.push(f);}});
+    if(!seen['allmänt'])out.unshift('Allmänt');
+    return out;
   }
-  function countInFolder567(folder){
-    folder=normFolder567(folder);var n=0;
-    try{(savedFormations||[]).forEach(function(s){if(!s)return; if(window.tt131IsMineFormation && !window.tt131IsMineFormation(s))return; if(normFolder567(s.folder)===folder)n++;});}catch(e){}
-    return n;
+  function countMineInFolder568(folder){
+    folder=norm(folder)||'Allmänt';
+    return (savedFormations||[]).filter(function(s){return isMineFormation568(s) && (norm(s.folder||'Allmänt')||'Allmänt')===folder;}).length;
   }
-
-  function ensureStyle567(){
-    if(document.getElementById('tt567-style'))return;
-    var st=document.createElement('style');st.id='tt567-style';
+  function addEmptyFolder568(folder){
+    folder=norm(folder); if(!folder)return false;
+    var exists=currentMineFolders568().some(function(f){return lower(f)===lower(folder);});
+    if(exists){try{showToast('Mappen finns redan',false);}catch(e){} return false;}
+    var arr=loadEmptyFolders568();arr.push(folder);saveEmptyFolders568(arr);
+    try{showToast('Mapp skapad');}catch(e){}
+    try{renderSavesList();}catch(e){}
+    return true;
+  }
+  function removeEmptyFolder568(folder){
+    folder=norm(folder); if(!folder||folder==='Allmänt')return;
+    if(countMineInFolder568(folder)>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(e){} return;}
+    var arr=loadEmptyFolders568().filter(function(f){return lower(f)!==lower(folder);});saveEmptyFolders568(arr);
+    try{showToast('Tom mapp borttagen');}catch(e){}
+    try{renderSavesList();}catch(e){}
+  }
+  function renameFolder568(oldName,newName){
+    oldName=norm(oldName)||'Allmänt';newName=norm(newName);
+    if(!newName||lower(newName)===lower(oldName))return;
+    var exists=currentMineFolders568().some(function(f){return lower(f)===lower(newName)&&lower(f)!==lower(oldName);});
+    if(exists){try{showToast('Det finns redan en mapp med det namnet',false);}catch(e){}return;}
+    var count=countMineInFolder568(oldName);
+    if(count>0 && !confirm('Byt namn på mappen "'+oldName+'" till "'+newName+'" för '+count+' filer?'))return;
+    if(count===0){
+      var arr=loadEmptyFolders568().map(function(f){return lower(f)===lower(oldName)?newName:f;});
+      if(!arr.some(function(f){return lower(f)===lower(newName);}))arr.push(newName);
+      saveEmptyFolders568(arr);
+      try{showToast('Mappnamn ändrat');}catch(e){}
+      try{renderSavesList();}catch(e){}
+      return;
+    }
+    try{cloudStatus('Byter mappnamn...','#7aaa88');}catch(e){}
+    fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?type=eq.uppstallning&folder=eq.'+encodeURIComponent(oldName),{
+      method:'PATCH',
+      headers:Object.assign({},supaHeaders(),{'Content-Type':'application/json','Prefer':'return=representation'}),
+      body:JSON.stringify({folder:newName})
+    }).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error('HTTP '+r.status+' '+t);});return r.json();})
+      .then(function(){
+        var arr=loadEmptyFolders568().filter(function(f){return lower(f)!==lower(oldName);});saveEmptyFolders568(arr);
+        try{if(typeof currentFolder!=='undefined'&&currentFolder===oldName)currentFolder='Alla';}catch(e){}
+        try{cloudStatus('✅ Mappnamn ändrat','#4ae87a');showToast('Mappnamn ändrat');}catch(e){}
+        try{cloudLoadSaves();}catch(e){try{renderSavesList();}catch(_e){}}
+      }).catch(function(err){try{cloudStatus('❌ Fel: '+String(err.message||err),'#e84a4a');showToast('Kunde inte byta namn',false);}catch(e){}});
+  }
+  function ensureStyle568(){
+    if(document.getElementById('tt568-folder-admin-style'))return;
+    var st=document.createElement('style');st.id='tt568-folder-admin-style';
     st.textContent=[
-      '#tt567-folder-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0 8px 0;width:100%}',
-      '#tt567-folder-toolbar button,.tt567-folder-action{border:1px solid #4ae87a;background:#111a14;color:#4ae87a;border-radius:999px;padding:3px 8px;font-size:.68rem;font-weight:800;cursor:pointer}',
-      '.tt567-folder-action{margin-left:5px;min-width:24px;padding:2px 6px;font-size:.66rem;line-height:1}',
-      '.tt567-folder-action.rename{border-color:#e8c84a;color:#e8c84a}',
-      '.tt567-folder-action.delete{border-color:#e84a4a;color:#e84a4a}',
-      '.tt567-folder-empty{font-size:.72rem;color:#7aaa88;padding:7px 10px;border:1px dashed #2d4a35;border-radius:8px;background:rgba(255,255,255,.025)}'
+      '.tt568-folder-toolbar{width:100%;display:flex;gap:5px;align-items:center;margin:5px 0 7px 0;box-sizing:border-box}',
+      '.tt568-folder-toolbar .btn{font-size:.7rem!important;padding:4px 8px!important;color:#4ae87a!important;border-color:#4ae87a!important}',
+      '.tt554-folder-head.tt568-admin-head,.tt558-folder-head.tt568-admin-head{display:flex!important;align-items:center!important;gap:6px!important}',
+      '.tt568-head-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.tt568-folder-actions{display:inline-flex;gap:3px;align-items:center;flex:0 0 auto}',
+      '.tt568-folder-actions button{min-width:24px!important;width:24px!important;height:22px!important;padding:0!important;font-size:.68rem!important;line-height:1!important;border:1px solid #2d4a35!important;border-radius:6px!important;background:#111a14!important;color:#7aaa88!important}',
+      '.tt568-folder-actions button.tt568-del{color:#e84a4a!important}'
     ].join('\n');
     document.head.appendChild(st);
   }
-
-  function openCreateFolder567(){
-    if(!isMine567()){try{showToast('Mappar hanteras från Mina',false);}catch(e){}return;}
-    var name=window.prompt('Namn på ny mapp:','');
-    if(name===null)return;
-    name=normFolder567(name);
-    if(!name)return;
-    var existing=allMineFolderNames567().map(function(f){return f.toLowerCase();});
-    if(existing.indexOf(name.toLowerCase())>=0){try{showToast('Mappen finns redan',false);}catch(e){}return;}
-    var v=loadVirtual567();v.push(name);saveVirtual567(v);
-    try{showToast('Mapp skapad');}catch(e){}
-    try{renderSavesList();}catch(e){}
-  }
-
-  function addToolbar567(){
+  function addToolbar568(){
     try{
-      if(!isMine567())return;
-      ensureStyle567();
-      var list=document.getElementById('saves-list');if(!list||document.getElementById('tt567-folder-toolbar'))return;
-      var bar=document.createElement('div');bar.id='tt567-folder-toolbar';
-      var add=document.createElement('button');add.type='button';add.textContent='+ Mapp';add.title='Skapa tom mapp i Taktiktavla → Mina';
-      add.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();openCreateFolder567();});
-      bar.appendChild(add);
-      var first=list.firstElementChild;
-      if(first && /Mina/i.test(String(first.textContent||'')) && /Lagets/i.test(String(first.textContent||'')))list.insertBefore(bar,first.nextSibling);
-      else list.insertBefore(bar,list.firstChild);
+      if(typeof saveScope!=='undefined' && saveScope!=='mine')return;
+      var list=document.getElementById('saves-list');if(!list||list.querySelector('.tt568-folder-toolbar'))return;
+      var bar=document.createElement('div');bar.className='tt568-folder-toolbar';
+      var b=document.createElement('button');b.className='btn';b.type='button';b.textContent='+ Mapp';b.title='Skapa tom mapp i Taktiktavla → Mina';
+      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var name=prompt('Namn på ny mapp:','');if(name!==null)addEmptyFolder568(name);});
+      bar.appendChild(b);
+      var firstGroup=list.querySelector('.tt554-folder-group');
+      if(firstGroup)list.insertBefore(bar,firstGroup);else list.appendChild(bar);
     }catch(e){}
   }
-
-  function safeMoveFormation567(s,folder){
-    folder=normFolder567(folder);
-    if(!s||!s.id){try{showToast('Filen måste vara sparad innan den kan flyttas',false);}catch(e){}return;}
-    var id=s.id;
-    try{cloudStatus('Flyttar fil...','#7aaa88');}catch(e){}
-    fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?id=eq.'+encodeURIComponent(id),{
-      method:'PATCH',
-      headers:Object.assign({},supaHeaders(),{'Content-Type':'application/json','Prefer':'return=minimal'}),
-      body:JSON.stringify({folder:folder})
-    }).then(function(r){
-      if(!r.ok)return r.text().then(function(t){throw new Error('PATCH '+r.status+' '+t);});
-    }).then(function(){
-      try{s.folder=folder;(savedFormations||[]).forEach(function(x){if(x&&String(x.id)===String(id))x.folder=folder;});}catch(e){}
-      try{cloudStatus('✅ Flyttad','#4ae87a');showToast('Filen flyttad');}catch(e){}
-      try{cloudLoadSaves();}catch(e){try{renderSavesList();}catch(_e){}}
-    }).catch(function(err){
-      try{cloudStatus('❌ Flytt misslyckades: '+String(err&&err.message||err).slice(0,110),'#e84a4a');showToast('Kunde inte flytta filen',false);}catch(e){}
-    });
-  }
-
-  function openMoveFolder567(s){
-    if(!isMine567()){try{showToast('Mappar ändras från Mina',false);}catch(e){}return;}
-    movingFormation567=s||null;
-    var modal=document.getElementById('modal-move-folder');
-    var container=document.getElementById('move-folder-list');
-    if(!modal||!container){
-      var name=window.prompt('Flytta till mapp:',normFolder567(s&&s.folder));
-      if(name!==null)safeMoveFormation567(s,name);
-      return;
-    }
-    container.innerHTML='';
-    allMineFolderNames567().forEach(function(f){
-      var btn=document.createElement('button');btn.className='btn'+(normFolder567(s&&s.folder)===f?' on':'');btn.type='button';btn.textContent=f;btn.style.cssText='width:100%;text-align:left;margin-bottom:2px';
-      btn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();modal.classList.add('hidden');safeMoveFormation567(movingFormation567,f);movingFormation567=null;});
-      container.appendChild(btn);
-    });
-    var newBtn=document.createElement('button');newBtn.className='btn';newBtn.type='button';newBtn.textContent='+ Ny mapp';newBtn.style.cssText='width:100%;margin-top:4px;color:#4ae87a;border-color:#4ae87a';
-    newBtn.addEventListener('click',function(e){
-      e.preventDefault();e.stopPropagation();
-      var name=window.prompt('Namn på ny mapp:','');
-      if(name===null)return;
-      name=normFolder567(name);
-      if(!name)return;
-      var v=loadVirtual567();v.push(name);saveVirtual567(v);
-      modal.classList.add('hidden');
-      safeMoveFormation567(movingFormation567,name);movingFormation567=null;
-    });
-    container.appendChild(newBtn);
-    modal.classList.remove('hidden');
-  }
-
-  function renameFolder567(oldName){
-    oldName=normFolder567(oldName);
-    if(oldName==='Allmänt'){try{showToast('Allmänt kan inte byta namn',false);}catch(e){}return;}
-    var count=countInFolder567(oldName);
-    var name=window.prompt('Nytt namn på mappen:',oldName);
-    if(name===null)return;
-    name=normFolder567(name);
-    if(!name||name===oldName)return;
-    if(!window.confirm('Byt namn på mappen "'+oldName+'" till "'+name+'" för '+count+' filer?'))return;
-    var ids=[];
-    try{(savedFormations||[]).forEach(function(s){if(s&&normFolder567(s.folder)===oldName){if(s.id)ids.push(s.id);s.folder=name;}});}catch(e){}
-    var jobs=ids.map(function(id){
-      return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:Object.assign({},supaHeaders(),{'Content-Type':'application/json','Prefer':'return=minimal'}),body:JSON.stringify({folder:name})});
-    });
-    var v=loadVirtual567().filter(function(f){return f!==oldName;});v.push(name);saveVirtual567(v);
-    Promise.all(jobs).then(function(){try{showToast('Mappnamn ändrat');cloudLoadSaves();}catch(e){renderSavesList();}}).catch(function(){try{showToast('Kunde inte byta namn på mappen',false);cloudLoadSaves();}catch(e){}});
-  }
-
-  function deleteEmptyFolder567(folder){
-    folder=normFolder567(folder);
-    if(folder==='Allmänt'){try{showToast('Allmänt kan inte tas bort',false);}catch(e){}return;}
-    var count=countInFolder567(folder);
-    if(count>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(e){}return;}
-    if(!window.confirm('Ta bort den tomma mappen "'+folder+'"?'))return;
-    saveVirtual567(loadVirtual567().filter(function(f){return f!==folder;}));
-    try{showToast('Tom mapp borttagen');renderSavesList();}catch(e){}
-  }
-
-  function decorateFolderHeads567(){
+  function decorateFolderHeads568(){
     try{
-      if(!isMine567())return;
-      ensureStyle567();
-      var groups=document.querySelectorAll('#saves-list .tt554-folder-group');
-      groups.forEach(function(group){
-        if(group.dataset.tt567Decorated==='1')return;
-        var folder=group.getAttribute('data-tt554-folder')||'Allmänt';
-        var head=group.querySelector('.tt554-folder-head');if(!head)return;
-        var rn=document.createElement('button');rn.type='button';rn.className='tt567-folder-action rename';rn.textContent='✎';rn.title='Byt namn på mapp';
-        rn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();renameFolder567(folder);});
-        var del=document.createElement('button');del.type='button';del.className='tt567-folder-action delete';del.textContent='×';del.title='Ta bort tom mapp';
-        del.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();deleteEmptyFolder567(folder);});
-        head.appendChild(rn);head.appendChild(del);
-        group.dataset.tt567Decorated='1';
+      if(typeof saveScope!=='undefined' && saveScope!=='mine')return;
+      document.querySelectorAll('#saves-list .tt554-folder-group').forEach(function(group){
+        var head=group.querySelector('.tt554-folder-head');if(!head||head.dataset.tt568Decorated==='1')return;
+        var folder=group.getAttribute('data-tt554-folder')||head.title||'';folder=norm(folder)||'Allmänt';
+        head.dataset.tt568Decorated='1';head.classList.add('tt568-admin-head');
+        var original=head.textContent||folder;
+        head.textContent='';
+        var title=document.createElement('span');title.className='tt568-head-title';title.textContent=original;head.appendChild(title);
+        var actions=document.createElement('span');actions.className='tt568-folder-actions';
+        var rn=document.createElement('button');rn.type='button';rn.textContent='✎';rn.title='Byt namn på mapp';
+        rn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var nn=prompt('Nytt namn på mappen:',folder);if(nn!==null)renameFolder568(folder,nn);});
+        actions.appendChild(rn);
+        if(folder!=='Allmänt'){
+          var del=document.createElement('button');del.type='button';del.className='tt568-del';del.textContent='×';del.title='Ta bort tom mapp';
+          del.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(countMineInFolder568(folder)>0){try{showToast('Mappen innehåller filer. Flytta filerna först.',false);}catch(_e){}return;} if(confirm('Ta bort den tomma mappen "'+folder+'"?'))removeEmptyFolder568(folder);});
+          actions.appendChild(del);
+        }
+        head.appendChild(actions);
       });
     }catch(e){}
   }
-
-  function appendEmptyGroups567(){
+  function addEmptyGroups568(){
     try{
-      if(!isMine567())return;
+      if(typeof saveScope!=='undefined' && saveScope!=='mine')return;
+      if(typeof tt554MakeFormationFolderGroup!=='function')return;
       var list=document.getElementById('saves-list');if(!list)return;
-      var present={};
-      document.querySelectorAll('#saves-list .tt554-folder-group').forEach(function(g){present[normFolder567(g.getAttribute('data-tt554-folder'))]=true;});
-      allMineFolderNames567().forEach(function(f){
-        if(present[f])return;
-        if(countInFolder567(f)>0)return;
-        if(typeof tt554MakeFormationFolderGroup!=='function')return;
-        var empty=document.createElement('div');empty.className='tt567-folder-empty';empty.textContent='Tom mapp';
-        var g=tt554MakeFormationFolderGroup(f,[empty]);
-        list.appendChild(g);
+      var existing={};
+      list.querySelectorAll('.tt554-folder-group').forEach(function(g){existing[lower(g.getAttribute('data-tt554-folder')||'')]=true;});
+      loadEmptyFolders568().forEach(function(f){
+        if(!f||existing[lower(f)]||countMineInFolder568(f)>0)return;
+        list.appendChild(tt554MakeFormationFolderGroup(f,[]));
       });
     }catch(e){}
   }
+  function afterRender568(){ensureStyle568();addEmptyGroups568();addToolbar568();decorateFolderHeads568();setVersion568();}
 
-  function afterRender567(){
-    if(!isMine567())return;
-    setVersion567();
-    addToolbar567();
-    appendEmptyGroups567();
-    decorateFolderHeads567();
-    try{if(typeof rebindShareButtons364==='function')rebindShareButtons364();}catch(e){}
-  }
-
-  // Byt bara ut flyttdialogen. Detta påverkar inte filrendering eller delningsknappar.
-  try{window.openMoveFolder=openMoveFolder567;openMoveFolder=openMoveFolder567;}catch(e){}
-  try{window.cloudMoveToFolder=function(id,folder){
-    var s=null;try{(savedFormations||[]).some(function(x){if(x&&String(x.id)===String(id)){s=x;return true;}return false;});}catch(e){}
-    if(s)safeMoveFormation567(s,folder);else safeMoveFormation567({id:id},folder);
-  };cloudMoveToFolder=window.cloudMoveToFolder;}catch(e){}
-
-  if(typeof renderSavesList==='function' && !renderSavesList.__tt567Wrapped){
-    var oldRender567=renderSavesList;
+  var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
+  if(oldRender && !oldRender._tt568Wrapped){
     renderSavesList=function(){
-      var r=oldRender567.apply(this,arguments);
-      afterRender567();
-      setTimeout(afterRender567,0);
-      setTimeout(afterRender567,120);
+      var r=oldRender.apply(this,arguments);
+      setTimeout(afterRender568,0);
+      setTimeout(afterRender568,180);
       return r;
     };
-    renderSavesList.__tt567Wrapped=true;
-    try{window.renderSavesList=renderSavesList;}catch(e){}
+    renderSavesList._tt568Wrapped=true;
   }
-
-  // När delningsrutan sparas ska Lagets-tabellen laddas om från RPC och inte leva på gammal cache.
-  document.addEventListener('click',function(e){
-    try{
-      if(e.target && e.target.id==='tt364-save'){
-        setTimeout(function(){try{if(window.tt367LoadFormationTeamShares)window.tt367LoadFormationTeamShares(true).then(function(){try{if(saveScope==='team'&&window.tt367RenderFormationTeamView)window.tt367RenderFormationTeamView();}catch(_e){}});}catch(_e){}},300);
-        setTimeout(function(){try{if(window.tt367LoadFormationTeamShares)window.tt367LoadFormationTeamShares(true).then(function(){try{if(saveScope==='team'&&window.tt367RenderFormationTeamView)window.tt367RenderFormationTeamView();}catch(_e){}});}catch(_e){}},1000);
-      }
-    }catch(err){}
-  },true);
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion567();setTimeout(afterRender567,300);});
-  else{setVersion567();setTimeout(afterRender567,300);}
+  setVersion568();setTimeout(afterRender568,600);setTimeout(setVersion568,1200);setTimeout(setVersion568,2600);
 })();
-/* === slut v567-taktiktavla-mina-mapphantering-safe === */
+/* === slut v568 === */
