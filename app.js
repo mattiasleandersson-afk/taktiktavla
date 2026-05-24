@@ -40686,3 +40686,105 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [0,120,500,1200,2500,4500].forEach(function(ms){setTimeout(function(){movePlusMappToFixedRow573();setVersion573();},ms);});
 })();
 /* === slut v573 === */
+
+
+/* === v574-taktiktavla-mina-plusmapp-samma-rad ===
+   Bas: fungerande v573.
+   Endast grafisk/UX-fix:
+   - flyttar in + Mapp i själva Mina/Lagets-raden, inte bara i samma fasta behållare.
+   - sparar faktisk höjd eftersom knappen inte hamnar på egen rad.
+   - lämnar delning, flytt, mapp-PATCH, Lagets, Taktikfilm, Matcher och SQL orörda.
+*/
+(function(){
+  'use strict';
+  if(window.__tt574PlusMappSameRow)return;
+  window.__tt574PlusMappSameRow=true;
+  var VERSION='574';
+
+  function setVersion574(){try{
+    if(document.body)document.body.setAttribute('data-app-version',VERSION);
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+
+  function ensureStyle574(){try{
+    if(document.getElementById('tt574-plusmapp-samerow-style'))return;
+    var st=document.createElement('style');
+    st.id='tt574-plusmapp-samerow-style';
+    st.textContent=[
+      '#tt572-saves-scope-fixed{display:block!important;}',
+      '#tt572-saves-scope-fixed .tt572-fixed-scope-row{display:flex!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;width:100%!important;box-sizing:border-box!important;}',
+      '#tt572-saves-scope-fixed .tt572-fixed-scope-row .tab{flex:0 0 auto!important;}',
+      '#tt572-saves-scope-fixed .tt574-fixed-add-folder{font-size:.72rem!important;padding:4px 10px!important;background:#111a14!important;color:#4ae87a!important;border:1px solid #4ae87a!important;border-radius:6px!important;cursor:pointer!important;margin-left:auto!important;white-space:nowrap!important;flex:0 0 auto!important;}',
+      '#tt572-saves-scope-fixed > .tt573-fixed-add-folder{display:none!important;}',
+      '@media(max-width:760px){#tt572-saves-scope-fixed .tt572-fixed-scope-row{gap:3px!important;}#tt572-saves-scope-fixed .tt574-fixed-add-folder{font-size:.74rem!important;padding:5px 10px!important;margin-left:auto!important;}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }catch(e){}}
+
+  function isPlusMappButton574(btn){
+    return !!(btn&&String(btn.textContent||'').replace(/\s+/g,' ').trim()==='+ Mapp');
+  }
+
+  function findScopeRow574(holder){
+    if(!holder)return null;
+    var rows=Array.prototype.slice.call(holder.querySelectorAll('.tt572-fixed-scope-row'));
+    if(rows[0])return rows[0];
+    var direct=Array.prototype.slice.call(holder.children).filter(function(ch){
+      if(!ch||!ch.querySelectorAll)return false;
+      var btns=Array.prototype.slice.call(ch.querySelectorAll('button'));
+      var hasMine=btns.some(function(b){return String(b.textContent||'').trim()==='Mina';});
+      var hasTeam=btns.some(function(b){return String(b.textContent||'').trim()==='Lagets';});
+      return hasMine&&hasTeam;
+    });
+    return direct[0]||null;
+  }
+
+  function movePlusMappIntoSameRow574(){try{
+    ensureStyle574();
+    var holder=document.getElementById('tt572-saves-scope-fixed');
+    var list=document.getElementById('saves-list');
+    if(!holder)return;
+    var row=findScopeRow574(holder);
+    if(!row)return;
+
+    var btn=Array.prototype.slice.call(row.querySelectorAll('button')).filter(isPlusMappButton574)[0];
+    if(!btn){
+      btn=Array.prototype.slice.call(holder.querySelectorAll('button')).filter(isPlusMappButton574)[0];
+    }
+    if(!btn&&list){
+      btn=Array.prototype.slice.call(list.querySelectorAll('button')).filter(isPlusMappButton574)[0];
+    }
+    if(!btn)return;
+
+    btn.classList.remove('tt573-fixed-add-folder');
+    btn.classList.add('tt574-fixed-add-folder');
+    row.appendChild(btn);
+
+    // Ta bort eventuell tom wrapper från gamla mappfilterraden om knappen var dess enda synliga innehåll.
+    Array.prototype.slice.call(list?list.children:[]).forEach(function(ch){
+      if(ch&&ch.querySelectorAll){
+        var onlyPlus=Array.prototype.slice.call(ch.querySelectorAll('button')).every(isPlusMappButton574);
+        if(onlyPlus&&String(ch.textContent||'').replace(/\s+/g,' ').trim()==='+ Mapp')ch.remove();
+      }
+    });
+  }catch(e){}}
+
+  var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
+  if(oldRender && !oldRender._tt574Wrapped){
+    renderSavesList=function(){
+      var r=oldRender.apply(this,arguments);
+      [0,40,160,360].forEach(function(ms){setTimeout(function(){movePlusMappIntoSameRow574();setVersion574();},ms);});
+      return r;
+    };
+    renderSavesList._tt574Wrapped=true;
+  }
+
+  ensureStyle574();
+  setVersion574();
+  [0,120,500,1200,2500,4500].forEach(function(ms){setTimeout(function(){movePlusMappIntoSameRow574();setVersion574();},ms);});
+})();
+/* === slut v574 === */
