@@ -40608,3 +40608,81 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [0,100,500,1200,2500,4500].forEach(function(ms){setTimeout(function(){moveScopeTabs572();setVersion572();},ms);});
 })();
 /* === slut v572 === */
+
+
+/* === v573-taktiktavla-mina-plusmapp-fast-rad ===
+   Bas: fungerande v572.
+   Endast grafisk/UX-fix:
+   - flyttar + Mapp från den scrollande mapp-/listytan till samma fasta rad som Mina/Lagets.
+   - lämnar delning, flytt, mapp-PATCH, Lagets, Taktikfilm, Matcher och SQL orörda.
+*/
+(function(){
+  'use strict';
+  if(window.__tt573PlusMappFixedRow)return;
+  window.__tt573PlusMappFixedRow=true;
+  var VERSION='573';
+
+  function setVersion573(){try{
+    if(document.body)document.body.setAttribute('data-app-version',VERSION);
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+
+  function ensureStyle573(){try{
+    if(document.getElementById('tt573-plusmapp-fixedrow-style'))return;
+    var st=document.createElement('style');
+    st.id='tt573-plusmapp-fixedrow-style';
+    st.textContent=[
+      '#tt572-saves-scope-fixed .tt573-fixed-add-folder{font-size:.72rem!important;padding:4px 10px!important;background:#111a14!important;color:#4ae87a!important;border:1px solid #4ae87a!important;border-radius:6px!important;cursor:pointer!important;margin-left:auto!important;white-space:nowrap!important;}',
+      '@media(max-width:760px){#tt572-saves-scope-fixed .tt573-fixed-add-folder{font-size:.74rem!important;padding:5px 11px!important;margin-left:0!important;}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }catch(e){}}
+
+  function isPlusMappButton573(btn){
+    return !!(btn&&String(btn.textContent||'').replace(/\s+/g,' ').trim()==='+ Mapp');
+  }
+
+  function movePlusMappToFixedRow573(){try{
+    ensureStyle573();
+    var holder=document.getElementById('tt572-saves-scope-fixed');
+    var list=document.getElementById('saves-list');
+    if(!holder||!list)return;
+
+    // Om + Mapp redan ligger i fasta raden behöver vi bara säkra klass/stil.
+    var existing=Array.prototype.slice.call(holder.querySelectorAll('button')).filter(isPlusMappButton573)[0];
+    if(existing){
+      existing.classList.add('tt573-fixed-add-folder');
+      return;
+    }
+
+    // v572 lämnar mappfilterraden i den scrollande listan. Flytta endast + Mapp-knappen,
+    // inte mappfiltren och inte några filrader, så delning/flyttknapparnas fil-id lämnas orörda.
+    var btn=null;
+    Array.prototype.slice.call(list.querySelectorAll('button')).some(function(b){
+      if(isPlusMappButton573(b)){btn=b;return true;}
+      return false;
+    });
+    if(!btn)return;
+    btn.classList.add('tt573-fixed-add-folder');
+    holder.appendChild(btn);
+  }catch(e){}}
+
+  var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
+  if(oldRender && !oldRender._tt573Wrapped){
+    renderSavesList=function(){
+      var r=oldRender.apply(this,arguments);
+      [0,40,160,360].forEach(function(ms){setTimeout(function(){movePlusMappToFixedRow573();setVersion573();},ms);});
+      return r;
+    };
+    renderSavesList._tt573Wrapped=true;
+  }
+
+  ensureStyle573();
+  setVersion573();
+  [0,120,500,1200,2500,4500].forEach(function(ms){setTimeout(function(){movePlusMappToFixedRow573();setVersion573();},ms);});
+})();
+/* === slut v573 === */
