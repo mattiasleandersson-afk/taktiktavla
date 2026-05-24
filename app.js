@@ -40501,3 +40501,110 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [80,300,900,1600,2800,4500].forEach(function(ms){setTimeout(setVersion571,ms);});
 })();
 /* === slut v571 === */
+
+
+/* === v572-taktiktavla-mina-fast-tabs-no-search ===
+   Bas: fungerande v571.
+   Endast grafisk/UX-fix för Taktiktavla-biblioteket:
+   - döljer sökrutan för Taktiktavla → Mina/Lagets och nollställer searchQuery så inga gamla sökfilter ligger kvar.
+   - flyttar Mina/Lagets-raden ut ur den scrollande listan till en fast rad ovanför saves-list.
+   Rör inte delningsdialog, formation_team_shares, flytt, Lagets-rendering, Taktikfilm, Matcher eller SQL.
+*/
+(function(){
+  'use strict';
+  if(window.__tt572FixedSavesTabsNoSearch)return;
+  window.__tt572FixedSavesTabsNoSearch=true;
+  var VERSION='572';
+
+  function setVersion572(){try{
+    if(document.body)document.body.setAttribute('data-app-version',VERSION);
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+
+  function ensureStyle572(){
+    if(document.getElementById('tt572-saves-ui-style'))return;
+    var st=document.createElement('style');
+    st.id='tt572-saves-ui-style';
+    st.textContent=[
+      '#saves-search{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;}',
+      '#tt572-saves-scope-fixed{display:flex;gap:4px;flex-wrap:wrap;align-items:center;width:100%;margin:0 0 6px 0;padding:0 0 5px 0;background:#111a14;position:sticky;top:0;z-index:12;border-bottom:1px solid rgba(45,74,53,.65);}',
+      '#tt572-saves-scope-fixed:empty{display:none!important;}',
+      '#tt572-saves-scope-fixed .tab{font-size:.72rem!important;padding:4px 10px!important;}',
+      '#panel-saves #saves-list{scroll-margin-top:40px;}',
+      '@media(max-width:760px){#tt572-saves-scope-fixed{margin-bottom:5px;padding-bottom:5px}#tt572-saves-scope-fixed .tab{font-size:.74rem!important;padding:5px 11px!important}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function ensureHolder572(){
+    var holder=document.getElementById('tt572-saves-scope-fixed');
+    if(holder)return holder;
+    var list=document.getElementById('saves-list');
+    if(!list||!list.parentNode)return null;
+    holder=document.createElement('div');
+    holder.id='tt572-saves-scope-fixed';
+    var status=document.getElementById('cloud-status');
+    if(status&&status.parentNode===list.parentNode)status.parentNode.insertBefore(holder,status.nextSibling);
+    else list.parentNode.insertBefore(holder,list);
+    return holder;
+  }
+
+  function isScopeRow572(row){
+    if(!row||!row.querySelectorAll)return false;
+    var buttons=Array.prototype.slice.call(row.querySelectorAll('button'));
+    if(buttons.length<2)return false;
+    var hasMine=buttons.some(function(b){return String(b.textContent||'').trim()==='Mina';});
+    var hasTeam=buttons.some(function(b){return String(b.textContent||'').trim()==='Lagets';});
+    return hasMine&&hasTeam;
+  }
+
+  function moveScopeTabs572(){try{
+    ensureStyle572();
+    var list=document.getElementById('saves-list');
+    var holder=ensureHolder572();
+    if(!list||!holder)return;
+    var scopeRow=null;
+    Array.prototype.slice.call(list.children).some(function(ch){
+      if(isScopeRow572(ch)){scopeRow=ch;return true;}
+      return false;
+    });
+    if(scopeRow){
+      holder.innerHTML='';
+      scopeRow.classList.add('tt572-fixed-scope-row');
+      holder.appendChild(scopeRow);
+    }
+    var search=document.getElementById('saves-search');
+    if(search){
+      search.value='';
+      search.setAttribute('aria-hidden','true');
+      search.tabIndex=-1;
+    }
+  }catch(e){}}
+
+  function clearSearch572(){try{
+    searchQuery='';
+    var search=document.getElementById('saves-search');
+    if(search)search.value='';
+  }catch(e){}}
+
+  var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
+  if(oldRender && !oldRender._tt572Wrapped){
+    renderSavesList=function(){
+      clearSearch572();
+      var r=oldRender.apply(this,arguments);
+      [0,40,160,360].forEach(function(ms){setTimeout(function(){moveScopeTabs572();setVersion572();},ms);});
+      return r;
+    };
+    renderSavesList._tt572Wrapped=true;
+  }
+
+  ensureStyle572();
+  clearSearch572();
+  setVersion572();
+  [0,100,500,1200,2500,4500].forEach(function(ms){setTimeout(function(){moveScopeTabs572();setVersion572();},ms);});
+})();
+/* === slut v572 === */
