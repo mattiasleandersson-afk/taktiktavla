@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Taktiktavla TEST">
+<meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v495</title>
+<title>Taktiktavla TEST v585</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -131,7 +131,7 @@
     right: 92px !important;
     left: auto !important;
     z-index: 10010 !important;
-    max-width: min(270px, calc(100vw - 112px)) !important;
+    max-width: min(390px, calc(100vw - 112px)) !important;
     overflow-x: auto !important;
     background: rgba(17,26,20,.94) !important;
     border: 1px solid #2d4a35 !important;
@@ -143,7 +143,7 @@
   body.fullscreen-portrait #arrow-options select,
   body.fullscreen-portrait #zone-options select,
   body.fullscreen-portrait #freehand-options select{
-    max-width: 92px !important;
+    max-width: 120px !important;
     font-size: .68rem !important;
   }
 </style>
@@ -176,7 +176,7 @@
     right:92px !important;
     left:auto !important;
     z-index:10010 !important;
-    max-width:min(270px, calc(100vw - 112px)) !important;
+    max-width:min(390px, calc(100vw - 112px)) !important;
     overflow-x:auto !important;
     background:rgba(17,26,20,.94) !important;
     border:1px solid #2d4a35 !important;
@@ -450,7 +450,7 @@
 
 
 <style id="v98-formation-compact-css-only">
-  /* v98: försiktig kompaktning endast för Utgångslägenpanelen.
+  /* v98: försiktig kompaktning endast för Taktiktavla-panelen.
      Flyttar inga knappar och skapar inga nya Mina/Lagets-element. */
 
   #panel-saves.tt-v98-formation-compact,
@@ -459,7 +459,7 @@
     min-height: calc(100vh - 92px) !important;
   }
 
-  /* Dölj bara överflödig laddningsinfo inne i Utgångslägenpanelen */
+  /* Dölj bara överflödig laddningsinfo inne i Taktiktavla-panelen */
   #panel-saves.tt-v98-formation-compact .tt98-hide-loaded-info,
   #panel-uppstallning.tt-v98-formation-compact .tt98-hide-loaded-info,
   #panel-start.tt-v98-formation-compact .tt98-hide-loaded-info {
@@ -488,7 +488,7 @@
     font-size: .78rem !important;
   }
 
-  /* Mappfilter: bara den rad som scriptet markerar inne i Utgångslägen */
+  /* Mappfilter: bara den rad som scriptet markerar inne i Taktiktavla */
   #panel-saves.tt-v98-formation-compact .tt98-folder-row,
   #panel-uppstallning.tt-v98-formation-compact .tt98-folder-row,
   #panel-start.tt-v98-formation-compact .tt98-folder-row {
@@ -580,7 +580,7 @@
 
 
 <style id="v99-formation-top-align-icons">
-  /* v99: Utgångslägen ska ligga högst upp, listan får plats, ikonknappar till höger */
+  /* v99: Taktiktavla ska ligga högst upp, listan får plats, ikonknappar till höger */
 
   #panel-saves.tt-v99-formation-top,
   #panel-uppstallning.tt-v99-formation-top,
@@ -633,11 +633,11 @@
   #panel-uppstallning.tt-v99-formation-top #saves-list .row,
   #panel-start.tt-v99-formation-top #saves-list .row {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) repeat(5, 27px) !important;
+    grid-template-columns: minmax(0, 1fr) repeat(6, 27px) !important;
     align-items: center !important;
-    column-gap: 3px !important;
+    column-gap: 2px !important;
     min-height: 35px !important;
-    padding: 4px 4px !important;
+    padding: 4px 3px !important;
   }
 
   #panel-saves.tt-v99-formation-top #saves-list .row-name,
@@ -1531,13 +1531,172 @@
   }
 </style>
 
+
+<style id="v524-desktop-fullscreen-rotate-css">
+  /* v524: Dator-only roterad planvy i helskärm.
+     Taktikfilm-stegnavigeringen flyttas upp och planen får mer yta.
+     Mobil/iPad påverkas inte. */
+  #fs-rotate-desktop-btn{ display:none; }
+
+  @media (min-width: 1024px) and (pointer: fine){
+    body.fullscreen-portrait #fs-rotate-desktop-btn{
+      display:inline-flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop #pitch-wrapper{
+      box-sizing:border-box !important;
+      padding-top:64px !important;
+      padding-left:8px !important;
+      padding-right:8px !important;
+      padding-bottom:8px !important;
+      overflow:hidden !important;
+      align-items:center !important;
+      justify-content:center !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop.v66-taktik-fs #pitch-wrapper{
+      padding-top:70px !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop #pitch-svg{
+      transform:rotate(90deg) !important;
+      transform-origin:center center !important;
+      width:min(74vw, calc(100vh - 86px)) !important;
+      height:auto !important;
+      max-width:none !important;
+      max-height:none !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop.v66-taktik-fs #pitch-svg{
+      width:min(74vw, calc(100vh - 94px)) !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop #fs-top-tools{
+      left:calc(env(safe-area-inset-left,0px) + 8px) !important;
+      right:auto !important;
+      top:calc(env(safe-area-inset-top,0px) + 8px) !important;
+      transform:none !important;
+      max-width:calc(100vw - 250px) !important;
+      overflow-x:auto !important;
+      z-index:10006 !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop #fs-rotate-desktop-btn.active{
+      background:#4ae87a !important;
+      color:#0a1a0d !important;
+      border-color:#4ae87a !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop.v66-taktik-fs #fs-portrait-nav{
+      position:fixed !important;
+      left:auto !important;
+      right:calc(env(safe-area-inset-right,0px) + 8px) !important;
+      top:calc(env(safe-area-inset-top,0px) + 8px) !important;
+      bottom:auto !important;
+      transform:none !important;
+      z-index:10005 !important;
+      max-width:240px !important;
+      width:auto !important;
+      display:flex !important;
+      flex-wrap:nowrap !important;
+      justify-content:flex-end !important;
+      align-items:center !important;
+      gap:5px !important;
+      overflow-x:auto !important;
+      background:rgba(17,26,20,.94) !important;
+      border:1px solid #2d4a35 !important;
+      border-radius:12px !important;
+      padding:5px 7px !important;
+      box-shadow:0 4px 16px rgba(0,0,0,.35) !important;
+    }
+
+    body.fullscreen-portrait.tt523-fs-rotated-desktop.v66-taktik-fs #fs-portrait-nav .ls-btn,
+    body.fullscreen-portrait.tt523-fs-rotated-desktop.v66-taktik-fs #fs-portrait-nav button{
+      flex:0 0 auto !important;
+    }
+  }
+</style>
+
+<style id="v559-rotated-desktop-nav-center-css">
+  /* v559: Dator + roterad helskärmsvy.
+     Flytta stegnavigering/spola fram-tillbaka till mitten så den inte ligger över Återställ. */
+  @media (min-width: 1024px) and (pointer: fine){
+    body.fullscreen-portrait.tt523-fs-rotated-desktop.v66-taktik-fs #fs-portrait-nav{
+      left:50% !important;
+      right:auto !important;
+      top:calc(env(safe-area-inset-top,0px) + 8px) !important;
+      bottom:auto !important;
+      transform:translateX(-50%) !important;
+      z-index:10005 !important;
+      max-width:min(430px, calc(100vw - 300px)) !important;
+      width:auto !important;
+      display:flex !important;
+      flex-wrap:nowrap !important;
+      justify-content:center !important;
+      align-items:center !important;
+      gap:5px !important;
+      overflow-x:auto !important;
+    }
+  }
+</style>
+
+
+
+<style id="v527-textrotation-css">
+  #edit-text-rot.on,
+  #text-rot.on{
+    background:#4ae87a !important;
+    color:#0a1a0d !important;
+    border-color:#4ae87a !important;
+  }
+</style>
+
+
+<style id="v529-forms-line-fix-css">
+  #arrow-head-sel,
+  #zone-fill-sel{
+    min-width:86px;
+  }
+  body.fullscreen-portrait #arrow-options,
+  body.fullscreen-portrait #zone-options{
+    max-width:min(460px, calc(100vw - 112px)) !important;
+  }
+</style>
+
+
+<style id="v530-step-move-mark-css">
+  #edit-taktik-steps .row.tt530-step-dragging{
+    opacity:.72 !important;
+    background:rgba(232,200,74,.20) !important;
+    border-color:#e8c84a !important;
+    box-shadow:0 0 0 2px rgba(232,200,74,.45), 0 8px 20px rgba(0,0,0,.35) !important;
+    transform:scale(.992);
+  }
+  #edit-taktik-steps .row.tt530-step-moved{
+    animation:tt530StepMovedFlash .85s ease-out;
+  }
+  @keyframes tt530StepMovedFlash{
+    0%{
+      background:rgba(74,232,122,.26);
+      box-shadow:0 0 0 2px rgba(74,232,122,.55), 0 7px 18px rgba(0,0,0,.34);
+    }
+    100%{
+      background:transparent;
+      box-shadow:none;
+    }
+  }
+</style>
+
+<!-- v585 TESTMILJÖ: index byggd från produktionsbas v583. Fast testfilnamn: index_test.html + app_test.js. -->
 </head>
 <body>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">451</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">583</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -1618,6 +1777,10 @@
       <option value="solid">&#8212; Hel</option>
       <option value="dashed">&#8229; Streckad</option>
     </select>
+    <select id="arrow-head-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="arrow">&#10132; Pil</option>
+      <option value="line">&#9473; Linje</option>
+    </select>
     <select id="arrow-width-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
       <option value="2">&#9135; Tunn</option>
       <option value="3" selected>&#9473; Normal</option>
@@ -1627,7 +1790,11 @@
   <div id="zone-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:6;pointer-events:auto">
     <select id="zone-shape-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
       <option value="rect">&#9635; Rektangel</option>
-      <option value="circle">&#9711; Cirkel</option>
+      <option value="circle">&#9711; Cirkel/oval</option>
+      <option value="tri-up">&#9651; Triangel upp</option>
+      <option value="tri-down">&#9661; Triangel ned</option>
+      <option value="tri-left">&#9665; Triangel v&#228;nster</option>
+      <option value="tri-right">&#9655; Triangel h&#246;ger</option>
     </select>
     <select id="zone-color-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
       <option value="rgba(232,76,76,0.25)">&#9632; R&#246;d</option>
@@ -1637,6 +1804,17 @@
       <option value="rgba(160,120,255,0.25)">&#9632; Lila</option>
     
       <option value="rgba(0,0,0,0.25)">&#9632; Svart</option>
+    </select>
+    <select id="zone-fill-sel" style="background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:0.7rem;font-family:Arial Narrow,sans-serif">
+      <option value="solid">&#9632; Fylld</option>
+      <option value="none">&#9633; Ingen</option>
+      <option value="h">&#9776; Horisontell</option>
+      <option value="v">&#9776; Vertikal</option>
+      <option value="diag">&#9585; Diagonal /</option>
+      <option value="diag2">&#9586; Diagonal \</option>
+      <option value="cross">&#9587; Kryss</option>
+      <option value="grid">&#9638; Rutn&#228;t</option>
+      <option value="dots">&#8759; Prickar</option>
     </select>
   </div>
   <div id="freehand-options" style="display:none;position:absolute;top:8px;right:8px;gap:5px;align-items:center;z-index:6;pointer-events:auto">
@@ -1934,10 +2112,13 @@
       <button class="btn" data-sz="18">L</button>
       <button class="btn" data-sz="24">XL</button>
     </div>
-    <div style="display:flex;gap:5px;margin-bottom:13px" id="align-btns">
+    <div style="display:flex;gap:5px;margin-bottom:8px" id="align-btns">
       <button class="btn" data-align="left">V&#228;nster</button>
       <button class="btn on" data-align="center">Centrera</button>
       <button class="btn" data-align="right">H&#246;ger</button>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:13px">
+      <button class="btn" id="text-rot" type="button" data-rot="0">Rotera text -90&#176;</button>
     </div>
     <div class="mactions">
       <button class="btn" id="text-cancel">Avbryt</button>
@@ -1957,10 +2138,13 @@
       <button class="btn" data-sz="18">L</button>
       <button class="btn" data-sz="24">XL</button>
     </div>
-    <div style="display:flex;gap:5px;margin-bottom:13px" id="edit-align-btns">
+    <div style="display:flex;gap:5px;margin-bottom:8px" id="edit-align-btns">
       <button class="btn" data-align="left">V&#228;nster</button>
       <button class="btn on" data-align="center">Centrera</button>
       <button class="btn" data-align="right">H&#246;ger</button>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:13px">
+      <button class="btn" id="edit-text-rot" type="button" data-rot="0">Rotera text -90&#176;</button>
     </div>
     <div class="mactions">
       <button class="btn danger" id="edit-text-del">Radera</button>
@@ -2139,7 +2323,7 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app_js_v495_testprojekt.txt?v=495"></script>
+<script src="app_test.js?v=585-test"></script>
 
 <script>
 (function(){
