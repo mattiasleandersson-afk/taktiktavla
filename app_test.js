@@ -41731,10 +41731,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   'use strict';
   if(window.__tt585TestEnvMarker)return;
   window.__tt585TestEnvMarker=true;
-  var VERSION='585 TEST';
+  var VERSION='586 TEST';
   function setVersion585(){try{
     if(document.body){
-      document.body.setAttribute('data-app-version','585-test');
+      document.body.setAttribute('data-app-version','586-test');
       document.body.setAttribute('data-env','test');
     }
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
@@ -41756,3 +41756,50 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [0,250,800,1600,3200,6000].forEach(function(ms){setTimeout(tick,ms);});
 })();
 /* === slut v585 testmiljöbas === */
+
+
+/* === v586-testmiljo-tydlig-banner ===
+   Bas: v585 TEST. Endast tydligare testmiljömarkering.
+   - Fast toppbanner som syns direkt i appen.
+   - Behåller test-Supabase och all funktionalitet orörd.
+*/
+(function(){
+  'use strict';
+  if(window.__tt586TestEnvBanner)return;
+  window.__tt586TestEnvBanner=true;
+  var VERSION='586 TEST';
+  function setVersion586(){try{
+    if(document.body){
+      document.body.setAttribute('data-app-version','586-test');
+      document.body.setAttribute('data-env','test');
+    }
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+      var el=document.getElementById(id);if(el)el.textContent=VERSION;
+    });
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.|\d+ TEST|\d+\s*TEST)$/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+  function addStyle586(){try{
+    if(document.getElementById('tt586-test-env-style'))return;
+    var s=document.createElement('style');
+    s.id='tt586-test-env-style';
+    s.textContent='body{padding-top:36px!important}#tt586-test-env-banner{position:fixed;left:0;right:0;top:0;z-index:2147483647;background:#ffd36b;color:#07110a;border-bottom:2px solid #07110a;font-family:Arial Narrow,Arial,sans-serif;font-weight:900;text-align:center;letter-spacing:.8px;padding:7px 10px;font-size:14px;line-height:1.1;box-shadow:0 4px 16px rgba(0,0,0,.35);pointer-events:none}#tt585-test-badge{display:none!important}@media(max-width:520px){body{padding-top:38px!important}#tt586-test-env-banner{font-size:13px;padding:7px 6px}}';
+    document.head.appendChild(s);
+  }catch(e){}}
+  function addBanner586(){try{
+    addStyle586();
+    var b=document.getElementById('tt586-test-env-banner');
+    if(!b){
+      b=document.createElement('div');
+      b.id='tt586-test-env-banner';
+      document.body.appendChild(b);
+    }
+    b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v586 TEST';
+  }catch(e){}}
+  function tick(){setVersion586();addBanner586();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick();
+  [0,120,300,800,1600,3200,6000].forEach(function(ms){setTimeout(tick,ms);});
+})();
+/* === slut v586 testmiljöbanner === */
