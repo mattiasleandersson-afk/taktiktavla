@@ -41996,24 +41996,25 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v589-test-osparad-taktikfilm-safe-restore ===
-   Bas: fungerande v587 TEST. v588 ska inte användas.
-   Säker återställning av helt ny/osparad Taktikfilm från v587:s lokala nödkopia.
+/* === v590-test-taktikfilm-recovery-clear-fix ===
+   Bas: fungerande v589 TEST. v588 ska inte användas.
+   Rensningsfix för lokal nödkopia: Avbryt/ignorera och raderad osparad film ska sluta fråga.
+   Bygger vidare på säker återställning av helt ny/osparad Taktikfilm från v589/v587:s lokala nödkopia.
    - skriver inget till Supabase
    - rör inte produktion, mappar eller delning
    - öppnar återställd film först när appens Taktikfilm-UI är färdigt
 */
 (function(){
   'use strict';
-  if(window.__tt589UnsavedTaktikSafeRestore)return;
-  window.__tt589UnsavedTaktikSafeRestore=true;
-  var VERSION='589 TEST';
+  if(window.__tt590UnsavedTaktikSafeRestore)return;
+  window.__tt590UnsavedTaktikSafeRestore=true;
+  var VERSION='590 TEST';
   var STORE='tt_test_taktikfilm_recovery_v587';
   var asked=false;
 
-  function setVersion589(){try{
+  function setVersion590(){try{
     if(document.body){
-      document.body.setAttribute('data-app-version','589-test');
+      document.body.setAttribute('data-app-version','590-test');
       document.body.setAttribute('data-env','test');
     }
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -42024,7 +42025,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(/^(v?\d+|v3\.|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent=VERSION;
     });
     var b=document.getElementById('tt586-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v589 TEST';
+    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v590 TEST';
   }catch(e){}}
 
   function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return null;}}
@@ -42097,7 +42098,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(typeof startPlayback==='function')startPlayback(existing);
     else if(typeof openEditTaktik==='function')openEditTaktik(existing);
     unlockAfterRestore(draft,rec.editingStepIdx);
-    [80,260,650].forEach(function(ms){setTimeout(function(){unlockAfterRestore(draft,rec.editingStepIdx);setVersion589();},ms);});
+    [80,260,650].forEach(function(ms){setTimeout(function(){unlockAfterRestore(draft,rec.editingStepIdx);setVersion590();},ms);});
     if(typeof showToast==='function')showToast('Osparad Taktikfilm återställd från lokal nödkopia');
   }catch(e){}}
   function offerUnsaved(){try{
@@ -42109,25 +42110,58 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var when='';try{when=new Date(rec.ts||rec.savedAt).toLocaleString('sv-SE');}catch(e){}
     var name=rec.name||(rec.tk&&rec.tk.name)||'Osparad taktikfilm';
     var ok=confirm('Det finns en osparad ny Taktikfilm lokalt: "'+name+'"'+(when?' från '+when:'')+'.\n\nVill du återställa den nu?');
-    if(ok)setTimeout(function(){restoreUnsaved(rec);},220);
+    if(ok){setTimeout(function(){restoreUnsaved(rec);},220);}
+    else{
+      // Användaren har aktivt avböjt återställning. Rensa just den nödkopian
+      // så appen inte fortsätter fråga vid varje omladdning.
+      if(rec._storeKey)removeByKey(rec._storeKey);
+      if(typeof showToast==='function')showToast('Lokal nödkopia ignorerad och rensad');
+    }
   }catch(e){}}
 
+  function recoveryKeysForTk(tk){try{
+    var keys=[];
+    if(!tk)return keys;
+    if(tk.dbId)keys.push('db:'+tk.dbId);
+    if(tk.id)keys.push('id:'+tk.id);
+    var n=String(tk.name||'').trim().toLowerCase();
+    if(n)keys.push('name:'+n);
+    if(tk._draftUid)keys.push('draft:'+tk._draftUid);
+    return keys;
+  }catch(e){return [];} }
+  function clearRecoveryForTk(tk){try{recoveryKeysForTk(tk).forEach(removeByKey);}catch(e){}}
+
+  // Om en osparad återställd film raderas ska nödkopian rensas.
+  // Annars får användaren samma återställningsfråga igen efter omladdning.
+  if(typeof deleteTaktik==='function'&&!deleteTaktik.__tt590RecoveryClearDeleteWrapped){
+    var oldDeleteTaktik590=deleteTaktik;
+    deleteTaktik=function(idx){
+      var tk=null;
+      try{if(typeof taktikFilmer!=='undefined'&&Array.isArray(taktikFilmer))tk=taktikFilmer[idx]||null;}catch(e){}
+      var r=oldDeleteTaktik590.apply(this,arguments);
+      setTimeout(function(){try{clearRecoveryForTk(tk);setVersion590();}catch(e){}},250);
+      return r;
+    };
+    deleteTaktik.__tt590RecoveryClearDeleteWrapped=true;
+    try{window.deleteTaktik=deleteTaktik;}catch(e){}
+  }
+
   // När den återställda osparade filmen sparas normalt ska den gamla name:-nödkopian rensas också.
-  if(typeof cloudSaveTaktik==='function'&&!cloudSaveTaktik.__tt589UnsavedClearWrapped){
+  if(typeof cloudSaveTaktik==='function'&&!cloudSaveTaktik.__tt590UnsavedClearWrapped){
     var oldCloud=cloudSaveTaktik;
     cloudSaveTaktik=function(tk){
       var beforeName='';try{beforeName=String((tk&&tk.name)||((typeof currentTk==='function'&&currentTk())?currentTk().name:'')||'').trim().toLowerCase();}catch(e){}
       var r=oldCloud.apply(this,arguments);
-      setTimeout(function(){try{if(beforeName)removeByKey('name:'+beforeName);setVersion589();}catch(e){}},2200);
+      setTimeout(function(){try{if(beforeName)removeByKey('name:'+beforeName);setVersion590();}catch(e){}},2200);
       return r;
     };
-    cloudSaveTaktik.__tt589UnsavedClearWrapped=true;try{window.cloudSaveTaktik=cloudSaveTaktik;}catch(e){}
+    cloudSaveTaktik.__tt590UnsavedClearWrapped=true;try{window.cloudSaveTaktik=cloudSaveTaktik;}catch(e){}
   }
 
-  function tick(){setVersion589();}
+  function tick(){setVersion590();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){tick();setTimeout(offerUnsaved,2200);});
   else{tick();setTimeout(offerUnsaved,2200);}
   [0,300,900,1800,3200,5200].forEach(function(ms){setTimeout(function(){tick();if(ms===3200)offerUnsaved();},ms);});
   setInterval(tick,2500);
 })();
-/* === slut v589 test osparad Taktikfilm säker restore === */
+/* === slut v590 test nödkopia rensningsfix === */
