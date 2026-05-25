@@ -41548,8 +41548,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v581 === */
 
 
-/* === v583-taktikfilm-boll-rorelsepil-propagation-fix ===
-   Bas: stabil v581.
+/* === v584-versionsvisning-efter-bollrorelsepil-fix ===
+   Bas: fungerande v583.
+   Endast versionsvisning/cache-busting.
+   Bevarar v583:s boll-rörelsepilfix.
+
+   Ursprunglig v583-bas: stabil v581.
    Smal fix för Taktikfilm:
    - Om en rörelsepil ritas på bollen i ett steg ska bollens endpoint ärvas till kommande steg
      på samma sätt som spelarnas nya positioner redan gör.
@@ -41690,3 +41694,30 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [0,250,800,1600,3200].forEach(function(ms){setTimeout(setVersion583,ms);});
 })();
 /* === slut v583 === */
+
+
+/* === v584-version-lock-clean ===
+   Bas: fungerande v583.
+   Endast versionsvisning: lägger sista versionssättare efter äldre v571/v581-timers.
+*/
+(function(){
+  'use strict';
+  if(window.__tt584VersionLockClean)return;
+  window.__tt584VersionLockClean=true;
+  var VERSION='584';
+
+  function setVersion584(){try{
+    if(document.body)document.body.setAttribute('data-app-version',VERSION);
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.textContent=VERSION;
+    });
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      if(el&&String(el.textContent||'').match(/^(v?\s*)?\d{3}$/i))el.textContent=VERSION;
+    });
+  }catch(e){}}
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion584);else setVersion584();
+  [0,80,250,800,1600,3200,5200,7000,10000].forEach(function(ms){setTimeout(setVersion584,ms);});
+})();
+/* === slut v584 === */
