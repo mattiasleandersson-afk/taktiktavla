@@ -28879,7 +28879,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       +'<div id="tt298-auth-actions">'
       +'<button class="btn" id="tt298-auth-login" style="color:#4ae87a;border-color:#4ae87a">Logga in</button>'
       +'<button class="btn" id="tt298-auth-signup">Skapa konto</button>'
-      +'<button class="btn" id="tt322-forgot-password">Glömt/byta lösenord?</button>'
+      +'<button class="btn" id="tt322-forgot-password">Glömt lösenord?</button>'
       +'<button class="btn" id="tt298-auth-logout" style="color:#ff8b8b;border-color:#ff8b8b">Logga ut</button>'
       +'<button class="btn" id="tt298-auth-close">Stäng</button>'
       +'</div><div id="tt298-auth-status"></div></div>';
@@ -41430,7 +41430,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v582-glomt-byta-losenord-text ===
+/* === v581-match-lineup-symbol-toggle-fix ===
    Bas: v579 stabil.
    Ersätter inte v223, utan lägger en smal korrigering i laguppställningsläget:
    - Cirkel ska alltid visa cirkel och dölja alla tröj-paths.
@@ -41438,13 +41438,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Andra tröjvisningar från tavla/taktikfilm får inte läcka in i Matcher -> laguppställning.
 */
 (function(){
-  if(window.__tt582MatchLineupSymbolToggleFix)return;
-  window.__tt582MatchLineupSymbolToggleFix=true;
-  var VERSION='582';
+  if(window.__tt581MatchLineupSymbolToggleFix)return;
+  window.__tt581MatchLineupSymbolToggleFix=true;
+  var VERSION='581';
   var LS_SYMBOL='tt223_match_symbol';
   var LS_NUMBERS='tt223_match_numbers';
 
-  function setVersion582(){try{
+  function setVersion581(){try{
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -41453,51 +41453,51 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     });
   }catch(e){}}
 
-  function isLineup582(){try{return !!((matchRoster||[]).length && document.getElementById('bench-bar') && document.getElementById('bench-bar').classList.contains('active'));}catch(e){return false;}}
-  function getSymbol582(){try{return localStorage.getItem(LS_SYMBOL)||'circle';}catch(e){return 'circle';}}
-  function showNumbers582(){try{var v=localStorage.getItem(LS_NUMBERS);return v===null?true:v!=='off';}catch(e){return true;}}
-  function esc582(id){try{if(window.CSS&&CSS.escape)return CSS.escape(String(id));}catch(e){}return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
-  function jerseyD582(x,y){return ['M',x-18,y-12,'L',x-9,y-22,'L',x-3,y-16,'L',x+3,y-16,'L',x+9,y-22,'L',x+18,y-12,'L',x+13,y-3,'L',x+10,y-6,'L',x+10,y+18,'L',x-10,y+18,'L',x-10,y-6,'L',x-13,y-3,'Z'].join(' ');}
+  function isLineup581(){try{return !!((matchRoster||[]).length && document.getElementById('bench-bar') && document.getElementById('bench-bar').classList.contains('active'));}catch(e){return false;}}
+  function getSymbol581(){try{return localStorage.getItem(LS_SYMBOL)||'circle';}catch(e){return 'circle';}}
+  function showNumbers581(){try{var v=localStorage.getItem(LS_NUMBERS);return v===null?true:v!=='off';}catch(e){return true;}}
+  function esc581(id){try{if(window.CSS&&CSS.escape)return CSS.escape(String(id));}catch(e){}return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+  function jerseyD581(x,y){return ['M',x-18,y-12,'L',x-9,y-22,'L',x-3,y-16,'L',x+3,y-16,'L',x+9,y-22,'L',x+18,y-12,'L',x+13,y-3,'L',x+10,y-6,'L',x+10,y+18,'L',x-10,y+18,'L',x-10,y-6,'L',x-13,y-3,'Z'].join(' ');}
 
-  function ensureStyle582(){
-    if(document.getElementById('tt582-style'))return;
-    var st=document.createElement('style');st.id='tt582-style';
+  function ensureStyle581(){
+    if(document.getElementById('tt581-style'))return;
+    var st=document.createElement('style');st.id='tt581-style';
     st.textContent=[
-      'body.tt582-match-lineup.tt582-match-circle .player-token circle{opacity:1!important;visibility:visible!important;display:inline!important}',
-      'body.tt582-match-lineup.tt582-match-circle .player-token path[class*="jersey"]{display:none!important;visibility:hidden!important;opacity:0!important}',
-      'body.tt582-match-lineup.tt582-match-jersey .player-token path.tt223-jersey{display:inline!important;visibility:visible!important;opacity:1!important}',
-      'body.tt582-match-lineup.tt582-match-jersey .player-token path.tt399-jersey,body.tt582-match-lineup.tt582-match-jersey .player-token path.tt400-jersey,body.tt582-match-lineup.tt582-match-jersey .player-token path.tt415-jersey{display:none!important;visibility:hidden!important;opacity:0!important}',
-      'body.tt582-match-lineup.tt582-match-jersey .player-token circle{opacity:.01!important;visibility:visible!important;display:inline!important}'
+      'body.tt581-match-lineup.tt581-match-circle .player-token circle{opacity:1!important;visibility:visible!important;display:inline!important}',
+      'body.tt581-match-lineup.tt581-match-circle .player-token path[class*="jersey"]{display:none!important;visibility:hidden!important;opacity:0!important}',
+      'body.tt581-match-lineup.tt581-match-jersey .player-token path.tt223-jersey{display:inline!important;visibility:visible!important;opacity:1!important}',
+      'body.tt581-match-lineup.tt581-match-jersey .player-token path.tt399-jersey,body.tt581-match-lineup.tt581-match-jersey .player-token path.tt400-jersey,body.tt581-match-lineup.tt581-match-jersey .player-token path.tt415-jersey{display:none!important;visibility:hidden!important;opacity:0!important}',
+      'body.tt581-match-lineup.tt581-match-jersey .player-token circle{opacity:.01!important;visibility:visible!important;display:inline!important}'
     ].join('\n');
     document.head.appendChild(st);
   }
 
-  function syncControl582(){try{
+  function syncControl581(){try{
     var wrap=document.getElementById('tt223-symbol-controls');if(!wrap)return;
-    var sym=getSymbol582(), nums=showNumbers582();
+    var sym=getSymbol581(), nums=showNumbers581();
     wrap.querySelectorAll('[data-tt223-symbol]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-tt223-symbol')===sym);});
     var n=wrap.querySelector('[data-tt223-numbers]');if(n){n.classList.toggle('on',nums);n.textContent=nums?'Nr på':'Nr av';}
   }catch(e){}}
 
-  function cleanNonLineup582(){try{
-    document.body.classList.remove('tt582-match-lineup','tt582-match-circle','tt582-match-jersey');
+  function cleanNonLineup581(){try{
+    document.body.classList.remove('tt581-match-lineup','tt581-match-circle','tt581-match-jersey');
     document.querySelectorAll('.player-token path.tt223-jersey').forEach(function(p){p.remove();});
     document.querySelectorAll('.player-token circle').forEach(function(c){c.style.removeProperty('opacity');c.style.removeProperty('visibility');c.style.removeProperty('display');});
     document.querySelectorAll('.player-token text.token-text').forEach(function(t){t.style.display='';});
   }catch(e){}}
 
-  function apply582(){
-    setVersion582();ensureStyle582();syncControl582();
-    var active=isLineup582();
-    if(!active){cleanNonLineup582();return;}
-    var sym=getSymbol582(), nums=showNumbers582();
+  function apply581(){
+    setVersion581();ensureStyle581();syncControl581();
+    var active=isLineup581();
+    if(!active){cleanNonLineup581();return;}
+    var sym=getSymbol581(), nums=showNumbers581();
     try{
-      document.body.classList.add('tt582-match-lineup');
-      document.body.classList.toggle('tt582-match-circle',sym!=='jersey');
-      document.body.classList.toggle('tt582-match-jersey',sym==='jersey');
+      document.body.classList.add('tt581-match-lineup');
+      document.body.classList.toggle('tt581-match-circle',sym!=='jersey');
+      document.body.classList.toggle('tt581-match-jersey',sym==='jersey');
       (players||[]).forEach(function(p){
         if(!p||p.team!=='home')return;
-        var g=document.querySelector(".player-token[data-id='"+esc582(p.id)+"']");if(!g)return;
+        var g=document.querySelector(".player-token[data-id='"+esc581(p.id)+"']");if(!g)return;
         var c=g.querySelector('circle');
         var t=g.querySelector('text.token-text')||g.querySelector('text');
         var oldJerseys=g.querySelectorAll('path.tt399-jersey,path.tt400-jersey,path.tt415-jersey');
@@ -41509,7 +41509,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
             jersey.setAttribute('class','tt223-jersey');jersey.setAttribute('pointer-events','none');
             if(t)g.insertBefore(jersey,t);else g.appendChild(jersey);
           }
-          jersey.setAttribute('d',jerseyD582(p.x,p.y));
+          jersey.setAttribute('d',jerseyD581(p.x,p.y));
           jersey.setAttribute('fill',(c&&c.getAttribute('fill'))||(p.team==='home'?homeColor:awayColor));
           jersey.setAttribute('stroke',(c&&c.getAttribute('stroke'))||'#fff');
           jersey.setAttribute('stroke-width','2');jersey.setAttribute('stroke-linejoin','round');
@@ -41530,19 +41530,163 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){}
   }
 
-  if(typeof render==='function'&&!render.__tt582MatchLineupSymbolToggleFix){
-    var oldRender582=render;
-    render=function(){var r=oldRender582.apply(this,arguments);try{apply582();}catch(e){}return r;};
-    render.__tt582MatchLineupSymbolToggleFix=true;window.render=render;
+  if(typeof render==='function'&&!render.__tt581MatchLineupSymbolToggleFix){
+    var oldRender581=render;
+    render=function(){var r=oldRender581.apply(this,arguments);try{apply581();}catch(e){}return r;};
+    render.__tt581MatchLineupSymbolToggleFix=true;window.render=render;
   }
-  if(typeof moveDrag==='function'&&!moveDrag.__tt582MatchLineupSymbolToggleFix){
-    var oldMove582=moveDrag;
-    moveDrag=function(){var r=oldMove582.apply(this,arguments);try{apply582();}catch(e){}return r;};
-    moveDrag.__tt582MatchLineupSymbolToggleFix=true;window.moveDrag=moveDrag;
+  if(typeof moveDrag==='function'&&!moveDrag.__tt581MatchLineupSymbolToggleFix){
+    var oldMove581=moveDrag;
+    moveDrag=function(){var r=oldMove581.apply(this,arguments);try{apply581();}catch(e){}return r;};
+    moveDrag.__tt581MatchLineupSymbolToggleFix=true;window.moveDrag=moveDrag;
   }
-  ['click','touchend','pointerup','change'].forEach(function(ev){document.addEventListener(ev,function(){try{apply582();setTimeout(apply582,0);}catch(e){}},true);});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply582);else apply582();
-  [100,400,1000,2500,5000].forEach(function(ms){setTimeout(apply582,ms);});
-  window.tt582ApplyMatchLineupSymbolToggleFix=apply582;
+  ['click','touchend','pointerup','change'].forEach(function(ev){document.addEventListener(ev,function(){try{apply581();setTimeout(apply581,0);}catch(e){}},true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply581);else apply581();
+  [100,400,1000,2500,5000].forEach(function(ms){setTimeout(apply581,ms);});
+  window.tt581ApplyMatchLineupSymbolToggleFix=apply581;
 })();
-/* === slut v582 === */
+/* === slut v581 === */
+
+
+/* === v583-taktikfilm-boll-rorelsepil-propagation-fix ===
+   Bas: stabil v581.
+   Smal fix för Taktikfilm:
+   - Om en rörelsepil ritas på bollen i ett steg ska bollens endpoint ärvas till kommande steg
+     på samma sätt som spelarnas nya positioner redan gör.
+   - Stoppar vid ett senare steg som har egen boll-rörelsepil.
+   - Rör inte spelare, mappar, delning, Matcher/Trupp, SQL eller admin.
+*/
+(function(){
+  if(window.__tt583BallMovementPropagationFix)return;
+  window.__tt583BallMovementPropagationFix=true;
+  var VERSION='583';
+
+  function clone583(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+  function same583(a,b){
+    if(!a||!b)return false;
+    var dx=(Number(a.x)||0)-(Number(b.x)||0),dy=(Number(a.y)||0)-(Number(b.y)||0);
+    return dx*dx+dy*dy<2.25;
+  }
+  function setVersion583(){try{
+    if(document.body)document.body.setAttribute('data-app-version',VERSION);
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){}}
+  function currentTk583(){
+    try{if(typeof tt146CurrentTk==='function'){var a=tt146CurrentTk();if(a)return a;}}catch(e){}
+    try{if(typeof tt145CurrentTk==='function'){var b=tt145CurrentTk();if(b)return b;}}catch(e){}
+    try{if(typeof tt76Current==='function'){var c=tt76Current();if(c)return c;}}catch(e){}
+    try{if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null&&taktikFilmer&&taktikFilmer[editingTaktikIdx])return taktikFilmer[editingTaktikIdx];}catch(e){}
+    try{if(typeof playback!=='undefined'&&playback&&playback.tk)return playback.tk;}catch(e){}
+    return null;
+  }
+  function safeStep583(step,idx){
+    try{if(typeof tt145SafeStep==='function')return tt145SafeStep(step,idx||0);}catch(e){}
+    try{if(typeof tt76SafeStep==='function')return tt76SafeStep(step,idx||0);}catch(e){}
+    step=step||{};
+    step.players=Array.isArray(step.players)?step.players:[];
+    step.movementPaths=Array.isArray(step.movementPaths)?step.movementPaths:[];
+    if(!step.ball)step.ball={x:W/2,y:H/2};
+    return step;
+  }
+  function ballMove583(step){
+    step=safeStep583(step,0);
+    var arr=Array.isArray(step.movementPaths)?step.movementPaths:[];
+    for(var i=0;i<arr.length;i++){
+      var mp=arr[i];
+      if(!mp||String(mp.playerId)!=='ball'||!Array.isArray(mp.pts)||mp.pts.length<2)continue;
+      var start=mp.pts[0],end=mp.pts[mp.pts.length-1];
+      return {start:{x:start.x,y:start.y},end:{x:end.x,y:end.y}};
+    }
+    return null;
+  }
+  function futureHasOwnBallMove583(step){return !!ballMove583(step);}
+
+  function propagateBallMovement583(tk,idx){
+    try{
+      if(!tk||!Array.isArray(tk.steps))return;
+      idx=Math.max(0,Math.min(Number(idx)||0,tk.steps.length-1));
+      var step=safeStep583(tk.steps[idx],idx);
+      var mv=ballMove583(step);
+      if(!mv||!mv.end)return;
+
+      // Säkerställ även aktuellt steg: rörelsepilens slutpunkt är bollens slutposition.
+      step.ball=step.ball||{x:mv.end.x,y:mv.end.y};
+      step.ball.x=mv.end.x;step.ball.y=mv.end.y;
+      tk.steps[idx]=step;
+
+      for(var si=idx+1;si<tk.steps.length;si++){
+        var fs=safeStep583(tk.steps[si],si);
+        if(futureHasOwnBallMove583(fs))break;
+        var cur=fs.ball?{x:fs.ball.x,y:fs.ball.y}:null;
+        // Normal ärvning: kommande steg som står kvar vid start/endpoint eller saknar boll uppdateras.
+        // Detta fångar felet där spelare ärvdes framåt men bollen låg kvar på gammal position.
+        if(!cur||same583(cur,mv.start)||same583(cur,mv.end)){
+          fs.ball=fs.ball||{x:mv.end.x,y:mv.end.y};
+          fs.ball.x=mv.end.x;fs.ball.y=mv.end.y;
+          tk.steps[si]=fs;
+        }else{
+          break;
+        }
+      }
+    }catch(e){}
+  }
+
+  function propagateCurrentBall583(){
+    try{
+      var tk=currentTk583();
+      if(!tk||!Array.isArray(tk.steps))return;
+      var idx=(typeof editingStepIdx==='number')?editingStepIdx:((typeof playback!=='undefined'&&playback&&typeof playback.stepIndex==='number')?playback.stepIndex:0);
+      propagateBallMovement583(tk,idx);
+      if(typeof playback!=='undefined'&&playback&&playback.tk)playback.tk=tk;
+    }catch(e){}
+  }
+
+  function wrapSaver583(name){
+    try{
+      var fn=window[name]||(typeof globalThis!=='undefined'?globalThis[name]:null);
+      if(typeof fn!=='function'||fn.__tt583BallMovementPropagationFix)return;
+      var wrapped=function(){
+        var r=fn.apply(this,arguments);
+        try{propagateCurrentBall583();}catch(e){}
+        return r;
+      };
+      wrapped.__tt583BallMovementPropagationFix=true;
+      window[name]=wrapped;
+      try{eval(name+' = wrapped;');}catch(e){}
+    }catch(e){}
+  }
+
+  ['tt145SaveCurrentStep','tt76SaveCurrentStep','saveCurrentStepV75','saveCurrentStepV74','saveCurrentStepV73','saveCurrentStepV70','autoSaveCurrentStepLocalV16'].forEach(wrapSaver583);
+
+  if(typeof tt147GoToStep==='function'&&!tt147GoToStep.__tt583BallMovementPropagationFix){
+    var oldGo583=tt147GoToStep;
+    tt147GoToStep=function(idx,animate){
+      try{propagateCurrentBall583();}catch(e){}
+      var r=oldGo583.apply(this,arguments);
+      try{setVersion583();}catch(e){}
+      return r;
+    };
+    tt147GoToStep.__tt583BallMovementPropagationFix=true;
+    try{window.tt147GoToStep=tt147GoToStep;}catch(e){}
+  }
+
+  if(typeof animateToStep==='function'&&!animateToStep.__tt583BallMovementPropagationFix){
+    var oldAnimate583=animateToStep;
+    animateToStep=function(targetIdx){
+      try{propagateCurrentBall583();}catch(e){}
+      var r=oldAnimate583.apply(this,arguments);
+      try{setVersion583();}catch(e){}
+      return r;
+    };
+    animateToStep.__tt583BallMovementPropagationFix=true;
+    try{window.animateToStep=animateToStep;}catch(e){}
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion583);else setVersion583();
+  [0,250,800,1600,3200].forEach(function(ms){setTimeout(setVersion583,ms);});
+})();
+/* === slut v583 === */
