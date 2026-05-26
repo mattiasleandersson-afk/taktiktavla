@@ -1689,12 +1689,12 @@
   }
 </style>
 
-<!-- v628 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
+<!-- v629 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v628 TEST: lagerpanel steg 7.
-     Rörelser kan visas/döljas och låsas visuellt/interaktionsmässigt i aktuell vy.
+  /* v629 TEST: lagerpanel steg 7.
+     Text är nu ett separat visuellt lager; Ritningar omfattar pilar, zoner och frihand.
      Ingen sparning, ingen localStorage, ingen render-wrapper och ingen datamodell ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1769,12 +1769,16 @@
     pointer-events:none !important;
   }
   body.tt623-layer-drawings-hidden #pitch-svg .arrow-g,
-  body.tt623-layer-drawings-hidden #pitch-svg .label-g,
   body.tt623-layer-drawings-hidden #pitch-svg .freehand-g,
   body.tt623-layer-drawings-hidden #pitch-svg .zone-g,
   body.tt623-layer-drawings-hidden #pitch-svg .preview-arrow,
   body.tt623-layer-drawings-hidden #pitch-svg .freehand-preview,
   body.tt623-layer-drawings-hidden #pitch-svg .zone-preview{
+    opacity:0 !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+  body.tt629-layer-text-hidden #pitch-svg .label-g{
     opacity:0 !important;
     visibility:hidden !important;
     pointer-events:none !important;
@@ -1791,7 +1795,6 @@
     filter:grayscale(.12) saturate(.9) !important;
   }
   body.tt626-layer-drawings-locked #pitch-svg .arrow-g,
-  body.tt626-layer-drawings-locked #pitch-svg .label-g,
   body.tt626-layer-drawings-locked #pitch-svg .freehand-g,
   body.tt626-layer-drawings-locked #pitch-svg .zone-g,
   body.tt626-layer-drawings-locked #pitch-svg .preview-arrow,
@@ -1824,7 +1827,7 @@
 
 
 <style id="tt619-left-version-visual-mask">
-  /* v628 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
+  /* v629 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
      Ingen JS-loop: bara visuell mask på den lilla versionsetiketten. */
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"],
   span[style*="font-size:0.6rem"][style*="letter-spacing"]{
@@ -1834,7 +1837,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"628 TEST" !important;
+    content:"629 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1845,10 +1848,10 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v628">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v629">
   <details open>
-    <summary><span>Lager TEST</span><span>v628</span></summary>
-    <div class="tt616-layer-sub">Steg 7: Rörelser kan visas/döljas och låsas. Inget sparas.</div>
+    <summary><span>Lager TEST</span><span>v629</span></summary>
+    <div class="tt616-layer-sub">Steg 8: Text kan visas/döljas separat. Inget sparas.</div>
     <div class="tt616-layer-row">
       <div class="tt616-layer-name">Spelare/boll</div>
       <button type="button" id="tt621-layer-playerball-visibility" class="tt621-layer-on" aria-pressed="true">Visa</button>
@@ -1856,8 +1859,13 @@
     </div>
     <div class="tt616-layer-row">
       <div class="tt616-layer-name">Ritningar</div>
-      <button type="button" id="tt623-layer-drawings-visibility" class="tt621-layer-on" aria-pressed="true" title="Visa/dölj pilar, text, zoner och frihand i aktuell session">Visa</button>
+      <button type="button" id="tt623-layer-drawings-visibility" class="tt621-layer-on" aria-pressed="true" title="Visa/dölj pilar, zoner och frihand i aktuell session">Visa</button>
       <button type="button" id="tt626-layer-drawings-lock" aria-pressed="false" title="Lås/lås upp ritningar i aktuell session">Lås</button>
+    </div>
+    <div class="tt616-layer-row">
+      <div class="tt616-layer-name">Text</div>
+      <button type="button" id="tt629-layer-text-visibility" class="tt621-layer-on" aria-pressed="true" title="Visa/dölj textetiketter i aktuell session">Visa</button>
+      <button type="button" disabled title="Text-lås testas inte i detta steg">Lås</button>
     </div>
     <div class="tt616-layer-row">
       <div class="tt616-layer-name">Rörelser</div>
@@ -1872,7 +1880,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">628 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">629 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2493,7 +2501,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=628-lager-rorelser-visuell"></script>
+<script src="app_test.js?v=629-lager-rorelser-visuell"></script>
 
 <script>
 (function(){
@@ -2625,7 +2633,7 @@
 })();
 </script>
 
-<script id="tt628-layer-panel-script">
+<script id="tt629-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt621LayerPlayerBallInstalled)return;
@@ -2641,7 +2649,7 @@
 
   function isDrawingLayerTarget(target){
     try{
-      return !!(target && target.closest && target.closest('#pitch-svg .arrow-g, #pitch-svg .label-g, #pitch-svg .freehand-g, #pitch-svg .zone-g, #pitch-svg .preview-arrow, #pitch-svg .freehand-preview, #pitch-svg .zone-preview'));
+      return !!(target && target.closest && target.closest('#pitch-svg .arrow-g, #pitch-svg .freehand-g, #pitch-svg .zone-g, #pitch-svg .preview-arrow, #pitch-svg .freehand-preview, #pitch-svg .zone-preview'));
     }catch(e){
       return false;
     }
@@ -2649,7 +2657,7 @@
 
   function isDrawingCreationMode(){
     try{
-      return ['arrow','text','freehand','zone'].indexOf(String(window.mode||'')) !== -1;
+      return ['arrow','freehand','zone'].indexOf(String(window.mode||'')) !== -1;
     }catch(e){
       return false;
     }
@@ -2744,6 +2752,16 @@
     }
   }
 
+  function setTextVisible(visible){
+    document.body.classList.toggle('tt629-layer-text-hidden', !visible);
+    var btn=document.getElementById('tt629-layer-text-visibility');
+    if(btn){
+      btn.textContent=visible ? 'Visa' : 'Dold';
+      btn.classList.toggle('tt621-layer-on', visible);
+      btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    }
+  }
+
   function setMovementVisible(visible){
     document.body.classList.toggle('tt627-layer-movement-hidden', !visible);
     var btn=document.getElementById('tt627-layer-movement-visibility');
@@ -2811,6 +2829,17 @@
       });
     }
 
+    var textLayer=document.getElementById('tt629-layer-text-visibility');
+    if(textLayer && textLayer.dataset.tt629Bound!=='1'){
+      textLayer.dataset.tt629Bound='1';
+      setTextVisible(!document.body.classList.contains('tt629-layer-text-hidden'));
+      textLayer.addEventListener('click',function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        setTextVisible(document.body.classList.contains('tt629-layer-text-hidden'));
+      });
+    }
+
     var movement=document.getElementById('tt627-layer-movement-visibility');
     if(movement && movement.dataset.tt627Bound!=='1'){
       movement.dataset.tt627Bound='1';
@@ -2823,8 +2852,8 @@
     }
 
     var movementLock=document.getElementById('tt628-layer-movement-lock');
-    if(movementLock && movementLock.dataset.tt628Bound!=='1'){
-      movementLock.dataset.tt628Bound='1';
+    if(movementLock && movementLock.dataset.tt629Bound!=='1'){
+      movementLock.dataset.tt629Bound='1';
       setMovementLocked(document.body.classList.contains('tt628-layer-movement-locked'));
       movementLock.addEventListener('click',function(ev){
         ev.preventDefault();
