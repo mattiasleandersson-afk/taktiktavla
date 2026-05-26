@@ -42165,3 +42165,186 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   setInterval(tick,2500);
 })();
 /* === slut v590 test nödkopia rensningsfix === */
+
+
+/* === v591-test-stabil-versionsvisning ===
+   Bas: fungerande v590 TEST.
+   Endast versionsfix: stoppar äldre v578/v590-timers från att ge hoppande versionsnummer.
+   Rör inte Taktikfilm-nödkopia, Supabase, mappar, delning eller produktion.
+*/
+(function(){
+  'use strict';
+  if(window.__tt591StableTestVersion)return;
+  window.__tt591StableTestVersion=true;
+  var VERSION='591 TEST';
+  function shouldSet(el){try{
+    if(!el)return false;
+    var t=String(el.textContent||'').trim();
+    if(!t)return false;
+    return /^(v?\d+|\d+\s*TEST|\d+ TEST|v\d+ TEST|v?\d+\s*test)$/i.test(t) || /^(578|590 TEST|591 TEST)$/i.test(t);
+  }catch(e){return false;}}
+  function setVersion591(){try{
+    if(document.body){
+      document.body.setAttribute('data-app-version','591-test');
+      document.body.setAttribute('data-env','test');
+    }
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+      var el=document.getElementById(id);if(el)el.textContent=VERSION;
+    });
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      if(shouldSet(el))el.textContent=VERSION;
+    });
+    var b=document.getElementById('tt586-test-env-banner');
+    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v591 TEST';
+  }catch(e){}}
+  function installObserver591(){try{
+    if(!document.body||window.__tt591VersionObserver)return;
+    window.__tt591VersionObserver=new MutationObserver(function(){setVersion591();});
+    window.__tt591VersionObserver.observe(document.body,{childList:true,subtree:true,characterData:true});
+  }catch(e){}}
+  function tick(){setVersion591();installObserver591();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick();
+  [0,50,150,300,700,1200,2200,4200,8000].forEach(function(ms){setTimeout(tick,ms);});
+  setInterval(tick,1000);
+})();
+/* === slut v591 test stabil versionsvisning === */
+
+
+/* === v592-test-lagergrund-spelare-boll ===
+   Bas: fungerande v591 TEST.
+   Första försiktiga lagersteg i testmiljö:
+   - ett enda första lager: Spelare/boll
+   - panel med visa/dölj och lås/lås upp
+   - lagermetadata läggs i snapshots/state utan SQL/databasändring
+   - rör inte produktion, mappar, delning, Taktikfilm-nödkopia eller matchlogik
+*/
+(function(){
+  'use strict';
+  if(window.__tt592LayerGround)return;
+  window.__tt592LayerGround=true;
+  var VERSION='592 TEST';
+  var LAYER_ID='playerBall';
+  var STORE='tt_test_v592_layer_state';
+  var state={visible:true,locked:false};
+
+  function readState(){try{
+    var raw=localStorage.getItem(STORE);
+    if(raw){var s=JSON.parse(raw);state.visible=s.visible!==false;state.locked=!!s.locked;}
+  }catch(e){} }
+  function saveState(){try{localStorage.setItem(STORE,JSON.stringify(state));}catch(e){} }
+  function layerObj(){return {playerBall:{id:LAYER_ID,name:'Spelare/boll',visible:state.visible,locked:state.locked,order:10}};}
+  function applyLayerObj(layers){try{
+    if(layers&&layers.playerBall){state.visible=layers.playerBall.visible!==false;state.locked=!!layers.playerBall.locked;saveState();}
+  }catch(e){} }
+  function decorateSnap(s){try{
+    if(!s||typeof s!=='object')return s;
+    s.layers=s.layers||layerObj();
+    if(Array.isArray(s.players))s.players=s.players.map(function(p){p.layer=p.layer||LAYER_ID;return p;});
+    if(s.ball)s.ball.layer=s.ball.layer||LAYER_ID;
+  }catch(e){}return s;}
+  function restoreLayerMeta(s){try{
+    if(!s||typeof s!=='object')return;
+    applyLayerObj(s.layers);
+    if(typeof players!=='undefined'&&Array.isArray(players))players.forEach(function(p){p.layer=p.layer||LAYER_ID;});
+    if(typeof ball!=='undefined'&&ball)ball.layer=ball.layer||LAYER_ID;
+  }catch(e){} }
+
+  function ensureStyle(){try{
+    if(document.getElementById('tt592-layer-style'))return;
+    var css=document.createElement('style');css.id='tt592-layer-style';
+    css.textContent='\
+      #tt592-layer-panel{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:5px 0 6px;padding:5px 7px;border:1px solid rgba(255,211,107,.45);border-radius:10px;background:rgba(17,26,20,.94);box-shadow:0 3px 12px rgba(0,0,0,.22);font-family:Arial Narrow,Arial,sans-serif}\
+      #tt592-layer-panel .tt592-title{font-size:.68rem;color:#ffd36b;font-weight:900;text-transform:uppercase;letter-spacing:.4px}\
+      #tt592-layer-panel .tt592-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid #2d4a35;border-radius:999px;padding:3px 7px;background:#0b140e;color:#edf5ee;font-size:.72rem;font-weight:800}\
+      #tt592-layer-panel button{min-height:24px;padding:2px 7px;border-radius:999px;border:1px solid #2d4a35;background:#07110a;color:#edf5ee;font-size:.7rem;font-weight:900;cursor:pointer}\
+      #tt592-layer-panel button.on{border-color:#4ae87a;color:#4ae87a}\
+      #tt592-layer-panel button.warn{border-color:#ffd36b;color:#ffd36b}\
+      body.tt592-playerball-hidden .player-token,body.tt592-playerball-hidden .ball-token{display:none!important}\
+      body.tt592-playerball-locked .player-token,body.tt592-playerball-locked .ball-token{pointer-events:none!important;opacity:.55}\
+      body.tt592-playerball-locked .player-token .token-text,body.tt592-playerball-locked .ball-token .ball-text{opacity:.8}\
+    ';
+    document.head.appendChild(css);
+  }catch(e){} }
+
+  function setBodyClasses(){try{
+    if(!document.body)return;
+    document.body.classList.toggle('tt592-playerball-hidden',!state.visible);
+    document.body.classList.toggle('tt592-playerball-locked',!!state.locked);
+  }catch(e){} }
+  function updateButtons(){try{
+    var p=document.getElementById('tt592-layer-panel');if(!p)return;
+    var vis=p.querySelector('[data-tt592="visible"]');
+    var lock=p.querySelector('[data-tt592="locked"]');
+    var status=p.querySelector('[data-tt592="status"]');
+    if(vis){vis.textContent=state.visible?'👁 Visas':'🙈 Dold';vis.classList.toggle('on',state.visible);vis.classList.toggle('warn',!state.visible);}
+    if(lock){lock.textContent=state.locked?'🔒 Låst':'🔓 Olåst';lock.classList.toggle('on',!state.locked);lock.classList.toggle('warn',state.locked);}
+    if(status)status.textContent=(state.visible?'synligt':'dolt')+' · '+(state.locked?'låst':'olåst');
+  }catch(e){} }
+  function applyLayerUi(){setBodyClasses();updateButtons();}
+  function panelShouldShow(){try{
+    var ps=document.getElementById('panel-saves'),pt=document.getElementById('panel-taktik');
+    return (ps&&ps.classList.contains('on'))||(pt&&pt.classList.contains('on'))||(typeof isEditingTaktik!=='undefined'&&isEditingTaktik);
+  }catch(e){return true;} }
+  function ensurePanel(){try{
+    ensureStyle();
+    var host=document.getElementById('bottompanel')||document.body;if(!host)return;
+    var p=document.getElementById('tt592-layer-panel');
+    if(!p){
+      p=document.createElement('div');p.id='tt592-layer-panel';
+      p.innerHTML='<span class="tt592-title">Lager</span><span class="tt592-chip">Spelare/boll <small data-tt592="status"></small></span><button type="button" data-tt592="visible"></button><button type="button" data-tt592="locked"></button>';
+      var first=host.firstElementChild;
+      host.insertBefore(p,first||null);
+      p.querySelector('[data-tt592="visible"]').addEventListener('click',function(){state.visible=!state.visible;saveState();applyLayerUi();if(typeof showToast==='function')showToast(state.visible?'Lager Spelare/boll visas':'Lager Spelare/boll dolt');});
+      p.querySelector('[data-tt592="locked"]').addEventListener('click',function(){state.locked=!state.locked;saveState();applyLayerUi();if(typeof showToast==='function')showToast(state.locked?'Lager Spelare/boll låst':'Lager Spelare/boll upplåst');});
+    }
+    p.style.display=panelShouldShow()?'flex':'none';
+    applyLayerUi();
+  }catch(e){} }
+
+  // Lägg lager-id på liveobjekten utan att ändra spelarnas befintliga struktur i övrigt.
+  function tagLiveObjects(){try{
+    if(typeof players!=='undefined'&&Array.isArray(players))players.forEach(function(p){p.layer=p.layer||LAYER_ID;});
+    if(typeof ball!=='undefined'&&ball)ball.layer=ball.layer||LAYER_ID;
+    document.querySelectorAll('.player-token').forEach(function(g){g.setAttribute('data-layer',LAYER_ID);});
+    document.querySelectorAll('.ball-token').forEach(function(g){g.setAttribute('data-layer',LAYER_ID);});
+  }catch(e){} }
+
+  // Snapshot/state-wrappar: bevarar lagergrund i testdata men ändrar inte SQL/schema.
+  if(typeof currentSnap==='function'&&!currentSnap.__tt592LayerWrapped){
+    var oldCurrentSnap592=currentSnap;
+    currentSnap=function(){return decorateSnap(oldCurrentSnap592.apply(this,arguments));};
+    currentSnap.__tt592LayerWrapped=true;try{window.currentSnap=currentSnap;}catch(e){}
+  }
+  if(typeof buildState==='function'&&!buildState.__tt592LayerWrapped){
+    var oldBuildState592=buildState;
+    buildState=function(){return decorateSnap(oldBuildState592.apply(this,arguments));};
+    buildState.__tt592LayerWrapped=true;try{window.buildState=buildState;}catch(e){}
+  }
+  if(typeof restoreSnap==='function'&&!restoreSnap.__tt592LayerWrapped){
+    var oldRestoreSnap592=restoreSnap;
+    restoreSnap=function(s){applyLayerObj(s&&s.layers);var r=oldRestoreSnap592.apply(this,arguments);restoreLayerMeta(s);setTimeout(function(){tagLiveObjects();applyLayerUi();},0);return r;};
+    restoreSnap.__tt592LayerWrapped=true;try{window.restoreSnap=restoreSnap;}catch(e){}
+  }
+  if(typeof applyState==='function'&&!applyState.__tt592LayerWrapped){
+    var oldApplyState592=applyState;
+    applyState=function(s){applyLayerObj(s&&s.layers);var r=oldApplyState592.apply(this,arguments);restoreLayerMeta(s);setTimeout(function(){tagLiveObjects();applyLayerUi();},0);return r;};
+    applyState.__tt592LayerWrapped=true;try{window.applyState=applyState;}catch(e){}
+  }
+  if(typeof render==='function'&&!render.__tt592LayerWrapped){
+    var oldRender592=render;
+    render=function(){var r=oldRender592.apply(this,arguments);tagLiveObjects();ensurePanel();return r;};
+    render.__tt592LayerWrapped=true;try{window.render=render;}catch(e){}
+  }
+
+  function setVersion592(){try{
+    if(document.body){document.body.setAttribute('data-app-version','592-test');document.body.setAttribute('data-env','test');}
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){try{var t=String(el.textContent||'').trim();if(!t||/^(v?\d+|\d+\s*TEST|\d+ TEST|v\d+ TEST|578|590 TEST|591 TEST|592 TEST)$/i.test(t))el.textContent=VERSION;}catch(e){}});
+    var b=document.getElementById('tt586-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v592 TEST';
+  }catch(e){} }
+  function tick(){readState();tagLiveObjects();ensurePanel();setVersion592();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick();
+  [0,120,350,800,1600,3200].forEach(function(ms){setTimeout(tick,ms);});
+  setInterval(function(){ensurePanel();setVersion592();},1800);
+})();
+/* === slut v592 test lagergrund spelare/boll === */
