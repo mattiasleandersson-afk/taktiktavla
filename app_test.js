@@ -86,9 +86,9 @@ function getZoneColorChoiceV529(){
 }
 var freehandDrawing=false,freehandCurrent=null;
 
-/* v633 TEST: fria lager steg 3.
+/* v634 TEST: fria lager steg 4.
    Nya ritobjekt har layerId och render markerar DOM-objekt med samma lager.
-   Visa/dölj per fritt lager påverkar nu pilar, text, frihand och zoner i aktuell session.
+   Visa/dölj och Lås/Låst per fritt lager påverkar nu pilar, text, frihand och zoner i aktuell session.
    Ingen permanent sparning, ingen Supabase och ingen recoveryändring. */
 function tt631ActiveFreeLayerId(){
   try{
@@ -101,6 +101,26 @@ function tt631MarkObjectLayer(obj){
   if(obj && !obj.layerId)obj.layerId=tt631ActiveFreeLayerId();
   return obj;
 }
+function tt634IsFreeLayerLocked(id){
+  try{
+    if(window.tt630IsLayerLocked)return !!window.tt630IsLayerLocked(id||"layer-1");
+    var st=window.__tt630FreeLayerState;
+    if(st&&st.layers){
+      for(var i=0;i<st.layers.length;i++){
+        if(st.layers[i].id===(id||"layer-1"))return !!st.layers[i].locked;
+      }
+    }
+  }catch(e){}
+  return false;
+}
+function tt634ActiveFreeLayerLocked(){
+  return tt634IsFreeLayerLocked(tt631ActiveFreeLayerId());
+}
+function tt634BlockIfActiveLayerLocked(){
+  if(!tt634ActiveFreeLayerLocked())return false;
+  try{if(typeof showToast==="function")showToast("Aktivt lager är låst");}catch(e){}
+  return true;
+}
 function tt631RefreshLayerPanelSoon(){
   try{if(window.tt631RefreshFreeLayerPanel)setTimeout(window.tt631RefreshFreeLayerPanel,0);}catch(e){}
 }
@@ -111,6 +131,19 @@ function tt633ApplyFreeLayerVisibility(g,obj){
   try{
     if(window.tt630IsLayerVisible && !window.tt630IsLayerVisible(lid)){
       g.style.display="none";
+    }else{
+      g.style.display="";
+    }
+  }catch(e){}
+  try{
+    if(tt634IsFreeLayerLocked(lid)){
+      g.style.pointerEvents="none";
+      g.style.filter="grayscale(.12) saturate(.9)";
+      g.setAttribute("data-tt-free-layer-locked","1");
+    }else{
+      g.style.pointerEvents="";
+      g.style.filter="";
+      g.removeAttribute("data-tt-free-layer-locked");
     }
   }catch(e){}
   return g;
@@ -369,8 +402,8 @@ function onMM(ev){var pt=svgPt(ev.clientX,ev.clientY);if(dragging)moveDrag(pt.x+
 
 function onMU(ev){if(mode==="arrow"&&arrowStart){var pt=svgPt(ev.clientX,ev.clientY);var dx=pt.x-arrowStart.x,dy=pt.y-arrowStart.y;if(dx*dx+dy*dy>100)arrows.push(tt631MarkObjectLayer({id:"arr"+(idCounter++),x1:arrowStart.x,y1:arrowStart.y,x2:pt.x,y2:pt.y,color:arrowColor,atype:arrowType,width:arrowWidth,head:getArrowHeadChoiceV529()||"arrow"}));tt631RefreshLayerPanelSoon();arrowStart=null;arrowCurrent=null;}if(mode==="freehand"&&freehandDrawing&&freehandCurrent){if(freehandCurrent.pts.length>2){freehandPaths.push(freehandCurrent);tt631RefreshLayerPanelSoon();}freehandCurrent=null;freehandDrawing=false;}if(mode==="zone"&&zoneStart&&zonePreview){finalizeZone();zoneStart=null;zonePreview=null;}dragging=null;window.removeEventListener("mousemove",onMM);window.removeEventListener("mouseup",onMU);render();}
 var _delHappened=false;
-svg.addEventListener("touchstart",function(ev){if(mode==="arrow"){ev.preventDefault();arrowStart=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);saveUndo();window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);return;}if(mode==="text"){var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);pendingLabelPt=pt;setMode("move");openTextModal();return;}if(mode==="freehand"){ev.preventDefault();saveUndo();freehandDrawing=true;freehandCurrent=tt631MarkObjectLayer({id:"fp"+(idCounter++),pts:[svgPt(ev.touches[0].clientX,ev.touches[0].clientY)],color:freehandColor,width:freehandWidth});window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);return;}if(mode==="zone"){ev.preventDefault();saveUndo();zoneStart=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);return;}if(!_delHappened){selectedId=null;render();}_delHappened=false;},{passive:false});
-svg.addEventListener("mousedown",function(ev){if(mode==="arrow"){arrowStart=svgPt(ev.clientX,ev.clientY);saveUndo();window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);return;}if(mode==="text"){var pt=svgPt(ev.clientX,ev.clientY);pendingLabelPt=pt;setMode("move");openTextModal();return;}if(mode==="freehand"){saveUndo();freehandDrawing=true;freehandCurrent=tt631MarkObjectLayer({id:"fp"+(idCounter++),pts:[svgPt(ev.clientX,ev.clientY)],color:freehandColor,width:freehandWidth});window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);return;}if(mode==="zone"){saveUndo();zoneStart=svgPt(ev.clientX,ev.clientY);window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);return;}selectedId=null;render();});
+svg.addEventListener("touchstart",function(ev){if(mode==="arrow"){if(tt634BlockIfActiveLayerLocked()){ev.preventDefault();return;}ev.preventDefault();arrowStart=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);saveUndo();window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);return;}if(mode==="text"){if(tt634BlockIfActiveLayerLocked()){ev.preventDefault();return;}var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);pendingLabelPt=pt;setMode("move");openTextModal();return;}if(mode==="freehand"){if(tt634BlockIfActiveLayerLocked()){ev.preventDefault();return;}ev.preventDefault();saveUndo();freehandDrawing=true;freehandCurrent=tt631MarkObjectLayer({id:"fp"+(idCounter++),pts:[svgPt(ev.touches[0].clientX,ev.touches[0].clientY)],color:freehandColor,width:freehandWidth});window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);return;}if(mode==="zone"){if(tt634BlockIfActiveLayerLocked()){ev.preventDefault();return;}ev.preventDefault();saveUndo();zoneStart=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);window.addEventListener("touchmove",onTM,{passive:false});window.addEventListener("touchend",onTE);return;}if(!_delHappened){selectedId=null;render();}_delHappened=false;},{passive:false});
+svg.addEventListener("mousedown",function(ev){if(mode==="arrow"){if(tt634BlockIfActiveLayerLocked()){ev.preventDefault();return;}arrowStart=svgPt(ev.clientX,ev.clientY);saveUndo();window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);return;}if(mode==="text"){if(tt634BlockIfActiveLayerLocked()){ev.preventDefault();return;}var pt=svgPt(ev.clientX,ev.clientY);pendingLabelPt=pt;setMode("move");openTextModal();return;}if(mode==="freehand"){if(tt634BlockIfActiveLayerLocked()){ev.preventDefault();return;}saveUndo();freehandDrawing=true;freehandCurrent=tt631MarkObjectLayer({id:"fp"+(idCounter++),pts:[svgPt(ev.clientX,ev.clientY)],color:freehandColor,width:freehandWidth});window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);return;}if(mode==="zone"){if(tt634BlockIfActiveLayerLocked()){ev.preventDefault();return;}saveUndo();zoneStart=svgPt(ev.clientX,ev.clientY);window.addEventListener("mousemove",onMM);window.addEventListener("mouseup",onMU);return;}selectedId=null;render();});
 
 function setMode(m){
   mode=m;
