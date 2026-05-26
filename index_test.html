@@ -1693,9 +1693,9 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v630 TEST: lagerpanel steg 7.
-     Text är nu ett separat visuellt lager; Ritningar omfattar pilar, zoner och frihand.
-     Ingen sparning, ingen localStorage, ingen render-wrapper och ingen datamodell ändras. */
+  /* v631 TEST: fria lager steg 2.
+     Nya vanliga ritobjekt får aktivt lager som tillfällig layerId-märkning.
+     Ingen sparning, ingen localStorage, ingen render-wrapper och ingen recoveryändring. */
   #tt616-layer-panel{
     position:fixed;
     right:calc(env(safe-area-inset-right,0px) + 10px);
@@ -1834,6 +1834,14 @@
     border-color:rgba(255,216,74,.62);
   }
 
+  #tt616-layer-panel .tt631-layer-count{
+    display:block;
+    color:#ffd84a;
+    font-size:.6rem;
+    font-weight:800;
+    margin-top:2px;
+  }
+
   @media (max-width:720px){
     #tt616-layer-panel{
       left:10px;
@@ -1871,10 +1879,10 @@
 <div id="tt616-layer-panel" aria-label="Lager testpanel v630">
   <details open>
     <summary><span>Lager TEST</span><span>v630</span></summary>
-    <div class="tt616-layer-sub">Fria lager UI-grund. Inget objekt kopplas ännu och inget sparas.</div>
+    <div class="tt616-layer-sub">Fria lager steg 2. Nya vanliga ritobjekt märks med aktivt lager i aktuell session. Inget sparas ännu.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Detta är första steget mot riktiga fria lager: aktivt lager, visa/dölj och lås per lager-rad. Ännu ingen påverkan på ritningar, spelare, boll, recovery eller sparning.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager som testmärkning. Visa/dölj/lås per fritt lager påverkar ännu inte objekten.</div>
   </details>
 </div>
 
@@ -2503,7 +2511,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=630-fria-lager-ui-grund"></script>
+<script src="app_test.js?v=631-fria-lager-aktivt-ritlager"></script>
 
 <script>
 (function(){
@@ -2635,7 +2643,7 @@
 })();
 </script>
 
-<script id="tt630-free-layer-panel-script">
+<script id="tt631-free-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt630FreeLayerPanelInstalled)return;
@@ -2651,10 +2659,36 @@
   };
   window.__tt630FreeLayerState=state;
 
+  window.tt630GetActiveLayerId=function(){
+    return (state && state.activeId) || 'layer-1';
+  };
+
   function esc(s){
     return String(s||'').replace(/[&<>"]/g,function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
     });
+  }
+
+  function getLayer(id){
+    for(var i=0;i<state.layers.length;i++)if(state.layers[i].id===id)return state.layers[i];
+    return null;
+  }
+
+  function safeArr(name){
+    try{return Array.isArray(window[name])?window[name]:[];}catch(e){return [];}
+  }
+
+  function countObjectsByLayer(layerId){
+    var count=0;
+    ['arrows','labels','freehandPaths','zones'].forEach(function(name){
+      var arr=safeArr(name);
+      for(var i=0;i<arr.length;i++){
+        var obj=arr[i]||{};
+        var lid=obj.layerId || 'layer-1';
+        if(lid===layerId)count++;
+      }
+    });
+    return count;
   }
 
   function render(){
@@ -2663,8 +2697,12 @@
     list.innerHTML=state.layers.map(function(layer){
       var active=layer.id===state.activeId;
       var rowClass='tt616-layer-row'+(active?' tt630-layer-row-active':'');
+      var count=countObjectsByLayer(layer.id);
       return '<div class="'+rowClass+'" data-tt630-layer-id="'+esc(layer.id)+'">'
-        + '<div class="tt616-layer-name">'+esc(layer.name)+'<span class="tt630-layer-meta">'+(active?'aktivt lager':'tillfälligt testlager')+'</span></div>'
+        + '<div class="tt616-layer-name">'+esc(layer.name)
+        + '<span class="tt630-layer-meta">'+(active?'aktivt lager':'tillfälligt testlager')+'</span>'
+        + '<span class="tt631-layer-count">'+count+' objekt</span>'
+        + '</div>'
         + '<button type="button" class="tt630-layer-active-btn" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'">'+(active?'Aktiv':'Välj')+'</button>'
         + '<button type="button" class="'+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'">'+(layer.visible?'Visa':'Dold')+'</button>'
         + '<button type="button" class="'+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'">'+(layer.locked?'Låst':'Lås')+'</button>'
@@ -2672,10 +2710,7 @@
     }).join('');
   }
 
-  function getLayer(id){
-    for(var i=0;i<state.layers.length;i++)if(state.layers[i].id===id)return state.layers[i];
-    return null;
-  }
+  window.tt631RefreshFreeLayerPanel=render;
 
   function onListClick(ev){
     var btn=ev.target && ev.target.closest ? ev.target.closest('button[data-tt630-action]') : null;
@@ -2702,6 +2737,8 @@
     render();
   }
 
+  function scheduleRender(){setTimeout(render,0);}
+
   function init(){
     var list=document.getElementById('tt630-free-layer-list');
     if(list && list.dataset.tt630Bound!=='1'){
@@ -2713,6 +2750,8 @@
       add.dataset.tt630Bound='1';
       add.addEventListener('click',addLayer,false);
     }
+    document.addEventListener('mouseup',scheduleRender,false);
+    document.addEventListener('touchend',scheduleRender,false);
     render();
   }
 
