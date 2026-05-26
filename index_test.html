@@ -1693,8 +1693,8 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v633 TEST: fria lager steg 2b.
-     Visa/Dold per fritt lager påverkar nu pilar, text, frihand och zoner i aktuell session.
+  /* v634 TEST: fria lager steg 4.
+     Visa/Dold och Lås/Låst per fritt lager påverkar nu pilar, text, frihand och zoner i aktuell session.
      Ingen sparning, ingen localStorage, ingen render-wrapper och ingen recoveryändring. */
   #tt616-layer-panel{
     position:fixed;
@@ -1878,11 +1878,11 @@
 
 <div id="tt616-layer-panel" aria-label="Lager testpanel v630">
   <details open>
-    <summary><span>Lager TEST</span><span>v630</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 3. Visa/Dold styr nu objekt i respektive fritt lager i aktuell session. Inget sparas permanent ännu.</div>
+    <summary><span>Lager TEST</span><span>v634</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 4. Visa/Dold och Lås/Låst styr nu objekt i respektive fritt lager i aktuell session. Inget sparas permanent ännu.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Visa/Dold påverkar nu objekt i respektive lager. Lås är fortfarande panelstatus i detta steg.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Visa/Dold och Lås/Låst påverkar nu objekt i respektive lager.</div>
   </details>
 </div>
 
@@ -2511,7 +2511,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=633-fria-lager-visadolj"></script>
+<script src="app_test.js?v=634-fria-lager-las"></script>
 
 <script>
 (function(){
@@ -2643,7 +2643,7 @@
 })();
 </script>
 
-<script id="tt631-free-layer-panel-script">
+<script id="tt634-free-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt630FreeLayerPanelInstalled)return;
@@ -2668,13 +2668,24 @@
     return !layer || layer.visible!==false;
   };
 
+  window.tt630IsLayerLocked=function(id){
+    var layer=getLayer(id || 'layer-1');
+    return !!(layer && layer.locked);
+  };
+
   function applyFreeLayerVisibilityToDom(){
     var root=document.getElementById('pitch-svg');
     if(!root)return;
     var nodes=root.querySelectorAll('[data-tt-free-layer-id]');
     for(var i=0;i<nodes.length;i++){
       var lid=nodes[i].getAttribute('data-tt-free-layer-id') || 'layer-1';
-      nodes[i].style.display=window.tt630IsLayerVisible(lid)?'':'none';
+      var visible=window.tt630IsLayerVisible(lid);
+      var locked=window.tt630IsLayerLocked(lid);
+      nodes[i].style.display=visible?'':'none';
+      nodes[i].style.pointerEvents=locked?'none':'';
+      nodes[i].style.filter=locked?'grayscale(.12) saturate(.9)':'';
+      if(locked)nodes[i].setAttribute('data-tt-free-layer-locked','1');
+      else nodes[i].removeAttribute('data-tt-free-layer-locked');
     }
   }
   window.tt633ApplyFreeLayerVisibilityToDom=applyFreeLayerVisibilityToDom;
