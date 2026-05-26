@@ -1689,7 +1689,7 @@
   }
 </style>
 
-<!-- v595 TESTMILJÖ: ren rollback till fungerande v591/v590. Fast testfilnamn: index_test.html + app_test.js. -->
+<!-- v596 TESTMILJÖ: säker återställning till exakt fungerande v591-JS. Fast testfilnamn: index_test.html + app_test.js. -->
 </head>
 <body>
 
@@ -2323,7 +2323,12 @@
 <script src="render.js"></script>
 <script src="tools.js"></script>
 <script src="tactics.js"></script>
-<script src="app_test.js?v=595-test"></script>
+<script>
+// v596 TEST: rensa endast känd trasig lager-testnyckel från v592. Rör inte auth/profil/produktion.
+try{ localStorage.removeItem('tt_test_v592_layer_state'); }catch(e){}
+try{ document.documentElement.classList.remove('tt592-playerball-hidden','tt592-playerball-locked'); }catch(e){}
+</script>
+<script src="app_test.js?v=596-clean-v591"></script>
 
 <script>
 (function(){
