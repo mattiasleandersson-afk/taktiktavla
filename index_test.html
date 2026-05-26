@@ -1689,11 +1689,11 @@
   }
 </style>
 
-<!-- v629 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
+<!-- v630 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v629 TEST: lagerpanel steg 7.
+  /* v630 TEST: lagerpanel steg 7.
      Text är nu ett separat visuellt lager; Ritningar omfattar pilar, zoner och frihand.
      Ingen sparning, ingen localStorage, ingen render-wrapper och ingen datamodell ändras. */
   #tt616-layer-panel{
@@ -1814,6 +1814,26 @@
     color:#7aaa88;
     line-height:1.25;
   }
+  #tt616-layer-panel .tt630-layer-row-active{
+    border-color:rgba(255,216,74,.72);
+    background:rgba(255,216,74,.08);
+  }
+  #tt616-layer-panel .tt630-layer-meta{
+    display:block;
+    color:#8fb99a;
+    font-size:.6rem;
+    font-weight:700;
+    margin-top:2px;
+  }
+  #tt616-layer-panel .tt630-layer-add{
+    width:100%;
+    margin-top:8px;
+  }
+  #tt616-layer-panel .tt630-layer-active-btn{
+    color:#ffe58a;
+    border-color:rgba(255,216,74,.62);
+  }
+
   @media (max-width:720px){
     #tt616-layer-panel{
       left:10px;
@@ -1827,7 +1847,7 @@
 
 
 <style id="tt619-left-version-visual-mask">
-  /* v629 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
+  /* v630 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
      Ingen JS-loop: bara visuell mask på den lilla versionsetiketten. */
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"],
   span[style*="font-size:0.6rem"][style*="letter-spacing"]{
@@ -1837,7 +1857,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"629 TEST" !important;
+    content:"630 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1848,31 +1868,13 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v629">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v630">
   <details open>
-    <summary><span>Lager TEST</span><span>v629</span></summary>
-    <div class="tt616-layer-sub">Steg 8: Text kan visas/döljas separat. Inget sparas.</div>
-    <div class="tt616-layer-row">
-      <div class="tt616-layer-name">Spelare/boll</div>
-      <button type="button" id="tt621-layer-playerball-visibility" class="tt621-layer-on" aria-pressed="true">Visa</button>
-      <button type="button" id="tt621-layer-playerball-lock" aria-pressed="false" title="Lås/lås upp Spelare/boll i aktuell session">Lås</button>
-    </div>
-    <div class="tt616-layer-row">
-      <div class="tt616-layer-name">Ritningar</div>
-      <button type="button" id="tt623-layer-drawings-visibility" class="tt621-layer-on" aria-pressed="true" title="Visa/dölj pilar, zoner och frihand i aktuell session">Visa</button>
-      <button type="button" id="tt626-layer-drawings-lock" aria-pressed="false" title="Lås/lås upp ritningar i aktuell session">Lås</button>
-    </div>
-    <div class="tt616-layer-row">
-      <div class="tt616-layer-name">Text</div>
-      <button type="button" id="tt629-layer-text-visibility" class="tt621-layer-on" aria-pressed="true" title="Visa/dölj textetiketter i aktuell session">Visa</button>
-      <button type="button" disabled title="Text-lås testas inte i detta steg">Lås</button>
-    </div>
-    <div class="tt616-layer-row">
-      <div class="tt616-layer-name">Rörelser</div>
-      <button type="button" id="tt627-layer-movement-visibility" class="tt621-layer-on" aria-pressed="true" title="Visa/dölj rörelsepilar i aktuell session">Visa</button>
-      <button type="button" id="tt628-layer-movement-lock" aria-pressed="false" title="Lås/lås upp rörelsepilar i aktuell session">Lås</button>
-    </div>
-    <div class="tt616-layer-note">Påverkar bara aktuell session. Ingen sparning, ingen recovery och ingen datamodell ändras.</div>
+    <summary><span>Lager TEST</span><span>v630</span></summary>
+    <div class="tt616-layer-sub">Fria lager UI-grund. Inget objekt kopplas ännu och inget sparas.</div>
+    <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
+    <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
+    <div class="tt616-layer-note">Detta är första steget mot riktiga fria lager: aktivt lager, visa/dölj och lås per lager-rad. Ännu ingen påverkan på ritningar, spelare, boll, recovery eller sparning.</div>
   </details>
 </div>
 
@@ -1880,7 +1882,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">629 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">630 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2501,7 +2503,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=629-lager-rorelser-visuell"></script>
+<script src="app_test.js?v=630-fria-lager-ui-grund"></script>
 
 <script>
 (function(){
@@ -2633,238 +2635,89 @@
 })();
 </script>
 
-<script id="tt629-layer-panel-script">
+<script id="tt630-free-layer-panel-script">
 (function(){
   'use strict';
-  if(window.__tt621LayerPlayerBallInstalled)return;
-  window.__tt621LayerPlayerBallInstalled=true;
+  if(window.__tt630FreeLayerPanelInstalled)return;
+  window.__tt630FreeLayerPanelInstalled=true;
 
-  function isPlayerBallLayerTarget(target){
-    try{
-      return !!(target && target.closest && target.closest('#pitch-svg .player-token, #pitch-svg .ball-token'));
-    }catch(e){
-      return false;
-    }
-  }
+  var state={
+    nextNum:3,
+    activeId:'layer-1',
+    layers:[
+      {id:'layer-1',name:'Lager 1',visible:true,locked:false},
+      {id:'layer-2',name:'Lager 2',visible:true,locked:false}
+    ]
+  };
+  window.__tt630FreeLayerState=state;
 
-  function isDrawingLayerTarget(target){
-    try{
-      return !!(target && target.closest && target.closest('#pitch-svg .arrow-g, #pitch-svg .freehand-g, #pitch-svg .zone-g, #pitch-svg .preview-arrow, #pitch-svg .freehand-preview, #pitch-svg .zone-preview'));
-    }catch(e){
-      return false;
-    }
-  }
-
-  function isDrawingCreationMode(){
-    try{
-      return ['arrow','freehand','zone'].indexOf(String(window.mode||'')) !== -1;
-    }catch(e){
-      return false;
-    }
-  }
-
-  function isMovementLayerTarget(target){
-    try{
-      return !!(target && target.closest && target.closest('#pitch-svg .mv-path-g, #pitch-svg .mv-preview'));
-    }catch(e){
-      return false;
-    }
-  }
-
-  function isMovementCreationMode(){
-    try{
-      return String(window.mode||'') === 'movement';
-    }catch(e){
-      return false;
-    }
-  }
-
-  function blockIfLocked(ev){
-    var playerBallLocked=document.body.classList.contains('tt621-layer-playerball-locked');
-    var drawingsLocked=document.body.classList.contains('tt626-layer-drawings-locked');
-    var movementLocked=document.body.classList.contains('tt628-layer-movement-locked');
-    if(playerBallLocked && isPlayerBallLayerTarget(ev.target)){
-      try{ev.preventDefault();}catch(e){}
-      try{ev.stopPropagation();}catch(e){}
-      try{ev.stopImmediatePropagation();}catch(e){}
-      return false;
-    }
-    if(drawingsLocked && (isDrawingLayerTarget(ev.target) || isDrawingCreationMode())){
-      try{ev.preventDefault();}catch(e){}
-      try{ev.stopPropagation();}catch(e){}
-      try{ev.stopImmediatePropagation();}catch(e){}
-      return false;
-    }
-    if(movementLocked && (isMovementLayerTarget(ev.target) || isMovementCreationMode())){
-      try{ev.preventDefault();}catch(e){}
-      try{ev.stopPropagation();}catch(e){}
-      try{ev.stopImmediatePropagation();}catch(e){}
-      return false;
-    }
-  }
-
-  function bindSvgLockGuard(){
-    var svg=document.getElementById('pitch-svg');
-    if(!svg || svg.dataset.tt622PlayerBallLockGuard==='1')return;
-    svg.dataset.tt622PlayerBallLockGuard='1';
-    ['pointerdown','mousedown','touchstart','click','contextmenu'].forEach(function(type){
-      svg.addEventListener(type,blockIfLocked,true);
+  function esc(s){
+    return String(s||'').replace(/[&<>"]/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
     });
   }
 
-  function setVisible(visible){
-    document.body.classList.toggle('tt621-layer-playerball-hidden', !visible);
-    var btn=document.getElementById('tt621-layer-playerball-visibility');
-    if(btn){
-      btn.textContent=visible ? 'Visa' : 'Dold';
-      btn.classList.toggle('tt621-layer-on', visible);
-      btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
-    }
+  function render(){
+    var list=document.getElementById('tt630-free-layer-list');
+    if(!list)return;
+    list.innerHTML=state.layers.map(function(layer){
+      var active=layer.id===state.activeId;
+      var rowClass='tt616-layer-row'+(active?' tt630-layer-row-active':'');
+      return '<div class="'+rowClass+'" data-tt630-layer-id="'+esc(layer.id)+'">'
+        + '<div class="tt616-layer-name">'+esc(layer.name)+'<span class="tt630-layer-meta">'+(active?'aktivt lager':'tillfälligt testlager')+'</span></div>'
+        + '<button type="button" class="tt630-layer-active-btn" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'">'+(active?'Aktiv':'Välj')+'</button>'
+        + '<button type="button" class="'+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'">'+(layer.visible?'Visa':'Dold')+'</button>'
+        + '<button type="button" class="'+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'">'+(layer.locked?'Låst':'Lås')+'</button>'
+        + '</div>';
+    }).join('');
   }
 
-  function setLocked(locked){
-    document.body.classList.toggle('tt621-layer-playerball-locked', !!locked);
-    var btn=document.getElementById('tt621-layer-playerball-lock');
-    if(btn){
-      btn.textContent=locked ? 'Låst' : 'Lås';
-      btn.classList.toggle('tt621-layer-on', !!locked);
-      btn.setAttribute('aria-pressed', locked ? 'true' : 'false');
-    }
+  function getLayer(id){
+    for(var i=0;i<state.layers.length;i++)if(state.layers[i].id===id)return state.layers[i];
+    return null;
   }
 
-  function setDrawingsVisible(visible){
-    document.body.classList.toggle('tt623-layer-drawings-hidden', !visible);
-    var btn=document.getElementById('tt623-layer-drawings-visibility');
-    if(btn){
-      btn.textContent=visible ? 'Visa' : 'Dold';
-      btn.classList.toggle('tt621-layer-on', visible);
-      btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
-    }
+  function onListClick(ev){
+    var btn=ev.target && ev.target.closest ? ev.target.closest('button[data-tt630-action]') : null;
+    if(!btn)return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    var row=btn.closest('[data-tt630-layer-id]');
+    if(!row)return;
+    var layer=getLayer(row.getAttribute('data-tt630-layer-id'));
+    if(!layer)return;
+    var action=btn.getAttribute('data-tt630-action');
+    if(action==='active')state.activeId=layer.id;
+    if(action==='visible')layer.visible=!layer.visible;
+    if(action==='locked')layer.locked=!layer.locked;
+    render();
   }
 
-  function setDrawingsLocked(locked){
-    document.body.classList.toggle('tt626-layer-drawings-locked', !!locked);
-    var btn=document.getElementById('tt626-layer-drawings-lock');
-    if(btn){
-      btn.textContent=locked ? 'Låst' : 'Lås';
-      btn.classList.toggle('tt621-layer-on', !!locked);
-      btn.setAttribute('aria-pressed', locked ? 'true' : 'false');
-    }
+  function addLayer(ev){
+    if(ev){ev.preventDefault();ev.stopPropagation();}
+    var id='layer-'+state.nextNum;
+    state.layers.push({id:id,name:'Lager '+state.nextNum,visible:true,locked:false});
+    state.activeId=id;
+    state.nextNum++;
+    render();
   }
 
-  function setTextVisible(visible){
-    document.body.classList.toggle('tt629-layer-text-hidden', !visible);
-    var btn=document.getElementById('tt629-layer-text-visibility');
-    if(btn){
-      btn.textContent=visible ? 'Visa' : 'Dold';
-      btn.classList.toggle('tt621-layer-on', visible);
-      btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+  function init(){
+    var list=document.getElementById('tt630-free-layer-list');
+    if(list && list.dataset.tt630Bound!=='1'){
+      list.dataset.tt630Bound='1';
+      list.addEventListener('click',onListClick,false);
     }
+    var add=document.getElementById('tt630-free-layer-add');
+    if(add && add.dataset.tt630Bound!=='1'){
+      add.dataset.tt630Bound='1';
+      add.addEventListener('click',addLayer,false);
+    }
+    render();
   }
 
-  function setMovementVisible(visible){
-    document.body.classList.toggle('tt627-layer-movement-hidden', !visible);
-    var btn=document.getElementById('tt627-layer-movement-visibility');
-    if(btn){
-      btn.textContent=visible ? 'Visa' : 'Dold';
-      btn.classList.toggle('tt621-layer-on', visible);
-      btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
-    }
-  }
-
-  function setMovementLocked(locked){
-    document.body.classList.toggle('tt628-layer-movement-locked', !!locked);
-    var btn=document.getElementById('tt628-layer-movement-lock');
-    if(btn){
-      btn.textContent=locked ? 'Låst' : 'Lås';
-      btn.classList.toggle('tt621-layer-on', !!locked);
-      btn.setAttribute('aria-pressed', locked ? 'true' : 'false');
-    }
-  }
-
-  function initLayerButtons(){
-    bindSvgLockGuard();
-    var vis=document.getElementById('tt621-layer-playerball-visibility');
-    if(vis && vis.dataset.tt621Bound!=='1'){
-      vis.dataset.tt621Bound='1';
-      setVisible(!document.body.classList.contains('tt621-layer-playerball-hidden'));
-      vis.addEventListener('click',function(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-        setVisible(document.body.classList.contains('tt621-layer-playerball-hidden'));
-      });
-    }
-
-    var lock=document.getElementById('tt621-layer-playerball-lock');
-    if(lock && lock.dataset.tt621Bound!=='1'){
-      lock.dataset.tt621Bound='1';
-      setLocked(document.body.classList.contains('tt621-layer-playerball-locked'));
-      lock.addEventListener('click',function(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-        setLocked(!document.body.classList.contains('tt621-layer-playerball-locked'));
-      });
-    }
-
-    var drawings=document.getElementById('tt623-layer-drawings-visibility');
-    if(drawings && drawings.dataset.tt623Bound!=='1'){
-      drawings.dataset.tt623Bound='1';
-      setDrawingsVisible(!document.body.classList.contains('tt623-layer-drawings-hidden'));
-      drawings.addEventListener('click',function(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-        setDrawingsVisible(document.body.classList.contains('tt623-layer-drawings-hidden'));
-      });
-    }
-
-
-    var drawingsLock=document.getElementById('tt626-layer-drawings-lock');
-    if(drawingsLock && drawingsLock.dataset.tt626Bound!=='1'){
-      drawingsLock.dataset.tt626Bound='1';
-      setDrawingsLocked(document.body.classList.contains('tt626-layer-drawings-locked'));
-      drawingsLock.addEventListener('click',function(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-        setDrawingsLocked(!document.body.classList.contains('tt626-layer-drawings-locked'));
-      });
-    }
-
-    var textLayer=document.getElementById('tt629-layer-text-visibility');
-    if(textLayer && textLayer.dataset.tt629Bound!=='1'){
-      textLayer.dataset.tt629Bound='1';
-      setTextVisible(!document.body.classList.contains('tt629-layer-text-hidden'));
-      textLayer.addEventListener('click',function(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-        setTextVisible(document.body.classList.contains('tt629-layer-text-hidden'));
-      });
-    }
-
-    var movement=document.getElementById('tt627-layer-movement-visibility');
-    if(movement && movement.dataset.tt627Bound!=='1'){
-      movement.dataset.tt627Bound='1';
-      setMovementVisible(!document.body.classList.contains('tt627-layer-movement-hidden'));
-      movement.addEventListener('click',function(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-        setMovementVisible(document.body.classList.contains('tt627-layer-movement-hidden'));
-      });
-    }
-
-    var movementLock=document.getElementById('tt628-layer-movement-lock');
-    if(movementLock && movementLock.dataset.tt629Bound!=='1'){
-      movementLock.dataset.tt629Bound='1';
-      setMovementLocked(document.body.classList.contains('tt628-layer-movement-locked'));
-      movementLock.addEventListener('click',function(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-        setMovementLocked(!document.body.classList.contains('tt628-layer-movement-locked'));
-      });
-    }
-  }
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initLayerButtons);
-  else initLayerButtons();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+  else init();
 })();
 </script>
 
