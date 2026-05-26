@@ -1693,8 +1693,8 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v631 TEST: fria lager steg 2.
-     Nya vanliga ritobjekt får aktivt lager som tillfällig layerId-märkning.
+  /* v632 TEST: fria lager steg 2b.
+     Taktikfilm-snapshots bevarar layerId så aktivt lager inte tappas mellan ritningar.
      Ingen sparning, ingen localStorage, ingen render-wrapper och ingen recoveryändring. */
   #tt616-layer-panel{
     position:fixed;
@@ -1879,10 +1879,10 @@
 <div id="tt616-layer-panel" aria-label="Lager testpanel v630">
   <details open>
     <summary><span>Lager TEST</span><span>v630</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 2. Nya vanliga ritobjekt märks med aktivt lager i aktuell session. Inget sparas ännu.</div>
+    <div class="tt616-layer-sub">Fria lager steg 2b. Taktikfilm bevarar nu lagerkoppling mellan ritningar/steg i aktuell session. Inget sparas permanent ännu.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager som testmärkning. Visa/dölj/lås per fritt lager påverkar ännu inte objekten.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager som testmärkning. v632 fixar att Taktikfilm inte tappar layerId via snapshots. Visa/dölj/lås per fritt lager påverkar ännu inte objekten.</div>
   </details>
 </div>
 
@@ -2511,7 +2511,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=631-fria-lager-aktivt-ritlager"></script>
+<script src="app_test.js?v=632-taktikfilm-lagerid-snapfix"></script>
 
 <script>
 (function(){
