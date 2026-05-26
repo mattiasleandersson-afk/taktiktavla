@@ -86,7 +86,7 @@ function getZoneColorChoiceV529(){
 }
 var freehandDrawing=false,freehandCurrent=null;
 
-/* v631 TEST: försiktig fri lagermärkning för nya ritobjekt.
+/* v632 TEST: försiktig fri lagermärkning för nya ritobjekt.
    Detta sparas ännu inte i filformatet och påverkar inte render/state/recovery. */
 function tt631ActiveFreeLayerId(){
   try{
@@ -846,8 +846,8 @@ function taktikUndo(){if(!taktikUndoStack.length||editingTaktikIdx===null)return
 function taktikRedo(){if(!taktikRedoStack.length||editingTaktikIdx===null)return;var tk=taktikFilmer[editingTaktikIdx];taktikUndoStack.push(JSON.parse(JSON.stringify(tk.steps)));tk.steps=taktikRedoStack.pop();editingStepIdx=Math.min(editingStepIdx,tk.steps.length-1);updateEditStepUI();showToast("Gjort om!");}
 function saveUndo(){undoStack.push(currentSnap());if(undoStack.length>30)undoStack.shift();}
 function doUndo(){if(!undoStack.length)return;restoreSnap(undoStack.pop());render();}
-function currentSnap(){return{players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color,atype:a.atype,width:a.width||3,head:a.head||"arrow"};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size,align:l.align||"center",rot:labelRotation(l)};}),freehandPaths:freehandPaths.map(function(f){return{id:f.id,pts:f.pts.slice(),color:f.color,width:f.width};}),zones:zones.map(function(z){return{id:z.id,type:z.type,x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color,fill:zoneFillKindV528(z)};}),movementPaths:movementPaths.map(function(m){return{id:m.id,playerId:m.playerId,pts:m.pts.slice()};})};}
-function restoreSnap(snap){players=snap.players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball={x:snap.ball.x,y:snap.ball.y};arrows=(snap.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color||"#ffdd44",atype:a.atype||"solid",width:a.width||3,head:a.head||"arrow"};});labels=(snap.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13,align:l.align||"center",rot:labelRotation(l)};});freehandPaths=(snap.freehandPaths||[]).map(function(f){return{id:f.id,pts:f.pts.slice(),color:f.color||"#ffdd44",width:f.width||4};});zones=(snap.zones||[]).map(function(z){return{id:z.id,type:z.type||"rect",x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color||"rgba(232,76,76,0.25)",fill:z.fill||"solid"};});movementPaths=(snap.movementPaths||[]).map(function(m){return{id:m.id,playerId:m.playerId,pts:m.pts.slice()};});}
+function currentSnap(){return{players:players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}),ball:{x:ball.x,y:ball.y},arrows:arrows.map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color,atype:a.atype,width:a.width||3,head:a.head||"arrow",layerId:a.layerId||"layer-1"};}),labels:labels.map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size,align:l.align||"center",rot:labelRotation(l),layerId:l.layerId||"layer-1"};}),freehandPaths:freehandPaths.map(function(f){return{id:f.id,pts:f.pts.slice(),color:f.color,width:f.width,layerId:f.layerId||"layer-1"};}),zones:zones.map(function(z){return{id:z.id,type:z.type,x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color,fill:zoneFillKindV528(z),layerId:z.layerId||"layer-1"};}),movementPaths:movementPaths.map(function(m){return{id:m.id,playerId:m.playerId,pts:m.pts.slice()};})};}
+function restoreSnap(snap){players=snap.players.map(function(p){return{id:p.id,team:p.team,number:p.number,name:p.name||"",x:p.x,y:p.y};});ball={x:snap.ball.x,y:snap.ball.y};arrows=(snap.arrows||[]).map(function(a){return{id:a.id,x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color||"#ffdd44",atype:a.atype||"solid",width:a.width||3,head:a.head||"arrow",layerId:a.layerId||"layer-1"};});labels=(snap.labels||[]).map(function(l){return{id:l.id,x:l.x,y:l.y,text:l.text,size:l.size||13,align:l.align||"center",rot:labelRotation(l),layerId:l.layerId||"layer-1"};});freehandPaths=(snap.freehandPaths||[]).map(function(f){return{id:f.id,pts:f.pts.slice(),color:f.color||"#ffdd44",width:f.width||4,layerId:f.layerId||"layer-1"};});zones=(snap.zones||[]).map(function(z){return{id:z.id,type:z.type||"rect",x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color||"rgba(232,76,76,0.25)",fill:z.fill||"solid",layerId:z.layerId||"layer-1"};});movementPaths=(snap.movementPaths||[]).map(function(m){return{id:m.id,playerId:m.playerId,pts:m.pts.slice()};});}
 function renderMovementPreview(){
   var old=svg.querySelectorAll(".mv-preview");for(var i=0;i<old.length;i++)old[i].remove();
   if(!movementCurrent||movementCurrent.pts.length<2)return;
@@ -41813,7 +41813,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       b.id='tt610-test-env-banner';
       document.body.appendChild(b);
     }
-    b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v631 TEST';
+    b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v632 TEST';
   }catch(e){}}
   function tick(){setVersion586();addBanner586();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick();
@@ -41853,7 +41853,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(/^(v?\d+|v3\.|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent=VERSION;
     });
     var b=document.getElementById('tt610-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v631 TEST';
+    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v632 TEST';
   }catch(e){}}
 
   function readStore(){try{var raw=localStorage.getItem(STORE);var obj=raw?JSON.parse(raw):{};return obj&&typeof obj==='object'?obj:{};}catch(e){return {};}}
@@ -42094,7 +42094,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(/^(v?\d+|v3\.|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent=VERSION;
     });
     var b=document.getElementById('tt610-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v631 TEST';
+    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v632 TEST';
   }catch(e){}}
 
   function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return null;}}
@@ -42236,21 +42236,21 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v590 test nödkopia rensningsfix === */
 
 
-/* === v631 TEST mjuk versionsvisning ===
+/* === v632 TEST mjuk versionsvisning ===
    Bygger från fungerande v607/v590.
-   Enda ändring: v590:s befintliga versionssättare visar v631 TEST.
+   Enda ändring: v590:s befintliga versionssättare visar v632 TEST.
    Ingen ny setInterval, ingen MutationObserver, ingen lagerkod.
 === slut v610 === */
 
 
-/* === v631 TEST versionsbanner stabiliserad ===
+/* === v632 TEST versionsbanner stabiliserad ===
    Bygger från fungerande v608.
    Endast puts: äldre testversionssättare visar samma 631 TEST så bannern inte hoppar mellan 586/587/608.
    Ingen ny setInterval, ingen ny MutationObserver, ingen ändring i recovery/Taktikfilm/logik.
 === slut v610 === */
 
 
-/* === v631 TEST vänster versionsetikett stabil ===
+/* === v632 TEST vänster versionsetikett stabil ===
    Bas: fungerande v609 TEST.
    Endast puts: alla gamla VERSION='578'-sättare och testversionstexter pekar på 631 TEST.
    Ingen ny setInterval, ingen ny MutationObserver, ingen ändring i recovery/Taktikfilm/logik.
@@ -42271,7 +42271,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent=VERSION;
     });
     var b=document.getElementById('tt609-test-env-banner')||document.getElementById('tt610-test-env-banner');
-    if(b){b.id='tt610-test-env-banner';b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v631 TEST';}
+    if(b){b.id='tt610-test-env-banner';b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v632 TEST';}
   }catch(e){} }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(setV610,0);setTimeout(setV610,700);setTimeout(setV610,2200);});
   else{setTimeout(setV610,0);setTimeout(setV610,700);setTimeout(setV610,2200);}
@@ -42279,7 +42279,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v610 === */
 
 
-/* === v631 TEST lagerpanel endast UI ===
+/* === v632 TEST lagerpanel endast UI ===
    Bas: fungerande v615 TEST.
    Detta steg lägger inte till någon lagerlogik i app.js.
    Lagerpanelen ligger helt frikopplad i index_test.html och påverkar inte render,
@@ -42287,40 +42287,40 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 === slut v617 === */
 
 
-/* === v631 TEST vänster version 454-fix ===
+/* === v632 TEST vänster version 454-fix ===
    Bas: v616 TEST. Endast puts: gamla versionssättare som skrev 454 skriver nu 631 TEST.
    Ingen ny MutationObserver eller setInterval. Ingen lagerlogik ändrad.
-=== slut v631 TEST vänster version 454-fix === */
+=== slut v632 TEST vänster version 454-fix === */
 
 
-/* === v631 TEST statisk vänster versionsetikett ===
+/* === v632 TEST statisk vänster versionsetikett ===
    Bas: v617 TEST. Endast versionsputs: samlar testversionsetiketter till 631 TEST.
    Ingen lagerlogik, recoverylogik, render eller sparning ändrad.
 === slut v618 === */
 
 
-/* === v631 TEST lager Spelare/boll visuellt steg 1 ===
+/* === v632 TEST lager Spelare/boll visuellt steg 1 ===
    Bas: v619 TEST. Själva lagerfunktionen ligger i index_test.html som
    en frikopplad visuell dölj/visa-kontroll för .player-token och .ball-token.
    Ingen state-, render-, spar-, recovery- eller Supabase-logik ändras i app_test.js.
 === slut v621 === */
 
 
-/* === v631 TEST lager Spelare/boll lås visuellt steg 2 ===
+/* === v632 TEST lager Spelare/boll lås visuellt steg 2 ===
    Bas: v620 TEST. Lås-knappen i index_test.html stoppar visuell interaktion
    med .player-token och .ball-token via CSS pointer-events:none.
    Ingen state-, render-, spar-, recovery- eller Supabase-logik ändras i app_test.js.
 === slut v621 === */
 
 
-/* === v631 TEST lager Spelare/boll lås spelarfix ===
+/* === v632 TEST lager Spelare/boll lås spelarfix ===
    Bas: fungerande v621 TEST. Endast ändring i index_test.html:
    SVG-capture-guard stoppar nu även spelardrag när Spelare/boll-lagret är låst.
    Ingen state-, render-, spar-, recovery- eller Supabase-logik ändras i app_test.js.
 === slut v622 === */
 
 
-/* === v631 TEST lager Rörelser visa/dölj ===
+/* === v632 TEST lager Rörelser visa/dölj ===
    Bas: fungerande v626 TEST.
    Själva lagerfunktionen ligger i index_test.html.
    Detta steg lägger till ett separat Rörelser-lager som visuellt visar/döljer
@@ -42329,7 +42329,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 === slut v627 === */
 
 
-/* === v631 TEST lager Text visa/dölj ===
+/* === v632 TEST lager Text visa/dölj ===
    Bas: fungerande v628 TEST.
    Själva lagerfunktionen ligger i index_test.html.
    Detta steg gör Text till ett separat visuellt lager; Ritningar döljer/låser inte längre .label-g.
