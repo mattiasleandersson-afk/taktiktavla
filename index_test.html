@@ -2320,18 +2320,39 @@
 
   </div>
 
-<div id="tt-v603-loader" style="position:fixed;top:36px;left:0;right:0;z-index:1000000;background:#111;color:#fff;font:700 13px Arial,sans-serif;padding:8px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.45)">
-  <div>v603 TEST – full HTML laddad. App-JS startas manuellt.</div>
-  <button id="tt-v603-start" type="button" style="margin-top:6px;padding:7px 12px;border-radius:8px;border:1px solid #ffcc00;background:#ffcc00;color:#111;font-weight:900">Starta app_test_v599.js</button>
-  <div id="tt-v603-status" style="margin-top:6px;font-weight:500;color:#ffeb8a">Väntar. Om du ser detta är index_test.html och hela HTML-skalet laddat.</div>
+
+<div id="tt-v604-loader" style="position:fixed;top:36px;left:0;right:0;z-index:1000000;background:#111;color:#fff;font:700 13px Arial,sans-serif;padding:8px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.45)">
+  <div>v604 TEST – full HTML laddad. Testa först rensa testappens lokala state.</div>
+  <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:7px">
+    <button id="tt-v604-clear" type="button" style="padding:7px 12px;border-radius:8px;border:1px solid #ffcc00;background:#ffcc00;color:#111;font-weight:900">Rensa TEST-localStorage</button>
+    <button id="tt-v604-start" type="button" style="padding:7px 12px;border-radius:8px;border:1px solid #4ae87a;background:#4ae87a;color:#111;font-weight:900">Starta app_test_v599.js</button>
+  </div>
+  <div id="tt-v604-status" style="margin-top:6px;font-weight:500;color:#ffeb8a">Väntar. Om du ser detta är index_test.html och hela HTML-skalet laddat.</div>
 </div>
 <script>
 (function(){
   var statusEl;
   function setStatus(msg){
-    statusEl = statusEl || document.getElementById('tt-v603-status');
+    statusEl = statusEl || document.getElementById('tt-v604-status');
     if(statusEl) statusEl.textContent = msg;
-    try{ console.log('[v603-test]', msg); }catch(e){}
+    try{ console.log('[v604-test]', msg); }catch(e){}
+  }
+  function matchingKeys(){
+    var keys=[];
+    try{
+      for(var i=0;i<localStorage.length;i++){
+        var k=localStorage.key(i)||'';
+        if(/^TT_TEST__/.test(k) || /^tt592/.test(k) || /^tt593/.test(k) || /^tt594/.test(k) || /^tt595/.test(k) || /^tt596/.test(k) || /^tt597/.test(k)) keys.push(k);
+      }
+    }catch(e){ setStatus('Kunde inte läsa localStorage: '+(e.message||e)); }
+    return keys;
+  }
+  function clearTestState(){
+    var keys=matchingKeys();
+    var n=0;
+    keys.forEach(function(k){ try{ localStorage.removeItem(k); n++; }catch(e){} });
+    try{ sessionStorage.removeItem('tt_v599_started'); }catch(e){}
+    setStatus('Rensade '+n+' testnycklar. Tryck nu Starta app_test_v599.js.');
   }
   window.addEventListener('error', function(e){
     setStatus('JS-fel: ' + (e.message || 'okänt fel') + ' @ ' + (e.filename || '') + ':' + (e.lineno || ''));
@@ -2340,20 +2361,23 @@
     setStatus('Promise-fel: ' + (e.reason && (e.reason.message || e.reason) || 'okänt promise-fel'));
   });
   function start(){
-    var btn=document.getElementById('tt-v603-start');
+    var btn=document.getElementById('tt-v604-start');
     if(btn) btn.disabled=true;
     setStatus('Laddar app_test_v599.js ...');
-    setTimeout(function(){ setStatus('Om denna text syns efter tryck körs fortfarande webbläsaren. Scriptet har inte blockerat huvudtråden ännu.'); }, 1200);
-    setTimeout(function(){ setStatus('Fortfarande ingen onload/onerror efter 5 sek. Filen kan köras tungt eller fastna under exekvering.'); }, 5000);
+    setTimeout(function(){ setStatus('Om appen inte syns men denna text ändras efter 1,2 sek är huvudtråden inte helt låst.'); }, 1200);
+    setTimeout(function(){ setStatus('Fortfarande ingen onload/onerror efter 5 sek. Då fastnar app-JS under körning.'); }, 5000);
     var s=document.createElement('script');
-    s.src='app_test_v599.js?v=603-fullhtml-manual-' + Date.now();
-    s.onload=function(){ setStatus('app_test_v599.js laddad och körd klart. Om appen ändå inte syns finns felet i init/render efter laddning.'); };
+    s.src='app_test_v599.js?v=604-clearstate-' + Date.now();
+    s.onload=function(){ setStatus('app_test_v599.js laddad och körd klart.'); };
     s.onerror=function(){ setStatus('Kunde inte ladda app_test_v599.js.'); };
     document.body.appendChild(s);
   }
   function bind(){
-    var btn=document.getElementById('tt-v603-start');
-    if(btn) btn.addEventListener('click', start, {once:true});
+    var c=document.getElementById('tt-v604-clear');
+    var b=document.getElementById('tt-v604-start');
+    if(c) c.addEventListener('click', clearTestState);
+    if(b) b.addEventListener('click', start, {once:true});
+    setStatus('Hittade '+matchingKeys().length+' testnycklar i localStorage.');
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind); else bind();
 })();
