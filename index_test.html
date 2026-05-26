@@ -1689,11 +1689,11 @@
   }
 </style>
 
-<!-- v626 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
+<!-- v627 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v626 TEST: lagerpanel steg 1.
+  /* v627 TEST: lagerpanel steg 1.
      Endast visuell dölj/visa av Spelare/boll i aktuell vy.
      Ingen sparning, ingen localStorage, ingen render-wrapper och ingen datamodell ändras. */
   #tt616-layer-panel{
@@ -1779,6 +1779,12 @@
     visibility:hidden !important;
     pointer-events:none !important;
   }
+  body.tt627-layer-movement-hidden #pitch-svg .mv-path-g,
+  body.tt627-layer-movement-hidden #pitch-svg .mv-preview{
+    opacity:0 !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
   body.tt626-layer-drawings-locked #pitch-svg .arrow-g,
   body.tt626-layer-drawings-locked #pitch-svg .label-g,
   body.tt626-layer-drawings-locked #pitch-svg .freehand-g,
@@ -1813,7 +1819,7 @@
 
 
 <style id="tt619-left-version-visual-mask">
-  /* v626 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
+  /* v627 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
      Ingen JS-loop: bara visuell mask på den lilla versionsetiketten. */
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"],
   span[style*="font-size:0.6rem"][style*="letter-spacing"]{
@@ -1823,7 +1829,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"626 TEST" !important;
+    content:"627 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1834,10 +1840,10 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v626">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v627">
   <details open>
-    <summary><span>Lager TEST</span><span>v626</span></summary>
-    <div class="tt616-layer-sub">Steg 5: Ritningar kan visas/döljas och låsas i aktuell session. Rörelsepilar ligger kvar. Inget sparas.</div>
+    <summary><span>Lager TEST</span><span>v627</span></summary>
+    <div class="tt616-layer-sub">Steg 6: Rörelser är eget lager och kan visas/döljas. Inget sparas.</div>
     <div class="tt616-layer-row">
       <div class="tt616-layer-name">Spelare/boll</div>
       <button type="button" id="tt621-layer-playerball-visibility" class="tt621-layer-on" aria-pressed="true">Visa</button>
@@ -1848,6 +1854,11 @@
       <button type="button" id="tt623-layer-drawings-visibility" class="tt621-layer-on" aria-pressed="true" title="Visa/dölj pilar, text, zoner och frihand i aktuell session">Visa</button>
       <button type="button" id="tt626-layer-drawings-lock" aria-pressed="false" title="Lås/lås upp ritningar i aktuell session">Lås</button>
     </div>
+    <div class="tt616-layer-row">
+      <div class="tt616-layer-name">Rörelser</div>
+      <button type="button" id="tt627-layer-movement-visibility" class="tt621-layer-on" aria-pressed="true" title="Visa/dölj rörelsepilar i aktuell session">Visa</button>
+      <button type="button" disabled title="Låsning av rörelser byggs inte i detta steg">Lås</button>
+    </div>
     <div class="tt616-layer-note">Påverkar bara aktuell session. Ingen sparning, ingen recovery och ingen datamodell ändras.</div>
   </details>
 </div>
@@ -1856,7 +1867,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">626 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">627 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2477,7 +2488,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=626-lager-ritningar-las"></script>
+<script src="app_test.js?v=627-lager-rorelser-visuell"></script>
 
 <script>
 (function(){
@@ -2705,6 +2716,16 @@
     }
   }
 
+  function setMovementVisible(visible){
+    document.body.classList.toggle('tt627-layer-movement-hidden', !visible);
+    var btn=document.getElementById('tt627-layer-movement-visibility');
+    if(btn){
+      btn.textContent=visible ? 'Visa' : 'Dold';
+      btn.classList.toggle('tt621-layer-on', visible);
+      btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    }
+  }
+
   function initLayerButtons(){
     bindSvgLockGuard();
     var vis=document.getElementById('tt621-layer-playerball-visibility');
@@ -2749,6 +2770,17 @@
         ev.preventDefault();
         ev.stopPropagation();
         setDrawingsLocked(!document.body.classList.contains('tt626-layer-drawings-locked'));
+      });
+    }
+
+    var movement=document.getElementById('tt627-layer-movement-visibility');
+    if(movement && movement.dataset.tt627Bound!=='1'){
+      movement.dataset.tt627Bound='1';
+      setMovementVisible(!document.body.classList.contains('tt627-layer-movement-hidden'));
+      movement.addEventListener('click',function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        setMovementVisible(document.body.classList.contains('tt627-layer-movement-hidden'));
       });
     }
   }
