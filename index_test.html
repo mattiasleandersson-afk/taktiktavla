@@ -1689,11 +1689,13 @@
   }
 </style>
 
-<!-- v619 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
+<!-- v620 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v619 TEST: frikopplad lagerpanel. Ingen koppling till plan, state, render eller sparning. */
+  /* v620 TEST: lagerpanel steg 1.
+     Endast visuell dölj/visa av Spelare/boll i aktuell vy.
+     Ingen sparning, ingen localStorage, ingen render-wrapper och ingen datamodell ändras. */
   #tt616-layer-panel{
     position:fixed;
     right:calc(env(safe-area-inset-right,0px) + 10px);
@@ -1753,7 +1755,18 @@
     padding:5px 7px;
     font-weight:800;
     font-size:.72rem;
-    opacity:.55;
+  }
+  #tt616-layer-panel button[disabled]{opacity:.45;}
+  #tt616-layer-panel button.tt620-layer-on{
+    background:rgba(74,232,122,.18);
+    border-color:rgba(74,232,122,.72);
+    color:#e8fff0;
+  }
+  body.tt620-layer-playerball-hidden #pitch-svg .player-token,
+  body.tt620-layer-playerball-hidden #pitch-svg .ball-token{
+    opacity:0 !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
   }
   #tt616-layer-panel .tt616-layer-note{
     margin-top:7px;
@@ -1774,7 +1787,7 @@
 
 
 <style id="tt619-left-version-visual-mask">
-  /* v619 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
+  /* v620 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
      Ingen JS-loop: bara visuell mask på den lilla versionsetiketten. */
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"],
   span[style*="font-size:0.6rem"][style*="letter-spacing"]{
@@ -1784,7 +1797,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"619 TEST" !important;
+    content:"620 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1795,16 +1808,16 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v617">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v620">
   <details open>
-    <summary><span>Lager TEST</span><span>v617</span></summary>
-    <div class="tt616-layer-sub">Endast UI-test. Knapparna påverkar inte planen ännu.</div>
+    <summary><span>Lager TEST</span><span>v620</span></summary>
+    <div class="tt616-layer-sub">Steg 1: visa/dölj Spelare/boll visuellt. Inget sparas.</div>
     <div class="tt616-layer-row">
       <div class="tt616-layer-name">Spelare/boll</div>
-      <button type="button" disabled>Visa</button>
-      <button type="button" disabled>Lås</button>
+      <button type="button" id="tt620-layer-playerball-visibility" class="tt620-layer-on" aria-pressed="true">Visa</button>
+      <button type="button" disabled title="Låsning kommer i senare steg">Lås</button>
     </div>
-    <div class="tt616-layer-note">Frikopplad från render, sparning, recovery och localStorage.</div>
+    <div class="tt616-layer-note">Påverkar bara visningen i aktuell session. Ingen sparning, ingen recovery och ingen datamodell ändras.</div>
   </details>
 </div>
 
@@ -1812,7 +1825,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">619 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">620 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2433,7 +2446,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=619-version-label-stabil"></script>
+<script src="app_test.js?v=620-lager-playerball-visual"></script>
 
 <script>
 (function(){
@@ -2565,11 +2578,38 @@
 })();
 </script>
 
+<script id="tt620-layer-playerball-script">
+(function(){
+  'use strict';
+  if(window.__tt620LayerPlayerBallInstalled)return;
+  window.__tt620LayerPlayerBallInstalled=true;
 
+  function setVisible(visible){
+    document.body.classList.toggle('tt620-layer-playerball-hidden', !visible);
+    var btn=document.getElementById('tt620-layer-playerball-visibility');
+    if(btn){
+      btn.textContent=visible ? 'Visa' : 'Dold';
+      btn.classList.toggle('tt620-layer-on', visible);
+      btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    }
+  }
 
+  function initLayerButton(){
+    var btn=document.getElementById('tt620-layer-playerball-visibility');
+    if(!btn || btn.dataset.tt620Bound==='1')return;
+    btn.dataset.tt620Bound='1';
+    setVisible(!document.body.classList.contains('tt620-layer-playerball-hidden'));
+    btn.addEventListener('click',function(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      setVisible(document.body.classList.contains('tt620-layer-playerball-hidden'));
+    });
+  }
 
-
-
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initLayerButton);
+  else initLayerButton();
+})();
+</script>
 
 </body>
 </html>
