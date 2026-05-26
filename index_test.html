@@ -1689,11 +1689,11 @@
   }
 </style>
 
-<!-- v624 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
+<!-- v625 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v624 TEST: lagerpanel steg 1.
+  /* v625 TEST: lagerpanel steg 1.
      Endast visuell dölj/visa av Spelare/boll i aktuell vy.
      Ingen sparning, ingen localStorage, ingen render-wrapper och ingen datamodell ändras. */
   #tt616-layer-panel{
@@ -1772,11 +1772,9 @@
   body.tt623-layer-drawings-hidden #pitch-svg .label-g,
   body.tt623-layer-drawings-hidden #pitch-svg .freehand-g,
   body.tt623-layer-drawings-hidden #pitch-svg .zone-g,
-  body.tt623-layer-drawings-hidden #pitch-svg .mv-path-g,
   body.tt623-layer-drawings-hidden #pitch-svg .preview-arrow,
   body.tt623-layer-drawings-hidden #pitch-svg .freehand-preview,
-  body.tt623-layer-drawings-hidden #pitch-svg .zone-preview,
-  body.tt623-layer-drawings-hidden #pitch-svg .mv-preview{
+  body.tt623-layer-drawings-hidden #pitch-svg .zone-preview{
     opacity:0 !important;
     visibility:hidden !important;
     pointer-events:none !important;
@@ -1805,7 +1803,7 @@
 
 
 <style id="tt619-left-version-visual-mask">
-  /* v624 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
+  /* v625 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
      Ingen JS-loop: bara visuell mask på den lilla versionsetiketten. */
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"],
   span[style*="font-size:0.6rem"][style*="letter-spacing"]{
@@ -1815,7 +1813,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"624 TEST" !important;
+    content:"625 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1826,10 +1824,10 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v624">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v625">
   <details open>
-    <summary><span>Lager TEST</span><span>v624</span></summary>
-    <div class="tt616-layer-sub">Steg 3: Spelare/boll kan döljas/låsas. Ritningar kan döljas/visas utan att rörelsepilar döljs. Inget sparas.</div>
+    <summary><span>Lager TEST</span><span>v625</span></summary>
+    <div class="tt616-layer-sub">Steg 4: Ritningar döljer bara vanliga ritobjekt. Rörelsepilar ligger kvar. Inget sparas.</div>
     <div class="tt616-layer-row">
       <div class="tt616-layer-name">Spelare/boll</div>
       <button type="button" id="tt621-layer-playerball-visibility" class="tt621-layer-on" aria-pressed="true">Visa</button>
@@ -1848,7 +1846,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">624 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">625 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2469,7 +2467,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=624-lager-ritningar-utan-rorelsepilar"></script>
+<script src="app_test.js?v=625-lager-ritningar-rorelsepilar-kvar"></script>
 
 <script>
 (function(){
