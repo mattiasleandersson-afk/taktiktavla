@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v634 TEST: fria lager steg 4.
+  /* v635 TEST: fria lager sparas i fil + versionsfix.
      Visa/Dold och Lås/Låst per fritt lager påverkar nu pilar, text, frihand och zoner i aktuell session.
      Ingen sparning, ingen localStorage, ingen render-wrapper och ingen recoveryändring. */
   #tt616-layer-panel{
@@ -1865,7 +1865,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"630 TEST" !important;
+    content:"635 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1876,13 +1876,13 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v630">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v635">
   <details open>
-    <summary><span>Lager TEST</span><span>v634</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 4. Visa/Dold och Lås/Låst styr nu objekt i respektive fritt lager i aktuell session. Inget sparas permanent ännu.</div>
+    <summary><span>Lager TEST</span><span>v635</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 5. Lagerstatus och layerId sparas nu försiktigt i filens data vid vanlig sparning.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Visa/Dold och Lås/Låst påverkar nu objekt i respektive lager.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Visa/Dold och Lås/Låst påverkar objekt i respektive lager. Lagerstatus följer med när fildata sparas/laddas i testappen.</div>
   </details>
 </div>
 
@@ -1890,7 +1890,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">630 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">635 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2511,7 +2511,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=634-fria-lager-las"></script>
+<script src="app_test.js?v=635-fria-lager-sparning-versionfix"></script>
 
 <script>
 (function(){
@@ -2643,7 +2643,7 @@
 })();
 </script>
 
-<script id="tt634-free-layer-panel-script">
+<script id="tt635-free-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt630FreeLayerPanelInstalled)return;
@@ -2658,6 +2658,63 @@
     ]
   };
   window.__tt630FreeLayerState=state;
+
+
+  function cloneLayers(layers){
+    return (Array.isArray(layers)?layers:[]).map(function(l){
+      return {id:l.id||'layer-1',name:l.name||'Lager',visible:l.visible!==false,locked:!!l.locked};
+    });
+  }
+
+  function layerNumberFromId(id){
+    var m=String(id||'').match(/layer-(\d+)/);
+    return m?parseInt(m[1],10):0;
+  }
+
+  function normalizeNextNum(){
+    var max=0;
+    for(var i=0;i<state.layers.length;i++)max=Math.max(max,layerNumberFromId(state.layers[i].id));
+    state.nextNum=Math.max(state.nextNum||1,max+1,state.layers.length+1);
+  }
+
+  window.tt635GetFreeLayersSnapshot=function(){
+    return {activeId:state.activeId||'layer-1',nextNum:state.nextNum||3,layers:cloneLayers(state.layers)};
+  };
+
+  window.tt635SetFreeLayersSnapshot=function(snapshot){
+    if(snapshot&&Array.isArray(snapshot.layers)&&snapshot.layers.length){
+      state.layers=cloneLayers(snapshot.layers);
+      state.activeId=snapshot.activeId || (state.layers[0]&&state.layers[0].id) || 'layer-1';
+      state.nextNum=snapshot.nextNum || state.layers.length+1;
+      normalizeNextNum();
+    }else{
+      state.layers=[
+        {id:'layer-1',name:'Lager 1',visible:true,locked:false},
+        {id:'layer-2',name:'Lager 2',visible:true,locked:false}
+      ];
+      state.activeId='layer-1';
+      state.nextNum=3;
+    }
+    if(!getLayer(state.activeId))state.activeId=(state.layers[0]&&state.layers[0].id)||'layer-1';
+    if(window.tt631RefreshFreeLayerPanel)setTimeout(window.tt631RefreshFreeLayerPanel,0);
+  };
+
+  window.tt635EnsureFreeLayersFromCurrentObjects=function(){
+    var known={};
+    for(var i=0;i<state.layers.length;i++)known[state.layers[i].id]=true;
+    ['arrows','labels','freehandPaths','zones'].forEach(function(name){
+      var arr=safeArr(name);
+      for(var j=0;j<arr.length;j++){
+        var lid=(arr[j]&&arr[j].layerId)||'layer-1';
+        if(!known[lid]){
+          var n=layerNumberFromId(lid)||state.layers.length+1;
+          state.layers.push({id:lid,name:'Lager '+n,visible:true,locked:false});
+          known[lid]=true;
+        }
+      }
+    });
+    normalizeNextNum();
+  };
 
   window.tt630GetActiveLayerId=function(){
     return (state && state.activeId) || 'layer-1';
@@ -2719,6 +2776,7 @@
   }
 
   function render(){
+    if(window.tt635EnsureFreeLayersFromCurrentObjects)window.tt635EnsureFreeLayersFromCurrentObjects();
     var list=document.getElementById('tt630-free-layer-list');
     if(!list)return;
     list.innerHTML=state.layers.map(function(layer){
