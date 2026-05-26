@@ -1689,11 +1689,11 @@
   }
 </style>
 
-<!-- v618 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
+<!-- v619 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v618 TEST: frikopplad lagerpanel. Ingen koppling till plan, state, render eller sparning. */
+  /* v619 TEST: frikopplad lagerpanel. Ingen koppling till plan, state, render eller sparning. */
   #tt616-layer-panel{
     position:fixed;
     right:calc(env(safe-area-inset-right,0px) + 10px);
@@ -1772,6 +1772,26 @@
   }
 </style>
 
+
+<style id="tt619-left-version-visual-mask">
+  /* v619 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
+     Ingen JS-loop: bara visuell mask på den lilla versionsetiketten. */
+  #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"],
+  span[style*="font-size:0.6rem"][style*="letter-spacing"]{
+    font-size:0 !important;
+    min-width:44px !important;
+    display:inline-block !important;
+  }
+  #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
+  span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
+    content:"619 TEST" !important;
+    font-size:0.6rem !important;
+    color:#2d4a35 !important;
+    letter-spacing:0.5px !important;
+    white-space:nowrap !important;
+  }
+</style>
+
 </head>
 <body>
 
@@ -1792,7 +1812,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">618 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">619 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2413,7 +2433,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=618-version-label-stabil"></script>
+<script src="app_test.js?v=619-version-label-stabil"></script>
 
 <script>
 (function(){
