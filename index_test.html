@@ -1689,11 +1689,11 @@
   }
 </style>
 
-<!-- v625 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
+<!-- v626 TEST: återgång till fasta filnamn app_test.js + index_test.html, byggd från fungerande v610. -->
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v625 TEST: lagerpanel steg 1.
+  /* v626 TEST: lagerpanel steg 1.
      Endast visuell dölj/visa av Spelare/boll i aktuell vy.
      Ingen sparning, ingen localStorage, ingen render-wrapper och ingen datamodell ändras. */
   #tt616-layer-panel{
@@ -1779,6 +1779,16 @@
     visibility:hidden !important;
     pointer-events:none !important;
   }
+  body.tt626-layer-drawings-locked #pitch-svg .arrow-g,
+  body.tt626-layer-drawings-locked #pitch-svg .label-g,
+  body.tt626-layer-drawings-locked #pitch-svg .freehand-g,
+  body.tt626-layer-drawings-locked #pitch-svg .zone-g,
+  body.tt626-layer-drawings-locked #pitch-svg .preview-arrow,
+  body.tt626-layer-drawings-locked #pitch-svg .freehand-preview,
+  body.tt626-layer-drawings-locked #pitch-svg .zone-preview{
+    pointer-events:none !important;
+    filter:grayscale(.12) saturate(.9) !important;
+  }
   body.tt621-layer-playerball-locked #pitch-svg .player-token,
   body.tt621-layer-playerball-locked #pitch-svg .ball-token{
     pointer-events:none !important;
@@ -1803,7 +1813,7 @@
 
 
 <style id="tt619-left-version-visual-mask">
-  /* v625 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
+  /* v626 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
      Ingen JS-loop: bara visuell mask på den lilla versionsetiketten. */
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"],
   span[style*="font-size:0.6rem"][style*="letter-spacing"]{
@@ -1813,7 +1823,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"625 TEST" !important;
+    content:"626 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1824,10 +1834,10 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v625">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v626">
   <details open>
-    <summary><span>Lager TEST</span><span>v625</span></summary>
-    <div class="tt616-layer-sub">Steg 4: Ritningar döljer bara vanliga ritobjekt. Rörelsepilar ligger kvar. Inget sparas.</div>
+    <summary><span>Lager TEST</span><span>v626</span></summary>
+    <div class="tt616-layer-sub">Steg 5: Ritningar kan visas/döljas och låsas i aktuell session. Rörelsepilar ligger kvar. Inget sparas.</div>
     <div class="tt616-layer-row">
       <div class="tt616-layer-name">Spelare/boll</div>
       <button type="button" id="tt621-layer-playerball-visibility" class="tt621-layer-on" aria-pressed="true">Visa</button>
@@ -1836,7 +1846,7 @@
     <div class="tt616-layer-row">
       <div class="tt616-layer-name">Ritningar</div>
       <button type="button" id="tt623-layer-drawings-visibility" class="tt621-layer-on" aria-pressed="true" title="Visa/dölj pilar, text, zoner och frihand i aktuell session">Visa</button>
-      <button type="button" disabled aria-disabled="true" title="Låsning av ritningar kommer i senare steg">Lås</button>
+      <button type="button" id="tt626-layer-drawings-lock" aria-pressed="false" title="Lås/lås upp ritningar i aktuell session">Lås</button>
     </div>
     <div class="tt616-layer-note">Påverkar bara aktuell session. Ingen sparning, ingen recovery och ingen datamodell ändras.</div>
   </details>
@@ -1846,7 +1856,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">625 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">626 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2467,7 +2477,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=625-lager-ritningar-rorelsepilar-kvar"></script>
+<script src="app_test.js?v=626-lager-ritningar-las"></script>
 
 <script>
 (function(){
@@ -2599,7 +2609,7 @@
 })();
 </script>
 
-<script id="tt621-layer-playerball-script">
+<script id="tt626-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt621LayerPlayerBallInstalled)return;
@@ -2613,13 +2623,37 @@
     }
   }
 
+  function isDrawingLayerTarget(target){
+    try{
+      return !!(target && target.closest && target.closest('#pitch-svg .arrow-g, #pitch-svg .label-g, #pitch-svg .freehand-g, #pitch-svg .zone-g, #pitch-svg .preview-arrow, #pitch-svg .freehand-preview, #pitch-svg .zone-preview'));
+    }catch(e){
+      return false;
+    }
+  }
+
+  function isDrawingCreationMode(){
+    try{
+      return ['arrow','text','freehand','zone'].indexOf(String(window.mode||'')) !== -1;
+    }catch(e){
+      return false;
+    }
+  }
+
   function blockIfLocked(ev){
-    if(!document.body.classList.contains('tt621-layer-playerball-locked'))return;
-    if(!isPlayerBallLayerTarget(ev.target))return;
-    try{ev.preventDefault();}catch(e){}
-    try{ev.stopPropagation();}catch(e){}
-    try{ev.stopImmediatePropagation();}catch(e){}
-    return false;
+    var playerBallLocked=document.body.classList.contains('tt621-layer-playerball-locked');
+    var drawingsLocked=document.body.classList.contains('tt626-layer-drawings-locked');
+    if(playerBallLocked && isPlayerBallLayerTarget(ev.target)){
+      try{ev.preventDefault();}catch(e){}
+      try{ev.stopPropagation();}catch(e){}
+      try{ev.stopImmediatePropagation();}catch(e){}
+      return false;
+    }
+    if(drawingsLocked && (isDrawingLayerTarget(ev.target) || isDrawingCreationMode())){
+      try{ev.preventDefault();}catch(e){}
+      try{ev.stopPropagation();}catch(e){}
+      try{ev.stopImmediatePropagation();}catch(e){}
+      return false;
+    }
   }
 
   function bindSvgLockGuard(){
@@ -2661,6 +2695,16 @@
     }
   }
 
+  function setDrawingsLocked(locked){
+    document.body.classList.toggle('tt626-layer-drawings-locked', !!locked);
+    var btn=document.getElementById('tt626-layer-drawings-lock');
+    if(btn){
+      btn.textContent=locked ? 'Låst' : 'Lås';
+      btn.classList.toggle('tt621-layer-on', !!locked);
+      btn.setAttribute('aria-pressed', locked ? 'true' : 'false');
+    }
+  }
+
   function initLayerButtons(){
     bindSvgLockGuard();
     var vis=document.getElementById('tt621-layer-playerball-visibility');
@@ -2693,6 +2737,18 @@
         ev.preventDefault();
         ev.stopPropagation();
         setDrawingsVisible(document.body.classList.contains('tt623-layer-drawings-hidden'));
+      });
+    }
+
+
+    var drawingsLock=document.getElementById('tt626-layer-drawings-lock');
+    if(drawingsLock && drawingsLock.dataset.tt626Bound!=='1'){
+      drawingsLock.dataset.tt626Bound='1';
+      setDrawingsLocked(document.body.classList.contains('tt626-layer-drawings-locked'));
+      drawingsLock.addEventListener('click',function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        setDrawingsLocked(!document.body.classList.contains('tt626-layer-drawings-locked'));
       });
     }
   }
