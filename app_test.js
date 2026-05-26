@@ -42167,25 +42167,25 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v590 test nödkopia rensningsfix === */
 
 
-/* === v593-test-stabil-versionsvisning ===
-   Bas: fungerande v590 TEST.
-   Endast versionsfix: stoppar äldre v578/v590-timers från att ge hoppande versionsnummer.
+/* === v595-test-ren-rollback-v591 ===
+   Bas: exakt fungerande v595 TEST, ren rollback efter trasigt lagerförsök.
+   Ren rollback: inga lagerförsök, endast stabil testversion och v590-nödkopia.
    Rör inte Taktikfilm-nödkopia, Supabase, mappar, delning eller produktion.
 */
 (function(){
   'use strict';
-  if(window.__tt591StableTestVersion)return;
-  window.__tt591StableTestVersion=true;
-  var VERSION='593 TEST';
+  if(window.__tt595CleanRollbackVersion)return;
+  window.__tt595CleanRollbackVersion=true;
+  var VERSION='595 TEST';
   function shouldSet(el){try{
     if(!el)return false;
     var t=String(el.textContent||'').trim();
     if(!t)return false;
-    return /^(v?\d+|\d+\s*TEST|\d+ TEST|v\d+ TEST|v?\d+\s*test)$/i.test(t) || /^(578|590 TEST|593 TEST)$/i.test(t);
+    return /^(v?\d+|\d+\s*TEST|\d+ TEST|v\d+ TEST|v?\d+\s*test)$/i.test(t) || /^(578|590 TEST|591 TEST)$/i.test(t);
   }catch(e){return false;}}
-  function setVersion591(){try{
+  function setVersion595(){try{
     if(document.body){
-      document.body.setAttribute('data-app-version','593-test');
+      document.body.setAttribute('data-app-version','595-test');
       document.body.setAttribute('data-env','test');
     }
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -42195,23 +42195,16 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(shouldSet(el))el.textContent=VERSION;
     });
     var b=document.getElementById('tt586-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v593 TEST';
+    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v595 TEST';
   }catch(e){}}
-  function installObserver591(){try{
-    if(!document.body||window.__tt591VersionObserver)return;
-    window.__tt591VersionObserver=new MutationObserver(function(){setVersion591();});
-    window.__tt591VersionObserver.observe(document.body,{childList:true,subtree:true,characterData:true});
+  function installObserver595(){try{
+    if(!document.body||window.__tt595VersionObserver)return;
+    window.__tt595VersionObserver=new MutationObserver(function(){setVersion595();});
+    window.__tt595VersionObserver.observe(document.body,{childList:true,subtree:true,characterData:true});
   }catch(e){}}
-  function tick(){setVersion591();installObserver591();}
+  function tick(){setVersion595();installObserver595();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick();
   [0,50,150,300,700,1200,2200,4200,8000].forEach(function(ms){setTimeout(tick,ms);});
   setInterval(tick,1000);
 })();
-/* === slut v591 test stabil versionsvisning === */
-
-
-/* === v593 TEST rollback ===
-   Bas: fungerande v591 TEST.
-   v592 lagergrund var inte stabil och ska inte användas.
-   Denna fil återställer testappen till fungerande v591-logik med versionsvisning v593 TEST.
-*/
+/* === slut v595 test ren rollback === */
