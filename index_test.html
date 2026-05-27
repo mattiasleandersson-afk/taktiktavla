@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v667 desktoplayout puts</title>
+<title>Taktiktavla TEST v676 ritval stabil desktop</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v674 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
+  /* v676 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1950,7 +1950,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"674 TEST" !important;
+    content:"676 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1960,7 +1960,7 @@
 
 
 <style id="tt666-taktikfilm-desktop-layout-css">
-  /* v674 TEST: Första datorlayout för Taktikfilm-redigering.
+  /* v676 TEST: Första datorlayout för Taktikfilm-redigering.
      Bas: fungerande lagerlogik v660/v664 + språkputsen i v665.
      Endast desktop, inte fullscreen, inte mobil/iPad. */
   @media (min-width:1024px) and (pointer:fine){
@@ -2179,7 +2179,7 @@
 
 
 <style id="tt667-taktikfilm-desktop-layout-puts-css">
-  /* v674 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
+  /* v676 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
      - bredare stegspalt
      - ritverktygsval bredvid ritverktygen i övre raden
      - lagerpanelen öppen på desktop
@@ -2316,7 +2316,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">674 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">676 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2937,7 +2937,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=668-taktikfilm-desktop-layout-fix"></script>
+<script src="app_test.js?v=676-taktikfilm-ritval-stabil-desktop"></script>
 
 <script>
 (function(){
@@ -4063,127 +4063,26 @@
 
 
 
-<script id="tt667-taktikfilm-desktop-layout-puts-js">
+<script id="tt676-taktikfilm-ritval-stabil-desktop-js">
 (function(){
-  if(window.__tt667TaktikDesktopLayoutPutsInstalled)return;
-  window.__tt667TaktikDesktopLayoutPutsInstalled=true;
-  var optionIds=['arrow-options','zone-options','freehand-options'];
-  function desktop(){try{return window.matchMedia && window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}}
-  function active(){
-    try{
-      if(!desktop())return false;
-      if(document.body && document.body.classList && document.body.classList.contains('fullscreen-portrait'))return false;
-      return !!(document.body && document.body.classList && document.body.classList.contains('tt666-taktik-desktop-layout'));
-    }catch(e){return false;}
-  }
-  function ensureSlot(){
-    var bar=document.getElementById('taktikbar');
-    if(!bar)return null;
-    var drawRow=bar.children && bar.children[1];
-    if(!drawRow)return null;
-    var slot=document.getElementById('tt667-draw-options-slot');
-    if(!slot){
-      slot=document.createElement('span');
-      slot.id='tt667-draw-options-slot';
-      slot.setAttribute('aria-label','Ritverktygsval');
-    }
-    if(slot.parentNode!==drawRow)drawRow.appendChild(slot);
-    return slot;
-  }
-  function returnOptions(){
-    var pitch=document.getElementById('pitch-wrapper');
-    if(!pitch)return;
-    optionIds.forEach(function(id){
-      var el=document.getElementById(id);
-      if(el && el.parentNode!==pitch)pitch.appendChild(el);
-    });
-  }
-  function apply(){
-    try{
-      var details=document.querySelector('#tt616-layer-panel details');
-      if(active()){
-        if(details)details.setAttribute('open','');
-        var slot=ensureSlot();
-        if(slot){
-          optionIds.forEach(function(id){
-            var el=document.getElementById(id);
-            if(el && el.parentNode!==slot)slot.appendChild(el);
-          });
-        }
-      }else{
-        returnOptions();
-      }
-    }catch(e){}
-  }
-  function later(){setTimeout(apply,0);setTimeout(apply,160);setTimeout(apply,520);}
-  ['click','touchend','keyup','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,later,true);});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',later);
-  else later();
-})();
-</script>
+  'use strict';
+  if(window.__tt676TaktikfilmRitvalStabilDesktopInstalled)return;
+  window.__tt676TaktikfilmRitvalStabilDesktopInstalled=true;
 
-
-
-<style id="tt668-taktikfilm-desktop-layout-fix-css">
-  /* v674 TEST: fixar två saker ovanpå v667 desktop-layout:
-     1) ritverktygens val hålls visuellt fast vid originalverktygsraden, direkt efter Återställ
-     2) fullskärmsknapp finns i Taktikfilm-raden även när nedersta panelstrippen är dold. */
-  @media (min-width:1024px) and (pointer:fine){
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait){
-      --tt668-options-left: 430px;
-      --tt668-options-top: 12px;
-    }
-
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #arrow-options,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #zone-options,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #freehand-options,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt667-draw-options-slot #arrow-options,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt667-draw-options-slot #zone-options,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt667-draw-options-slot #freehand-options{
-      position:fixed !important;
-      left:var(--tt668-options-left) !important;
-      top:var(--tt668-options-top) !important;
-      right:auto !important;
-      z-index:160 !important;
-      max-width:min(560px, calc(100vw - var(--tt668-options-left) - 18px)) !important;
-      overflow-x:auto !important;
-      background:rgba(17,26,20,.96) !important;
-      border:1px solid rgba(74,232,122,.28) !important;
-      border-radius:8px !important;
-      padding:2px 4px !important;
-      box-shadow:0 6px 18px rgba(0,0,0,.28) !important;
-      gap:4px !important;
-      align-items:center !important;
-    }
-
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #arrow-options select,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #zone-options select,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #freehand-options select{
-      max-width:118px !important;
-      font-size:.66rem !important;
-      padding:2px 5px !important;
-    }
-
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt668-taktik-fs-btn{
-      display:inline-flex !important;
-      align-items:center !important;
-      justify-content:center !important;
-      padding:3px 7px !important;
-      font-size:.65rem !important;
-      color:#4ae87a !important;
-      border-color:#4ae87a !important;
-      white-space:nowrap !important;
-    }
-  }
-</style>
-
-<script id="tt668-taktikfilm-desktop-layout-fix-js">
-(function(){
-  if(window.__tt668TaktikDesktopLayoutFixInstalled)return;
-  window.__tt668TaktikDesktopLayoutFixInstalled=true;
+  var OPTION_IDS=['arrow-options','freehand-options','zone-options'];
+  var TOOL_TO_OPTION={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
 
   function desktop(){
-    try{return window.matchMedia && window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}
+    try{return !!(window.matchMedia && window.matchMedia('(min-width:1024px) and (pointer:fine)').matches);}
+    catch(e){return false;}
+  }
+  function isEditorVisible(){
+    try{
+      var tab=document.querySelector('.tab.on[data-panel="taktik"]');
+      var edit=document.getElementById('edit-taktik-ui');
+      var bar=document.getElementById('taktikbar');
+      return !!(tab && edit && bar && getComputedStyle(edit).display!=='none' && getComputedStyle(bar).display!=='none');
+    }catch(e){return false;}
   }
   function active(){
     try{
@@ -4192,17 +4091,129 @@
         !document.body.classList.contains('fullscreen-portrait'));
     }catch(e){return false;}
   }
+  function activeOptionId(){
+    try{return TOOL_TO_OPTION[String(window.mode||mode||'')]||null;}catch(e){return null;}
+  }
 
-  function syncOptionPosition(){
+  function ensureCss(){
+    if(document.getElementById('tt676-taktikfilm-ritval-stabil-desktop-css'))return;
+    var st=document.createElement('style');
+    st.id='tt676-taktikfilm-ritval-stabil-desktop-css';
+    st.textContent=[
+      'span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{content:"676 TEST"!important}',
+      '@media (min-width:1024px) and (pointer:fine){',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt291-plan-draw-options,',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt667-draw-options-slot{display:none!important;visibility:hidden!important;pointer-events:none!important;width:0!important;min-width:0!important;height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important}',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #arrow-options,',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #freehand-options,',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #zone-options{',
+      '    position:fixed!important;',
+      '    left:var(--tt676-options-left, 430px)!important;',
+      '    top:var(--tt676-options-top, 82px)!important;',
+      '    right:auto!important;',
+      '    bottom:auto!important;',
+      '    transform:none!important;',
+      '    z-index:190!important;',
+      '    flex:initial!important;',
+      '    margin:0!important;',
+      '    max-width:min(560px, calc(100vw - var(--tt676-options-left, 430px) - 18px))!important;',
+      '    overflow-x:auto!important;',
+      '    overflow-y:hidden!important;',
+      '    background:rgba(17,26,20,.96)!important;',
+      '    border:1px solid rgba(74,232,122,.32)!important;',
+      '    border-radius:8px!important;',
+      '    padding:2px 4px!important;',
+      '    box-shadow:0 6px 18px rgba(0,0,0,.28)!important;',
+      '    gap:4px!important;',
+      '    align-items:center!important;',
+      '    white-space:nowrap!important;',
+      '    pointer-events:auto!important;',
+      '  }',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #arrow-options:not(.tt676-active-option),',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #freehand-options:not(.tt676-active-option),',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #zone-options:not(.tt676-active-option){display:none!important}',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) .tt676-active-option{display:flex!important}',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #arrow-options select,',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #freehand-options select,',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #zone-options select{height:26px!important;min-height:26px!important;max-width:118px!important;padding:2px 5px!important;font-size:.66rem!important}',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #arrow-options button,',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #freehand-options button,',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #zone-options button{height:26px!important;min-height:26px!important;padding:2px 6px!important;font-size:.65rem!important;white-space:nowrap!important}',
+      '  body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt676-taktik-fs-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:3px 7px!important;font-size:.65rem!important;color:#4ae87a!important;border-color:#4ae87a!important;white-space:nowrap!important}',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v676 ritval stabil desktop';}catch(e){}
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='676 TEST';});
+    }catch(e){}
+  }
+
+  function ensureDesktopClass(){
+    try{
+      if(!document.body || !document.body.classList)return;
+      document.body.classList.toggle('tt666-taktik-desktop-layout', !!(desktop() && !document.body.classList.contains('fullscreen-portrait') && isEditorVisible()));
+    }catch(e){}
+  }
+
+  function originalPitch(){return document.getElementById('pitch-wrapper') || document.body;}
+
+  function ownOptions(){
     try{
       if(!active())return;
-      var reset=document.getElementById('btn-reset');
-      if(!reset)return;
-      var r=reset.getBoundingClientRect();
-      var left=Math.max(8, Math.round(r.right+8));
-      var top=Math.max(6, Math.round(r.top));
-      document.documentElement.style.setProperty('--tt668-options-left', left+'px');
-      document.documentElement.style.setProperty('--tt668-options-top', top+'px');
+      var pitch=originalPitch();
+      OPTION_IDS.forEach(function(id){
+        var el=document.getElementById(id);
+        if(!el)return;
+        el.classList.remove('tt674-taktik-options','tt291-active-option','tt238-rita-options','tt252-active-option');
+        if(el.parentNode!==pitch)pitch.appendChild(el);
+      });
+      var old291=document.getElementById('tt291-plan-draw-options');
+      if(old291)old291.style.setProperty('display','none','important');
+      var slot=document.getElementById('tt667-draw-options-slot');
+      if(slot)slot.style.setProperty('display','none','important');
+    }catch(e){}
+  }
+
+  function positionOptions(){
+    try{
+      if(!active())return;
+      var bar=document.getElementById('taktikbar');
+      var row=bar && bar.children && bar.children[1];
+      if(!row)return;
+      var anchor=document.getElementById('btn-tb-movement') || document.getElementById('btn-tb-text') || document.getElementById('btn-tb-zone') || row.lastElementChild;
+      var rr=row.getBoundingClientRect();
+      var ar=anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : rr;
+      var left=Math.round(Math.max(ar.right+8, rr.left+210, 8));
+      if(left>window.innerWidth-160)left=Math.max(8, Math.round(rr.left+210));
+      var top=Math.round(Math.max(rr.top+1, 6));
+      document.documentElement.style.setProperty('--tt676-options-left', left+'px');
+      document.documentElement.style.setProperty('--tt676-options-top', top+'px');
+    }catch(e){}
+  }
+
+  function showOnlyActiveOption(){
+    try{
+      if(!active())return;
+      var aid=activeOptionId();
+      OPTION_IDS.forEach(function(id){
+        var el=document.getElementById(id);
+        if(!el)return;
+        var on=!!aid && id===aid;
+        el.classList.toggle('tt676-active-option',on);
+        el.style.setProperty('display',on?'flex':'none','important');
+      });
+    }catch(e){}
+  }
+
+  function ensureLayerOpen(){
+    try{
+      if(!active())return;
+      var details=document.querySelector('#tt616-layer-panel details');
+      if(details)details.setAttribute('open','');
     }catch(e){}
   }
 
@@ -4212,11 +4223,11 @@
       if(!bar)return;
       var row=bar.children && bar.children[0];
       if(!row)return;
-      var btn=document.getElementById('tt668-taktik-fs-btn');
+      var btn=document.getElementById('tt676-taktik-fs-btn');
       if(!btn){
         btn=document.createElement('button');
         btn.className='btn';
-        btn.id='tt668-taktik-fs-btn';
+        btn.id='tt676-taktik-fs-btn';
         btn.type='button';
         btn.title='Helskärm';
         btn.textContent='⛶ Fullskärm';
@@ -4224,7 +4235,8 @@
           ev.preventDefault();
           ev.stopPropagation();
           try{
-            if(typeof enterFullscreenPortrait==='function')enterFullscreenPortrait();
+            if(typeof window.enterFullscreenPortrait==='function')window.enterFullscreenPortrait();
+            else if(typeof enterFullscreenPortrait==='function')enterFullscreenPortrait();
             else {
               var old=document.getElementById('btn-fs-topbar') || document.getElementById('fs-enter-btn');
               if(old)old.click();
@@ -4233,7 +4245,7 @@
         },{passive:false});
       }
       if(btn.parentNode!==row){
-        var before=document.getElementById('btn-edit-update-step2') || document.getElementById('btn-taktikbar-save') || null;
+        var before=document.getElementById('btn-edit-update-step2') || document.getElementById('btn-taktikbar-save') || document.getElementById('btn-stop-play') || null;
         if(before && before.parentNode===row)row.insertBefore(btn,before);
         else row.appendChild(btn);
       }
@@ -4242,153 +4254,42 @@
   }
 
   function apply(){
-    syncOptionPosition();
+    ensureCss();
+    setVersion();
+    ensureDesktopClass();
+    ownOptions();
+    positionOptions();
+    showOnlyActiveOption();
+    ensureLayerOpen();
     ensureFullscreenButton();
   }
-  function later(){setTimeout(apply,0);setTimeout(apply,120);setTimeout(apply,420);}
-  ['click','touchend','keyup','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,later,true);});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',later);
-  else later();
-})();
-</script>
 
+  var pending=false;
+  function schedule(){
+    if(pending)return;
+    pending=true;
+    requestAnimationFrame(function(){pending=false;apply();});
+  }
 
+  function install(){
+    apply();
+    ['click','touchend','keyup','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,schedule,true);});
 
-<style id="tt674-taktikfilm-ritval-in-toolbar-css">
-  /* v674 TEST: Ritvalen ska ligga i samma ruta/rad som Taktikfilms ritverktyg.
-     De flyttas in i #taktikbarens ritverktygsrad och får därför statisk position.
-     Detta ersätter försöken med fast/flyttad visuell position. */
-  @media (min-width:1024px) and (pointer:fine){
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar > div:nth-child(2){
-      display:flex !important;
-      align-items:center !important;
-      gap:4px !important;
-      overflow-x:auto !important;
-      overflow-y:hidden !important;
-      white-space:nowrap !important;
-    }
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar #arrow-options.tt674-taktik-options,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar #zone-options.tt674-taktik-options,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar #freehand-options.tt674-taktik-options{
-      position:static !important;
-      left:auto !important;
-      top:auto !important;
-      right:auto !important;
-      bottom:auto !important;
-      transform:none !important;
-      z-index:auto !important;
-      display:flex;
-      flex:0 0 auto !important;
-      align-items:center !important;
-      gap:4px !important;
-      margin:0 0 0 4px !important;
-      padding:0 !important;
-      background:transparent !important;
-      border:0 !important;
-      border-radius:0 !important;
-      box-shadow:none !important;
-      max-width:none !important;
-      overflow:visible !important;
-      white-space:nowrap !important;
-    }
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar #arrow-options.tt674-taktik-options select,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar #zone-options.tt674-taktik-options select,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar #freehand-options.tt674-taktik-options select{
-      height:26px !important;
-      min-height:26px !important;
-      max-width:112px !important;
-      padding:2px 5px !important;
-      font-size:.65rem !important;
-    }
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar #arrow-options.tt674-taktik-options button,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar #zone-options.tt674-taktik-options button,
-    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar #freehand-options.tt674-taktik-options button{
-      height:26px !important;
-      min-height:26px !important;
-      padding:2px 6px !important;
-      font-size:.65rem !important;
-      white-space:nowrap !important;
+    var oldSetMode=typeof window.setMode==='function'?window.setMode:(typeof setMode==='function'?setMode:null);
+    if(oldSetMode && !oldSetMode.__tt676Wrapped){
+      var wrapped=function(){
+        var res=oldSetMode.apply(this,arguments);
+        schedule();
+        return res;
+      };
+      wrapped.__tt676Wrapped=true;
+      try{window.setMode=wrapped; setMode=wrapped;}catch(e){}
     }
   }
-</style>
 
-<script id="tt674-taktikfilm-ritval-in-toolbar-js">
-(function(){
-  if(window.__tt674TaktikfilmRitvalInToolbarInstalled)return;
-  window.__tt674TaktikfilmRitvalInToolbarInstalled=true;
-
-  function desktop(){
-    try{return window.matchMedia && window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}
-  }
-  function active(){
-    try{
-      return !!(desktop() && document.body && document.body.classList &&
-        document.body.classList.contains('tt666-taktik-desktop-layout') &&
-        !document.body.classList.contains('fullscreen-portrait'));
-    }catch(e){return false;}
-  }
-  function drawRow(){
-    try{
-      var bar=document.getElementById('taktikbar');
-      if(!bar || !bar.children || !bar.children[1])return null;
-      return bar.children[1];
-    }catch(e){return null;}
-  }
-  function putAfter(el,anchor){
-    if(!el || !anchor || !anchor.parentNode)return;
-    var parent=anchor.parentNode;
-    var next=anchor.nextSibling;
-    if(next===el)return;
-    parent.insertBefore(el,next);
-  }
-  function moveOptions(){
-    try{
-      if(!active())return;
-      var row=drawRow();
-      if(!row)return;
-      row.classList.add('tt674-taktik-ritrad');
-      var pairs=[
-        ['arrow-options','btn-tb-arrow'],
-        ['freehand-options','btn-tb-freehand'],
-        ['zone-options','btn-tb-zone']
-      ];
-      /* Bakifrån så ordningen blir: Pil + pilval, Fri + frihandval, Zon + zonval, Text, Rörelse. */
-      for(var i=pairs.length-1;i>=0;i--){
-        var opt=document.getElementById(pairs[i][0]);
-        var btn=document.getElementById(pairs[i][1]);
-        if(!opt || !btn)continue;
-        opt.classList.add('tt674-taktik-options');
-        putAfter(opt,btn);
-      }
-    }catch(e){}
-  }
-  function clearClassWhenInactive(){
-    try{
-      if(active())return;
-      ['arrow-options','freehand-options','zone-options'].forEach(function(id){
-        var el=document.getElementById(id);
-        if(el)el.classList.remove('tt674-taktik-options');
-      });
-    }catch(e){}
-  }
-  function apply(){moveOptions();clearClassWhenInactive();}
-  function later(){setTimeout(apply,0);setTimeout(apply,60);setTimeout(apply,180);}
-
-  var oldSetMode=typeof window.setMode==='function'?window.setMode:(typeof setMode==='function'?setMode:null);
-  if(oldSetMode && !oldSetMode.__tt674Wrapped){
-    var wrapped=function(){
-      var res=oldSetMode.apply(this,arguments);
-      later();
-      return res;
-    };
-    wrapped.__tt674Wrapped=true;
-    try{window.setMode=wrapped; setMode=wrapped;}catch(e){}
-  }
-
-  ['click','touchend','keyup','resize','orientationchange'].forEach(function(evt){
-    window.addEventListener(evt,later,true);
-  });
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',later); else later();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
+  else install();
+  window.addEventListener('load',schedule,{once:true});
 })();
 </script>
 
