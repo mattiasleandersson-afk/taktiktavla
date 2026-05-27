@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v685 knappfix</title>
+<title>Taktiktavla TEST v686 knappfix</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -4140,7 +4140,7 @@
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v685 knappfix';}catch(e){}
+    try{document.title='Taktiktavla TEST v686 knappfix';}catch(e){}
     try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='685 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
@@ -4298,6 +4298,68 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);
   else schedule();
   window.tt681ApplyTaktikfilmRitvalPlacement=apply;
+})();
+</script>
+
+
+<script id="tt686-layer-panel-below-toolbar-fix">
+/* === v686 TEST: Lagerpanelen får inte täcka Avsluta/Info/Kopiera i Taktikfilm desktop ===
+   Bas: v685 från rollbackbas. Endast index/CSS-positionering.
+   Ingen ändring i appens avslutalogik, ritvalslogik, fullscreen eller lagerdata.
+*/
+(function(){
+  'use strict';
+  if(window.__tt686LayerPanelBelowToolbarFixInstalled)return;
+  window.__tt686LayerPanelBelowToolbarFixInstalled=true;
+  var VERSION='686 TEST';
+
+  function byId(id){return document.getElementById(id);}
+  function ensureCss(){
+    if(byId('tt686-layer-panel-below-toolbar-css'))return;
+    var st=document.createElement('style');
+    st.id='tt686-layer-panel-below-toolbar-css';
+    st.textContent=[
+      '@media (min-width:1024px) and (pointer:fine){',
+      '  body.tt681-taktikfilm-ritval-owner #taktikbar{position:relative!important;z-index:100020!important;overflow:visible!important;}',
+      '  body.tt681-taktikfilm-ritval-owner #taktikbar > div{position:relative!important;z-index:100021!important;overflow:visible!important;}',
+      '  body.tt681-taktikfilm-ritval-owner #tt616-layer-panel{',
+      '    top:calc(env(safe-area-inset-top,0px) + 152px)!important;',
+      '    right:calc(env(safe-area-inset-right,0px) + 10px)!important;',
+      '    z-index:99970!important;',
+      '    max-height:calc(100vh - 170px)!important;',
+      '  }',
+      '  body.tt681-taktikfilm-ritval-owner #tt616-layer-panel summary{pointer-events:auto!important;}',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v686 lagerpanel under knapprad';}catch(e){}
+    try{document.body&&document.body.setAttribute('data-app-version',VERSION);}catch(e){}
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent=VERSION;});
+    }catch(e){}
+  }
+  function keepLayerBelowToolbar(){
+    try{
+      var active=document.body.classList.contains('tt681-taktikfilm-ritval-owner');
+      var panel=byId('tt616-layer-panel');
+      if(!panel)return;
+      if(active){
+        panel.style.setProperty('top','calc(env(safe-area-inset-top,0px) + 152px)','important');
+        panel.style.setProperty('z-index','99970','important');
+        panel.style.setProperty('max-height','calc(100vh - 170px)','important');
+      }else{
+        panel.style.removeProperty('top');
+        panel.style.removeProperty('max-height');
+      }
+    }catch(e){}
+  }
+  function apply(){ensureCss();setVersion();keepLayerBelowToolbar();}
+  function schedule(){try{requestAnimationFrame(apply);}catch(e){apply();}setTimeout(apply,80);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
+  ['click','touchend','keyup','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,schedule,true);});
+  window.tt686LayerPanelBelowToolbarFix=schedule;
 })();
 </script>
 
