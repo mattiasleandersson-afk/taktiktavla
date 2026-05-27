@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v642 TEST: fria lager + mobil toggle för lagerpanelen.
+  /* v643 TEST: fria lager + mobil toggle för lagerpanelen.
      Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"642 TEST" !important;
+    content:"643 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,13 +1912,13 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v642">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v643">
   <details>
-    <summary><span>Lager TEST</span><span>v642</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 12. iPhone-knapp för att öppna/stänga lagerpanelen.</div>
+    <summary><span>Lager TEST</span><span>v643</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 13. Lager kan flyttas upp/ned i visuell ordning.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas eller kopieras via lager. Ritläge kan starta ovanpå befintliga olåsta lagerobjekt.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas/kopieras via lager. Upp/Ned styr den visuella lagerordningen.</div>
   </details>
 </div>
 
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">642 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">643 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=642-lagerpanel-iphone-toggle"></script>
+<script src="app_test.js?v=643-lagerpanel-iphone-toggle"></script>
 
 <script>
 (function(){
@@ -2793,6 +2793,31 @@
     return !!(layer && layer.locked);
   };
 
+  function layerOrderIndex(id){
+    id=id||'layer-1';
+    for(var i=0;i<state.layers.length;i++)if(state.layers[i].id===id)return i;
+    return state.layers.length+100;
+  }
+
+  function applyFreeLayerDomOrder(){
+    var root=document.getElementById('pitch-svg');
+    if(!root)return;
+    var nodes=Array.prototype.slice.call(root.querySelectorAll('.zone-g[data-tt-free-layer-id],.freehand-g[data-tt-free-layer-id],.arrow-g[data-tt-free-layer-id],.label-g[data-tt-free-layer-id]'));
+    if(!nodes.length)return;
+    var anchor=root.querySelector('.player-token,.ball-token,.mv-path-g,.mv-preview');
+    nodes.forEach(function(n,i){n.__tt643DomOrder=i;});
+    nodes.sort(function(a,b){
+      var ai=layerOrderIndex(a.getAttribute('data-tt-free-layer-id')||'layer-1');
+      var bi=layerOrderIndex(b.getAttribute('data-tt-free-layer-id')||'layer-1');
+      if(ai!==bi)return bi-ai; // nedersta lager först, översta lager sist före spelare/boll
+      return (a.__tt643DomOrder||0)-(b.__tt643DomOrder||0);
+    });
+    nodes.forEach(function(n){
+      try{root.insertBefore(n,anchor||null);}catch(e){}
+    });
+  }
+  window.tt643ApplyFreeLayerDomOrder=applyFreeLayerDomOrder;
+
   function applyFreeLayerVisibilityToDom(){
     var root=document.getElementById('pitch-svg');
     if(!root)return;
@@ -2810,6 +2835,7 @@
       if(locked)nodes[i].setAttribute('data-tt-free-layer-locked','1');
       else nodes[i].removeAttribute('data-tt-free-layer-locked');
     }
+    applyFreeLayerDomOrder();
   }
   window.tt633ApplyFreeLayerVisibilityToDom=applyFreeLayerVisibilityToDom;
 
@@ -2995,6 +3021,8 @@
         + '<span class="tt631-layer-count">'+count+' objekt</span>'
         + '</div>'
         + '<button type="button" class="tt630-layer-active-btn" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'">'+(active?'Aktiv':'Välj')+'</button>'
+        + '<button type="button" data-tt630-action="up" '+(state.layers.indexOf(layer)===0?'disabled':'')+' title="Flytta lagret uppåt/framåt visuellt">Upp</button>'
+        + '<button type="button" data-tt630-action="down" '+(state.layers.indexOf(layer)===state.layers.length-1?'disabled':'')+' title="Flytta lagret nedåt/bakåt visuellt">Ned</button>'
         + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta hit</button>'
         + '<button type="button" data-tt630-action="copy" title="Kopiera hela lagret till ett nytt lager">Kopiera</button>'
         + '<button type="button" data-tt630-action="rename">Namn</button>'
@@ -3019,6 +3047,18 @@
     if(!layer)return;
     var action=btn.getAttribute('data-tt630-action');
     if(action==='active')state.activeId=layer.id;
+    if(action==='up' || action==='down'){
+      var idx=state.layers.indexOf(layer);
+      var ni=action==='up'?idx-1:idx+1;
+      if(idx>=0 && ni>=0 && ni<state.layers.length){
+        state.layers.splice(idx,1);
+        state.layers.splice(ni,0,layer);
+        applyFreeLayerVisibilityToDom();
+        try{if(typeof window.render==='function')window.render();}catch(e){}
+      }
+      render();
+      return;
+    }
     if(action==='moveSelected'){
       moveSelectedObjectToLayer(layer.id);
       return;
