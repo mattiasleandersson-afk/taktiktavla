@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v648 TEST: stegvis öga logikfix.
+  /* v650 TEST: stegvis öga synkas vid stegbyte.
      Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"648 TEST" !important;
+    content:"650 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,10 +1912,10 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v648">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v650">
   <details>
-    <summary><span>Lager TEST</span><span>v648</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 17. Taktikfilm har stegvis öga: Visa/Dold kan ändras för detta steg, framåt eller alla steg.</div>
+    <summary><span>Lager TEST</span><span>v650</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 20. Taktikfilm synkar ögat med aktivt steg: om lagret saknas i steget visas ögat av.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
     <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Ögat är stegvis i Taktikfilm: ändra detta steg, framåt eller alla steg.</div>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=649-deleted-layer-object-fix"></script>
+<script src="app_test.js?v=650-step-eye-sync-fix"></script>
 
 <script>
 (function(){
@@ -3239,6 +3239,30 @@
     render();
   }
 
+  function syncLayerPanelStateFromCurrentTaktikStep(){
+    var ctx=currentTaktikContext();
+    if(!ctx.tk||!Array.isArray(ctx.tk.steps)||!ctx.tk.steps[ctx.cur])return;
+    var snap=ctx.tk.steps[ctx.cur]||{};
+    for(var i=0;i<state.layers.length;i++){
+      var layer=state.layers[i];
+      if(!layer||!layer.id)continue;
+      var meta=getLayerMetaFromSnapshot(snap,layer.id);
+      var hasObjects=(countLayerObjectsInSnap(snap,layer.id)>0)||(countObjectsByLayer(layer.id)>0);
+      if(meta&&Object.prototype.hasOwnProperty.call(meta,'visible')){
+        layer.visible=meta.visible!==false;
+      }else{
+        // v650: om lagret inte finns i aktivt Taktikfilm-steg ska ögat visas som av,
+        // även om samma lager finns i andra steg. Planen var redan rätt; panelen var fel.
+        layer.visible=!!hasObjects;
+      }
+      if(meta&&Object.prototype.hasOwnProperty.call(meta,'locked')){
+        layer.locked=!!meta.locked;
+      }else if(!hasObjects){
+        layer.locked=false;
+      }
+    }
+  }
+
   function copyLayerToTaktikSteps(layer, mode){
     if(!layer)return;
     var tk=null;
@@ -3290,6 +3314,7 @@
 
   function render(){
     if(window.tt635EnsureFreeLayersFromCurrentObjects)window.tt635EnsureFreeLayersFromCurrentObjects();
+    syncLayerPanelStateFromCurrentTaktikStep();
     var list=document.getElementById('tt630-free-layer-list');
     if(!list)return;
     list.innerHTML=state.layers.map(function(layer){
