@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v662 TEST: trepunktsmeny stannar öppen, samma logik som v661.
+  /* v663 TEST: trepunktsmeny kontrollerad, samma logik som v661.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1777,7 +1777,7 @@
     font-size:.88rem;
   }
   #tt616-layer-panel .tt661-layer-menu{position:relative;}
-  #tt616-layer-panel .tt661-layer-menu summary{
+  #tt616-layer-panel .tt661-layer-menu-button{
     width:32px;
     height:32px;
     display:flex;
@@ -1791,7 +1791,7 @@
     font-weight:900;
     padding:0;
   }
-  #tt616-layer-panel .tt661-layer-menu[open] summary{
+  #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-layer-menu-button{
     background:rgba(255,216,74,.18);
     border-color:rgba(255,216,74,.72);
     color:#fff3ad;
@@ -1801,10 +1801,11 @@
     margin-top:7px;
     padding-top:7px;
     border-top:1px solid rgba(255,255,255,.1);
-    display:grid;
+    display:none;
     grid-template-columns:1fr 1fr;
     gap:6px;
   }
+  #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-layer-menu-panel{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
   #tt616-layer-panel .tt661-layer-menu-panel .tt661-wide{grid-column:1 / -1;}
   #tt616-layer-panel button[disabled]{opacity:.45;}
   #tt616-layer-panel button.tt621-layer-on{
@@ -2623,7 +2624,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=662-trepunktsmeny-fix"></script>
+<script src="app_test.js?v=663-trepunktsmeny-kontrollerad"></script>
 
 <script>
 (function(){
@@ -2764,6 +2765,7 @@
   var state={
     nextNum:3,
     activeId:'layer-1',
+    openMenuId:null,
     layers:[
       {id:'layer-1',name:'Lager 1',visible:true,locked:false},
       {id:'layer-2',name:'Lager 2',visible:true,locked:false}
@@ -3500,7 +3502,8 @@
           + '<span class="tt630-layer-meta">'+(active?'aktivt lager':'tryck för att välja')+' · '+esc(layerScopeText(layer))+'</span>'
           + '<span class="tt631-layer-count">'+count+' objekt</span>'
         + '</button>'
-        + '<details class="tt661-layer-menu"><summary aria-label="Fler val för '+esc(layer.name)+'">⋯</summary>'
+        + '<div class="tt661-layer-menu '+(state.openMenuId===layer.id?'tt663-menu-open':'')+'">'
+          + '<button type="button" class="tt661-layer-menu-button" data-tt630-action="menu" aria-expanded="'+(state.openMenuId===layer.id?'true':'false')+'" aria-label="Fler val för '+esc(layer.name)+'">⋯</button>'
           + '<div class="tt661-layer-menu-panel">'
             + '<button type="button" data-tt630-action="rename">Byt namn</button>'
             + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta hit</button>'
@@ -3517,7 +3520,7 @@
             + '<button type="button" data-tt630-action="lockAll" title="Lås lagret i alla steg">Lås alla</button>'
             + '<button type="button" data-tt630-action="unlockAll" title="Lås upp lagret i alla steg">Lås upp alla</button>'
           + '</div>'
-        + '</details>'
+        + '</div>'
         + '</div>';
     }).join('');
     applyFreeLayerVisibilityToDom();
@@ -3535,6 +3538,12 @@
     var layer=getLayer(row.getAttribute('data-tt630-layer-id'));
     if(!layer)return;
     var action=btn.getAttribute('data-tt630-action');
+    if(action==='menu'){
+      state.openMenuId=(state.openMenuId===layer.id?null:layer.id);
+      render();
+      return;
+    }
+    if(action!=='active')state.openMenuId=null;
     if(action==='active')state.activeId=layer.id;
     if(action==='up' || action==='down'){
       var idx=state.layers.indexOf(layer);
@@ -3643,6 +3652,7 @@
     var layer={id:id,name:'Lager '+state.nextNum,visible:true,locked:false,tt656EyeOn:true};
     state.layers.push(layer);
     state.activeId=id;
+    state.openMenuId=null;
     state.nextNum++;
     try{tt657MarkEyeOn(id);}catch(e){}
     try{saveCurrentStepLayerMeta(layer,{visible:true,locked:false,tt656EyeOn:true});}catch(e){}
@@ -3650,8 +3660,8 @@
   }
 
   function scheduleRender(ev){
-    // v662: låt trepunktsmenyn vara öppen. v661 renderade om panelen på mouseup/touchend
-    // efter att <details> öppnats, vilket gjorde att menyn stängdes direkt.
+    // v663: trepunktsmenyn är nu kontrollerad av state.openMenuId i stället för <details>,
+    // så den ska inte kunna stängas av en direkt omrendering.
     try{
       var t=ev && ev.target;
       if(t && t.closest && t.closest('#tt616-layer-panel .tt661-layer-menu'))return;
