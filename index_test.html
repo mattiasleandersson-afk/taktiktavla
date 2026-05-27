@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v613 fasta testfilnamn</title>
+<title>Taktiktavla TEST v646 lager räckvidd UI</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v645 TEST: fria lager till kommande steg.
+  /* v646 TEST: fria lager till kommande steg.
      Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1826,6 +1826,56 @@
     font-weight:700;
     margin-top:2px;
   }
+
+  #tt616-layer-panel .tt646-layer-scope-row{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    flex-wrap:wrap;
+    margin-top:4px;
+  }
+  #tt616-layer-panel .tt646-layer-scope-badge{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    padding:2px 7px;
+    font-size:.58rem;
+    font-weight:900;
+    letter-spacing:.25px;
+    border:1px solid rgba(143,185,154,.55);
+    color:#d9ffe3;
+    background:rgba(74,232,122,.08);
+    white-space:nowrap;
+  }
+  #tt616-layer-panel .tt646-layer-scope-step .tt646-layer-scope-badge{
+    color:#c8f7d2;
+    border-color:rgba(143,185,154,.55);
+    background:rgba(143,185,154,.08);
+  }
+  #tt616-layer-panel .tt646-layer-scope-forward .tt646-layer-scope-badge{
+    color:#fff0a8;
+    border-color:rgba(255,216,74,.7);
+    background:rgba(255,216,74,.12);
+  }
+  #tt616-layer-panel .tt646-layer-scope-all .tt646-layer-scope-badge{
+    color:#bfefff;
+    border-color:rgba(74,232,232,.72);
+    background:rgba(74,232,232,.12);
+  }
+  #tt616-layer-panel .tt646-layer-scope-help{
+    color:#8fb99a;
+    font-size:.56rem;
+    font-weight:700;
+    line-height:1.15;
+  }
+  #tt616-layer-panel .tt646-layer-action-hint{
+    display:block;
+    color:#7aaa88;
+    font-size:.55rem;
+    font-weight:700;
+    margin-top:3px;
+    line-height:1.15;
+  }
   #tt616-layer-panel .tt630-layer-add{
     width:100%;
     margin-top:8px;
@@ -1899,7 +1949,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"645 TEST" !important;
+    content:"646 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,13 +1962,13 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v645">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v646">
   <details>
-    <summary><span>Lager TEST</span><span>v645</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 15. Taktikfilm-lager kan få gemensam Visa/Lås-status över Framåt/Alla steg.</div>
+    <summary><span>Lager TEST</span><span>v646</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 16. Räckvidden visas tydligare: Steg, Framåt eller Alla steg.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas/kopieras via lager. Framåt/Alla steg kan nu synka Visa/Lås i Taktikfilm.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Etiketten visar om Visa/Lås gäller bara detta steg, från valt steg och framåt eller alla steg.</div>
   </details>
 </div>
 
@@ -1953,7 +2003,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">645 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">646 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2624,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=645-layer-shared-status"></script>
+<script src="app_test.js?v=646-layer-scope-ui"></script>
 
 <script>
 (function(){
@@ -3053,6 +3103,28 @@
     return 'bara detta steg';
   }
 
+
+  function layerScopeClass646(layer){
+    var s=(layer&&layer.scope)||'step';
+    if(s==='all')return 'tt646-layer-scope-all';
+    if(s==='forward')return 'tt646-layer-scope-forward';
+    return 'tt646-layer-scope-step';
+  }
+
+  function layerScopeBadge646(layer){
+    var s=(layer&&layer.scope)||'step';
+    if(s==='all')return 'Alla steg';
+    if(s==='forward')return 'Framåt';
+    return 'Steg';
+  }
+
+  function layerScopeHelp646(layer){
+    var s=(layer&&layer.scope)||'step';
+    if(s==='all')return 'Visa/Lås ändras i hela filmen';
+    if(s==='forward')return 'Visa/Lås ändras från kopieringssteget och framåt';
+    return 'Visa/Lås påverkar bara lagret i aktuellt steg';
+  }
+
   function setLayerMetaInSnapshot(snapshot, layerId, patch){
     if(!snapshot)return false;
     var fl=snapshot.freeLayers;
@@ -3155,11 +3227,12 @@
     if(!list)return;
     list.innerHTML=state.layers.map(function(layer){
       var active=layer.id===state.activeId;
-      var rowClass='tt616-layer-row'+(active?' tt630-layer-row-active':'');
+      var rowClass='tt616-layer-row '+layerScopeClass646(layer)+(active?' tt630-layer-row-active':'');
       var count=countObjectsByLayer(layer.id);
       return '<div class="'+rowClass+'" data-tt630-layer-id="'+esc(layer.id)+'">'
         + '<div class="tt616-layer-name">'+esc(layer.name)
         + '<span class="tt630-layer-meta">'+(active?'aktivt lager':'fritt lager')+' · '+esc(layerScopeText(layer))+'</span>'
+        + '<span class="tt646-layer-scope-row"><span class="tt646-layer-scope-badge">'+esc(layerScopeBadge646(layer))+'</span><span class="tt646-layer-scope-help">'+esc(layerScopeHelp646(layer))+'</span></span>'
         + '<span class="tt631-layer-count">'+count+' objekt</span>'
         + '</div>'
         + '<button type="button" class="tt630-layer-active-btn" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'">'+(active?'Aktiv':'Välj')+'</button>'
@@ -3167,8 +3240,8 @@
         + '<button type="button" data-tt630-action="down" '+(state.layers.indexOf(layer)===state.layers.length-1?'disabled':'')+' title="Flytta lagret nedåt/bakåt visuellt">Ned</button>'
         + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta hit</button>'
         + '<button type="button" data-tt630-action="copy" title="Kopiera hela lagret till ett nytt lager">Kopiera</button>'
-        + '<button type="button" data-tt630-action="copyForward" title="Taktikfilm: kopiera detta lager till alla kommande steg">Framåt</button>'
-        + '<button type="button" data-tt630-action="copyAllSteps" title="Taktikfilm: kopiera detta lager till alla steg">Alla steg</button>'
+        + '<button type="button" data-tt630-action="copyForward" title="Taktikfilm: kopiera lagret till kommande steg och märk räckvidden som Framåt">Framåt</button>'
+        + '<button type="button" data-tt630-action="copyAllSteps" title="Taktikfilm: kopiera lagret till alla steg och märk räckvidden som Alla steg">Alla steg</button>'
         + '<button type="button" data-tt630-action="rename">Namn</button>'
         + '<button type="button" class="'+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'">'+(layer.visible?'Visa':'Dold')+'</button>'
         + '<button type="button" class="'+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'">'+(layer.locked?'Låst':'Lås')+'</button>'
@@ -3264,7 +3337,7 @@
   function addLayer(ev){
     if(ev){ev.preventDefault();ev.stopPropagation();}
     var id='layer-'+state.nextNum;
-    state.layers.push({id:id,name:'Lager '+state.nextNum,visible:true,locked:false});
+    state.layers.push({id:id,name:'Lager '+state.nextNum,visible:true,locked:false,scope:'step',scopeStart:null});
     state.activeId=id;
     state.nextNum++;
     render();
