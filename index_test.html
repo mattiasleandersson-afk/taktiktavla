@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v654 TEST: Lager 1 öga på som standard i tomt steg.
+  /* v655 TEST: Lager 1 öga på som standard i tomt steg.
      Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"654 TEST" !important;
+    content:"655 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,13 +1912,13 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v653">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v655">
   <details>
-    <summary><span>Lager TEST</span><span>v653</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 22. Lager 1 är öga på som standard i tomt Taktikfilm-steg.</div>
+    <summary><span>Lager TEST</span><span>v655</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 23. Dolda lager slås på automatiskt när du ritar i dem.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Ögat är stegvis i Taktikfilm: ändra detta steg, framåt eller alla steg.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Om aktivt lager är dolt slås ögat på automatiskt när du ritar.</div>
   </details>
 </div>
 
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">654 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">655 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=654-layer1-default-eye-syncfix"></script>
+<script src="app_test.js?v=655-layer1-default-eye-syncfix"></script>
 
 <script>
 (function(){
@@ -3127,6 +3127,21 @@
     }catch(e){}
   }
 
+
+  function ensureLayerVisibleForDrawing(layerId){
+    layerId=layerId||state.activeId||'layer-1';
+    var layer=getLayer(layerId);
+    if(!layer)return;
+    var changed=layer.visible===false;
+    layer.visible=true;
+    try{saveCurrentStepLayerMeta(layer,{visible:true});}catch(e){}
+    try{applyFreeLayerVisibilityToDom();}catch(e){}
+    if(changed){
+      try{setTimeout(render,0);}catch(e){}
+    }
+  }
+  window.tt655EnsureLayerVisibleForDrawing=ensureLayerVisibleForDrawing;
+
   function setLayerNameAcrossTaktikSteps(layer){
     var ctx=currentTaktikContext();
     if(!ctx.tk||!Array.isArray(ctx.tk.steps)||!layer)return;
@@ -3454,9 +3469,11 @@
   function addLayer(ev){
     if(ev){ev.preventDefault();ev.stopPropagation();}
     var id='layer-'+state.nextNum;
-    state.layers.push({id:id,name:'Lager '+state.nextNum,visible:true,locked:false});
+    var layer={id:id,name:'Lager '+state.nextNum,visible:true,locked:false};
+    state.layers.push(layer);
     state.activeId=id;
     state.nextNum++;
+    try{saveCurrentStepLayerMeta(layer,{visible:true,locked:false});}catch(e){}
     render();
   }
 
