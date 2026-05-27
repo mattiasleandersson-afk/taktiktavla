@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=648-step-eye-logicfix"></script>
+<script src="app_test.js?v=649-deleted-layer-object-fix"></script>
 
 <script>
 (function(){
@@ -3099,6 +3099,18 @@
     return found;
   }
 
+
+  function getLayerMetaFromSnapshot(snapshot, layerId){
+    try{
+      var fl=snapshot&&snapshot.freeLayers;
+      var layers=fl&&Array.isArray(fl.layers)?fl.layers:[];
+      for(var i=0;i<layers.length;i++){
+        if(layers[i]&&layers[i].id===layerId)return layers[i];
+      }
+    }catch(e){}
+    return null;
+  }
+
   function saveCurrentStepLayerMeta(layer, patch){
     if(!layer)return;
     for(var k in patch){if(Object.prototype.hasOwnProperty.call(patch,k))layer[k]=patch[k];}
@@ -3177,6 +3189,8 @@
     try{snap=(typeof currentSnap==='function')?currentSnap():tk.steps[ctx.cur];}catch(e){snap=tk.steps[ctx.cur];}
     if(!snap)return false;
     if(countLayerObjectsInSnap(snap,layer.id)>0)return false;
+    var meta=getLayerMetaFromSnapshot(snap,layer.id);
+    if(meta&&meta.cleared===true)return false;
     var bundle=findLayerSourceBundle(tk,ctx.cur,layer.id,snap);
     if(bundleObjectCount(bundle)<1)return false;
     replaceLayerObjectsInStep(snap,layer.id,bundle);
@@ -3206,7 +3220,8 @@
     var materialized=0;
     for(var si=start;si<tk.steps.length;si++){
       if(!tk.steps[si])continue;
-      if(visible!==false && countLayerObjectsInSnap(tk.steps[si],layer.id)<1 && hasSource){
+      var stepMeta=getLayerMetaFromSnapshot(tk.steps[si],layer.id);
+      if(visible!==false && countLayerObjectsInSnap(tk.steps[si],layer.id)<1 && hasSource && !(stepMeta&&stepMeta.cleared===true)){
         replaceLayerObjectsInStep(tk.steps[si],layer.id,bundle);
         materialized++;
       }
