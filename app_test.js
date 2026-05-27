@@ -86,9 +86,9 @@ function getZoneColorChoiceV529(){
 }
 var freehandDrawing=false,freehandCurrent=null;
 
-/* v654 TEST: Lager 1 öga på som standard i tomt steg.
-   Bygger vidare från fungerande v649. App-logiken lämnas i övrigt orörd;
-   indexpanelen visar nu öga av när lagret saknas i aktivt Taktikfilm-steg.
+/* v655 TEST: synliggör aktivt lager vid ny ritning.
+   Bygger vidare från fungerande v654. Om användaren ritar i ett dolt lager
+   slås lagrets öga på i aktuellt steg så objektet syns direkt.
    Ingen Supabase och ingen recoveryändring. */
 function tt631ActiveFreeLayerId(){
   try{
@@ -99,6 +99,11 @@ function tt631ActiveFreeLayerId(){
 }
 function tt631MarkObjectLayer(obj){
   if(obj && !obj.layerId)obj.layerId=tt631ActiveFreeLayerId();
+  try{
+    if(obj && window.tt655EnsureLayerVisibleForDrawing){
+      window.tt655EnsureLayerVisibleForDrawing(obj.layerId||tt631ActiveFreeLayerId());
+    }
+  }catch(e){}
   return obj;
 }
 function tt634IsFreeLayerLocked(id){
