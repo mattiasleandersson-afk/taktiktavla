@@ -1869,7 +1869,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"639 TEST" !important;
+    content:"640 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1880,13 +1880,13 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v639">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v640">
   <details>
-    <summary><span>Lager TEST</span><span>v639</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 9. Lager kan kopieras som nytt fritt lager utan databasändring.</div>
+    <summary><span>Lager TEST</span><span>v640</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 10. Fixar att man kan rita ovanpå objekt i andra fria lager.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas till valfritt lager. Hela lager kan kopieras. Lagerdata följer med i testappens fildata.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas eller kopieras via lager. Ritläge kan starta ovanpå befintliga olåsta lagerobjekt.</div>
   </details>
 </div>
 
@@ -1894,7 +1894,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">639 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">640 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2515,7 +2515,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=639-fria-lager-kopiera-lager"></script>
+<script src="app_test.js?v=640-fria-lager-kopiera-lager"></script>
 
 <script>
 (function(){
@@ -2647,7 +2647,7 @@
 })();
 </script>
 
-<script id="tt639-free-layer-panel-script">
+<script id="tt640-free-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt630FreeLayerPanelInstalled)return;
@@ -2743,7 +2743,10 @@
       var visible=window.tt630IsLayerVisible(lid);
       var locked=window.tt630IsLayerLocked(lid);
       nodes[i].style.display=visible?'':'none';
-      nodes[i].style.pointerEvents=locked?'none':'';
+      var m='';
+      try{m=String(window.mode||'move');}catch(e){}
+      var drawingMode=(m==='arrow'||m==='text'||m==='freehand'||m==='zone');
+      nodes[i].style.pointerEvents=(locked||drawingMode)?'none':'';
       nodes[i].style.filter=locked?'grayscale(.12) saturate(.9)':'';
       if(locked)nodes[i].setAttribute('data-tt-free-layer-locked','1');
       else nodes[i].removeAttribute('data-tt-free-layer-locked');
