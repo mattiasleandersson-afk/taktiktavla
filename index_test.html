@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v663 TEST: trepunktsmeny kontrollerad, samma logik som v661.
+  /* v664 TEST: Visa alla/framåt hämtar från aktivt steg, byggd från fungerande v663.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -2624,7 +2624,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=663-trepunktsmeny-kontrollerad"></script>
+<script src="app_test.js?v=664-visa-alla-fran-aktivt-steg"></script>
 
 <script>
 (function(){
@@ -3326,32 +3326,42 @@
     }
     var curSnap=null;
     try{curSnap=(typeof currentSnap==='function')?currentSnap():tk.steps[ctx.cur];}catch(e){curSnap=tk.steps[ctx.cur];}
-    var bundle=findLayerSourceBundle(tk,ctx.cur,layer.id,curSnap);
+
+    // v664: Visa alla / Visa framåt ska utgå från det lagerinnehåll som finns
+    // på AKTIVT steg, inte från närmaste tidigare källa. Annars kunde "Visa alla"
+    // fortsätta sprida pil 1 från steg 1 även när användaren stod på steg 2 och
+    // hade ritat pil 2 i samma lager.
+    var bundle=objectsFromSnapByLayer(curSnap,layer.id);
     var hasSource=bundleObjectCount(bundle)>0;
     if(visible!==false && !hasSource){
-      alert('Lagret är tomt. Rita något i lagret först.');
+      alert('Lagret är tomt i det här steget. Visa alla/framåt utgår från objekt som finns på aktivt steg.');
       return;
     }
+
     var start=(mode==='forward')?ctx.cur:0;
     var changed=0;
     var materialized=0;
     for(var si=start;si<tk.steps.length;si++){
       if(!tk.steps[si])continue;
       var stepMeta=getLayerMetaFromSnapshot(tk.steps[si],layer.id);
-      if(visible!==false && countLayerObjectsInSnap(tk.steps[si],layer.id)<1 && hasSource && !(stepMeta&&stepMeta.cleared===true)){
+      if(visible!==false && hasSource && !(stepMeta&&stepMeta.cleared===true)){
         replaceLayerObjectsInStep(tk.steps[si],layer.id,bundle);
         materialized++;
       }
-      if(setLayerMetaInSnapshot(tk.steps[si],layer,{visible:visible!==false}))changed++;
+      if(setLayerMetaInSnapshot(tk.steps[si],layer,{visible:visible!==false,tt656EyeOn:visible!==false}))changed++;
     }
     if(visible!==false){
       layer.visible=true;
-      if(countObjectsByLayer(layer.id)<1 && hasSource)replaceLayerObjectsInGlobals(layer.id,bundle);
+      layer.tt656EyeOn=true;
+      try{tt657MarkEyeOn(layer.id);}catch(e){}
+      replaceLayerObjectsInGlobals(layer.id,bundle);
     }else{
       layer.visible=false;
+      layer.tt656EyeOn=false;
+      try{tt657ClearEyeOn(layer.id);}catch(e){}
     }
-    try{if(ctx.tk && ctx.tk.steps && ctx.tk.steps[ctx.cur])setLayerMetaInSnapshot(ctx.tk.steps[ctx.cur],layer,{visible:visible!==false});}catch(e){}
-    try{if(typeof window.showToast==='function')window.showToast((visible!==false?'Visar':'Döljer')+' lager i '+changed+' steg'+(materialized?' · hämtat till '+materialized+' steg':''));}catch(e){}
+    try{if(ctx.tk && ctx.tk.steps && ctx.tk.steps[ctx.cur])setLayerMetaInSnapshot(ctx.tk.steps[ctx.cur],layer,{visible:visible!==false,tt656EyeOn:visible!==false});}catch(e){}
+    try{if(typeof window.showToast==='function')window.showToast((visible!==false?'Visar':'Döljer')+' lager i '+changed+' steg'+(materialized?' · uppdaterat från aktivt steg i '+materialized+' steg':''));}catch(e){}
     try{if(typeof window.render==='function')window.render();}catch(e){}
     render();
   }
