@@ -1693,15 +1693,17 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v635 TEST: fria lager sparas i fil + versionsfix.
+  /* v636 TEST: fria lager namn + panelplacering.
      Visa/Dold och Lås/Låst per fritt lager påverkar nu pilar, text, frihand och zoner i aktuell session.
      Ingen sparning, ingen localStorage, ingen render-wrapper och ingen recoveryändring. */
   #tt616-layer-panel{
     position:fixed;
     right:calc(env(safe-area-inset-right,0px) + 10px);
-    bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+    top:calc(env(safe-area-inset-top,0px) + 58px);
     z-index:99990;
-    width:min(270px, calc(100vw - 20px));
+    width:min(300px, calc(100vw - 20px));
+    max-height:calc(100vh - 86px);
+    overflow:auto;
     background:rgba(8,24,14,.96);
     border:1px solid rgba(74,232,122,.42);
     border-radius:14px;
@@ -1734,7 +1736,7 @@
   #tt616-layer-panel .tt616-layer-row{
     margin-top:8px;
     display:grid;
-    grid-template-columns:1fr auto auto;
+    grid-template-columns:1fr auto auto auto auto;
     align-items:center;
     gap:6px;
     background:rgba(255,255,255,.04);
@@ -1846,8 +1848,10 @@
     #tt616-layer-panel{
       left:10px;
       right:10px;
-      bottom:10px;
+      top:calc(env(safe-area-inset-top,0px) + 56px);
+      bottom:auto;
       width:auto;
+      max-height:42vh;
       padding:8px;
     }
   }
@@ -1865,7 +1869,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"635 TEST" !important;
+    content:"636 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1876,13 +1880,13 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v635">
-  <details open>
-    <summary><span>Lager TEST</span><span>v635</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 5. Lagerstatus och layerId sparas nu försiktigt i filens data vid vanlig sparning.</div>
+<div id="tt616-layer-panel" aria-label="Lager testpanel v636">
+  <details>
+    <summary><span>Lager TEST</span><span>v636</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 6. Panelen ligger nu upptill så den inte täcker Spara, och lagernamn kan ändras.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Visa/Dold och Lås/Låst påverkar objekt i respektive lager. Lagerstatus följer med när fildata sparas/laddas i testappen.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Visa/Dold, Lås/Låst och lagernamn följer med när fildata sparas/laddas i testappen.</div>
   </details>
 </div>
 
@@ -1890,7 +1894,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">635 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">636 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2511,7 +2515,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=635-fria-lager-sparning-versionfix"></script>
+<script src="app_test.js?v=636-fria-lager-namn-panelfix"></script>
 
 <script>
 (function(){
@@ -2643,7 +2647,7 @@
 })();
 </script>
 
-<script id="tt635-free-layer-panel-script">
+<script id="tt636-free-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt630FreeLayerPanelInstalled)return;
@@ -2789,6 +2793,7 @@
         + '<span class="tt631-layer-count">'+count+' objekt</span>'
         + '</div>'
         + '<button type="button" class="tt630-layer-active-btn" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'">'+(active?'Aktiv':'Välj')+'</button>'
+        + '<button type="button" data-tt630-action="rename">Namn</button>'
         + '<button type="button" class="'+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'">'+(layer.visible?'Visa':'Dold')+'</button>'
         + '<button type="button" class="'+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'">'+(layer.locked?'Låst':'Lås')+'</button>'
         + '</div>';
@@ -2809,6 +2814,13 @@
     if(!layer)return;
     var action=btn.getAttribute('data-tt630-action');
     if(action==='active')state.activeId=layer.id;
+    if(action==='rename'){
+      var name=window.prompt('Nytt lagernamn', layer.name || 'Lager');
+      if(name!==null){
+        name=String(name).trim();
+        if(name)layer.name=name.slice(0,40);
+      }
+    }
     if(action==='visible')layer.visible=!layer.visible;
     if(action==='locked')layer.locked=!layer.locked;
     render();
