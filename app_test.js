@@ -86,9 +86,9 @@ function getZoneColorChoiceV529(){
 }
 var freehandDrawing=false,freehandCurrent=null;
 
-/* v646 TEST: fria lager gemensam status i Taktikfilm.
-   Bygger vidare från fungerande v644. App-logiken lämnas i övrigt orörd;
-   indexpanelen synkar Visa/Lås för lager som kopierats Framåt/Alla steg.
+/* v646 TEST: Taktikfilm-lager räckvidd UI.
+   Bygger vidare från fungerande v645. App-logiken lämnas i övrigt orörd;
+   indexpanelen får tydligare räckvidd och ett säkert Omfång-val för gemensam Visa/Lås-status.
    Ingen Supabase och ingen recoveryändring. */
 function tt631ActiveFreeLayerId(){
   try{
