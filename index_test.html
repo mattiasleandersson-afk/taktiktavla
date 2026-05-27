@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v643 TEST: fria lager + mobil toggle för lagerpanelen.
+  /* v644 TEST: fria lager till kommande steg.
      Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"643 TEST" !important;
+    content:"644 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,10 +1912,10 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v643">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v644">
   <details>
-    <summary><span>Lager TEST</span><span>v643</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 13. Lager kan flyttas upp/ned i visuell ordning.</div>
+    <summary><span>Lager TEST</span><span>v644</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 14. Lager kan kopieras till kommande steg i Taktikfilm.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
     <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas/kopieras via lager. Upp/Ned styr den visuella lagerordningen.</div>
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">643 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">644 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=643-lagerpanel-iphone-toggle"></script>
+<script src="app_test.js?v=644-free-layer-forward-steps"></script>
 
 <script>
 (function(){
@@ -3007,6 +3007,76 @@
     }
   }
 
+
+  function cloneSimple(obj){
+    return JSON.parse(JSON.stringify(obj||{}));
+  }
+
+  function objectsFromSnapByLayer(snap, layerId){
+    snap=snap||{};
+    function pick(name){
+      var arr=Array.isArray(snap[name])?snap[name]:[];
+      return arr.filter(function(o){return ((o&&o.layerId)||'layer-1')===layerId;}).map(cloneSimple);
+    }
+    return {arrows:pick('arrows'),labels:pick('labels'),freehandPaths:pick('freehandPaths'),zones:pick('zones')};
+  }
+
+  function replaceLayerObjectsInStep(step, layerId, bundle){
+    if(!step)return;
+    ['arrows','labels','freehandPaths','zones'].forEach(function(name){
+      var existing=Array.isArray(step[name])?step[name]:[];
+      var incoming=Array.isArray(bundle&&bundle[name])?bundle[name]:[];
+      step[name]=existing.filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;}).concat(incoming.map(cloneSimple));
+    });
+    try{step.freeLayers=window.tt635GetFreeLayersSnapshot?window.tt635GetFreeLayersSnapshot():step.freeLayers;}catch(e){}
+  }
+
+  function copyLayerToTaktikSteps(layer, mode){
+    if(!layer)return;
+    var tk=null;
+    try{tk=(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null && window.taktikFilmer)?window.taktikFilmer[editingTaktikIdx]:null;}catch(e){tk=null;}
+    if(!tk||!Array.isArray(tk.steps)){
+      alert('Detta fungerar bara när du redigerar en Taktikfilm.');
+      return;
+    }
+    var cur=0;
+    try{cur=(typeof editingStepIdx==='number')?editingStepIdx:0;}catch(e){cur=0;}
+    if(!tk.steps[cur]){
+      alert('Hittar inte aktivt steg.');
+      return;
+    }
+    var snap=null;
+    try{snap=(typeof currentSnap==='function')?currentSnap():tk.steps[cur];}catch(e){snap=tk.steps[cur];}
+    if(!snap)return;
+    var bundle=objectsFromSnapByLayer(snap, layer.id);
+    var count=(bundle.arrows.length+bundle.labels.length+bundle.freehandPaths.length+bundle.zones.length);
+    if(count<1){
+      alert('Lagret är tomt i aktivt steg.');
+      return;
+    }
+    var start=mode==='all'?0:cur+1;
+    if(start>=tk.steps.length){
+      alert('Det finns inget kommande steg att kopiera till.');
+      return;
+    }
+    var msg=mode==='all'
+      ? 'Kopiera lagret "'+(layer.name||'Lager')+'" till alla steg i filmen? Lagrets gamla innehåll i andra steg ersätts.'
+      : 'Kopiera lagret "'+(layer.name||'Lager')+'" till alla kommande steg? Lagrets gamla innehåll i kommande steg ersätts.';
+    if(!confirm(msg))return;
+    try{if(typeof saveTaktikUndo==='function')saveTaktikUndo();}catch(e){}
+    tk.steps[cur]=snap;
+    var changed=0;
+    for(var si=start;si<tk.steps.length;si++){
+      if(!tk.steps[si])continue;
+      if(mode==='all' && si===cur)continue;
+      replaceLayerObjectsInStep(tk.steps[si], layer.id, bundle);
+      changed++;
+    }
+    try{if(typeof cloudStatus==='function')cloudStatus('✅ Lager kopierat till '+changed+' steg','#4ae87a');}catch(e){}
+    try{if(typeof showToast==='function')showToast('Lager kopierat till '+changed+' steg');}catch(e){}
+    render();
+  }
+
   function render(){
     if(window.tt635EnsureFreeLayersFromCurrentObjects)window.tt635EnsureFreeLayersFromCurrentObjects();
     var list=document.getElementById('tt630-free-layer-list');
@@ -3025,6 +3095,8 @@
         + '<button type="button" data-tt630-action="down" '+(state.layers.indexOf(layer)===state.layers.length-1?'disabled':'')+' title="Flytta lagret nedåt/bakåt visuellt">Ned</button>'
         + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta hit</button>'
         + '<button type="button" data-tt630-action="copy" title="Kopiera hela lagret till ett nytt lager">Kopiera</button>'
+        + '<button type="button" data-tt630-action="copyForward" title="Taktikfilm: kopiera detta lager till alla kommande steg">Framåt</button>'
+        + '<button type="button" data-tt630-action="copyAllSteps" title="Taktikfilm: kopiera detta lager till alla steg">Alla steg</button>'
         + '<button type="button" data-tt630-action="rename">Namn</button>'
         + '<button type="button" class="'+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'">'+(layer.visible?'Visa':'Dold')+'</button>'
         + '<button type="button" class="'+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'">'+(layer.locked?'Låst':'Lås')+'</button>'
@@ -3065,6 +3137,14 @@
     }
     if(action==='copy'){
       copyLayer(layer);
+      return;
+    }
+    if(action==='copyForward'){
+      copyLayerToTaktikSteps(layer,'forward');
+      return;
+    }
+    if(action==='copyAllSteps'){
+      copyLayerToTaktikSteps(layer,'all');
       return;
     }
     if(action==='rename'){
