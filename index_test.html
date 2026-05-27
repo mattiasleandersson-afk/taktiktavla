@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v660 TEST: lås framåt/alla även i tomma steg.
+  /* v661 TEST: kompakt lagerpanel, samma logik som v661.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1735,18 +1735,21 @@
   #tt616-layer-panel .tt616-layer-row{
     margin-top:8px;
     display:grid;
-    grid-template-columns:1fr auto auto auto auto auto;
+    grid-template-columns:auto auto minmax(0,1fr) auto;
     align-items:center;
     gap:6px;
     background:rgba(255,255,255,.04);
     border:1px solid rgba(255,255,255,.08);
     border-radius:10px;
     padding:7px;
+    position:relative;
   }
   #tt616-layer-panel .tt616-layer-name{
     font-size:.78rem;
     font-weight:800;
     color:#edf5ee;
+    min-width:0;
+    text-align:left;
   }
   #tt616-layer-panel button{
     border:1px solid rgba(74,232,122,.32);
@@ -1756,7 +1759,53 @@
     padding:5px 7px;
     font-weight:800;
     font-size:.72rem;
+    touch-action:manipulation;
   }
+  #tt616-layer-panel .tt661-layer-title{
+    width:100%;
+    min-width:0;
+    border-color:transparent;
+    background:transparent;
+    padding:3px 4px;
+    color:#edf5ee;
+  }
+  #tt616-layer-panel .tt661-layer-title .tt616-layer-name{display:block;}
+  #tt616-layer-panel .tt661-layer-icon{
+    min-width:34px;
+    height:32px;
+    padding:0 6px;
+    font-size:.88rem;
+  }
+  #tt616-layer-panel .tt661-layer-menu{position:relative;}
+  #tt616-layer-panel .tt661-layer-menu summary{
+    width:32px;
+    height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid rgba(74,232,122,.32);
+    background:rgba(13,46,25,.86);
+    color:#bdf5c8;
+    border-radius:8px;
+    font-size:1.05rem;
+    font-weight:900;
+    padding:0;
+  }
+  #tt616-layer-panel .tt661-layer-menu[open] summary{
+    background:rgba(255,216,74,.18);
+    border-color:rgba(255,216,74,.72);
+    color:#fff3ad;
+  }
+  #tt616-layer-panel .tt661-layer-menu-panel{
+    grid-column:1 / -1;
+    margin-top:7px;
+    padding-top:7px;
+    border-top:1px solid rgba(255,255,255,.1);
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+  }
+  #tt616-layer-panel .tt661-layer-menu-panel .tt661-wide{grid-column:1 / -1;}
   #tt616-layer-panel button[disabled]{opacity:.45;}
   #tt616-layer-panel button.tt621-layer-on{
     background:rgba(74,232,122,.18);
@@ -1899,7 +1948,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"660 TEST" !important;
+    content:"661 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,13 +1961,13 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v660">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v661">
   <details>
-    <summary><span>Lager TEST</span><span>v660</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 25. Nytt lager och ritning i dolt lager slår på ögat i aktuellt steg.</div>
+    <summary><span>Lager</span><span>v661</span></summary>
+    <div class="tt616-layer-sub">Kompakt rad: öga, lås, namn och meny. Samma lagerlogik som v661.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Ritar du i ett dolt lager slås ögat på automatiskt.</div>
+    <div class="tt616-layer-note">Tryck ⋯ för fler val: visa/dölj framåt/alla, lås framåt/alla, flytta, kopiera, byt namn och ta bort.</div>
   </details>
 </div>
 
@@ -1953,7 +2002,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">660 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">661 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2623,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=660-lager-las-framat-tomma-steg-fix"></script>
+<script src="app_test.js?v=661-kompakt-lagerpanel"></script>
 
 <script>
 (function(){
@@ -3055,7 +3104,7 @@
         byId[old.id]=target;
         continue;
       }
-      // v660: behåll stegspecifik status när objekt materialiseras i ett tomt steg.
+      // v661: behåll stegspecifik status när objekt materialiseras i ett tomt steg.
       // Annars kunde Lås framåt/alla skrivas över av global panelstatus när ögat slogs på.
       ['visible','locked','cleared','tt656EyeOn'].forEach(function(k){
         if(Object.prototype.hasOwnProperty.call(old,k))target[k]=old[k];
@@ -3442,28 +3491,33 @@
       var active=layer.id===state.activeId;
       var rowClass='tt616-layer-row'+(active?' tt630-layer-row-active':'');
       var count=countObjectsByLayer(layer.id);
+      var idx=state.layers.indexOf(layer);
       return '<div class="'+rowClass+'" data-tt630-layer-id="'+esc(layer.id)+'">'
-        + '<div class="tt616-layer-name">'+esc(layer.name)
-        + '<span class="tt630-layer-meta">'+(active?'aktivt lager':'fritt lager')+' · '+esc(layerScopeText(layer))+'</span>'
-        + '<span class="tt631-layer-count">'+count+' objekt</span>'
-        + '</div>'
-        + '<button type="button" class="tt630-layer-active-btn" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'">'+(active?'Aktiv':'Välj')+'</button>'
-        + '<button type="button" data-tt630-action="up" '+(state.layers.indexOf(layer)===0?'disabled':'')+' title="Flytta lagret uppåt/framåt visuellt">Upp</button>'
-        + '<button type="button" data-tt630-action="down" '+(state.layers.indexOf(layer)===state.layers.length-1?'disabled':'')+' title="Flytta lagret nedåt/bakåt visuellt">Ned</button>'
-        + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta hit</button>'
-        + '<button type="button" data-tt630-action="copy" title="Kopiera hela lagret till ett nytt lager">Kopiera</button>'
-        + '<button type="button" data-tt630-action="rename">Namn</button>'
-        + '<button type="button" class="'+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'" title="Växla öga bara i aktuellt steg">'+(layer.visible?'👁':'Öga av')+'</button>'
-        + '<button type="button" data-tt630-action="showForward" title="Öppna ögat från aktuellt steg och framåt. Om lagret saknas i ett steg hämtas samma lager dit.">Visa framåt</button>'
-        + '<button type="button" data-tt630-action="hideForward" title="Stäng ögat från aktuellt steg och framåt.">Dölj framåt</button>'
-        + '<button type="button" data-tt630-action="showAll" title="Öppna ögat i alla steg. Om lagret saknas i ett steg hämtas samma lager dit.">Visa alla</button>'
-        + '<button type="button" data-tt630-action="hideAll" title="Stäng ögat i alla steg.">Dölj alla</button>'
-        + '<button type="button" class="'+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'" title="Låsning gäller aktuellt steg">'+(layer.locked?'Låst':'Lås')+'</button>'
-        + '<button type="button" data-tt630-action="lockForward" title="Lås lagret från aktuellt steg och framåt">Lås framåt</button>'
-        + '<button type="button" data-tt630-action="unlockForward" title="Lås upp lagret från aktuellt steg och framåt">Lås upp framåt</button>'
-        + '<button type="button" data-tt630-action="lockAll" title="Lås lagret i alla steg">Lås alla</button>'
-        + '<button type="button" data-tt630-action="unlockAll" title="Lås upp lagret i alla steg">Lås upp alla</button>'
-        + '<button type="button" data-tt630-action="delete" '+(state.layers.length<2?'disabled':'')+' title="Ta bort lagret. Om lagret innehåller objekt får du en extra bekräftelse.">Ta bort</button>'
+        + '<button type="button" class="tt661-layer-icon '+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'" title="Visa/dölj detta lager i aktuellt steg">'+(layer.visible?'👁':'○')+'</button>'
+        + '<button type="button" class="tt661-layer-icon '+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'" title="Lås/lås upp detta lager i aktuellt steg">'+(layer.locked?'🔒':'🔓')+'</button>'
+        + '<button type="button" class="tt661-layer-title '+(active?'tt630-layer-active-btn':'')+'" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'" title="Välj aktivt lager">'
+          + '<span class="tt616-layer-name">'+esc(layer.name)+'</span>'
+          + '<span class="tt630-layer-meta">'+(active?'aktivt lager':'tryck för att välja')+' · '+esc(layerScopeText(layer))+'</span>'
+          + '<span class="tt631-layer-count">'+count+' objekt</span>'
+        + '</button>'
+        + '<details class="tt661-layer-menu"><summary aria-label="Fler val för '+esc(layer.name)+'">⋯</summary>'
+          + '<div class="tt661-layer-menu-panel">'
+            + '<button type="button" data-tt630-action="rename">Byt namn</button>'
+            + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta hit</button>'
+            + '<button type="button" data-tt630-action="copy" title="Kopiera hela lagret till ett nytt fristående lager">Kopiera lager</button>'
+            + '<button type="button" data-tt630-action="delete" '+(state.layers.length<2?'disabled':'')+' title="Ta bort lagret. Om lagret innehåller objekt får du en extra bekräftelse.">Ta bort</button>'
+            + '<button type="button" data-tt630-action="up" '+(idx===0?'disabled':'')+' title="Flytta lagret uppåt/framåt visuellt">Upp</button>'
+            + '<button type="button" data-tt630-action="down" '+(idx===state.layers.length-1?'disabled':'')+' title="Flytta lagret nedåt/bakåt visuellt">Ned</button>'
+            + '<button type="button" data-tt630-action="showForward" title="Öppna ögat från aktuellt steg och framåt. Om lagret saknas i ett steg hämtas samma lager dit.">Visa framåt</button>'
+            + '<button type="button" data-tt630-action="hideForward" title="Stäng ögat från aktuellt steg och framåt.">Dölj framåt</button>'
+            + '<button type="button" data-tt630-action="showAll" title="Öppna ögat i alla steg. Om lagret saknas i ett steg hämtas samma lager dit.">Visa alla</button>'
+            + '<button type="button" data-tt630-action="hideAll" title="Stäng ögat i alla steg.">Dölj alla</button>'
+            + '<button type="button" data-tt630-action="lockForward" title="Lås lagret från aktuellt steg och framåt">Lås framåt</button>'
+            + '<button type="button" data-tt630-action="unlockForward" title="Lås upp lagret från aktuellt steg och framåt">Lås upp framåt</button>'
+            + '<button type="button" data-tt630-action="lockAll" title="Lås lagret i alla steg">Lås alla</button>'
+            + '<button type="button" data-tt630-action="unlockAll" title="Lås upp lagret i alla steg">Lås upp alla</button>'
+          + '</div>'
+        + '</details>'
         + '</div>';
     }).join('');
     applyFreeLayerVisibilityToDom();
