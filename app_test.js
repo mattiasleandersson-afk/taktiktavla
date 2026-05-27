@@ -43083,3 +43083,84 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);}
 })();
 /* === slut v689 TEST === */
+
+
+
+/* === v690 TEST: avstånd mellan stegknappar och Nytt steg-ruta ===
+   Bas: v689 TEST.
+   Endast layout: flyttar ner den befintliga stegrutan/knappraden så ny Info/Kopiera-rad inte överlappar.
+*/
+(function(){
+  'use strict';
+  if(window.__tt690StepActionsSpacingInstalled)return;
+  window.__tt690StepActionsSpacingInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+
+  function ensureCss(){
+    if(byId('tt690-step-actions-spacing-css'))return;
+    var st=document.createElement('style');
+    st.id='tt690-step-actions-spacing-css';
+    st.textContent=[
+      'body.tt688-taktikfilm-editor-active #tt689-step-actions{',
+      '  position:relative!important;',
+      '  z-index:30!important;',
+      '  margin-top:8px!important;',
+      '  margin-bottom:8px!important;',
+      '  clear:both!important;',
+      '}',
+      'body.tt688-taktikfilm-editor-active #edit-taktik-steps{',
+      '  position:relative!important;',
+      '  z-index:10!important;',
+      '  clear:both!important;',
+      '  margin-top:8px!important;',
+      '}',
+      'body.tt688-taktikfilm-editor-active #edit-taktik-ui .tt690-step-spacer{',
+      '  display:block!important;',
+      '  height:10px!important;',
+      '  flex:0 0 10px!important;',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function ensureSpacer(){
+    var row=byId('tt689-step-actions');
+    var list=byId('edit-taktik-steps');
+    if(!row||!list||!row.parentNode)return;
+    var sp=byId('tt690-step-spacer');
+    if(!sp){
+      sp=document.createElement('div');
+      sp.id='tt690-step-spacer';
+      sp.className='tt690-step-spacer';
+    }
+    if(sp.parentNode!==row.parentNode || sp.nextSibling!==list){
+      row.parentNode.insertBefore(sp,list);
+    }
+  }
+
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v690 stegknappar avstånd';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='690 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v690 TEST';
+    }catch(e){}
+  }
+
+  function tick(){
+    ensureCss();
+    ensureSpacer();
+    setVersion();
+  }
+
+  ['click','touchend','resize','orientationchange'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(tick,80);},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);});
+  else{setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);}
+})();
+/* === slut v690 TEST === */
