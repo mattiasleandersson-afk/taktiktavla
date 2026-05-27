@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v659 TEST: låsning per steg framåt/alla.
+  /* v660 TEST: lås framåt/alla även i tomma steg.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"659 TEST" !important;
+    content:"660 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,9 +1912,9 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v659">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v660">
   <details>
-    <summary><span>Lager TEST</span><span>v659</span></summary>
+    <summary><span>Lager TEST</span><span>v660</span></summary>
     <div class="tt616-layer-sub">Fria lager steg 25. Nytt lager och ritning i dolt lager slår på ögat i aktuellt steg.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">659 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">660 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=659-lager-las-framat-alla"></script>
+<script src="app_test.js?v=660-lager-las-framat-tomma-steg-fix"></script>
 
 <script>
 (function(){
@@ -3037,6 +3037,36 @@
     return JSON.parse(JSON.stringify(obj||{}));
   }
 
+  function mergeFreeLayersKeepingStepMeta(oldFreeLayers, freshFreeLayers){
+    var fresh=cloneSimple(freshFreeLayers||{activeId:state.activeId||'layer-1',nextNum:state.nextNum||3,layers:cloneLayers(state.layers)});
+    if(!Array.isArray(fresh.layers))fresh.layers=[];
+    var oldLayers=(oldFreeLayers&&Array.isArray(oldFreeLayers.layers))?oldFreeLayers.layers:[];
+    var byId={};
+    for(var i=0;i<fresh.layers.length;i++){
+      if(fresh.layers[i]&&fresh.layers[i].id)byId[fresh.layers[i].id]=fresh.layers[i];
+    }
+    for(var j=0;j<oldLayers.length;j++){
+      var old=oldLayers[j];
+      if(!old||!old.id)continue;
+      var target=byId[old.id];
+      if(!target){
+        target=cloneSimple(old);
+        fresh.layers.push(target);
+        byId[old.id]=target;
+        continue;
+      }
+      // v660: behåll stegspecifik status när objekt materialiseras i ett tomt steg.
+      // Annars kunde Lås framåt/alla skrivas över av global panelstatus när ögat slogs på.
+      ['visible','locked','cleared','tt656EyeOn'].forEach(function(k){
+        if(Object.prototype.hasOwnProperty.call(old,k))target[k]=old[k];
+      });
+      if(old.name)target.name=old.name;
+    }
+    fresh.activeId=(oldFreeLayers&&oldFreeLayers.activeId)||fresh.activeId||state.activeId||'layer-1';
+    fresh.nextNum=Math.max((fresh.nextNum||3),(oldFreeLayers&&oldFreeLayers.nextNum)||3,state.nextNum||3);
+    return fresh;
+  }
+
   function objectsFromSnapByLayer(snap, layerId){
     snap=snap||{};
     function pick(name){
@@ -3048,12 +3078,17 @@
 
   function replaceLayerObjectsInStep(step, layerId, bundle){
     if(!step)return;
+    var oldFreeLayers=null;
+    try{oldFreeLayers=step.freeLayers?cloneSimple(step.freeLayers):null;}catch(e){oldFreeLayers=null;}
     ['arrows','labels','freehandPaths','zones'].forEach(function(name){
       var existing=Array.isArray(step[name])?step[name]:[];
       var incoming=Array.isArray(bundle&&bundle[name])?bundle[name]:[];
       step[name]=existing.filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;}).concat(incoming.map(cloneSimple));
     });
-    try{step.freeLayers=window.tt635GetFreeLayersSnapshot?window.tt635GetFreeLayersSnapshot():step.freeLayers;}catch(e){}
+    try{
+      var fresh=window.tt635GetFreeLayersSnapshot?window.tt635GetFreeLayersSnapshot():step.freeLayers;
+      step.freeLayers=mergeFreeLayersKeepingStepMeta(oldFreeLayers,fresh);
+    }catch(e){}
   }
 
   function currentTaktikContext(){
@@ -3282,7 +3317,7 @@
     var changed=0;
     for(var si=start;si<tk.steps.length;si++){
       if(!tk.steps[si])continue;
-      if(setLayerMetaInSnapshot(tk.steps[si],layer,{locked:locked===true}))changed++;
+      if(setLayerMetaInSnapshot(tk.steps[si],layer,{locked:locked===true,tt660LockStamped:true}))changed++;
     }
     layer.locked=locked===true;
     try{if(ctx.tk && ctx.tk.steps && ctx.tk.steps[ctx.cur])setLayerMetaInSnapshot(ctx.tk.steps[ctx.cur],layer,{locked:locked===true});}catch(e){}
