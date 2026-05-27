@@ -42286,6 +42286,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var edit=document.getElementById('edit-taktik-ui');if(edit)edit.style.display='block';
   }catch(e){}}
   function unlockAfterRestore(tk,stepIdx){try{
+    if(window.tt688EnterTaktikfilmEditor){
+      window.tt688EnterTaktikfilmEditor(tk,{stepIdx:stepIdx});
+      return;
+    }
     hideBlockingModals();
     ensureTaktikPanel();
     if(typeof taktikFilmer!=='undefined'&&Array.isArray(taktikFilmer)){
@@ -42490,206 +42494,309 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Lagerpanelens Visa/Dold styr nu objekt i respektive fritt lager i aktuell session.
    Ingen permanent sparning, ingen Supabase, ingen recoveryändring och ingen produktionsändring.
 === slut v633 === */
-/* === v687 TEST: Taktikfilm Avsluta tillbaka till listläge ===
-   Bas: app_test.js v684 rollback (= v680 app). Indexbas: v684 rollback (= v681 index).
-   Smal fix: återbind Avsluta, Info, Kopiera/Klistra steg och dölj lagerpanel i Taktikfilm-listläge.
-   Rör inte ritvalsplacering, fullscreen eller ny planrotation.
+
+
+
+/* === v688 TEST: central Taktikfilm-redigeringsstate cleanup ===
+   Bas: v684 rollback (= app v680 + index v681).
+   Syfte:
+   - En central väg in i Taktikfilm-redigering.
+   - En central väg tillbaka till Taktikfilm-listan.
+   - Autospar-restore ska hamna i samma redigeringsläge som vanlig öppning.
+   - Inga nya fullscreen-/ritvals-/lagerpatchar ovanpå index.
 */
 (function(){
   'use strict';
-  if(window.__tt685TaktikfilmButtonFixInstalled)return;
-  window.__tt685TaktikfilmButtonFixInstalled=true;
-  var VERSION='687 TEST';
+  if(window.__tt688TaktikfilmEditorStateCleanupInstalled)return;
+  window.__tt688TaktikfilmEditorStateCleanupInstalled=true;
+
+  var VERSION='688 TEST';
 
   function byId(id){return document.getElementById(id);}
-  function safeArray(x){return Array.isArray(x)?x:[];}
-  function clone(obj){try{return JSON.parse(JSON.stringify(obj));}catch(e){return obj;}}
-  function currentFilm(){
-    try{
-      if(typeof editingTaktikIdx==='number' && editingTaktikIdx!==null && window.taktikFilmer && window.taktikFilmer[editingTaktikIdx])return window.taktikFilmer[editingTaktikIdx];
-    }catch(e){}
-    try{if(playback && playback.tk)return playback.tk;}catch(e){}
-    return null;
-  }
-  function syncStep(){
-    try{
-      var tk=currentFilm();
-      if(!tk||!Array.isArray(tk.steps))return;
-      var idx=(typeof editingStepIdx==='number')?editingStepIdx:0;
-      if(idx<0||idx>=tk.steps.length)return;
-      if(typeof currentSnap==='function')tk.steps[idx]=currentSnap();
-    }catch(e){}
-  }
+  function show(el,display){if(el)el.style.display=display||'';}
+  function hide(el){if(el)el.style.display='none';}
   function setVersion(){
-    try{window.TAKTIKTAVLA_VERSION=VERSION;}catch(e){}
-    try{document.title='Taktiktavla TEST v687 avsluta-listläge-fix';}catch(e){}
-    try{document.body&&document.body.setAttribute('data-app-version',VERSION);}catch(e){}
+    try{document.title='Taktiktavla TEST v688 editor state cleanup';}catch(e){}
     try{
-      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent=VERSION;});
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent=VERSION;
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v688 TEST';
     }catch(e){}
   }
+
   function ensureCss(){
-    if(byId('tt685-taktikfilm-buttonfix-css'))return;
+    if(byId('tt688-editor-state-cleanup-css'))return;
     var st=document.createElement('style');
-    st.id='tt685-taktikfilm-buttonfix-css';
+    st.id='tt688-editor-state-cleanup-css';
     st.textContent=[
-      'body.tt-v82-taktik-library #tt616-layer-panel,',
-      'body.tt685-taktikfilm-list-mode #tt616-layer-panel{display:none!important;visibility:hidden!important;pointer-events:none!important}',
-      'body.tt685-taktikfilm-edit-mode #tt616-layer-panel{visibility:visible!important;pointer-events:auto!important}',
-      '#btn-stop-play.tt685-exit-fixed,#btn-edit-taktik-exit.tt685-exit-fixed{pointer-events:auto!important;cursor:pointer!important}',
-      '#btn-edit-taktik-meta.tt685-meta-fixed,#btn-copy-step.tt685-copy-fixed,#btn-paste-step.tt685-copy-fixed{pointer-events:auto!important;cursor:pointer!important}'
+      'body.tt-v82-taktik-library #tt616-layer-panel{display:none!important;visibility:hidden!important;pointer-events:none!important}',
+      'body:not(.tt-v82-taktik-library) #tt616-layer-panel{visibility:visible}',
+      'body.tt688-taktikfilm-editor-active #tt616-layer-panel{display:block!important}',
+      'body.tt688-taktikfilm-editor-active #taktikbar{display:flex!important}',
+      'body.tt688-taktikfilm-editor-active #edit-taktik-ui{display:block!important}',
+      'body.tt688-taktikfilm-editor-active #no-rec-ui{display:none!important}'
     ].join('\n');
     document.head.appendChild(st);
   }
-  function inTaktikPanel(){
-    var p=byId('panel-taktik');
-    return !!(p&&p.classList.contains('on'));
-  }
-  function inEditor(){
-    try{if(typeof editingTaktikIdx==='number' && editingTaktikIdx!==null)return true;}catch(e){}
-    try{if(isEditingTaktik)return true;}catch(e){}
-    var edit=byId('edit-taktik-ui');
-    if(edit && getComputedStyle(edit).display!=='none')return true;
-    var bar=byId('taktikbar');
-    if(bar && getComputedStyle(bar).display!=='none')return true;
-    return false;
-  }
-  function updateModeClasses(){
-    var list=inTaktikPanel()&&!inEditor()&&!document.body.classList.contains('fullscreen-portrait')&&!document.body.classList.contains('landscape');
-    var edit=inTaktikPanel()&&inEditor()&&!document.body.classList.contains('fullscreen-portrait')&&!document.body.classList.contains('landscape');
-    document.body.classList.toggle('tt685-taktikfilm-list-mode',!!list);
-    document.body.classList.toggle('tt685-taktikfilm-edit-mode',!!edit);
-  }
-  function returnToTaktikList(){
-    try{if(typeof confirmUnsavedV21==='function' && !confirmUnsavedV21())return;}catch(e){}
 
-    function forceMenu(){
-      try{if(animFrame)cancelAnimationFrame(animFrame);}catch(e){}
-      try{playback=null;}catch(e){}
-      try{editingTaktikIdx=null;}catch(e){}
-      try{editingStepIdx=0;}catch(e){}
-      try{isEditingTaktik=false;}catch(e){}
-      try{movementPaths=[];selectedId=null;}catch(e){}
-      try{document.body.classList.remove('tt681-taktikfilm-ritval-owner','tt666-taktik-desktop-layout');}catch(e){}
-      try{document.body.classList.add('tt-v82-taktik-library');}catch(e){}
-
-      var tb=byId('taktikbar'); if(tb)tb.style.display='none';
-      var edit=byId('edit-taktik-ui'); if(edit)edit.style.display='none';
-      var rec=byId('rec-ui'); if(rec)rec.style.display='none';
-      var no=byId('no-rec-ui'); if(no)no.style.display='block';
-      var bp=byId('bottompanel'); if(bp){bp.classList.remove('hidden');bp.style.display='';}
-      var pitch=byId('pitch-wrapper'); if(pitch)pitch.style.display='';
-
-      try{
-        document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.getAttribute('data-panel')==='taktik');});
-        document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('on',p.id==='panel-taktik');});
-      }catch(e){}
-
-      try{if(typeof renderTaktikList==='function')renderTaktikList();}catch(e){}
-      try{if(typeof tt82ApplyLibraryMode==='function')tt82ApplyLibraryMode();}catch(e){}
-      updateModeClasses();
-    }
-
-    forceMenu();
-    [0,80,250].forEach(function(ms){setTimeout(forceMenu,ms);});
-  }
-  function openMeta(){
-    var tk=currentFilm();
-    if(!tk){try{showToast('Öppna en taktikfilm först',false);}catch(e){} return;}
-    var name=byId('edit-taktik-name-inp'); if(name)name.value=tk.name||'';
-    var sel=byId('edit-taktik-folder');
-    if(sel){
-      var seen={}, list=[];
-      function add(f){f=String(f||'').trim(); if(!f)return; var k=f.toLowerCase(); if(seen[k])return; seen[k]=true; list.push(f);}
-      add('Taktik'); add('Träning');
-      try{safeArray(taktikFolders).forEach(add);}catch(e){}
-      add(tk.folder||'Taktik');
-      list.sort(function(a,b){return a.localeCompare(b,'sv');});
-      sel.innerHTML='';
-      list.forEach(function(f){var o=document.createElement('option');o.value=f;o.textContent=f;if((tk.folder||'Taktik')===f)o.selected=true;sel.appendChild(o);});
-    }
-    var modal=byId('modal-edit-taktik-meta'); if(modal)modal.classList.remove('hidden');
-    setTimeout(function(){try{name&&name.focus();}catch(e){}},60);
-  }
-  function saveMeta(){
-    var tk=currentFilm();
-    if(!tk)return;
+  function selectTaktikTab(){
     try{
-      var name=byId('edit-taktik-name-inp');
+      document.querySelectorAll('.tab').forEach(function(t){
+        t.classList.toggle('on',t.getAttribute('data-panel')==='taktik');
+      });
+      document.querySelectorAll('.panel').forEach(function(p){
+        p.classList.toggle('on',p.id==='panel-taktik');
+      });
+    }catch(e){}
+    try{activeWorkspacePanel='taktik';}catch(e){}
+  }
+
+  function removeEditorClasses(){
+    try{
+      document.body.classList.remove(
+        'tt688-taktikfilm-editor-active',
+        'tt681-taktikfilm-ritval-owner',
+        'tt666-taktik-desktop-layout'
+      );
+    }catch(e){}
+  }
+
+  function enterEditorClasses(){
+    try{
+      document.body.classList.remove('tt-v82-taktik-library');
+      document.body.classList.add('tt688-taktikfilm-editor-active');
+    }catch(e){}
+  }
+
+  function getTaktikIndex(tk,idx){
+    try{
+      if(typeof idx==='number' && idx>=0)return idx;
+      if(typeof taktikFilmer!=='undefined' && Array.isArray(taktikFilmer)){
+        var found=taktikFilmer.indexOf(tk);
+        if(found>=0)return found;
+        if(tk && tk._draftUid){
+          found=taktikFilmer.findIndex(function(x){return x && x._draftUid===tk._draftUid;});
+          if(found>=0)return found;
+        }
+      }
+    }catch(e){}
+    return -1;
+  }
+
+  function safeStepIndex(tk,stepIdx){
+    var max=(tk && Array.isArray(tk.steps)) ? tk.steps.length-1 : 0;
+    var n=Number(stepIdx);
+    if(isNaN(n))n=0;
+    return Math.max(0,Math.min(n,max));
+  }
+
+  function refreshLayerPanel(){
+    try{
+      var panel=byId('tt616-layer-panel');
+      if(!panel)return;
+      var details=panel.querySelector('details');
+      if(details)details.open=true;
+      if(typeof window.tt631RefreshFreeLayerPanel==='function')window.tt631RefreshFreeLayerPanel();
+      else if(typeof window.tt630RenderFreeLayerPanel==='function')window.tt630RenderFreeLayerPanel();
+    }catch(e){}
+  }
+
+  function applyEditorUi(tk,idx,stepIdx){
+    selectTaktikTab();
+    enterEditorClasses();
+
+    show(byId('pitch-wrapper'),'');
+    show(byId('bottompanel'),'');
+    var bp=byId('bottompanel'); if(bp)bp.classList.remove('hidden');
+
+    show(byId('taktikbar'),'flex');
+    hide(byId('no-rec-ui'));
+    hide(byId('rec-ui'));
+    show(byId('edit-taktik-ui'),'block');
+
+    var title=byId('taktikbar-title');
+    if(title)title.textContent=(tk && tk.name) ? tk.name : 'Taktikfilm';
+    var editTitle=byId('edit-taktik-title-lbl');
+    if(editTitle)editTitle.textContent='✏ '+((tk && tk.name) ? tk.name : 'Taktikfilm');
+
+    try{
+      editingTaktikIdx=idx;
+      editingStepIdx=safeStepIndex(tk,stepIdx);
+      isEditingTaktik=true;
+      playback={tk:tk,stepIndex:editingStepIdx,animating:false};
+      movementPaths=[];
+      selectedId=null;
+    }catch(e){}
+
+    try{
+      if(tk && tk.steps && tk.steps[editingStepIdx] && typeof restoreSnap==='function'){
+        restoreSnap(tk.steps[editingStepIdx]);
+      }
+    }catch(e){}
+
+    try{if(typeof render==='function')render();}catch(e){}
+    try{if(typeof updatePlaybar==='function')updatePlaybar();}catch(e){}
+    try{
+      if(typeof updateEditStepUI_silent==='function')updateEditStepUI_silent();
+      else if(typeof updateEditStepUI==='function')updateEditStepUI();
+    }catch(e){}
+    refreshLayerPanel();
+    setVersion();
+    try{if(window.tt681ApplyTaktikfilmRitvalPlacement)window.tt681ApplyTaktikfilmRitvalPlacement();}catch(e){}
+  }
+
+  function enterEditor(idxOrTk,opts){
+    opts=opts||{};
+    var idx=-1, tk=null;
+    if(typeof idxOrTk==='number'){
+      idx=idxOrTk;
+      try{tk=taktikFilmer[idx]||null;}catch(e){}
+    }else{
+      tk=idxOrTk||null;
+      idx=getTaktikIndex(tk,opts.index);
+    }
+    if(!tk || !Array.isArray(tk.steps) || !tk.steps.length){
+      try{if(typeof cloudStatus==='function')cloudStatus('❌ Ogiltig taktikfilm','#e84a4a');}catch(e){}
+      return;
+    }
+    if(idx<0 && typeof taktikFilmer!=='undefined' && Array.isArray(taktikFilmer)){
+      taktikFilmer.push(tk);
+      idx=taktikFilmer.length-1;
+    }
+    try{if(animFrame)cancelAnimationFrame(animFrame);}catch(e){}
+    applyEditorUi(tk,idx,opts.stepIdx||0);
+    return tk;
+  }
+
+  function exitToList(opts){
+    opts=opts||{};
+    if(!opts.skipConfirm){
+      try{
+        if(typeof confirmUnsavedV21==='function' && !confirmUnsavedV21())return false;
+      }catch(e){}
+    }
+    try{if(animFrame)cancelAnimationFrame(animFrame);}catch(e){}
+    try{playback=null;}catch(e){}
+    try{activeTaktik=null;}catch(e){}
+    try{editingTaktikIdx=null;}catch(e){}
+    try{editingStepIdx=0;}catch(e){}
+    try{isEditingTaktik=false;}catch(e){}
+    try{movementPaths=[];selectedId=null;}catch(e){}
+
+    removeEditorClasses();
+    selectTaktikTab();
+
+    hide(byId('taktikbar'));
+    hide(byId('edit-taktik-ui'));
+    hide(byId('rec-ui'));
+    show(byId('no-rec-ui'),'block');
+    var bp=byId('bottompanel'); if(bp){bp.classList.remove('hidden');show(bp,'');}
+
+    try{if(typeof renderTaktikList==='function')renderTaktikList();}catch(e){}
+    try{document.body.classList.add('tt-v82-taktik-library');}catch(e){}
+    try{if(typeof tt82ApplyLibraryMode==='function')tt82ApplyLibraryMode();}catch(e){}
+    setVersion();
+    return true;
+  }
+
+  function openMeta(){
+    try{
+      if(typeof editingTaktikIdx==='undefined'||editingTaktikIdx===null)return;
+      var tk=taktikFilmer && taktikFilmer[editingTaktikIdx];
+      if(!tk)return;
+      var inp=byId('edit-taktik-name-inp'); if(inp)inp.value=tk.name||'';
       var sel=byId('edit-taktik-folder');
-      if(name)tk.name=String(name.value||'').trim()||tk.name;
-      if(sel)tk.folder=sel.value||tk.folder||'Taktik';
-      var title=byId('edit-taktik-title-lbl'); if(title)title.textContent='✏ '+(tk.name||'Taktikfilm');
-      syncStep();
-      if(typeof cloudSaveTaktik==='function')cloudSaveTaktik(tk);
-      else if(typeof renderTaktikList==='function')renderTaktikList();
-      try{showToast('Film uppdaterad!');}catch(e){}
-    }catch(e){try{showToast('Kunde inte spara info',false);}catch(_e){}}
-    var modal=byId('modal-edit-taktik-meta'); if(modal)modal.classList.add('hidden');
+      if(sel){
+        var seen={}, arr=[];
+        function add(f){f=String(f||'').trim()||'Taktik'; if(seen[f])return; seen[f]=true; arr.push(f);}
+        add('Taktik'); add('Träning');
+        try{(taktikFolders||[]).forEach(add);}catch(e){}
+        add(tk.folder||'Taktik');
+        arr.sort(function(a,b){return a.localeCompare(b,'sv');});
+        sel.innerHTML='';
+        arr.forEach(function(f){var o=document.createElement('option');o.value=f;o.textContent=f;if((tk.folder||'Taktik')===f)o.selected=true;sel.appendChild(o);});
+      }
+      var modal=byId('modal-edit-taktik-meta'); if(modal)modal.classList.remove('hidden');
+    }catch(e){}
   }
+
   function copyStep(){
-    var tk=currentFilm();
-    var idx=(typeof editingStepIdx==='number')?editingStepIdx:0;
-    if(!tk||!Array.isArray(tk.steps)||!tk.steps[idx]){try{showToast('Inget steg att kopiera',false);}catch(e){} return;}
-    try{syncStep(); copiedStep=clone(tk.steps[idx]);}catch(e){copiedStep=clone(tk.steps[idx]);}
-    var p=byId('btn-paste-step'); if(p){p.style.opacity='1';p.disabled=false;}
-    try{showToast('Steg kopierat');}catch(e){}
+    try{
+      if(typeof tt132CopyStep==='function'){tt132CopyStep();return;}
+      if(editingTaktikIdx===null)return;
+      copiedStep=JSON.parse(JSON.stringify(taktikFilmer[editingTaktikIdx].steps[editingStepIdx]));
+      var p=byId('btn-paste-step'); if(p)p.style.opacity='1';
+      if(typeof showToast==='function')showToast('Steg kopierat!');
+    }catch(e){}
   }
+
   function pasteStep(){
-    if(!copiedStep){try{showToast('Kopiera ett steg först',false);}catch(e){} return;}
-    var tk=currentFilm();
-    if(!tk||!Array.isArray(tk.steps))return;
-    var idx=(typeof editingStepIdx==='number')?editingStepIdx:0;
-    try{if(typeof saveTaktikUndo==='function')saveTaktikUndo();}catch(e){}
-    tk.steps.splice(idx+1,0,clone(copiedStep));
-    try{editingStepIdx=idx+1;}catch(e){}
-    try{if(typeof updateEditStepUI==='function')updateEditStepUI();}catch(e){}
-    try{showToast('Steg inklistrat');}catch(e){}
+    try{
+      if(typeof tt132PasteStep==='function'){tt132PasteStep();return;}
+      if(!copiedStep||editingTaktikIdx===null)return;
+      if(typeof saveTaktikUndo==='function')saveTaktikUndo();
+      var tk=taktikFilmer[editingTaktikIdx];
+      var paste=JSON.parse(JSON.stringify(copiedStep));
+      tk.steps.splice(editingStepIdx+1,0,paste);
+      editingStepIdx++;
+      if(typeof updateEditStepUI==='function')updateEditStepUI();
+      if(typeof showToast==='function')showToast('Steg inklistrat!');
+    }catch(e){}
   }
-  function replaceButton(id,cls,handler,label){
-    var old=byId(id);
-    if(!old)return;
-    if(old.dataset.tt685Bound==='1')return;
-    var neu=old.cloneNode(true);
-    neu.dataset.tt685Bound='1';
-    if(cls)neu.classList.add(cls);
-    if(label && id==='btn-stop-play'){neu.textContent=label;neu.title='Avsluta filmen';neu.setAttribute('aria-label','Avsluta filmen');}
-    old.parentNode.replaceChild(neu,old);
-    neu.addEventListener('click',function(ev){
-      ev.preventDefault();
-      ev.stopPropagation();
-      if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
-      handler(ev);
+
+  window.tt688EnterTaktikfilmEditor=enterEditor;
+  window.tt688ExitTaktikfilmEditorToList=exitToList;
+  window.tt688OpenTaktikMeta=openMeta;
+
+  try{startPlayback=function(idx){return enterEditor(idx,{stepIdx:0});}; window.startPlayback=startPlayback;}catch(e){}
+  try{openEditTaktik=function(idx){return enterEditor(idx,{stepIdx:0});}; window.openEditTaktik=openEditTaktik;}catch(e){}
+  try{exitEditTaktik=function(){return exitToList({skipConfirm:true});}; window.exitEditTaktik=exitEditTaktik;}catch(e){}
+  try{tt82ReturnToTaktikMenu=function(){return exitToList({skipConfirm:true});}; window.tt82ReturnToTaktikMenu=tt82ReturnToTaktikMenu;}catch(e){}
+  try{tt85CloseViaTopCross=function(){return exitToList({skipConfirm:false});}; window.tt85CloseViaTopCross=tt85CloseViaTopCross;}catch(e){}
+  try{tt88ExitToLibrary=function(){return exitToList({skipConfirm:false});}; window.tt88ExitToLibrary=tt88ExitToLibrary;}catch(e){}
+
+  document.addEventListener('click',function(e){
+    var target=e.target && e.target.closest ? e.target.closest('#btn-stop-play,#btn-edit-taktik-exit,#btn-edit-taktik-meta,#btn-copy-step,#btn-paste-step') : null;
+    if(!target)return;
+    if(target.id==='btn-stop-play' || target.id==='btn-edit-taktik-exit'){
+      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      exitToList({skipConfirm:false});
       return false;
-    },true);
-  }
-  function bind(){
+    }
+    if(target.id==='btn-edit-taktik-meta'){
+      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      openMeta();
+      return false;
+    }
+    if(target.id==='btn-copy-step'){
+      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      copyStep();
+      return false;
+    }
+    if(target.id==='btn-paste-step'){
+      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      pasteStep();
+      return false;
+    }
+  },true);
+
+  function tick(){
     ensureCss();
     setVersion();
-    updateModeClasses();
-    replaceButton('btn-stop-play','tt685-exit-fixed',returnToTaktikList,'Avsluta');
-    replaceButton('btn-edit-taktik-exit','tt685-exit-fixed',returnToTaktikList);
-    replaceButton('btn-edit-taktik-meta','tt685-meta-fixed',openMeta);
-    replaceButton('btn-copy-step','tt685-copy-fixed',copyStep);
-    replaceButton('btn-paste-step','tt685-copy-fixed',pasteStep);
-    replaceButton('edit-taktik-cancel','',function(){var m=byId('modal-edit-taktik-meta');if(m)m.classList.add('hidden');});
-    replaceButton('edit-taktik-ok','',saveMeta);
+    try{
+      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik){
+        enterEditorClasses();
+        refreshLayerPanel();
+      }else{
+        document.body.classList.remove('tt688-taktikfilm-editor-active');
+      }
+    }catch(e){}
   }
-  function schedule(){try{if(window.requestAnimationFrame)requestAnimationFrame(bind);else bind();}catch(e){bind();} setTimeout(bind,80);}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
-  ['click','touchend','keyup','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(schedule,0);},true);});
-  if(typeof openEditTaktik==='function' && !openEditTaktik.__tt685Wrapped){
-    var oldOpen=openEditTaktik;
-    openEditTaktik=function(){var r=oldOpen.apply(this,arguments); setTimeout(schedule,0); setTimeout(schedule,200); return r;};
-    openEditTaktik.__tt685Wrapped=true;
-    try{window.openEditTaktik=openEditTaktik;}catch(e){}
-  }
-  if(typeof startPlayback==='function' && !startPlayback.__tt685Wrapped){
-    var oldStart=startPlayback;
-    startPlayback=function(){var r=oldStart.apply(this,arguments); setTimeout(schedule,0); setTimeout(schedule,200); return r;};
-    startPlayback.__tt685Wrapped=true;
-    try{window.startPlayback=startPlayback;}catch(e){}
-  }
-  window.tt685TaktikfilmButtonFixApply=schedule;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1300);});
+  else{setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1300);}
 })();
-/* === slut v687 TEST === */
+/* === slut v688 TEST === */
+
