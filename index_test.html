@@ -1693,8 +1693,8 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v656 TEST: nytt/dolt lager får öga på vid ritning.
-     Bygger från v654 och fixar explicit öga på vid nytt lager/ny ritning. */
+  /* v657 TEST: nytt/dolt lager får öga på faktisk fix.
+     Bygger från fungerande v654/v656-spåret men lägger stegspecifik öga-på-markering i panelen. */
   #tt616-layer-panel{
     position:fixed;
     right:calc(env(safe-area-inset-right,0px) + 10px);
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"656 TEST" !important;
+    content:"657 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,10 +1912,10 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v656">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v657">
   <details>
-    <summary><span>Lager TEST</span><span>v656</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 24. Nytt lager och ritning i dolt lager slår på ögat i aktuellt steg.</div>
+    <summary><span>Lager TEST</span><span>v657</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 25. Nytt lager och ritning i dolt lager slår på ögat i aktuellt steg.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
     <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Ritar du i ett dolt lager slås ögat på automatiskt.</div>
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">656 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">657 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=656-dolt-lager-syns-vid-ritning-fix"></script>
+<script src="app_test.js?v=657-dolt-lager-syns-vid-ritning-fix2"></script>
 
 <script>
 (function(){
@@ -2721,6 +2721,22 @@
     ]
   };
   window.__tt630FreeLayerState=state;
+
+  // v657: stegspecifik markering för "öga på" när användaren skapar nytt lager
+  // eller börjar rita i ett dolt aktivt lager. Detta är medvetet separat från
+  // objekt-räkning så panelen hinner visa rätt innan snapshoten hunnit uppdateras.
+  var tt657EyeOnByStep={};
+  function tt657StepKey(){
+    try{
+      var ctx=currentTaktikContext();
+      if(ctx && ctx.tk)return 'tk:'+String(editingTaktikIdx)+':'+String(ctx.cur);
+    }catch(e){}
+    return 'board';
+  }
+  function tt657EyeKey(layerId){return tt657StepKey()+'|'+(layerId||'layer-1');}
+  function tt657MarkEyeOn(layerId){tt657EyeOnByStep[tt657EyeKey(layerId)]=true;}
+  function tt657ClearEyeOn(layerId){delete tt657EyeOnByStep[tt657EyeKey(layerId)];}
+  function tt657HasEyeOn(layerId){return !!tt657EyeOnByStep[tt657EyeKey(layerId)];}
 
 
   function cloneLayers(layers){
@@ -3135,6 +3151,7 @@
     if(!layer)return;
     layer.visible=true;
     layer.tt656EyeOn=true;
+    try{tt657MarkEyeOn(layerId);}catch(e){}
     try{saveCurrentStepLayerMeta(layer,{visible:true,tt656EyeOn:true});}catch(e){}
     try{applyFreeLayerVisibilityToDom();}catch(e){}
     try{setTimeout(render,0);}catch(e){}
@@ -3269,6 +3286,14 @@
       // När användaren trycker ögat på i ett tomt steg materialiseras lagret först,
       // och då blir hasObjects true vid nästa render.
       if(!hasObjects){
+        // v657: Om användaren just har skapat lagret eller börjat rita i det
+        // i aktuellt steg ska panelen visa öga på direkt, även om stegets
+        // snapshot ännu inte hunnit innehålla objektet.
+        if(tt657HasEyeOn(layer.id)){
+          layer.visible=true;
+          if(meta&&Object.prototype.hasOwnProperty.call(meta,'locked'))layer.locked=!!meta.locked;
+          continue;
+        }
         // v656: Om användaren uttryckligen har slagit på ögat i detta steg
         // (t.ex. nytt lager eller ritstart i dolt lager) ska panelen visa öga på
         // även innan lagret hunnit få objekt i snapshoten.
@@ -3442,7 +3467,12 @@
     }
     if(action==='visible'){
       layer.visible=!layer.visible;
-      if(layer.visible)materializeLayerInCurrentStepIfNeeded(layer);
+      if(layer.visible){
+        tt657MarkEyeOn(layer.id);
+        materializeLayerInCurrentStepIfNeeded(layer);
+      }else{
+        tt657ClearEyeOn(layer.id);
+      }
       saveCurrentStepLayerMeta(layer,{visible:layer.visible,tt656EyeOn:layer.visible===true});
     }
     if(action==='locked'){
@@ -3480,6 +3510,7 @@
     state.layers.push(layer);
     state.activeId=id;
     state.nextNum++;
+    try{tt657MarkEyeOn(id);}catch(e){}
     try{saveCurrentStepLayerMeta(layer,{visible:true,locked:false,tt656EyeOn:true});}catch(e){}
     render();
   }
