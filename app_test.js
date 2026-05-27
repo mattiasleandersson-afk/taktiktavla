@@ -43086,140 +43086,172 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v691 TEST: flytta hela filmraden under steglistan ===
-   Bas: v689 TEST.
-   v690 används inte som bas.
-   Syfte:
-   - Dölj den nya v689-raden ovanför stegen.
-   - Återanvänd originalraden med gul filnamnstext + Info/pennan + Spara/Avsluta.
-   - Lägg Kopiera/Klistra i samma originalrad.
-   - Flytta hela raden nedanför steglistan.
+/* === v692 TEST: filmåtgärder under steglistan utan överlapp ===
+   Bas: v689 TEST. v690/v691 används inte som bas.
+   Förklaring:
+   Desktop-layouten använder fixed-positionerade rutor. Därför läggs en ny visuell
+   filmåtgärdsrad fixed längst ned i vänsterspalten och steglistan kortas av ovanför den.
+   Den återanvänder v689:s fungerande Info/Kopiera/Klistra via dolda originalknappar.
 */
 (function(){
   'use strict';
-  if(window.__tt691FilmActionsBelowStepsInstalled)return;
-  window.__tt691FilmActionsBelowStepsInstalled=true;
+  if(window.__tt692FilmActionsBelowFixedInstalled)return;
+  window.__tt692FilmActionsBelowFixedInstalled=true;
 
   function byId(id){return document.getElementById(id);}
+  function safeClick(id){
+    var el=byId(id);
+    if(!el)return false;
+    try{el.click();return true;}catch(e){return false;}
+  }
 
   function ensureCss(){
-    if(byId('tt691-film-actions-below-css'))return;
+    if(byId('tt692-film-actions-below-fixed-css'))return;
     var st=document.createElement('style');
-    st.id='tt691-film-actions-below-css';
+    st.id='tt692-film-actions-below-fixed-css';
     st.textContent=[
-      'body.tt688-taktikfilm-editor-active #tt689-step-actions{',
+      '@media (min-width:1024px) and (pointer:fine){',
+      'body.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt689-step-actions{',
       '  display:none!important;visibility:hidden!important;pointer-events:none!important;',
       '}',
-      'body.tt688-taktikfilm-editor-active #btn-edit-taktik-meta,',
-      'body.tt688-taktikfilm-editor-active #btn-copy-step,',
-      'body.tt688-taktikfilm-editor-active #btn-paste-step,',
-      'body.tt688-taktikfilm-editor-active #tt132-step-actions{',
-      '  display:inline-flex!important;visibility:visible!important;pointer-events:auto!important;',
+      'body.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #edit-taktik-ui > div:nth-child(2){',
+      '  display:none!important;visibility:hidden!important;pointer-events:none!important;',
       '}',
-      'body.tt688-taktikfilm-editor-active #tt691-film-actions-row{',
+      'body.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #edit-taktik-steps{',
+      '  bottom:72px!important;',
+      '  padding-bottom:8px!important;',
+      '}',
+      'body.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt692-film-actions-bottom{',
       '  display:flex!important;',
+      '  position:fixed!important;',
+      '  left:8px!important;',
+      '  bottom:8px!important;',
+      '  width:272px!important;',
+      '  min-height:52px!important;',
+      '  box-sizing:border-box!important;',
+      '  z-index:112!important;',
+      '  pointer-events:auto!important;',
       '  gap:4px!important;',
       '  align-items:center!important;',
       '  flex-wrap:wrap!important;',
-      '  margin-top:7px!important;',
-      '  margin-bottom:0!important;',
-      '  clear:both!important;',
-      '  position:relative!important;',
-      '  z-index:25!important;',
+      '  padding:5px!important;',
+      '  margin:0!important;',
+      '  background:rgba(14,23,16,.96)!important;',
+      '  border:1px solid rgba(232,200,74,.32)!important;',
+      '  border-radius:10px!important;',
+      '  box-shadow:0 8px 20px rgba(0,0,0,.30)!important;',
       '}',
-      'body.tt688-taktikfilm-editor-active #tt691-film-actions-row #edit-taktik-title-lbl{',
-      '  flex:1 1 145px!important;',
-      '  min-width:95px!important;',
+      'body.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt692-film-actions-bottom .tt692-title{',
+      '  flex:1 1 100%!important;',
+      '  min-width:0!important;',
+      '  color:#e8c84a!important;',
+      '  font-size:.72rem!important;',
+      '  font-weight:800!important;',
+      '  text-transform:uppercase!important;',
+      '  white-space:nowrap!important;',
+      '  overflow:hidden!important;',
+      '  text-overflow:ellipsis!important;',
       '}',
-      'body.tt688-taktikfilm-editor-active #tt691-film-actions-row .btn{',
+      'body.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt692-film-actions-bottom .btn{',
       '  flex:0 0 auto!important;',
+      '  padding:3px 6px!important;',
+      '  font-size:.64rem!important;',
       '}',
-      'body.tt688-taktikfilm-editor-active #tt132-step-actions{',
-      '  gap:4px!important;',
-      '  align-items:center!important;',
-      '  flex:0 0 auto!important;',
       '}',
-      'body.tt688-taktikfilm-editor-active #edit-taktik-steps{',
-      '  margin-top:5px!important;',
-      '  margin-bottom:0!important;',
-      '}'
+      '@media not all and (min-width:1024px) and (pointer:fine){',
+      '  #tt692-film-actions-bottom{display:none!important;}',
+      '}',
+      'body.fullscreen-portrait #tt692-film-actions-bottom{display:none!important;}',
+      'body:not(.tt688-taktikfilm-editor-active) #tt692-film-actions-bottom{display:none!important;}'
     ].join('\n');
     document.head.appendChild(st);
   }
 
-  function getFilmRow(){
-    var info=byId('btn-edit-taktik-meta');
-    if(!info)return null;
-    var row=info.parentElement;
-    if(!row)return null;
-    row.id='tt691-film-actions-row';
-    return row;
+  function makeBtn(id, text, cls, color){
+    var b=document.createElement('button');
+    b.id=id;
+    b.type='button';
+    b.className='btn '+(cls||'');
+    b.textContent=text;
+    if(color){
+      b.style.color=color;
+      b.style.borderColor=color;
+    }
+    return b;
   }
 
-  function moveCopyPasteIntoFilmRow(row){
-    try{
-      if(typeof tt132MoveStepButtonsNearInfo==='function')tt132MoveStepButtonsNearInfo();
-    }catch(e){}
-
-    var info=byId('btn-edit-taktik-meta');
-    var copy=byId('btn-copy-step');
-    var paste=byId('btn-paste-step');
-    if(!row||!info||!copy||!paste)return;
-
-    var wrap=byId('tt132-step-actions');
-    if(!wrap){
-      wrap=document.createElement('div');
-      wrap.id='tt132-step-actions';
-    }
-    if(wrap.parentNode!==row){
-      row.insertBefore(wrap,info);
-    }
-    if(copy.parentNode!==wrap)wrap.appendChild(copy);
-    if(paste.parentNode!==wrap)wrap.appendChild(paste);
-  }
-
-  function moveFilmRowBelowSteps(){
+  function ensureRow(){
     ensureCss();
-    var edit=byId('edit-taktik-ui');
-    var list=byId('edit-taktik-steps');
-    var row=getFilmRow();
-    if(!edit||!list||!row)return;
+    var row=byId('tt692-film-actions-bottom');
+    if(!row){
+      row=document.createElement('div');
+      row.id='tt692-film-actions-bottom';
 
-    moveCopyPasteIntoFilmRow(row);
+      var title=document.createElement('span');
+      title.className='tt692-title';
+      title.id='tt692-film-title';
+      title.textContent='✎ Taktikfilm';
+      row.appendChild(title);
 
-    if(row.parentNode!==edit || list.nextSibling!==row){
-      if(list.nextSibling)edit.insertBefore(row,list.nextSibling);
-      else edit.appendChild(row);
+      var info=makeBtn('tt692-info','✎ Info','','#e8c84a');
+      var copy=makeBtn('tt692-copy','Kopiera','','#4ae8e8');
+      var paste=makeBtn('tt692-paste','Klistra in','','#4ae8e8');
+      var save=makeBtn('tt692-save','Spara','on','');
+      var exit=makeBtn('tt692-exit','Avsluta','danger','');
+
+      info.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();safeClick('tt689-info')||safeClick('btn-edit-taktik-meta');},true);
+      copy.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();safeClick('tt689-copy-step')||safeClick('btn-copy-step');syncPaste();},true);
+      paste.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();safeClick('tt689-paste-step')||safeClick('btn-paste-step');syncPaste();},true);
+      save.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();safeClick('btn-edit-taktik-save');},true);
+      exit.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();safeClick('btn-edit-taktik-exit');},true);
+
+      row.appendChild(info);
+      row.appendChild(copy);
+      row.appendChild(paste);
+      row.appendChild(save);
+      row.appendChild(exit);
+      document.body.appendChild(row);
     }
+    updateTitle();
+    syncPaste();
+  }
 
-    // Ta bort eventuell spacer från misslyckad v690 om användaren råkat blanda filer.
-    var sp=byId('tt690-step-spacer');
-    if(sp&&sp.parentNode)sp.parentNode.removeChild(sp);
+  function updateTitle(){
+    var target=byId('tt692-film-title');
+    if(!target)return;
+    var src=byId('edit-taktik-title-lbl');
+    var txt=src?String(src.textContent||'').trim():'';
+    if(!txt)txt='✎ Taktikfilm';
+    target.textContent=txt;
+  }
 
-    try{
-      var p=byId('btn-paste-step');
-      if(p && p.style.opacity==='')p.style.opacity='0.3';
-    }catch(e){}
+  function syncPaste(){
+    var visible=byId('tt692-paste');
+    if(!visible)return;
+    var hidden=byId('tt689-paste-step')||byId('btn-paste-step');
+    var disabled=hidden?!!hidden.disabled:false;
+    visible.disabled=disabled;
+    visible.style.opacity=disabled?'.35':'1';
   }
 
   function setVersion(){
-    try{document.title='Taktiktavla TEST v691 filmrad under steg';}catch(e){}
+    try{document.title='Taktiktavla TEST v692 filmrad under steglista';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='691 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='692 TEST';
       });
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v691 TEST';
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v692 TEST';
     }catch(e){}
   }
 
   function tick(){
-    moveFilmRowBelowSteps();
+    ensureRow();
     setVersion();
   }
 
-  if(typeof renderEditSteps==='function' && !renderEditSteps._tt691Wrapped){
+  if(typeof renderEditSteps==='function' && !renderEditSteps._tt692Wrapped){
     var old=renderEditSteps;
     renderEditSteps=function(){
       var r=old.apply(this,arguments);
@@ -43227,14 +43259,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       setTimeout(tick,80);
       return r;
     };
-    renderEditSteps._tt691Wrapped=true;
+    renderEditSteps._tt692Wrapped=true;
   }
 
   ['click','touchend','resize','orientationchange'].forEach(function(evt){
     window.addEventListener(evt,function(){setTimeout(tick,80);},true);
   });
-
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);});
   else{setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);}
 })();
-/* === slut v691 TEST === */
+/* === slut v692 TEST === */
