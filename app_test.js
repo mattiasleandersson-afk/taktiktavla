@@ -42800,3 +42800,286 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v688 TEST === */
 
+
+
+
+/* === v689 TEST: Info/Kopiera/Klistra över steglistan ===
+   Bas: v688 TEST.
+   Syfte:
+   - Rör inte v688:s centrala Taktikfilm-redigeringsstate.
+   - Undvik gamla knapp-id:n som fångas av äldre/v688-lyssnare.
+   - Skapa en ny tydlig åtgärdsrad ovanför steglistan:
+     Info, Kopiera steg, Klistra in.
+*/
+(function(){
+  'use strict';
+  if(window.__tt689StepActionsAboveStepsInstalled)return;
+  window.__tt689StepActionsAboveStepsInstalled=true;
+
+  var VERSION='689 TEST';
+  var tt689CopiedStep=null;
+
+  function byId(id){return document.getElementById(id);}
+  function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+  function currentTk(){
+    try{
+      if(typeof editingTaktikIdx==='number' && editingTaktikIdx!==null && taktikFilmer && taktikFilmer[editingTaktikIdx]){
+        return taktikFilmer[editingTaktikIdx];
+      }
+    }catch(e){}
+    try{
+      if(typeof tt132CurrentTk==='function')return tt132CurrentTk();
+    }catch(e){}
+    return null;
+  }
+  function currentStepIndex(tk){
+    var idx=0;
+    try{idx=(typeof editingStepIdx==='number')?editingStepIdx:0;}catch(e){}
+    var max=(tk&&Array.isArray(tk.steps))?tk.steps.length-1:0;
+    return Math.max(0,Math.min(idx,max));
+  }
+  function autoLabel(idx){return idx===0?'Startläge':'Steg '+idx;}
+  function isAutoLabel(v){
+    var s=String(v||'').trim();
+    return !s || s==='Start' || s==='Startläge' || /^Steg\s+\d+$/i.test(s);
+  }
+  function saveCurrentStepIntoFilm(){
+    var tk=currentTk();
+    if(!tk||!Array.isArray(tk.steps))return null;
+    var idx=currentStepIndex(tk);
+    try{
+      if(typeof tt76SaveCurrentStep==='function'){
+        tt76SaveCurrentStep({allowAutoCreate:false});
+        tk=currentTk()||tk;
+        idx=currentStepIndex(tk);
+        return tk.steps[idx]||null;
+      }
+    }catch(e){}
+    try{
+      if(typeof autoSaveCurrentStepLocalV16==='function'){
+        autoSaveCurrentStepLocalV16();
+        return tk.steps[idx]||null;
+      }
+    }catch(e){}
+    try{
+      if(typeof currentSnap==='function'){
+        var snap=currentSnap();
+        var inp=byId('edit-step-name-inp');
+        var label=inp?String(inp.value||'').trim():'';
+        snap.label=label||((tk.steps[idx]&&tk.steps[idx].label)||autoLabel(idx));
+        tk.steps[idx]=snap;
+        return tk.steps[idx];
+      }
+    }catch(e){}
+    return tk.steps[idx]||null;
+  }
+  function markDirty(){
+    try{if(typeof tt76MarkDirty==='function'){tt76MarkDirty();return;}}catch(e){}
+    try{taktikDirtyV17=true;}catch(e){}
+  }
+  function refreshStepUi(){
+    try{
+      if(typeof updateEditStepUI==='function')updateEditStepUI();
+      else {
+        var tk=currentTk();
+        if(tk&&typeof renderEditSteps==='function')renderEditSteps(tk);
+        if(typeof render==='function')render();
+      }
+    }catch(e){}
+    try{if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();}catch(e){}
+    setTimeout(ensureStepActions,0);
+    setTimeout(ensureStepActions,120);
+  }
+
+  function openInfo(){
+    var tk=currentTk();
+    if(!tk){
+      try{if(typeof showToast==='function')showToast('Ingen aktiv taktikfilm',false);}catch(e){}
+      return;
+    }
+    try{
+      var inp=byId('edit-taktik-name-inp');
+      if(inp)inp.value=tk.name||'';
+      var sel=byId('edit-taktik-folder');
+      if(sel){
+        var seen={}, arr=[];
+        function add(f){f=String(f||'').trim()||'Taktik'; if(seen[f])return; seen[f]=true; arr.push(f);}
+        add('Taktik'); add('Träning');
+        try{(taktikFolders||[]).forEach(add);}catch(e){}
+        add(tk.folder||'Taktik');
+        arr.sort(function(a,b){return a.localeCompare(b,'sv');});
+        sel.innerHTML='';
+        arr.forEach(function(f){
+          var o=document.createElement('option');
+          o.value=f;
+          o.textContent=f;
+          if((tk.folder||'Taktik')===f)o.selected=true;
+          sel.appendChild(o);
+        });
+      }
+      var modal=byId('modal-edit-taktik-meta');
+      if(modal)modal.classList.remove('hidden');
+    }catch(e){
+      try{if(typeof showToast==='function')showToast('Kunde inte öppna Info',false);}catch(_e){}
+    }
+  }
+
+  function copyStep(){
+    var tk=currentTk();
+    if(!tk||!Array.isArray(tk.steps)){
+      try{if(typeof showToast==='function')showToast('Ingen aktiv taktikfilm',false);}catch(e){}
+      return;
+    }
+    try{
+      if(tk._readOnly||tk._openedFromTeam){
+        if(typeof showToast==='function')showToast('Filen är skrivskyddad. Kopiera den först.',false);
+        return;
+      }
+    }catch(e){}
+    var step=saveCurrentStepIntoFilm();
+    tk=currentTk()||tk;
+    var idx=currentStepIndex(tk);
+    step=step||tk.steps[idx];
+    if(!step)return;
+    tt689CopiedStep=clone(step);
+    try{copiedStep=clone(step);}catch(e){}
+    try{tt132CopiedStep=clone(step);}catch(e){}
+    var p=byId('tt689-paste-step');
+    if(p){p.disabled=false;p.style.opacity='1';}
+    try{if(typeof showToast==='function')showToast('Steg kopierat');}catch(e){}
+  }
+
+  function pasteStep(){
+    var tk=currentTk();
+    if(!tk||!Array.isArray(tk.steps)){
+      try{if(typeof showToast==='function')showToast('Ingen aktiv taktikfilm',false);}catch(e){}
+      return;
+    }
+    try{
+      if(tk._readOnly||tk._openedFromTeam){
+        if(typeof showToast==='function')showToast('Filen är skrivskyddad. Kopiera den först.',false);
+        return;
+      }
+    }catch(e){}
+    var src=tt689CopiedStep;
+    try{if(!src && typeof copiedStep!=='undefined')src=copiedStep;}catch(e){}
+    try{if(!src && typeof tt132CopiedStep!=='undefined')src=tt132CopiedStep;}catch(e){}
+    if(!src){
+      try{if(typeof showToast==='function')showToast('Inget steg kopierat',false);}catch(e){}
+      return;
+    }
+    try{if(typeof saveTaktikUndo==='function')saveTaktikUndo();}catch(e){}
+    saveCurrentStepIntoFilm();
+    tk=currentTk()||tk;
+    var insertIdx=Math.max(0,Math.min(currentStepIndex(tk)+1,tk.steps.length));
+    var paste=clone(src);
+    if(!paste||typeof paste!=='object')paste={};
+    if(isAutoLabel(paste.label))paste.label=autoLabel(insertIdx);
+    tk.steps.splice(insertIdx,0,paste);
+    try{editingStepIdx=insertIdx;}catch(e){}
+    try{if(playback)playback.tk=tk;}catch(e){}
+    markDirty();
+    refreshStepUi();
+    try{if(typeof showToast==='function')showToast('Steg inklistrat');}catch(e){}
+  }
+
+  function makeBtn(id,text,title,color){
+    var b=document.createElement('button');
+    b.className='btn';
+    b.id=id;
+    b.type='button';
+    b.textContent=text;
+    b.title=title||text;
+    if(color)b.style.cssText='padding:3px 7px;font-size:0.68rem;color:'+color+';border-color:'+color;
+    else b.style.cssText='padding:3px 7px;font-size:0.68rem';
+    return b;
+  }
+
+  function ensureCss(){
+    if(byId('tt689-step-actions-css'))return;
+    var st=document.createElement('style');
+    st.id='tt689-step-actions-css';
+    st.textContent=[
+      'body.tt688-taktikfilm-editor-active #btn-edit-taktik-meta,',
+      'body.tt688-taktikfilm-editor-active #btn-copy-step,',
+      'body.tt688-taktikfilm-editor-active #btn-paste-step,',
+      'body.tt688-taktikfilm-editor-active #tt132-step-actions{display:none!important;visibility:hidden!important;pointer-events:none!important}',
+      '#tt689-step-actions{display:flex;align-items:center;gap:5px;margin-top:5px;margin-bottom:4px;flex-wrap:wrap}',
+      '#tt689-step-actions .tt689-label{font-size:.68rem;color:#7aaa88;margin-right:2px}',
+      '#tt689-step-actions button{flex:0 0 auto}',
+      '#tt689-paste-step:disabled{opacity:.35!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function ensureStepActions(){
+    ensureCss();
+    var list=byId('edit-taktik-steps');
+    var edit=byId('edit-taktik-ui');
+    if(!list||!edit)return;
+
+    var row=byId('tt689-step-actions');
+    if(!row){
+      row=document.createElement('div');
+      row.id='tt689-step-actions';
+
+      var lbl=document.createElement('span');
+      lbl.className='tt689-label';
+      lbl.textContent='Steg:';
+      row.appendChild(lbl);
+
+      var info=makeBtn('tt689-info','Info','Byt namn/mapp för taktikfilmen','#e8c84a');
+      var copy=makeBtn('tt689-copy-step','Kopiera steg','Kopiera aktuellt steg','#4ae8e8');
+      var paste=makeBtn('tt689-paste-step','Klistra in','Klistra in kopierat steg efter aktuellt steg','#4ae8e8');
+      paste.disabled=!tt689CopiedStep;
+      paste.style.opacity=tt689CopiedStep?'1':'.35';
+
+      info.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();openInfo();},true);
+      copy.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();copyStep();},true);
+      paste.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();pasteStep();},true);
+
+      row.appendChild(info);
+      row.appendChild(copy);
+      row.appendChild(paste);
+    }
+
+    if(row.parentNode!==edit || row.nextSibling!==list){
+      edit.insertBefore(row,list);
+    }
+  }
+
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v689 stegknappar';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent=VERSION;
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v689 TEST';
+    }catch(e){}
+  }
+
+  var oldRenderEditSteps=null;
+  try{oldRenderEditSteps=renderEditSteps;}catch(e){}
+  if(typeof oldRenderEditSteps==='function' && !oldRenderEditSteps._tt689Wrapped){
+    renderEditSteps=function(){
+      var r=oldRenderEditSteps.apply(this,arguments);
+      setTimeout(ensureStepActions,0);
+      return r;
+    };
+    renderEditSteps._tt689Wrapped=true;
+  }
+
+  function tick(){
+    setVersion();
+    ensureStepActions();
+  }
+  ['click','touchend','resize','orientationchange'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(tick,80);},true);
+  });
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);});
+  else{setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);}
+})();
+/* === slut v689 TEST === */
