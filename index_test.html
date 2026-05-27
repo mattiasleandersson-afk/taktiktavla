@@ -1869,7 +1869,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"640 TEST" !important;
+    content:"641 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1880,10 +1880,10 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v640">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v641">
   <details>
-    <summary><span>Lager TEST</span><span>v640</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 10. Fixar att man kan rita ovanpå objekt i andra fria lager.</div>
+    <summary><span>Lager TEST</span><span>v641</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 11. Ta bort lager med innehåll efter tydlig bekräftelse.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
     <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas eller kopieras via lager. Ritläge kan starta ovanpå befintliga olåsta lagerobjekt.</div>
@@ -1894,7 +1894,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">640 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">641 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2515,7 +2515,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=640-fria-lager-kopiera-lager"></script>
+<script src="app_test.js?v=641-fria-lager-ta-bort-innehall"></script>
 
 <script>
 (function(){
@@ -2647,7 +2647,7 @@
 })();
 </script>
 
-<script id="tt640-free-layer-panel-script">
+<script id="tt641-free-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt630FreeLayerPanelInstalled)return;
@@ -2871,6 +2871,37 @@
     return made;
   }
 
+  function deleteObjectsInLayer(layerId){
+    var removed=0;
+    try{
+      var a0=safeArr('arrows').length;
+      window.arrows=arrows=arrows.filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;});
+      removed+=a0-arrows.length;
+    }catch(e){}
+    try{
+      var l0=safeArr('labels').length;
+      window.labels=labels=labels.filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;});
+      removed+=l0-labels.length;
+    }catch(e){}
+    try{
+      var f0=safeArr('freehandPaths').length;
+      window.freehandPaths=freehandPaths=freehandPaths.filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;});
+      removed+=f0-freehandPaths.length;
+    }catch(e){}
+    try{
+      var z0=safeArr('zones').length;
+      window.zones=zones=zones.filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;});
+      removed+=z0-zones.length;
+    }catch(e){}
+    try{
+      if(window.__tt638LastSelectedLayerObjectId && !findLayerObjectById(window.__tt638LastSelectedLayerObjectId)){
+        window.__tt638LastSelectedLayerObjectId=null;
+      }
+      if(window.selectedId && !findLayerObjectById(window.selectedId))window.selectedId=null;
+    }catch(e){}
+    return removed;
+  }
+
   function copyLayer(layer){
     if(!layer)return;
     var count=countObjectsByLayer(layer.id);
@@ -2910,7 +2941,7 @@
         + '<button type="button" data-tt630-action="rename">Namn</button>'
         + '<button type="button" class="'+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'">'+(layer.visible?'Visa':'Dold')+'</button>'
         + '<button type="button" class="'+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'">'+(layer.locked?'Låst':'Lås')+'</button>'
-        + '<button type="button" data-tt630-action="delete" '+(count>0||state.layers.length<2?'disabled':'')+' title="Kan bara ta bort tomma lager">Ta bort</button>'
+        + '<button type="button" data-tt630-action="delete" '+(state.layers.length<2?'disabled':'')+' title="Ta bort lagret. Om lagret innehåller objekt får du en extra bekräftelse.">Ta bort</button>'
         + '</div>';
     }).join('');
     applyFreeLayerVisibilityToDom();
@@ -2948,23 +2979,24 @@
     if(action==='locked')layer.locked=!layer.locked;
     if(action==='delete'){
       var count=countObjectsByLayer(layer.id);
-      if(count>0){
-        alert('Lagret innehåller objekt och kan inte tas bort i detta säkra teststeg.');
-        render();
-        return;
-      }
       if(state.layers.length<2){
         alert('Minst ett lager måste finnas kvar.');
         render();
         return;
       }
-      if(!confirm('Ta bort det tomma lagret "'+(layer.name||'Lager')+'"?')){
+      var msg=count>0
+        ? 'Ta bort lagret "'+(layer.name||'Lager')+'" och dess '+count+' objekt? Detta går bara att ångra med appens vanliga ångra om den finns kvar i minnet.'
+        : 'Ta bort det tomma lagret "'+(layer.name||'Lager')+'"?';
+      if(!confirm(msg)){
         render();
         return;
       }
+      try{if(typeof window.saveUndo==='function')window.saveUndo();}catch(e){}
+      if(count>0)deleteObjectsInLayer(layer.id);
       state.layers=state.layers.filter(function(l){return l.id!==layer.id;});
       if(state.activeId===layer.id)state.activeId=(state.layers[0]&&state.layers[0].id)||'layer-1';
       normalizeNextNum();
+      try{if(typeof window.render==='function')window.render();}catch(e){}
     }
     render();
   }
