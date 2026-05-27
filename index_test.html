@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v661 TEST: kompakt lagerpanel, samma logik som v661.
+  /* v662 TEST: trepunktsmeny stannar öppen, samma logik som v661.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1948,7 +1948,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"661 TEST" !important;
+    content:"662 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -2002,7 +2002,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">661 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">662 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2623,7 +2623,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=661-kompakt-lagerpanel"></script>
+<script src="app_test.js?v=662-trepunktsmeny-fix"></script>
 
 <script>
 (function(){
@@ -3649,7 +3649,15 @@
     render();
   }
 
-  function scheduleRender(){setTimeout(render,0);}
+  function scheduleRender(ev){
+    // v662: låt trepunktsmenyn vara öppen. v661 renderade om panelen på mouseup/touchend
+    // efter att <details> öppnats, vilket gjorde att menyn stängdes direkt.
+    try{
+      var t=ev && ev.target;
+      if(t && t.closest && t.closest('#tt616-layer-panel .tt661-layer-menu'))return;
+    }catch(e){}
+    setTimeout(render,0);
+  }
 
   function init(){
     var list=document.getElementById('tt630-free-layer-list');
