@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v670 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
+  /* v671 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1950,7 +1950,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"670 TEST" !important;
+    content:"671 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1960,7 +1960,7 @@
 
 
 <style id="tt666-taktikfilm-desktop-layout-css">
-  /* v670 TEST: Första datorlayout för Taktikfilm-redigering.
+  /* v671 TEST: Första datorlayout för Taktikfilm-redigering.
      Bas: fungerande lagerlogik v660/v664 + språkputsen i v665.
      Endast desktop, inte fullscreen, inte mobil/iPad. */
   @media (min-width:1024px) and (pointer:fine){
@@ -2179,7 +2179,7 @@
 
 
 <style id="tt667-taktikfilm-desktop-layout-puts-css">
-  /* v670 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
+  /* v671 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
      - bredare stegspalt
      - ritverktygsval bredvid ritverktygen i övre raden
      - lagerpanelen öppen på desktop
@@ -2336,7 +2336,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">670 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">671 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2957,7 +2957,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=670-taktikfilm_desktop_ritval_no_blink"></script>
+<script src="app_test.js?v=671-taktikfilm_ritval_fast_lage"></script>
 
 <script>
 (function(){
@@ -4145,7 +4145,7 @@
 
 
 <style id="tt668-taktikfilm-desktop-layout-fix-css">
-  /* v670 TEST: fixar två saker ovanpå v667 desktop-layout:
+  /* v671 TEST: fixar två saker ovanpå v667 desktop-layout:
      1) ritverktygens val hålls visuellt fast vid originalverktygsraden, direkt efter Återställ
      2) fullskärmsknapp finns i Taktikfilm-raden även när nedersta panelstrippen är dold. */
   @media (min-width:1024px) and (pointer:fine){
@@ -4275,7 +4275,7 @@
 
 
 <style id="tt669-taktikfilm-desktop-options-stabil-css">
-  /* v670 TEST: stoppar hoppet mellan gammal planposition och nya verktygsraden.
+  /* v671 TEST: stoppar hoppet mellan gammal planposition och nya verktygsraden.
      I desktop-layout får den gamla tt291-plancontainern inte visa ritvalen. */
   @media (min-width:1024px) and (pointer:fine){
     body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt291-plan-draw-options{
@@ -4308,90 +4308,70 @@
 
 <script id="tt669-taktikfilm-desktop-options-stabil-js">
 (function(){
-  if(window.__tt669TaktikDesktopOptionsStabilInstalled)return;
+  /* v671 TEST: v669:s flytt/inline-positionering av ritval inaktiveras.
+     Den gav blink/hopp mellan gammal och ny position när appens äldre ritvalslogik kördes.
+     v671 låter i stället ritvalen ligga kvar i sin ursprungliga DOM-plats och positionerar dem
+     visuellt med fast CSS/koordinater från v668. */
   window.__tt669TaktikDesktopOptionsStabilInstalled=true;
+})();
+</script>
 
-  var optionIds=['arrow-options','zone-options','freehand-options'];
-  var toolToOption={arrow:'arrow-options',zone:'zone-options',freehand:'freehand-options'};
 
-  function desktop(){
-    try{return window.matchMedia && window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}
-  }
-  function active(){
-    try{
-      return !!(desktop() && document.body && document.body.classList &&
-        document.body.classList.contains('tt666-taktik-desktop-layout') &&
-        !document.body.classList.contains('fullscreen-portrait'));
-    }catch(e){return false;}
-  }
-  function activeOptionId(){
-    try{return toolToOption[window.mode || mode] || null;}catch(e){return null;}
-  }
-  function ensureSlot(){
-    var bar=document.getElementById('taktikbar');
-    if(!bar)return null;
-    var drawRow=bar.children && bar.children[1];
-    if(!drawRow)return null;
-    var slot=document.getElementById('tt667-draw-options-slot');
-    if(!slot){
-      slot=document.createElement('span');
-      slot.id='tt667-draw-options-slot';
-      slot.setAttribute('aria-label','Ritverktygsval');
+
+<style id="tt671-taktikfilm-ritval-fast-lage-css">
+  @media (min-width:1024px) and (pointer:fine){
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #arrow-options,
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #zone-options,
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #freehand-options{
+      position:fixed !important;
+      left:var(--tt668-options-left, 430px) !important;
+      top:var(--tt668-options-top, 12px) !important;
+      right:auto !important;
+      bottom:auto !important;
+      transform:none !important;
+      transition:none !important;
+      animation:none !important;
+      will-change:auto !important;
+      z-index:170 !important;
     }
-    if(slot.parentNode!==drawRow)drawRow.appendChild(slot);
-    return slot;
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt667-draw-options-slot{
+      display:none !important;
+    }
   }
-  function apply(){
+</style>
+
+<script id="tt671-taktikfilm-ritval-fast-lage-js">
+(function(){
+  if(window.__tt671TaktikfilmRitvalFastLageInstalled)return;
+  window.__tt671TaktikfilmRitvalFastLageInstalled=true;
+  function desktop(){try{return window.matchMedia && window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}}
+  function active(){
+    try{return !!(desktop() && document.body && document.body.classList && document.body.classList.contains('tt666-taktik-desktop-layout') && !document.body.classList.contains('fullscreen-portrait'));}catch(e){return false;}
+  }
+  function syncPosition(){
     try{
       if(!active())return;
-      var slot=ensureSlot();
-      if(!slot)return;
-      var activeId=activeOptionId();
-      optionIds.forEach(function(id){
+      var reset=document.getElementById('btn-reset');
+      if(!reset)return;
+      var r=reset.getBoundingClientRect();
+      document.documentElement.style.setProperty('--tt668-options-left', Math.max(8, Math.round(r.right+8))+'px');
+      document.documentElement.style.setProperty('--tt668-options-top', Math.max(6, Math.round(r.top))+'px');
+    }catch(e){}
+  }
+  function restoreOriginalParents(){
+    try{
+      if(!active())return;
+      var host=document.getElementById('pitch-wrapper') || document.body;
+      ['arrow-options','zone-options','freehand-options'].forEach(function(id){
         var el=document.getElementById(id);
-        if(!el)return;
-        if(el.parentNode!==slot)slot.appendChild(el);
-        var on=(id===activeId);
-        el.classList.toggle('tt669-desktop-active-option',!!on);
-        el.classList.toggle('tt291-active-option',!!on);
-        if(on){
-          el.style.setProperty('display','flex','important');
-          el.style.setProperty('position','static','important');
-          el.style.setProperty('left','auto','important');
-          el.style.setProperty('top','auto','important');
-          el.style.setProperty('right','auto','important');
-          el.style.setProperty('bottom','auto','important');
-          el.style.setProperty('z-index','auto','important');
-        }else{
-          el.style.setProperty('display','none','important');
-        }
+        if(el && el.parentNode && el.parentNode.id==='tt667-draw-options-slot')host.appendChild(el);
       });
     }catch(e){}
   }
-  function later(){
-    setTimeout(apply,0);
-    setTimeout(apply,40);
-    setTimeout(apply,120);
-    setTimeout(apply,260);
-    setTimeout(apply,520);
-  }
-
-  var oldSetMode=typeof setMode==='function'?setMode:null;
-  if(oldSetMode && !oldSetMode.__tt669DesktopOptionsWrapped){
-    var wrapped=function(){
-      var r=oldSetMode.apply(this,arguments);
-      later();
-      return r;
-    };
-    wrapped.__tt669DesktopOptionsWrapped=true;
-    try{setMode=wrapped;window.setMode=wrapped;}catch(e){}
-  }
-
-  ['click','pointerdown','mousedown','touchend','keyup','resize','orientationchange'].forEach(function(evt){
-    window.addEventListener(evt,later,true);
-  });
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',later);
-  else later();
+  function apply(){restoreOriginalParents();syncPosition();}
+  function later(){setTimeout(apply,0);setTimeout(apply,80);setTimeout(apply,220);}
+  ['click','pointerdown','mousedown','mouseup','touchend','keyup','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,later,true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',later); else later();
 })();
 </script>
 
