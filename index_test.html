@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v644 TEST: fria lager till kommande steg.
+  /* v645 TEST: fria lager till kommande steg.
      Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"644 TEST" !important;
+    content:"645 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,13 +1912,13 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v644">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v645">
   <details>
-    <summary><span>Lager TEST</span><span>v644</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 14. Lager kan kopieras till kommande steg i Taktikfilm.</div>
+    <summary><span>Lager TEST</span><span>v645</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 15. Taktikfilm-lager kan få gemensam Visa/Lås-status över Framåt/Alla steg.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas/kopieras via lager. Upp/Ned styr den visuella lagerordningen.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas/kopieras via lager. Framåt/Alla steg kan nu synka Visa/Lås i Taktikfilm.</div>
   </details>
 </div>
 
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">644 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">645 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=644-free-layer-forward-steps"></script>
+<script src="app_test.js?v=645-layer-shared-status"></script>
 
 <script>
 (function(){
@@ -2706,7 +2706,7 @@
 })();
 </script>
 
-<script id="tt641-free-layer-panel-script">
+<script id="tt645-free-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt630FreeLayerPanelInstalled)return;
@@ -2725,7 +2725,15 @@
 
   function cloneLayers(layers){
     return (Array.isArray(layers)?layers:[]).map(function(l){
-      return {id:l.id||'layer-1',name:l.name||'Lager',visible:l.visible!==false,locked:!!l.locked};
+      var out={
+        id:l.id||'layer-1',
+        name:l.name||'Lager',
+        visible:l.visible!==false,
+        locked:!!l.locked,
+        scope:l.scope||'step',
+        scopeStart:(typeof l.scopeStart==='number'?l.scopeStart:null)
+      };
+      return out;
     });
   }
 
@@ -3031,6 +3039,66 @@
     try{step.freeLayers=window.tt635GetFreeLayersSnapshot?window.tt635GetFreeLayersSnapshot():step.freeLayers;}catch(e){}
   }
 
+  function currentTaktikContext(){
+    var tk=null,cur=0;
+    try{tk=(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null && window.taktikFilmer)?window.taktikFilmer[editingTaktikIdx]:null;}catch(e){tk=null;}
+    try{cur=(typeof editingStepIdx==='number')?editingStepIdx:0;}catch(e){cur=0;}
+    return {tk:tk,cur:cur};
+  }
+
+  function layerScopeText(layer){
+    var s=(layer&&layer.scope)||'step';
+    if(s==='all')return 'alla steg';
+    if(s==='forward')return 'från steg '+(((layer&&typeof layer.scopeStart==='number')?layer.scopeStart:0)+1);
+    return 'bara detta steg';
+  }
+
+  function setLayerMetaInSnapshot(snapshot, layerId, patch){
+    if(!snapshot)return false;
+    var fl=snapshot.freeLayers;
+    if(!fl||!Array.isArray(fl.layers))return false;
+    var changed=false;
+    for(var i=0;i<fl.layers.length;i++){
+      var l=fl.layers[i];
+      if(l&&l.id===layerId){
+        for(var k in patch){if(Object.prototype.hasOwnProperty.call(patch,k))l[k]=patch[k];}
+        changed=true;
+      }
+    }
+    return changed;
+  }
+
+  function shouldSyncLayerToStep(layer, stepIndex){
+    if(!layer)return false;
+    var scope=layer.scope||'step';
+    var start=(typeof layer.scopeStart==='number')?layer.scopeStart:null;
+    if(scope==='all')return true;
+    if(scope==='forward')return start===null ? true : stepIndex>=start;
+    return false;
+  }
+
+  function syncLayerMetaAcrossTaktikSteps(layer, patch){
+    var ctx=currentTaktikContext();
+    var tk=ctx.tk;
+    if(!tk||!Array.isArray(tk.steps)||!layer)return;
+    var fullPatch={};
+    for(var k in patch){if(Object.prototype.hasOwnProperty.call(patch,k))fullPatch[k]=patch[k];}
+    fullPatch.scope=layer.scope||'step';
+    fullPatch.scopeStart=(typeof layer.scopeStart==='number')?layer.scopeStart:null;
+    fullPatch.name=layer.name;
+    var changed=0;
+    for(var si=0;si<tk.steps.length;si++){
+      if(!shouldSyncLayerToStep(layer,si))continue;
+      if(setLayerMetaInSnapshot(tk.steps[si], layer.id, fullPatch))changed++;
+    }
+    try{
+      if(window.tt635SetFreeLayersSnapshot && tk.steps[ctx.cur] && tk.steps[ctx.cur].freeLayers){
+        window.tt635SetFreeLayersSnapshot(tk.steps[ctx.cur].freeLayers);
+      }
+    }catch(e){}
+    return changed;
+  }
+
   function copyLayerToTaktikSteps(layer, mode){
     if(!layer)return;
     var tk=null;
@@ -3054,6 +3122,8 @@
       alert('Lagret är tomt i aktivt steg.');
       return;
     }
+    layer.scope=(mode==='all')?'all':'forward';
+    layer.scopeStart=(mode==='all')?0:cur;
     var start=mode==='all'?0:cur+1;
     if(start>=tk.steps.length){
       alert('Det finns inget kommande steg att kopiera till.');
@@ -3072,6 +3142,8 @@
       replaceLayerObjectsInStep(tk.steps[si], layer.id, bundle);
       changed++;
     }
+    try{tk.steps[cur]=snap; if(tk.steps[cur])tk.steps[cur].freeLayers=window.tt635GetFreeLayersSnapshot?window.tt635GetFreeLayersSnapshot():tk.steps[cur].freeLayers;}catch(e){}
+    syncLayerMetaAcrossTaktikSteps(layer,{visible:layer.visible!==false,locked:!!layer.locked});
     try{if(typeof cloudStatus==='function')cloudStatus('✅ Lager kopierat till '+changed+' steg','#4ae87a');}catch(e){}
     try{if(typeof showToast==='function')showToast('Lager kopierat till '+changed+' steg');}catch(e){}
     render();
@@ -3087,7 +3159,7 @@
       var count=countObjectsByLayer(layer.id);
       return '<div class="'+rowClass+'" data-tt630-layer-id="'+esc(layer.id)+'">'
         + '<div class="tt616-layer-name">'+esc(layer.name)
-        + '<span class="tt630-layer-meta">'+(active?'aktivt lager':'tillfälligt testlager')+'</span>'
+        + '<span class="tt630-layer-meta">'+(active?'aktivt lager':'fritt lager')+' · '+esc(layerScopeText(layer))+'</span>'
         + '<span class="tt631-layer-count">'+count+' objekt</span>'
         + '</div>'
         + '<button type="button" class="tt630-layer-active-btn" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'">'+(active?'Aktiv':'Välj')+'</button>'
@@ -3151,11 +3223,20 @@
       var name=window.prompt('Nytt lagernamn', layer.name || 'Lager');
       if(name!==null){
         name=String(name).trim();
-        if(name)layer.name=name.slice(0,40);
+        if(name){
+          layer.name=name.slice(0,40);
+          syncLayerMetaAcrossTaktikSteps(layer,{visible:layer.visible!==false,locked:!!layer.locked,name:layer.name});
+        }
       }
     }
-    if(action==='visible')layer.visible=!layer.visible;
-    if(action==='locked')layer.locked=!layer.locked;
+    if(action==='visible'){
+      layer.visible=!layer.visible;
+      syncLayerMetaAcrossTaktikSteps(layer,{visible:layer.visible!==false,locked:!!layer.locked});
+    }
+    if(action==='locked'){
+      layer.locked=!layer.locked;
+      syncLayerMetaAcrossTaktikSteps(layer,{visible:layer.visible!==false,locked:!!layer.locked});
+    }
     if(action==='delete'){
       var count=countObjectsByLayer(layer.id);
       if(state.layers.length<2){
