@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v653 TEST: Lager 1 öga på som standard i tomt steg.
+  /* v654 TEST: Lager 1 öga på som standard i tomt steg.
      Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"653 TEST" !important;
+    content:"654 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">653 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">654 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=653-layer1-default-eye-on"></script>
+<script src="app_test.js?v=654-layer1-default-eye-syncfix"></script>
 
 <script>
 (function(){
@@ -3255,10 +3255,13 @@
       // När användaren trycker ögat på i ett tomt steg materialiseras lagret först,
       // och då blir hasObjects true vid nästa render.
       if(!hasObjects){
-        // v653: Lager 1 ska vara öga på som grundläge även i ett tomt steg,
-        // så användaren kan ignorera lager och bara rita i Lager 1.
-        // Övriga lager utan objekt visas som öga av tills de hämtas/visas i steget.
-        if(layer.id==='layer-1' && !(meta&&meta.visible===false)){
+        // v654: Lager 1 ska vara öga på som grundläge bara när lagret faktiskt
+        // är ett tomt standardlager utan innehåll någon annanstans i filmen.
+        // Om Lager 1 har innehåll i ett annat steg ska ögat vara av i detta tomma steg,
+        // så användaren tydligt kan trycka på ögat för att hämta/visa lagret här.
+        var hasSourceElsewhere=false;
+        try{hasSourceElsewhere=bundleObjectCount(findLayerSourceBundle(ctx.tk,ctx.cur,layer.id,snap))>0;}catch(e){hasSourceElsewhere=false;}
+        if(layer.id==='layer-1' && !hasSourceElsewhere && !(meta&&meta.visible===false)){
           layer.visible=true;
         }else{
           layer.visible=false;
