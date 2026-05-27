@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v652 TEST: öga av när aktivt steg saknar lagerobjekt.
+  /* v653 TEST: Lager 1 öga på som standard i tomt steg.
      Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"652 TEST" !important;
+    content:"653 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,10 +1912,10 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v652">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v653">
   <details>
-    <summary><span>Lager TEST</span><span>v652</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 21. Taktikfilm visar öga av när aktivt steg saknar objekt i lagret.</div>
+    <summary><span>Lager TEST</span><span>v653</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 22. Lager 1 är öga på som standard i tomt Taktikfilm-steg.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
     <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Ögat är stegvis i Taktikfilm: ändra detta steg, framåt eller alla steg.</div>
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">652 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">653 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=652-step-eye-symbol-no-objects"></script>
+<script src="app_test.js?v=653-layer1-default-eye-on"></script>
 
 <script>
 (function(){
@@ -3255,7 +3255,14 @@
       // När användaren trycker ögat på i ett tomt steg materialiseras lagret först,
       // och då blir hasObjects true vid nästa render.
       if(!hasObjects){
-        layer.visible=false;
+        // v653: Lager 1 ska vara öga på som grundläge även i ett tomt steg,
+        // så användaren kan ignorera lager och bara rita i Lager 1.
+        // Övriga lager utan objekt visas som öga av tills de hämtas/visas i steget.
+        if(layer.id==='layer-1' && !(meta&&meta.visible===false)){
+          layer.visible=true;
+        }else{
+          layer.visible=false;
+        }
         layer.locked=false;
       }else if(meta&&Object.prototype.hasOwnProperty.call(meta,'visible')){
         layer.visible=meta.visible!==false;
