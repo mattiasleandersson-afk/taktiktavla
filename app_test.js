@@ -86,9 +86,9 @@ function getZoneColorChoiceV529(){
 }
 var freehandDrawing=false,freehandCurrent=null;
 
-/* v649 TEST: raderade lagerobjekt ska inte återkomma via öga.
-   Bygger vidare från fungerande v648. App-logiken lämnas i övrigt orörd;
-   radering i Taktikfilm synkas till aktivt steg och markerar tomt lager som rensat.
+/* v650 TEST: stegvis öga synkas vid stegbyte.
+   Bygger vidare från fungerande v649. App-logiken lämnas i övrigt orörd;
+   indexpanelen visar nu öga av när lagret saknas i aktivt Taktikfilm-steg.
    Ingen Supabase och ingen recoveryändring. */
 function tt631ActiveFreeLayerId(){
   try{
