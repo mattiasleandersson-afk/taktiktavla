@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v651 TEST: stegvis öga-symbol fixas vid tomt steg.
+  /* v652 TEST: öga av när aktivt steg saknar lagerobjekt.
      Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"651 TEST" !important;
+    content:"652 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,10 +1912,10 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v651">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v652">
   <details>
-    <summary><span>Lager TEST</span><span>v651</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 20. Taktikfilm synkar ögat med aktivt steg: om lagret saknas i steget visas ögat av.</div>
+    <summary><span>Lager TEST</span><span>v652</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 21. Taktikfilm visar öga av när aktivt steg saknar objekt i lagret.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
     <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Ögat är stegvis i Taktikfilm: ändra detta steg, framåt eller alla steg.</div>
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">648 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">652 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=651-step-eye-empty-step-fix"></script>
+<script src="app_test.js?v=652-step-eye-symbol-no-objects"></script>
 
 <script>
 (function(){
@@ -3250,15 +3250,19 @@
       // v651: panelens öga ska spegla det aktiva steget, inte globala ritarrayer
       // som kan ligga kvar från tidigare steg. Därför räknas bara objekt i stegets snapshot.
       var hasObjects=countLayerObjectsInSnap(snap,layer.id)>0;
-      if(meta&&Object.prototype.hasOwnProperty.call(meta,'visible')){
-        layer.visible=meta.visible!==false;
-      }else{
-        layer.visible=!!hasObjects;
-      }
-      if(meta&&Object.prototype.hasOwnProperty.call(meta,'locked')){
-        layer.locked=!!meta.locked;
-      }else if(!hasObjects){
+      // v652: ögat ska vara av om aktivt steg saknar objekt i lagret, även om
+      // stegets freeLayers-meta råkar ha visible:true från grundlistan.
+      // När användaren trycker ögat på i ett tomt steg materialiseras lagret först,
+      // och då blir hasObjects true vid nästa render.
+      if(!hasObjects){
+        layer.visible=false;
         layer.locked=false;
+      }else if(meta&&Object.prototype.hasOwnProperty.call(meta,'visible')){
+        layer.visible=meta.visible!==false;
+        if(meta&&Object.prototype.hasOwnProperty.call(meta,'locked'))layer.locked=!!meta.locked;
+      }else{
+        layer.visible=true;
+        if(meta&&Object.prototype.hasOwnProperty.call(meta,'locked'))layer.locked=!!meta.locked;
       }
     }
   }
