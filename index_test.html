@@ -1693,9 +1693,8 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v638 TEST: fria lager ta bort tomma lager.
-     Visa/Dold och Lås/Låst per fritt lager påverkar nu pilar, text, frihand och zoner i aktuell session.
-     Ingen sparning, ingen localStorage, ingen render-wrapper och ingen recoveryändring. */
+  /* v642 TEST: fria lager + mobil toggle för lagerpanelen.
+     Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
     right:calc(env(safe-area-inset-right,0px) + 10px);
@@ -1844,15 +1843,46 @@
     margin-top:2px;
   }
 
+
+  #tt642-layer-mobile-toggle{
+    display:none;
+  }
+
   @media (max-width:720px){
+    #tt642-layer-mobile-toggle{
+      display:block;
+      position:fixed;
+      left:calc(env(safe-area-inset-left,0px) + 10px);
+      bottom:calc(env(safe-area-inset-bottom,0px) + 82px);
+      z-index:99992;
+      border:1px solid rgba(74,232,122,.62);
+      background:rgba(8,24,14,.96);
+      color:#ffd84a;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:900;
+      font-size:.82rem;
+      box-shadow:0 8px 22px rgba(0,0,0,.36);
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
+    }
+    body.tt642-layer-panel-mobile-open #tt642-layer-mobile-toggle{
+      background:rgba(255,216,74,.18);
+      border-color:rgba(255,216,74,.72);
+      color:#fff3ad;
+    }
     #tt616-layer-panel{
+      display:none;
       left:10px;
       right:10px;
       top:calc(env(safe-area-inset-top,0px) + 56px);
       bottom:auto;
       width:auto;
-      max-height:42vh;
+      max-height:55vh;
       padding:8px;
+    }
+    body.tt642-layer-panel-mobile-open #tt616-layer-panel{
+      display:block;
     }
   }
 </style>
@@ -1869,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"641 TEST" !important;
+    content:"642 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1880,21 +1910,50 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v641">
+<button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
+
+<div id="tt616-layer-panel" aria-label="Lager testpanel v642">
   <details>
-    <summary><span>Lager TEST</span><span>v641</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 11. Ta bort lager med innehåll efter tydlig bekräftelse.</div>
+    <summary><span>Lager TEST</span><span>v642</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 12. iPhone-knapp för att öppna/stänga lagerpanelen.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
     <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas eller kopieras via lager. Ritläge kan starta ovanpå befintliga olåsta lagerobjekt.</div>
   </details>
 </div>
 
+<script id="tt642-layer-mobile-toggle-script">
+(function(){
+  if(window.__tt642LayerMobileToggleInstalled)return;
+  window.__tt642LayerMobileToggleInstalled=true;
+  function setOpen(open){
+    document.body.classList.toggle('tt642-layer-panel-mobile-open', !!open);
+    var btn=document.getElementById('tt642-layer-mobile-toggle');
+    var details=document.querySelector('#tt616-layer-panel details');
+    if(btn)btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(details && window.matchMedia && window.matchMedia('(max-width:720px)').matches){
+      if(open)details.setAttribute('open','');
+    }
+  }
+  function bind(){
+    var btn=document.getElementById('tt642-layer-mobile-toggle');
+    if(!btn || btn.dataset.tt642Bound==='1')return;
+    btn.dataset.tt642Bound='1';
+    btn.addEventListener('click',function(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      setOpen(!document.body.classList.contains('tt642-layer-panel-mobile-open'));
+    },{passive:false});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);
+  else bind();
+})();
+</script>
 
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">641 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">642 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2515,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=641-fria-lager-ta-bort-innehall"></script>
+<script src="app_test.js?v=642-lagerpanel-iphone-toggle"></script>
 
 <script>
 (function(){
