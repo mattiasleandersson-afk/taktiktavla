@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v647 TEST: fria lager till kommande steg.
+  /* v648 TEST: stegvis öga logikfix.
      Bygger från v641. Endast panelplacering/öppning på liten skärm ändras. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"647 TEST" !important;
+    content:"648 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,9 +1912,9 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v647">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v648">
   <details>
-    <summary><span>Lager TEST</span><span>v645</span></summary>
+    <summary><span>Lager TEST</span><span>v648</span></summary>
     <div class="tt616-layer-sub">Fria lager steg 17. Taktikfilm har stegvis öga: Visa/Dold kan ändras för detta steg, framåt eller alla steg.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">647 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">648 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=647-layer-step-eye"></script>
+<script src="app_test.js?v=648-step-eye-logicfix"></script>
 
 <script>
 (function(){
@@ -2706,7 +2706,7 @@
 })();
 </script>
 
-<script id="tt647-free-layer-panel-script">
+<script id="tt648-free-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt630FreeLayerPanelInstalled)return;
@@ -3123,6 +3123,68 @@
     }
   }
 
+  function countLayerObjectsInSnap(snap, layerId){
+    var n=0;
+    snap=snap||{};
+    ['arrows','labels','freehandPaths','zones'].forEach(function(name){
+      var arr=Array.isArray(snap[name])?snap[name]:[];
+      for(var i=0;i<arr.length;i++){
+        if(((arr[i]&&arr[i].layerId)||'layer-1')===layerId)n++;
+      }
+    });
+    return n;
+  }
+
+  function bundleObjectCount(bundle){
+    return (bundle&&bundle.arrows?bundle.arrows.length:0)+(bundle&&bundle.labels?bundle.labels.length:0)+(bundle&&bundle.freehandPaths?bundle.freehandPaths.length:0)+(bundle&&bundle.zones?bundle.zones.length:0);
+  }
+
+  function findLayerSourceBundle(tk, cur, layerId, currentSnapObj){
+    var snap=currentSnapObj||null;
+    if(snap && countLayerObjectsInSnap(snap,layerId)>0)return objectsFromSnapByLayer(snap,layerId);
+    if(tk && Array.isArray(tk.steps)){
+      for(var dist=1;dist<tk.steps.length;dist++){
+        var prev=cur-dist;
+        if(prev>=0 && tk.steps[prev] && countLayerObjectsInSnap(tk.steps[prev],layerId)>0)return objectsFromSnapByLayer(tk.steps[prev],layerId);
+        var next=cur+dist;
+        if(next<tk.steps.length && tk.steps[next] && countLayerObjectsInSnap(tk.steps[next],layerId)>0)return objectsFromSnapByLayer(tk.steps[next],layerId);
+      }
+    }
+    return {arrows:[],labels:[],freehandPaths:[],zones:[]};
+  }
+
+  function replaceLayerObjectsInGlobals(layerId,bundle){
+    try{
+      window.arrows=arrows=(Array.isArray(arrows)?arrows:[]).filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;}).concat((bundle.arrows||[]).map(cloneSimple));
+    }catch(e){}
+    try{
+      window.labels=labels=(Array.isArray(labels)?labels:[]).filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;}).concat((bundle.labels||[]).map(cloneSimple));
+    }catch(e){}
+    try{
+      window.freehandPaths=freehandPaths=(Array.isArray(freehandPaths)?freehandPaths:[]).filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;}).concat((bundle.freehandPaths||[]).map(cloneSimple));
+    }catch(e){}
+    try{
+      window.zones=zones=(Array.isArray(zones)?zones:[]).filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;}).concat((bundle.zones||[]).map(cloneSimple));
+    }catch(e){}
+  }
+
+  function materializeLayerInCurrentStepIfNeeded(layer){
+    if(!layer)return false;
+    var ctx=currentTaktikContext();
+    var tk=ctx.tk;
+    if(!tk||!Array.isArray(tk.steps)||!tk.steps[ctx.cur])return false;
+    var snap=null;
+    try{snap=(typeof currentSnap==='function')?currentSnap():tk.steps[ctx.cur];}catch(e){snap=tk.steps[ctx.cur];}
+    if(!snap)return false;
+    if(countLayerObjectsInSnap(snap,layer.id)>0)return false;
+    var bundle=findLayerSourceBundle(tk,ctx.cur,layer.id,snap);
+    if(bundleObjectCount(bundle)<1)return false;
+    replaceLayerObjectsInStep(snap,layer.id,bundle);
+    tk.steps[ctx.cur]=snap;
+    replaceLayerObjectsInGlobals(layer.id,bundle);
+    return true;
+  }
+
   function setLayerVisibilityAcrossTaktikSteps(layer,mode,visible){
     if(!layer)return;
     var ctx=currentTaktikContext();
@@ -3131,18 +3193,33 @@
       alert('Detta fungerar bara när du redigerar en Taktikfilm.');
       return;
     }
-    try{
-      layer.visible=visible!==false;
-      var snap=(typeof currentSnap==='function')?currentSnap():tk.steps[ctx.cur];
-      if(snap){setLayerMetaInSnapshot(snap,layer,{visible:visible!==false});tk.steps[ctx.cur]=snap;}
-    }catch(e){}
+    var curSnap=null;
+    try{curSnap=(typeof currentSnap==='function')?currentSnap():tk.steps[ctx.cur];}catch(e){curSnap=tk.steps[ctx.cur];}
+    var bundle=findLayerSourceBundle(tk,ctx.cur,layer.id,curSnap);
+    var hasSource=bundleObjectCount(bundle)>0;
+    if(visible!==false && !hasSource){
+      alert('Lagret är tomt. Rita något i lagret först.');
+      return;
+    }
     var start=(mode==='forward')?ctx.cur:0;
     var changed=0;
+    var materialized=0;
     for(var si=start;si<tk.steps.length;si++){
       if(!tk.steps[si])continue;
+      if(visible!==false && countLayerObjectsInSnap(tk.steps[si],layer.id)<1 && hasSource){
+        replaceLayerObjectsInStep(tk.steps[si],layer.id,bundle);
+        materialized++;
+      }
       if(setLayerMetaInSnapshot(tk.steps[si],layer,{visible:visible!==false}))changed++;
     }
-    try{if(typeof window.showToast==='function')window.showToast((visible!==false?'Visar':'Döljer')+' lager i '+changed+' steg');}catch(e){}
+    if(visible!==false){
+      layer.visible=true;
+      if(countObjectsByLayer(layer.id)<1 && hasSource)replaceLayerObjectsInGlobals(layer.id,bundle);
+    }else{
+      layer.visible=false;
+    }
+    try{if(ctx.tk && ctx.tk.steps && ctx.tk.steps[ctx.cur])setLayerMetaInSnapshot(ctx.tk.steps[ctx.cur],layer,{visible:visible!==false});}catch(e){}
+    try{if(typeof window.showToast==='function')window.showToast((visible!==false?'Visar':'Döljer')+' lager i '+changed+' steg'+(materialized?' · hämtat till '+materialized+' steg':''));}catch(e){}
     try{if(typeof window.render==='function')window.render();}catch(e){}
     render();
   }
@@ -3214,14 +3291,12 @@
         + '<button type="button" data-tt630-action="down" '+(state.layers.indexOf(layer)===state.layers.length-1?'disabled':'')+' title="Flytta lagret nedåt/bakåt visuellt">Ned</button>'
         + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta hit</button>'
         + '<button type="button" data-tt630-action="copy" title="Kopiera hela lagret till ett nytt lager">Kopiera</button>'
-        + '<button type="button" data-tt630-action="copyForward" title="Taktikfilm: kopiera detta lager till alla kommande steg">Kopiera framåt</button>'
-        + '<button type="button" data-tt630-action="copyAllSteps" title="Taktikfilm: kopiera detta lager till alla steg">Kopiera alla</button>'
         + '<button type="button" data-tt630-action="rename">Namn</button>'
         + '<button type="button" class="'+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'" title="Växla öga bara i aktuellt steg">'+(layer.visible?'👁':'Öga av')+'</button>'
-        + '<button type="button" data-tt630-action="showForward" title="Visa detta lager från aktuellt steg och framåt">Visa framåt</button>'
-        + '<button type="button" data-tt630-action="hideForward" title="Dölj detta lager från aktuellt steg och framåt">Dölj framåt</button>'
-        + '<button type="button" data-tt630-action="showAll" title="Visa detta lager i alla steg">Visa alla</button>'
-        + '<button type="button" data-tt630-action="hideAll" title="Dölj detta lager i alla steg">Dölj alla</button>'
+        + '<button type="button" data-tt630-action="showForward" title="Öppna ögat från aktuellt steg och framåt. Om lagret saknas i ett steg hämtas samma lager dit.">Visa framåt</button>'
+        + '<button type="button" data-tt630-action="hideForward" title="Stäng ögat från aktuellt steg och framåt.">Dölj framåt</button>'
+        + '<button type="button" data-tt630-action="showAll" title="Öppna ögat i alla steg. Om lagret saknas i ett steg hämtas samma lager dit.">Visa alla</button>'
+        + '<button type="button" data-tt630-action="hideAll" title="Stäng ögat i alla steg.">Dölj alla</button>'
         + '<button type="button" class="'+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'" title="Låsning gäller aktuellt steg i detta steg">'+(layer.locked?'Låst':'Lås')+'</button>'
         + '<button type="button" data-tt630-action="delete" '+(state.layers.length<2?'disabled':'')+' title="Ta bort lagret. Om lagret innehåller objekt får du en extra bekräftelse.">Ta bort</button>'
         + '</div>';
@@ -3262,14 +3337,6 @@
       copyLayer(layer);
       return;
     }
-    if(action==='copyForward'){
-      copyLayerToTaktikSteps(layer,'forward');
-      return;
-    }
-    if(action==='copyAllSteps'){
-      copyLayerToTaktikSteps(layer,'all');
-      return;
-    }
     if(action==='rename'){
       var name=window.prompt('Nytt lagernamn', layer.name || 'Lager');
       if(name!==null){
@@ -3281,13 +3348,30 @@
         }
       }
     }
+    if(action==='showForward'){
+      setLayerVisibilityAcrossTaktikSteps(layer,'forward',true);
+      return;
+    }
+    if(action==='hideForward'){
+      setLayerVisibilityAcrossTaktikSteps(layer,'forward',false);
+      return;
+    }
+    if(action==='showAll'){
+      setLayerVisibilityAcrossTaktikSteps(layer,'all',true);
+      return;
+    }
+    if(action==='hideAll'){
+      setLayerVisibilityAcrossTaktikSteps(layer,'all',false);
+      return;
+    }
     if(action==='visible'){
       layer.visible=!layer.visible;
-      // v647: behåll synlighet/låsning som stegvis status i respektive steg.
+      if(layer.visible)materializeLayerInCurrentStepIfNeeded(layer);
+      saveCurrentStepLayerMeta(layer,{visible:layer.visible});
     }
     if(action==='locked'){
       layer.locked=!layer.locked;
-      // v647: behåll synlighet/låsning som stegvis status i respektive steg.
+      saveCurrentStepLayerMeta(layer,{locked:layer.locked});
     }
     if(action==='delete'){
       var count=countObjectsByLayer(layer.id);
