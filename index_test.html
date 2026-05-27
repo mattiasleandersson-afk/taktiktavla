@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v613 fasta testfilnamn</title>
+<title>Taktiktavla TEST v666 desktoplayout</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v664 TEST: Visa alla/framåt hämtar från aktivt steg, byggd från fungerande v663.
+  /* v666 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1807,6 +1807,7 @@
   }
   #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-layer-menu-panel{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
   #tt616-layer-panel .tt661-layer-menu-panel .tt661-wide{grid-column:1 / -1;}
+  #tt616-layer-panel .tt665-menu-section{grid-column:1 / -1; color:#9fc9a8; font-size:.66rem; font-weight:900; letter-spacing:.02em; text-transform:uppercase; padding:4px 2px 0; opacity:.9;}
   #tt616-layer-panel button[disabled]{opacity:.45;}
   #tt616-layer-panel button.tt621-layer-on{
     background:rgba(74,232,122,.18);
@@ -1949,11 +1950,229 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"662 TEST" !important;
+    content:"666 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
     white-space:nowrap !important;
+  }
+</style>
+
+
+<style id="tt666-taktikfilm-desktop-layout-css">
+  /* v666 TEST: Första datorlayout för Taktikfilm-redigering.
+     Bas: fungerande lagerlogik v660/v664 + språkputsen i v665.
+     Endast desktop, inte fullscreen, inte mobil/iPad. */
+  @media (min-width:1024px) and (pointer:fine){
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait){
+      overflow:hidden !important;
+    }
+
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #topbar{
+      position:relative !important;
+      z-index:120 !important;
+      flex:0 0 auto !important;
+    }
+
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #bench-bar{
+      display:none !important;
+    }
+
+    /* Övre taktikfilmsrad: ritverktyg till vänster, spela/spara till höger. */
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar{
+      display:flex !important;
+      position:fixed !important;
+      left:8px !important;
+      right:8px !important;
+      top:64px !important;
+      z-index:110 !important;
+      box-sizing:border-box !important;
+      flex-direction:row !important;
+      align-items:center !important;
+      justify-content:space-between !important;
+      gap:10px !important;
+      padding:6px 8px !important;
+      min-height:42px !important;
+      background:rgba(14,23,16,.97) !important;
+      border:1px solid rgba(74,232,122,.38) !important;
+      border-radius:12px !important;
+      box-shadow:0 8px 22px rgba(0,0,0,.35) !important;
+      overflow:visible !important;
+    }
+
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar > div{
+      margin:0 !important;
+      min-width:0 !important;
+      flex-wrap:nowrap !important;
+      overflow-x:auto !important;
+      overflow-y:hidden !important;
+      scrollbar-width:thin !important;
+      white-space:nowrap !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar > div:nth-child(2){
+      order:1 !important;
+      flex:1 1 42% !important;
+      justify-content:flex-start !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar > div:nth-child(1){
+      order:2 !important;
+      flex:0 1 58% !important;
+      justify-content:flex-end !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar-title{
+      display:none !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar button,
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar select,
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #taktikbar label{
+      flex:0 0 auto !important;
+    }
+
+    /* Höger filmrad: info/spara/avsluta ligger nära spelknapparna. */
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #edit-taktik-ui > div:nth-child(2){
+      position:fixed !important;
+      right:16px !important;
+      top:112px !important;
+      z-index:109 !important;
+      width:318px !important;
+      box-sizing:border-box !important;
+      display:flex !important;
+      gap:5px !important;
+      align-items:center !important;
+      background:rgba(14,23,16,.96) !important;
+      border:1px solid rgba(232,200,74,.28) !important;
+      border-radius:10px !important;
+      padding:5px !important;
+      box-shadow:0 8px 20px rgba(0,0,0,.28) !important;
+    }
+
+    /* Vänster spalt: stegnavigering och steglista. */
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #bottompanel{
+      display:block !important;
+      position:fixed !important;
+      left:8px !important;
+      top:112px !important;
+      bottom:8px !important;
+      width:214px !important;
+      height:auto !important;
+      max-height:none !important;
+      padding:0 !important;
+      margin:0 !important;
+      overflow:visible !important;
+      background:transparent !important;
+      border:0 !important;
+      z-index:85 !important;
+      pointer-events:none !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #panel-toggle-strip,
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #panel-show-btn{
+      display:none !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #panel-taktik{
+      display:block !important;
+      height:100% !important;
+      background:transparent !important;
+      border:0 !important;
+      padding:0 !important;
+      pointer-events:auto !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #panel-taktik > div{
+      height:100% !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #rec-ui,
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #no-rec-ui{
+      display:none !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #edit-taktik-ui{
+      display:block !important;
+      height:100% !important;
+      pointer-events:none !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #edit-taktik-ui > div:nth-child(1){
+      position:fixed !important;
+      left:8px !important;
+      top:112px !important;
+      width:214px !important;
+      box-sizing:border-box !important;
+      display:flex !important;
+      flex-wrap:wrap !important;
+      gap:4px !important;
+      align-items:center !important;
+      padding:6px !important;
+      margin:0 !important;
+      background:rgba(14,23,16,.96) !important;
+      border:1px solid rgba(74,232,122,.26) !important;
+      border-radius:10px !important;
+      pointer-events:auto !important;
+      box-shadow:0 8px 20px rgba(0,0,0,.26) !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #edit-step-counter{
+      flex:1 1 auto !important;
+      min-width:42px !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #edit-step-name-inp{
+      flex:1 0 100% !important;
+      width:100% !important;
+      order:20 !important;
+      margin-top:2px !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #edit-taktik-steps{
+      display:block !important;
+      position:fixed !important;
+      left:8px !important;
+      top:190px !important;
+      bottom:8px !important;
+      width:214px !important;
+      max-height:none !important;
+      overflow:auto !important;
+      box-sizing:border-box !important;
+      margin:0 !important;
+      padding:6px !important;
+      background:rgba(14,23,16,.92) !important;
+      border:1px solid rgba(74,232,122,.22) !important;
+      border-radius:10px !important;
+      pointer-events:auto !important;
+    }
+
+    /* Planen får huvudytan i mitten. */
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #pitch-wrapper{
+      position:fixed !important;
+      left:232px !important;
+      right:350px !important;
+      top:112px !important;
+      bottom:8px !important;
+      width:auto !important;
+      height:auto !important;
+      min-height:0 !important;
+      max-height:none !important;
+      margin:0 !important;
+      padding:0 !important;
+      box-sizing:border-box !important;
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      overflow:hidden !important;
+      background:transparent !important;
+      z-index:40 !important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #pitch-svg{
+      height:100% !important;
+      width:auto !important;
+      max-width:100% !important;
+      max-height:100% !important;
+    }
+
+    /* Höger spalt: lager under filmknapparna. */
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt616-layer-panel{
+      position:fixed !important;
+      right:8px !important;
+      top:154px !important;
+      bottom:8px !important;
+      width:334px !important;
+      max-height:none !important;
+      overflow:auto !important;
+      z-index:90 !important;
+    }
   }
 </style>
 
@@ -2003,7 +2222,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">662 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">666 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2624,7 +2843,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=664-visa-alla-fran-aktivt-steg"></script>
+<script src="app_test.js?v=666-taktikfilm-desktop-layout"></script>
 
 <script>
 (function(){
@@ -3327,7 +3546,7 @@
     var curSnap=null;
     try{curSnap=(typeof currentSnap==='function')?currentSnap():tk.steps[ctx.cur];}catch(e){curSnap=tk.steps[ctx.cur];}
 
-    // v664: Visa alla / Visa framåt ska utgå från det lagerinnehåll som finns
+    // v665: behåller v664-logiken. Visa alla / Visa framåt ska utgå från det lagerinnehåll som finns
     // på AKTIVT steg, inte från närmaste tidigare källa. Annars kunde "Visa alla"
     // fortsätta sprida pil 1 från steg 1 även när användaren stod på steg 2 och
     // hade ritat pil 2 i samma lager.
@@ -3505,8 +3724,8 @@
       var count=countObjectsByLayer(layer.id);
       var idx=state.layers.indexOf(layer);
       return '<div class="'+rowClass+'" data-tt630-layer-id="'+esc(layer.id)+'">'
-        + '<button type="button" class="tt661-layer-icon '+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'" title="Visa/dölj detta lager i aktuellt steg">'+(layer.visible?'👁':'○')+'</button>'
-        + '<button type="button" class="tt661-layer-icon '+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'" title="Lås/lås upp detta lager i aktuellt steg">'+(layer.locked?'🔒':'🔓')+'</button>'
+        + '<button type="button" class="tt661-layer-icon '+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'" title="Öga här: visa/dölj lagret bara i aktuellt steg">'+(layer.visible?'👁':'○')+'</button>'
+        + '<button type="button" class="tt661-layer-icon '+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'" title="Lås här: lås/lås upp lagret bara i aktuellt steg">'+(layer.locked?'🔒':'🔓')+'</button>'
         + '<button type="button" class="tt661-layer-title '+(active?'tt630-layer-active-btn':'')+'" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'" title="Välj aktivt lager">'
           + '<span class="tt616-layer-name">'+esc(layer.name)+'</span>'
           + '<span class="tt630-layer-meta">'+(active?'aktivt lager':'tryck för att välja')+' · '+esc(layerScopeText(layer))+'</span>'
@@ -3515,20 +3734,23 @@
         + '<div class="tt661-layer-menu '+(state.openMenuId===layer.id?'tt663-menu-open':'')+'">'
           + '<button type="button" class="tt661-layer-menu-button" data-tt630-action="menu" aria-expanded="'+(state.openMenuId===layer.id?'true':'false')+'" aria-label="Fler val för '+esc(layer.name)+'">⋯</button>'
           + '<div class="tt661-layer-menu-panel">'
+            + '<div class="tt665-menu-section">Lager</div>'
             + '<button type="button" data-tt630-action="rename">Byt namn</button>'
-            + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta hit</button>'
-            + '<button type="button" data-tt630-action="copy" title="Kopiera hela lagret till ett nytt fristående lager">Kopiera lager</button>'
-            + '<button type="button" data-tt630-action="delete" '+(state.layers.length<2?'disabled':'')+' title="Ta bort lagret. Om lagret innehåller objekt får du en extra bekräftelse.">Ta bort</button>'
-            + '<button type="button" data-tt630-action="up" '+(idx===0?'disabled':'')+' title="Flytta lagret uppåt/framåt visuellt">Upp</button>'
-            + '<button type="button" data-tt630-action="down" '+(idx===state.layers.length-1?'disabled':'')+' title="Flytta lagret nedåt/bakåt visuellt">Ned</button>'
-            + '<button type="button" data-tt630-action="showForward" title="Öppna ögat från aktuellt steg och framåt. Om lagret saknas i ett steg hämtas samma lager dit.">Visa framåt</button>'
-            + '<button type="button" data-tt630-action="hideForward" title="Stäng ögat från aktuellt steg och framåt.">Dölj framåt</button>'
-            + '<button type="button" data-tt630-action="showAll" title="Öppna ögat i alla steg. Om lagret saknas i ett steg hämtas samma lager dit.">Visa alla</button>'
-            + '<button type="button" data-tt630-action="hideAll" title="Stäng ögat i alla steg.">Dölj alla</button>'
-            + '<button type="button" data-tt630-action="lockForward" title="Lås lagret från aktuellt steg och framåt">Lås framåt</button>'
-            + '<button type="button" data-tt630-action="unlockForward" title="Lås upp lagret från aktuellt steg och framåt">Lås upp framåt</button>'
-            + '<button type="button" data-tt630-action="lockAll" title="Lås lagret i alla steg">Lås alla</button>'
-            + '<button type="button" data-tt630-action="unlockAll" title="Lås upp lagret i alla steg">Lås upp alla</button>'
+            + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta markerat hit</button>'
+            + '<button type="button" data-tt630-action="copy" class="tt661-wide" title="Skapa ett nytt fristående lager med kopia av innehållet. Originalet påverkas inte.">Gör fristående kopia</button>'
+            + '<button type="button" data-tt630-action="delete" '+(state.layers.length<2?'disabled':'')+' title="Ta bort lagret. Om lagret innehåller objekt får du en extra bekräftelse.">Ta bort lager</button>'
+            + '<button type="button" data-tt630-action="up" '+(idx===0?'disabled':'')+' title="Flytta lagret uppåt/framåt visuellt">Flytta upp</button>'
+            + '<button type="button" data-tt630-action="down" '+(idx===state.layers.length-1?'disabled':'')+' title="Flytta lagret nedåt/bakåt visuellt">Flytta ned</button>'
+            + '<div class="tt665-menu-section">Öga / synlighet</div>'
+            + '<button type="button" data-tt630-action="showForward" title="Visa detta lagers innehåll från aktivt steg i aktuellt steg och alla kommande steg.">Visa från detta steg</button>'
+            + '<button type="button" data-tt630-action="hideForward" title="Dölj detta lager i aktuellt steg och alla kommande steg.">Dölj från detta steg</button>'
+            + '<button type="button" data-tt630-action="showAll" title="Visa detta lagers innehåll från aktivt steg på alla steg.">Visa på alla steg</button>'
+            + '<button type="button" data-tt630-action="hideAll" title="Dölj detta lager på alla steg.">Dölj på alla steg</button>'
+            + '<div class="tt665-menu-section">Låsning</div>'
+            + '<button type="button" data-tt630-action="lockForward" title="Lås lagret från aktuellt steg och framåt">Lås från detta steg</button>'
+            + '<button type="button" data-tt630-action="unlockForward" title="Lås upp lagret från aktuellt steg och framåt">Lås upp från detta steg</button>'
+            + '<button type="button" data-tt630-action="lockAll" title="Lås lagret i alla steg">Lås på alla steg</button>'
+            + '<button type="button" data-tt630-action="unlockAll" title="Lås upp lagret i alla steg">Lås upp på alla steg</button>'
           + '</div>'
         + '</div>'
         + '</div>';
@@ -3710,6 +3932,38 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
   else init();
+})();
+</script>
+
+
+<script id="tt666-taktikfilm-desktop-layout-js">
+(function(){
+  if(window.__tt666TaktikDesktopLayoutInstalled)return;
+  window.__tt666TaktikDesktopLayoutInstalled=true;
+  function desktop(){
+    try{return window.matchMedia && window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}
+  }
+  function active(){
+    try{
+      if(!desktop())return false;
+      if(document.body && document.body.classList && document.body.classList.contains('fullscreen-portrait'))return false;
+      var tab=document.querySelector('.tab.on[data-panel="taktik"]');
+      var edit=document.getElementById('edit-taktik-ui');
+      var bar=document.getElementById('taktikbar');
+      var editVisible=!!(edit && getComputedStyle(edit).display!=='none');
+      var barVisible=!!(bar && getComputedStyle(bar).display!=='none');
+      return !!(tab && editVisible && barVisible);
+    }catch(e){return false;}
+  }
+  function apply(){
+    try{document.body.classList.toggle('tt666-taktik-desktop-layout',active());}catch(e){}
+  }
+  function later(){setTimeout(apply,0);setTimeout(apply,120);setTimeout(apply,420);}
+  ['click','touchend','keyup','resize','orientationchange'].forEach(function(evt){
+    window.addEventListener(evt,later,true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',later);
+  else later();
 })();
 </script>
 
