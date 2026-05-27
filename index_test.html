@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v669 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
+  /* v670 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1950,7 +1950,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"669 TEST" !important;
+    content:"670 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1960,7 +1960,7 @@
 
 
 <style id="tt666-taktikfilm-desktop-layout-css">
-  /* v669 TEST: Första datorlayout för Taktikfilm-redigering.
+  /* v670 TEST: Första datorlayout för Taktikfilm-redigering.
      Bas: fungerande lagerlogik v660/v664 + språkputsen i v665.
      Endast desktop, inte fullscreen, inte mobil/iPad. */
   @media (min-width:1024px) and (pointer:fine){
@@ -2179,7 +2179,7 @@
 
 
 <style id="tt667-taktikfilm-desktop-layout-puts-css">
-  /* v669 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
+  /* v670 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
      - bredare stegspalt
      - ritverktygsval bredvid ritverktygen i övre raden
      - lagerpanelen öppen på desktop
@@ -2270,6 +2270,26 @@
   }
 </style>
 
+
+<style id="tt670-taktikfilm-desktop-ritval-no-blink-css">
+  @media (min-width:1024px) and (pointer:fine){
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt667-draw-options-slot .tt670-desktop-pinned-option{
+      position:static!important;
+      transform:none!important;
+      transition:none!important;
+      animation:none!important;
+      will-change:auto!important;
+    }
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt667-draw-options-slot #arrow-options.tt669-desktop-active-option,
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt667-draw-options-slot #zone-options.tt669-desktop-active-option,
+    body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt667-draw-options-slot #freehand-options.tt669-desktop-active-option{
+      display:flex!important;
+      visibility:visible!important;
+      opacity:1!important;
+    }
+  }
+</style>
+
 </head>
 <body>
 
@@ -2316,7 +2336,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">669 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">670 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2937,7 +2957,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=669-taktikfilm_desktop_options_stabil"></script>
+<script src="app_test.js?v=670-taktikfilm_desktop_ritval_no_blink"></script>
 
 <script>
 (function(){
@@ -4125,7 +4145,7 @@
 
 
 <style id="tt668-taktikfilm-desktop-layout-fix-css">
-  /* v669 TEST: fixar två saker ovanpå v667 desktop-layout:
+  /* v670 TEST: fixar två saker ovanpå v667 desktop-layout:
      1) ritverktygens val hålls visuellt fast vid originalverktygsraden, direkt efter Återställ
      2) fullskärmsknapp finns i Taktikfilm-raden även när nedersta panelstrippen är dold. */
   @media (min-width:1024px) and (pointer:fine){
@@ -4255,7 +4275,7 @@
 
 
 <style id="tt669-taktikfilm-desktop-options-stabil-css">
-  /* v669 TEST: stoppar hoppet mellan gammal planposition och nya verktygsraden.
+  /* v670 TEST: stoppar hoppet mellan gammal planposition och nya verktygsraden.
      I desktop-layout får den gamla tt291-plancontainern inte visa ritvalen. */
   @media (min-width:1024px) and (pointer:fine){
     body.tt666-taktik-desktop-layout:not(.fullscreen-portrait) #tt291-plan-draw-options{
