@@ -1869,7 +1869,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"638 TEST" !important;
+    content:"639 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1880,13 +1880,13 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v638">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v639">
   <details>
-    <summary><span>Lager TEST</span><span>v638</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 8. Markerade ritobjekt kan flyttas mellan fria lager utan databasändring.</div>
+    <summary><span>Lager TEST</span><span>v639</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 9. Lager kan kopieras som nytt fritt lager utan databasändring.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas till valfritt lager. Lagerdata följer med i testappens fildata.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas till valfritt lager. Hela lager kan kopieras. Lagerdata följer med i testappens fildata.</div>
   </details>
 </div>
 
@@ -1894,7 +1894,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">638 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">639 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2515,7 +2515,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=638-fria-lager-flytta-objekt"></script>
+<script src="app_test.js?v=639-fria-lager-kopiera-lager"></script>
 
 <script>
 (function(){
@@ -2647,7 +2647,7 @@
 })();
 </script>
 
-<script id="tt638-free-layer-panel-script">
+<script id="tt639-free-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt630FreeLayerPanelInstalled)return;
@@ -2818,6 +2818,76 @@
     render();
   }
 
+  function nextFreeLayerObjectId(prefix){
+    try{
+      if(typeof window.idCounter!=='number')window.idCounter=Math.floor(Date.now()%1000000);
+      return prefix+(window.idCounter++);
+    }catch(e){
+      return prefix+String(Date.now())+String(Math.floor(Math.random()*10000));
+    }
+  }
+
+  function duplicateObjectsFromLayer(sourceLayerId,targetLayerId){
+    var made=0;
+    try{
+      var arr=safeArr('arrows');
+      for(var i=0;i<arr.length;i++){
+        var a=arr[i]||{};
+        if((a.layerId||'layer-1')!==sourceLayerId)continue;
+        arr.push({id:nextFreeLayerObjectId('arr'),x1:a.x1,y1:a.y1,x2:a.x2,y2:a.y2,color:a.color,atype:a.atype,width:a.width,head:a.head,layerId:targetLayerId});
+        made++;
+      }
+    }catch(e){}
+    try{
+      var labs=safeArr('labels');
+      for(var li=0;li<labs.length;li++){
+        var l=labs[li]||{};
+        if((l.layerId||'layer-1')!==sourceLayerId)continue;
+        labs.push({id:nextFreeLayerObjectId('lbl'),x:l.x,y:l.y,text:l.text,size:l.size,align:l.align,rot:l.rot,layerId:targetLayerId});
+        made++;
+      }
+    }catch(e){}
+    try{
+      var fps=safeArr('freehandPaths');
+      for(var fi=0;fi<fps.length;fi++){
+        var f=fps[fi]||{};
+        if((f.layerId||'layer-1')!==sourceLayerId)continue;
+        fps.push({id:nextFreeLayerObjectId('fp'),pts:(f.pts||[]).map(function(pt){return {x:pt.x,y:pt.y};}),color:f.color,width:f.width,layerId:targetLayerId});
+        made++;
+      }
+    }catch(e){}
+    try{
+      var zs=safeArr('zones');
+      for(var zi=0;zi<zs.length;zi++){
+        var z=zs[zi]||{};
+        if((z.layerId||'layer-1')!==sourceLayerId)continue;
+        zs.push({id:nextFreeLayerObjectId('zone'),type:z.type,x:z.x,y:z.y,w:z.w,h:z.h,r:z.r,color:z.color,fill:z.fill,layerId:targetLayerId});
+        made++;
+      }
+    }catch(e){}
+    return made;
+  }
+
+  function copyLayer(layer){
+    if(!layer)return;
+    var count=countObjectsByLayer(layer.id);
+    var id='layer-'+state.nextNum;
+    var name=(layer.name||'Lager')+' kopia';
+    if(name.length>40)name=name.slice(0,40);
+    try{if(typeof window.saveUndo==='function')window.saveUndo();}catch(e){}
+    state.layers.push({id:id,name:name,visible:true,locked:false});
+    state.activeId=id;
+    state.nextNum++;
+    duplicateObjectsFromLayer(layer.id,id);
+    try{window.selectedId=null;}catch(e){}
+    try{if(typeof window.render==='function')window.render();}catch(e){}
+    render();
+    if(count===0){
+      try{if(typeof window.showToast==='function')window.showToast('Tomt lager kopierat');}
+      catch(e){}
+    }
+  }
+
   function render(){
     if(window.tt635EnsureFreeLayersFromCurrentObjects)window.tt635EnsureFreeLayersFromCurrentObjects();
     var list=document.getElementById('tt630-free-layer-list');
@@ -2833,6 +2903,7 @@
         + '</div>'
         + '<button type="button" class="tt630-layer-active-btn" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'">'+(active?'Aktiv':'Välj')+'</button>'
         + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta hit</button>'
+        + '<button type="button" data-tt630-action="copy" title="Kopiera hela lagret till ett nytt lager">Kopiera</button>'
         + '<button type="button" data-tt630-action="rename">Namn</button>'
         + '<button type="button" class="'+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'">'+(layer.visible?'Visa':'Dold')+'</button>'
         + '<button type="button" class="'+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'">'+(layer.locked?'Låst':'Lås')+'</button>'
@@ -2857,6 +2928,10 @@
     if(action==='active')state.activeId=layer.id;
     if(action==='moveSelected'){
       moveSelectedObjectToLayer(layer.id);
+      return;
+    }
+    if(action==='copy'){
+      copyLayer(layer);
       return;
     }
     if(action==='rename'){
