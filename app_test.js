@@ -86,9 +86,9 @@ function getZoneColorChoiceV529(){
 }
 var freehandDrawing=false,freehandCurrent=null;
 
-/* v655 TEST: synliggör aktivt lager vid ny ritning.
-   Bygger vidare från fungerande v654. Om användaren ritar i ett dolt lager
-   slås lagrets öga på i aktuellt steg så objektet syns direkt.
+/* v656 TEST: nytt/dolt lager får öga på vid ritning.
+   Bygger vidare från fungerande v654. När nya ritobjekt skapas i aktivt lager
+   markeras lagrets öga som på i aktuellt steg.
    Ingen Supabase och ingen recoveryändring. */
 function tt631ActiveFreeLayerId(){
   try{
@@ -100,8 +100,8 @@ function tt631ActiveFreeLayerId(){
 function tt631MarkObjectLayer(obj){
   if(obj && !obj.layerId)obj.layerId=tt631ActiveFreeLayerId();
   try{
-    if(obj && window.tt655EnsureLayerVisibleForDrawing){
-      window.tt655EnsureLayerVisibleForDrawing(obj.layerId||tt631ActiveFreeLayerId());
+    if(obj && window.tt656MarkLayerEyeOnInCurrentStep){
+      window.tt656MarkLayerEyeOnInCurrentStep(obj.layerId||tt631ActiveFreeLayerId());
     }
   }catch(e){}
   return obj;
