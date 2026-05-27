@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v658 TEST: låsning per steg framåt/alla.
+  /* v659 TEST: låsning per steg framåt/alla.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1899,7 +1899,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"658 TEST" !important;
+    content:"659 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1912,9 +1912,9 @@
 
 <button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v658">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v659">
   <details>
-    <summary><span>Lager TEST</span><span>v658</span></summary>
+    <summary><span>Lager TEST</span><span>v659</span></summary>
     <div class="tt616-layer-sub">Fria lager steg 25. Nytt lager och ritning i dolt lager slår på ögat i aktuellt steg.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
@@ -1953,7 +1953,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">658 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">659 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2574,7 +2574,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=658-lager-las-framat-alla"></script>
+<script src="app_test.js?v=659-lager-las-framat-alla"></script>
 
 <script>
 (function(){
@@ -3334,7 +3334,11 @@
         }else{
           layer.visible=false;
         }
-        layer.locked=false;
+        // v659: låsning är stegspecifik metadata och ska kunna gälla även
+        // innan lagret är synligt/materialiserat i detta steg. Annars syns
+        // Lås framåt/alla bara i steg där lagret redan har egna objekt.
+        if(meta&&Object.prototype.hasOwnProperty.call(meta,'locked'))layer.locked=!!meta.locked;
+        else layer.locked=false;
       }else if(meta&&Object.prototype.hasOwnProperty.call(meta,'visible')){
         layer.visible=meta.visible!==false;
         if(meta&&Object.prototype.hasOwnProperty.call(meta,'locked'))layer.locked=!!meta.locked;
