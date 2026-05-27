@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v637 TEST: fria lager ta bort tomma lager.
+  /* v638 TEST: fria lager ta bort tomma lager.
      Visa/Dold och Lås/Låst per fritt lager påverkar nu pilar, text, frihand och zoner i aktuell session.
      Ingen sparning, ingen localStorage, ingen render-wrapper och ingen recoveryändring. */
   #tt616-layer-panel{
@@ -1869,7 +1869,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"637 TEST" !important;
+    content:"638 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1880,13 +1880,13 @@
 </head>
 <body>
 
-<div id="tt616-layer-panel" aria-label="Lager testpanel v637">
+<div id="tt616-layer-panel" aria-label="Lager testpanel v638">
   <details>
-    <summary><span>Lager TEST</span><span>v637</span></summary>
-    <div class="tt616-layer-sub">Fria lager steg 7. Tomma lager kan tas bort utan att röra objekt, sparning eller databas.</div>
+    <summary><span>Lager TEST</span><span>v638</span></summary>
+    <div class="tt616-layer-sub">Fria lager steg 8. Markerade ritobjekt kan flyttas mellan fria lager utan databasändring.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
-    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Visa/Dold, Lås/Låst, lagernamn och tomma lagerrader följer med i testappens fildata.</div>
+    <div class="tt616-layer-note">Nya pilar, text, zoner och frihand får aktivt lager. Markerat objekt kan flyttas till valfritt lager. Lagerdata följer med i testappens fildata.</div>
   </details>
 </div>
 
@@ -1894,7 +1894,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">637 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">638 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2515,7 +2515,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=637-fria-lager-ta-bort-tomma"></script>
+<script src="app_test.js?v=638-fria-lager-flytta-objekt"></script>
 
 <script>
 (function(){
@@ -2647,7 +2647,7 @@
 })();
 </script>
 
-<script id="tt637-free-layer-panel-script">
+<script id="tt638-free-layer-panel-script">
 (function(){
   'use strict';
   if(window.__tt630FreeLayerPanelInstalled)return;
@@ -2779,6 +2779,45 @@
     return count;
   }
 
+  function findLayerObjectById(id){
+    if(!id)return null;
+    var groups=['arrows','labels','freehandPaths','zones'];
+    for(var gi=0;gi<groups.length;gi++){
+      var arr=safeArr(groups[gi]);
+      for(var i=0;i<arr.length;i++){
+        if(arr[i] && arr[i].id===id)return arr[i];
+      }
+    }
+    return null;
+  }
+
+  function getSelectedLayerObjectId(){
+    var sid=null;
+    try{sid=window.selectedId||null;}catch(e){}
+    if(sid && findLayerObjectById(sid))return sid;
+    sid=window.__tt638LastSelectedLayerObjectId||null;
+    if(sid && findLayerObjectById(sid))return sid;
+    return null;
+  }
+
+  function moveSelectedObjectToLayer(layerId){
+    var objId=getSelectedLayerObjectId();
+    var obj=findLayerObjectById(objId);
+    if(!obj){
+      alert('Markera först en pil, text, zon eller frihandsritning på planen.');
+      return;
+    }
+    if(obj.layerId===layerId){
+      render();
+      return;
+    }
+    try{if(typeof window.saveUndo==='function')window.saveUndo();}catch(e){}
+    obj.layerId=layerId;
+    window.__tt638LastSelectedLayerObjectId=obj.id;
+    try{if(typeof window.render==='function')window.render();}catch(e){}
+    render();
+  }
+
   function render(){
     if(window.tt635EnsureFreeLayersFromCurrentObjects)window.tt635EnsureFreeLayersFromCurrentObjects();
     var list=document.getElementById('tt630-free-layer-list');
@@ -2793,6 +2832,7 @@
         + '<span class="tt631-layer-count">'+count+' objekt</span>'
         + '</div>'
         + '<button type="button" class="tt630-layer-active-btn" data-tt630-action="active" aria-pressed="'+(active?'true':'false')+'">'+(active?'Aktiv':'Välj')+'</button>'
+        + '<button type="button" data-tt630-action="moveSelected" title="Flytta markerat ritobjekt till detta lager">Flytta hit</button>'
         + '<button type="button" data-tt630-action="rename">Namn</button>'
         + '<button type="button" class="'+(layer.visible?'tt621-layer-on ':'')+'" data-tt630-action="visible" aria-pressed="'+(layer.visible?'true':'false')+'">'+(layer.visible?'Visa':'Dold')+'</button>'
         + '<button type="button" class="'+(layer.locked?'tt621-layer-on ':'')+'" data-tt630-action="locked" aria-pressed="'+(layer.locked?'true':'false')+'">'+(layer.locked?'Låst':'Lås')+'</button>'
@@ -2815,6 +2855,10 @@
     if(!layer)return;
     var action=btn.getAttribute('data-tt630-action');
     if(action==='active')state.activeId=layer.id;
+    if(action==='moveSelected'){
+      moveSelectedObjectToLayer(layer.id);
+      return;
+    }
     if(action==='rename'){
       var name=window.prompt('Nytt lagernamn', layer.name || 'Lager');
       if(name!==null){
@@ -2871,6 +2915,19 @@
     }
     document.addEventListener('mouseup',scheduleRender,false);
     document.addEventListener('touchend',scheduleRender,false);
+    var pitch=document.getElementById('pitch-svg');
+    if(pitch && pitch.dataset.tt638LayerObjectRemember!=='1'){
+      pitch.dataset.tt638LayerObjectRemember='1';
+      ['pointerdown','mousedown','touchstart','click'].forEach(function(evtName){
+        pitch.addEventListener(evtName,function(ev){
+          var t=ev.target && ev.target.closest ? ev.target.closest('[data-tt-free-object-id]') : null;
+          if(t){
+            var oid=t.getAttribute('data-tt-free-object-id');
+            if(oid)window.__tt638LastSelectedLayerObjectId=oid;
+          }
+        },true);
+      });
+    }
     render();
   }
 
