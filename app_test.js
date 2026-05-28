@@ -44269,3 +44269,142 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);}
 })();
 /* === slut v703 TEST === */
+
+
+
+/* === v704 TEST: stabila ritvalsboxar i fullscreen ===
+   Bas: v703 TEST.
+   Syfte:
+   - Stoppa blink/ryck när ritverktygens alternativ renderas om i fullscreen.
+   - Ändrar bara fullscreen-storlek/placering för #tt291-plan-draw-options och dess optionpaneler.
+   - Rör inte ritlogik, lagerlogik, tangentstyrning eller Taktikfilm-redigering.
+*/
+(function(){
+  'use strict';
+  if(window.__tt704FullscreenDrawOptionsStableInstalled)return;
+  window.__tt704FullscreenDrawOptionsStableInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+
+  function ensureCss(){
+    if(byId('tt704-fullscreen-draw-options-stable-css'))return;
+    var st=document.createElement('style');
+    st.id='tt704-fullscreen-draw-options-stable-css';
+    st.textContent=[
+      'body.fullscreen-portrait #tt291-plan-draw-options{',
+      '  display:flex!important;',
+      '  align-items:center!important;',
+      '  justify-content:flex-start!important;',
+      '  width:286px!important;',
+      '  min-width:286px!important;',
+      '  max-width:286px!important;',
+      '  min-height:28px!important;',
+      '  height:28px!important;',
+      '  box-sizing:border-box!important;',
+      '  overflow:visible!important;',
+      '  contain:layout paint!important;',
+      '  transform:translateZ(0)!important;',
+      '  will-change:auto!important;',
+      '  transition:none!important;',
+      '}',
+      'body.fullscreen-portrait #tt291-plan-draw-options #arrow-options,',
+      'body.fullscreen-portrait #tt291-plan-draw-options #freehand-options,',
+      'body.fullscreen-portrait #tt291-plan-draw-options #zone-options{',
+      '  width:286px!important;',
+      '  min-width:286px!important;',
+      '  max-width:286px!important;',
+      '  height:28px!important;',
+      '  min-height:28px!important;',
+      '  max-height:28px!important;',
+      '  flex:0 0 286px!important;',
+      '  box-sizing:border-box!important;',
+      '  overflow:hidden!important;',
+      '  padding:2px 4px!important;',
+      '  gap:3px!important;',
+      '  align-items:center!important;',
+      '  flex-wrap:nowrap!important;',
+      '  white-space:nowrap!important;',
+      '  line-height:1!important;',
+      '  transition:none!important;',
+      '  transform:translateZ(0)!important;',
+      '}',
+      'body.fullscreen-portrait #tt291-plan-draw-options #arrow-options:not(.tt291-active-option),',
+      'body.fullscreen-portrait #tt291-plan-draw-options #freehand-options:not(.tt291-active-option),',
+      'body.fullscreen-portrait #tt291-plan-draw-options #zone-options:not(.tt291-active-option){',
+      '  display:none!important;',
+      '}',
+      'body.fullscreen-portrait #tt291-plan-draw-options .tt291-active-option{',
+      '  display:flex!important;',
+      '  visibility:visible!important;',
+      '  opacity:1!important;',
+      '}',
+      'body.fullscreen-portrait #tt291-plan-draw-options select{',
+      '  height:22px!important;',
+      '  min-height:22px!important;',
+      '  max-height:22px!important;',
+      '  max-width:86px!important;',
+      '  font-size:10px!important;',
+      '  line-height:1!important;',
+      '  padding:0 2px!important;',
+      '  margin:0!important;',
+      '  box-sizing:border-box!important;',
+      '}',
+      'body.fullscreen-portrait #tt291-plan-draw-options button{',
+      '  height:22px!important;',
+      '  min-height:22px!important;',
+      '  max-height:22px!important;',
+      '  font-size:10px!important;',
+      '  line-height:1!important;',
+      '  padding:0 4px!important;',
+      '  margin:0!important;',
+      '  box-sizing:border-box!important;',
+      '  white-space:nowrap!important;',
+      '}',
+      'body.fullscreen-portrait #tt291-plan-draw-options label,',
+      'body.fullscreen-portrait #tt291-plan-draw-options span{',
+      '  font-size:10px!important;',
+      '  line-height:1!important;',
+      '  margin:0!important;',
+      '  padding:0!important;',
+      '  white-space:nowrap!important;',
+      '  flex:0 0 auto!important;',
+      '}',
+      '@media (max-width:700px){',
+      '  body.fullscreen-portrait #tt291-plan-draw-options{',
+      '    width:min(286px,calc(100vw - 12px))!important;',
+      '    min-width:min(286px,calc(100vw - 12px))!important;',
+      '    max-width:min(286px,calc(100vw - 12px))!important;',
+      '  }',
+      '  body.fullscreen-portrait #tt291-plan-draw-options #arrow-options,',
+      '  body.fullscreen-portrait #tt291-plan-draw-options #freehand-options,',
+      '  body.fullscreen-portrait #tt291-plan-draw-options #zone-options{',
+      '    width:min(286px,calc(100vw - 12px))!important;',
+      '    min-width:min(286px,calc(100vw - 12px))!important;',
+      '    max-width:min(286px,calc(100vw - 12px))!important;',
+      '    flex-basis:min(286px,calc(100vw - 12px))!important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function apply(){
+    ensureCss();
+    try{document.title='Taktiktavla TEST v704 fullscreen ritval stabilt';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='704 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v704 TEST';
+    }catch(e){}
+  }
+
+  ['fullscreenchange','resize','orientationchange','click','touchend','keydown'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,70);},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);});
+  else{setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);}
+})();
+/* === slut v704 TEST === */
