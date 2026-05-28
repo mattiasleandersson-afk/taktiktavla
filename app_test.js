@@ -45017,3 +45017,147 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);}
 })();
 /* === slut v740 TEST === */
+
+
+
+/* === v741 TEST: Minimera lagerpanel i fullscreen för Taktiktavla/Snabbtavla ===
+   Bas: v740 TEST.
+   Syfte:
+   - Gäller endast fullscreen på desktop när vi inte är i Taktikfilm-fullscreen.
+   - Lägg till knapp som visar/döljer lagerpanelen.
+   - När panelen är dold får planen tillbaka nästan hela högerytan.
+   - Rör inte lagerlogik, Taktikfilm, eller vanliga redigeringslägen.
+*/
+(function(){
+  'use strict';
+  if(window.__tt741BoardFullscreenLayerToggleInstalled)return;
+  window.__tt741BoardFullscreenLayerToggleInstalled=true;
+
+  var collapsed=false;
+
+  function byId(id){return document.getElementById(id);}
+  function desktop(){
+    try{return !!(window.matchMedia&&window.matchMedia('(min-width:1024px) and (pointer:fine)').matches);}catch(e){return false;}
+  }
+  function isTaktikfilmFullscreen(){
+    try{
+      if(document.body.classList.contains('v66-taktik-fs'))return true;
+      if(document.body.classList.contains('tt696-fs-clean') && document.querySelector('.tab.on[data-panel="taktik"]'))return true;
+      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
+      if(typeof playback!=='undefined' && playback)return true;
+    }catch(e){}
+    return false;
+  }
+  function active(){
+    return desktop() && document.body.classList.contains('fullscreen-portrait') && !isTaktikfilmFullscreen();
+  }
+
+  function ensureCss(){
+    if(byId('tt741-board-fs-layer-toggle-css'))return;
+    var st=document.createElement('style');
+    st.id='tt741-board-fs-layer-toggle-css';
+    st.textContent=[
+      '@media (min-width:1024px) and (pointer:fine){',
+      '  #tt741-fs-layer-toggle{',
+      '    display:none;',
+      '    position:fixed;',
+      '    right:calc(env(safe-area-inset-right,0px) + 10px);',
+      '    top:calc(env(safe-area-inset-top,0px) + 52px);',
+      '    z-index:10080;',
+      '    border:1px solid rgba(74,232,122,.45);',
+      '    background:rgba(8,24,14,.94);',
+      '    color:#ffd84a;',
+      '    border-radius:999px;',
+      '    padding:5px 9px;',
+      '    font-size:.72rem;',
+      '    font-weight:900;',
+      '    line-height:1;',
+      '    box-shadow:0 8px 22px rgba(0,0,0,.35);',
+      '    cursor:pointer;',
+      '    user-select:none;',
+      '    touch-action:manipulation;',
+      '  }',
+      '  body.fullscreen-portrait.tt741-board-fs-layer-toggle:not(.v66-taktik-fs) #tt741-fs-layer-toggle{',
+      '    display:block!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt741-board-fs-layer-toggle:not(.v66-taktik-fs):not(.tt741-fs-layers-collapsed) #tt741-fs-layer-toggle{',
+      '    right:calc(env(safe-area-inset-right,0px) + 206px);',
+      '  }',
+      '  body.fullscreen-portrait.tt741-board-fs-layer-toggle.tt741-fs-layers-collapsed:not(.v66-taktik-fs) #tt616-layer-panel{',
+      '    display:none!important;',
+      '    visibility:hidden!important;',
+      '    pointer-events:none!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt741-board-fs-layer-toggle.tt741-fs-layers-collapsed:not(.v66-taktik-fs) #pitch-wrapper{',
+      '    padding-right:calc(env(safe-area-inset-right,0px) + 44px)!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt741-board-fs-layer-toggle.tt741-fs-layers-collapsed:not(.v66-taktik-fs).tt523-fs-rotated-desktop #pitch-wrapper{',
+      '    padding-right:calc(env(safe-area-inset-right,0px) + 44px)!important;',
+      '  }',
+      '}',
+      '@media (min-width:1280px) and (pointer:fine){',
+      '  body.fullscreen-portrait.tt741-board-fs-layer-toggle:not(.v66-taktik-fs):not(.tt741-fs-layers-collapsed) #tt741-fs-layer-toggle{',
+      '    right:calc(env(safe-area-inset-right,0px) + 220px);',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function ensureButton(){
+    var b=byId('tt741-fs-layer-toggle');
+    if(!b){
+      b=document.createElement('button');
+      b.id='tt741-fs-layer-toggle';
+      b.type='button';
+      b.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        collapsed=!collapsed;
+        apply();
+      },true);
+      document.body.appendChild(b);
+    }
+    return b;
+  }
+
+  function setLabel(btn,on){
+    if(!btn)return;
+    if(!on){btn.textContent='Lager';btn.title='Lager';return;}
+    btn.textContent=collapsed?'Visa lager':'Dölj lager';
+    btn.title=collapsed?'Visa lagerpanelen':'Minimera lagerpanelen';
+    btn.setAttribute('aria-pressed',collapsed?'true':'false');
+  }
+
+  function apply(){
+    ensureCss();
+    var on=active();
+    var btn=ensureButton();
+    document.body.classList.toggle('tt741-board-fs-layer-toggle',!!on);
+    document.body.classList.toggle('tt741-fs-layers-collapsed',!!(on&&collapsed));
+    setLabel(btn,on);
+    if(on && !collapsed){
+      try{var d=document.querySelector('#tt616-layer-panel details'); if(d)d.open=true;}catch(e){}
+      try{if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();}catch(e){}
+    }
+    if(!on){
+      document.body.classList.remove('tt741-fs-layers-collapsed');
+    }
+    try{document.title='Taktiktavla TEST v741 fullscreen lager minimera';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='741 TEST';
+      });
+      var banner=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v741 TEST';
+    }catch(e){}
+  }
+
+  ['fullscreenchange','resize','orientationchange','click','touchend','keydown'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,50);setTimeout(apply,180);},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);});
+  else{setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);}
+})();
+/* === slut v741 TEST === */
