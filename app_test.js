@@ -44930,3 +44930,90 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
 })();
 /* === slut v723 TEST === */
+
+
+
+/* === v740 TEST: Taktiktavla/Snabbtavla fullscreen - flytta plan vänster från lagerpanelen ===
+   Bas: v739 TEST.
+   Syfte:
+   - Endast fullscreen på desktop när vi INTE är i Taktikfilm-fullscreen.
+   - Ge lagerpanelen egen högerzon och flytta planens arbetsyta lite vänster.
+   - Rör inte Taktikfilm-fullscreen, ritvalsfixen, redigeringsläget eller lagerlogik.
+*/
+(function(){
+  'use strict';
+  if(window.__tt740BoardFullscreenLeftShiftInstalled)return;
+  window.__tt740BoardFullscreenLeftShiftInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function desktop(){
+    try{return !!(window.matchMedia&&window.matchMedia('(min-width:1024px) and (pointer:fine)').matches);}catch(e){return false;}
+  }
+  function isTaktikfilmFullscreen(){
+    try{
+      if(document.body.classList.contains('v66-taktik-fs'))return true;
+      if(document.body.classList.contains('tt696-fs-clean') && document.querySelector('.tab.on[data-panel="taktik"]'))return true;
+      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
+      if(typeof playback!=='undefined' && playback)return true;
+    }catch(e){}
+    return false;
+  }
+  function shouldShift(){
+    return desktop() && document.body.classList.contains('fullscreen-portrait') && !isTaktikfilmFullscreen();
+  }
+  function ensureCss(){
+    if(byId('tt740-board-fs-left-shift-css'))return;
+    var st=document.createElement('style');
+    st.id='tt740-board-fs-left-shift-css';
+    st.textContent=[
+      '@media (min-width:1024px) and (pointer:fine){',
+      '  body.fullscreen-portrait.tt740-board-fs-left-shift:not(.v66-taktik-fs) #pitch-wrapper{',
+      '    padding-left:calc(env(safe-area-inset-left,0px) + 4px)!important;',
+      '    padding-right:calc(env(safe-area-inset-right,0px) + 190px)!important;',
+      '    box-sizing:border-box!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt740-board-fs-left-shift:not(.v66-taktik-fs).tt523-fs-rotated-desktop #pitch-wrapper{',
+      '    padding-left:calc(env(safe-area-inset-left,0px) + 4px)!important;',
+      '    padding-right:calc(env(safe-area-inset-right,0px) + 190px)!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt740-board-fs-left-shift:not(.v66-taktik-fs) #tt616-layer-panel{',
+      '    right:calc(env(safe-area-inset-right,0px) + 6px)!important;',
+      '    z-index:10030!important;',
+      '  }',
+      '}',
+      '@media (min-width:1280px) and (pointer:fine){',
+      '  body.fullscreen-portrait.tt740-board-fs-left-shift:not(.v66-taktik-fs) #pitch-wrapper{',
+      '    padding-right:calc(env(safe-area-inset-right,0px) + 204px)!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt740-board-fs-left-shift:not(.v66-taktik-fs).tt523-fs-rotated-desktop #pitch-wrapper{',
+      '    padding-right:calc(env(safe-area-inset-right,0px) + 204px)!important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+  function apply(){
+    ensureCss();
+    var on=shouldShift();
+    document.body.classList.toggle('tt740-board-fs-left-shift',!!on);
+    if(on){
+      try{var d=document.querySelector('#tt616-layer-panel details'); if(d)d.open=true;}catch(e){}
+      try{if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();}catch(e){}
+    }
+    try{document.title='Taktiktavla TEST v740 fullscreen plan vänster';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='740 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v740 TEST';
+    }catch(e){}
+  }
+  ['fullscreenchange','resize','orientationchange','click','touchend','keydown'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,60);setTimeout(apply,180);},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);});
+  else{setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);}
+})();
+/* === slut v740 TEST === */
