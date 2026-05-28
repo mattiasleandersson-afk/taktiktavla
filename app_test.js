@@ -25456,6 +25456,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
     try{
       if(!document.body.classList.contains("fullscreen-portrait"))return;
+      if(document.body.classList.contains("tt706-fs-draw-owner"))return;
 
       var tools=document.getElementById("fs-top-tools");
       var topPx=null;
@@ -25621,6 +25622,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
     try{
       if(!document.body.classList.contains("fullscreen-portrait"))return;
+      if(document.body.classList.contains("tt706-fs-draw-owner"))return;
 
       var tools=document.getElementById("fs-top-tools");
       var topPx=null;
@@ -25773,6 +25775,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
     try{
       if(!document.body.classList.contains("fullscreen-portrait"))return;
+      if(document.body.classList.contains("tt706-fs-draw-owner"))return;
 
       var tools=document.getElementById("fs-top-tools");
       var topPx=null;
@@ -28264,6 +28267,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
       var taktik=isTaktikActive291();
       var fs=document.body.classList.contains('fullscreen-portrait');
+      if(fs && document.body.classList.contains('tt706-fs-draw-owner')){
+        document.body.classList.add('tt291-taktik-active');
+        document.body.classList.remove('tt291-plane-options');
+        var oldPlane706=document.getElementById('tt291-plan-draw-options');
+        if(oldPlane706)oldPlane706.style.setProperty('display','none','important');
+        return;
+      }
       var matcher=isMatcherActive291();
       var activeOpt=activeOptionId291();
       var planeMode=(fs || taktik) && !matcher && !!activeOpt;
@@ -44272,208 +44282,299 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v705 TEST: fullscreen ritval utan mellanrenderingsblink ===
-   Bas: v703 TEST. v704 används inte som bas.
+/* === v706 TEST: fullscreen ritval en ägare ===
+   Bas: v703 TEST. v704/v705 används inte som bas.
    Syfte:
-   - Behåll olika naturlig storlek för Pil/Fri/Zon.
-   - Stoppa ryck/blink inom samma aktiva verktyg när gamla renderkedjor uppdaterar flera gånger.
-   - Lås bara #tt291-plan-draw-options mått för nuvarande aktiva verktyg i fullscreen.
-   - Vid byte av verktyg släpps låset och ny naturlig storlek mäts.
+   - Fullscreen får en enda ägare för arrow/freehand/zone-options.
+   - v291 och äldre v228-v230 fullscreen-placeringar spärras från att flytta panelerna när v706 är aktiv.
+   - Panelerna flyttas en gång till en egen fullscreen-container och bara synlighet växlas.
+   - Olika verktyg får behålla sin naturliga storlek.
 */
 (function(){
   'use strict';
-  if(window.__tt705FullscreenDrawOptionsNoFlickerInstalled)return;
-  window.__tt705FullscreenDrawOptionsNoFlickerInstalled=true;
+  if(window.__tt706FullscreenDrawOptionsOneOwnerInstalled)return;
+  window.__tt706FullscreenDrawOptionsOneOwnerInstalled=true;
 
   var OPTION_IDS=['arrow-options','freehand-options','zone-options'];
   var MODE_TO_OPTION={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
 
-  var lastActiveId='';
-  var lockedForId='';
-  var raf=0;
-
   function byId(id){return document.getElementById(id);}
-  function isFullscreen(){
-    try{return !!(document.body && document.body.classList && document.body.classList.contains('fullscreen-portrait'));}
-    catch(e){return false;}
-  }
-  function modeId(){
+  function isFs(){return !!(document.body && document.body.classList.contains('fullscreen-portrait'));}
+  function isTaktikContext(){
     try{
-      if(typeof mode!=='undefined' && MODE_TO_OPTION[String(mode)])return MODE_TO_OPTION[String(mode)];
-      if(window.mode && MODE_TO_OPTION[String(window.mode)])return MODE_TO_OPTION[String(window.mode)];
+      if(typeof playback!=='undefined' && playback)return true;
+      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
+      if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null)return true;
+      var p=byId('panel-taktik');
+      if(p && p.classList.contains('on'))return true;
+      if(document.querySelector('.tab.on[data-panel="taktik"]'))return true;
     }catch(e){}
-    return '';
+    return false;
   }
-  function visibleId(){
-    for(var i=0;i<OPTION_IDS.length;i++){
-      var el=byId(OPTION_IDS[i]);
-      if(!el)continue;
-      try{
-        var cs=getComputedStyle(el);
-        if(cs.display!=='none' && cs.visibility!=='hidden' && el.offsetWidth>0 && el.offsetHeight>0)return OPTION_IDS[i];
-      }catch(e){}
-    }
-    return '';
-  }
-  function activeId(){
-    return modeId() || visibleId();
-  }
-  function planeBox(){
-    return byId('tt291-plan-draw-options');
-  }
-  function activeOption(){
-    var id=activeId();
-    return id ? byId(id) : null;
-  }
-  function setVars(w,h){
-    var root=document.documentElement;
-    root.style.setProperty('--tt705-fs-options-w',Math.ceil(w)+'px');
-    root.style.setProperty('--tt705-fs-options-h',Math.ceil(h)+'px');
-  }
-  function clearLock(){
-    var plane=planeBox();
-    if(plane)plane.classList.remove('tt705-fs-options-size-locked');
-    lockedForId='';
-  }
-  function measureNatural(id){
-    var plane=planeBox();
-    var el=id ? byId(id) : activeOption();
-    if(!plane || !el)return null;
-
-    var prevLocked=plane.classList.contains('tt705-fs-options-size-locked');
-    if(prevLocked)plane.classList.remove('tt705-fs-options-size-locked');
-
-    // Mät efter att nuvarande render har fått sätta rätt display.
-    var r;
-    try{r=el.getBoundingClientRect();}catch(e){r=null;}
-    if((!r || r.width<10 || r.height<10) && plane){
-      try{r=plane.getBoundingClientRect();}catch(e){}
-    }
-
-    if(prevLocked)plane.classList.add('tt705-fs-options-size-locked');
-    if(!r || r.width<10 || r.height<10)return null;
-    return {w:r.width,h:r.height};
-  }
-  function lockCurrentSize(id){
-    if(!isFullscreen()){clearLock();return;}
-    id=id||activeId();
-    var plane=planeBox();
-    if(!plane||!id){clearLock();return;}
-
-    var m=measureNatural(id);
-    if(!m)return;
-
-    // Lite buffert så dropdown-kanter inte klipps, men ingen gemensam maxstorlek mellan verktyg.
-    setVars(m.w+2,m.h+2);
-    plane.classList.add('tt705-fs-options-size-locked');
-    lockedForId=id;
-  }
-  function apply(){
-    if(!isFullscreen()){clearLock();return;}
-    var id=activeId();
-    if(!id){clearLock();return;}
-
-    if(id!==lastActiveId){
-      // Verktygsbyte: släpp föregående lås så Pil/Fri/Zon får olika naturlig storlek.
-      clearLock();
-      lastActiveId=id;
-      setTimeout(function(){lockCurrentSize(id);},0);
-      setTimeout(function(){lockCurrentSize(id);},80);
-      return;
-    }
-
-    if(lockedForId!==id){
-      lockCurrentSize(id);
-    }
-  }
-  function schedule(){
-    if(raf)cancelAnimationFrame(raf);
-    raf=requestAnimationFrame(function(){
-      raf=0;
-      apply();
-    });
-  }
-  function freezeBeforeLegacyRerender(ev){
-    if(!isFullscreen())return;
-    try{
-      var target=ev && ev.target;
-      if(!target || !target.closest || !target.closest('#arrow-options,#freehand-options,#zone-options'))return;
-      var id=activeId();
-      if(id)lockCurrentSize(id);
-      // Legacy-kedjan gör flera uppdateringar; håll samma mått genom dem.
-      setTimeout(function(){lockCurrentSize(id);},0);
-      setTimeout(function(){lockCurrentSize(id);},90);
-      setTimeout(function(){lockCurrentSize(id);},240);
-    }catch(e){}
-  }
+  function curMode(){try{return String((typeof mode!=='undefined'&&mode)||window.mode||'');}catch(e){return '';}}
+  function activeOptionId(){return MODE_TO_OPTION[curMode()]||null;}
 
   function ensureCss(){
-    if(byId('tt705-fullscreen-options-no-flicker-css'))return;
+    if(byId('tt706-fs-draw-owner-css'))return;
     var st=document.createElement('style');
-    st.id='tt705-fullscreen-options-no-flicker-css';
+    st.id='tt706-fs-draw-owner-css';
     st.textContent=[
-      'body.fullscreen-portrait #tt291-plan-draw-options{',
-      '  transition:none!important;',
-      '  will-change:auto!important;',
-      '}',
-      'body.fullscreen-portrait #tt291-plan-draw-options.tt705-fs-options-size-locked{',
-      '  width:var(--tt705-fs-options-w)!important;',
-      '  min-width:var(--tt705-fs-options-w)!important;',
-      '  max-width:var(--tt705-fs-options-w)!important;',
-      '  min-height:var(--tt705-fs-options-h)!important;',
-      '  box-sizing:border-box!important;',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt291-plan-draw-options,',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt667-draw-options-slot{display:none!important;visibility:hidden!important;pointer-events:none!important}',
+      'body:not(.fullscreen-portrait) #tt706-fs-draw-options{display:none!important}',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options{',
+      '  position:fixed!important;',
+      '  left:var(--tt706-fs-options-left,8px)!important;',
+      '  top:var(--tt706-fs-options-top,72px)!important;',
+      '  right:auto!important;',
+      '  bottom:auto!important;',
+      '  transform:none!important;',
+      '  z-index:2147483200!important;',
+      '  display:none;',
+      '  align-items:center!important;',
+      '  justify-content:flex-start!important;',
+      '  max-width:calc(100vw - var(--tt706-fs-options-left,8px) - 12px)!important;',
+      '  pointer-events:auto!important;',
       '  overflow:visible!important;',
+      '  box-sizing:border-box!important;',
       '}',
-      'body.fullscreen-portrait #tt291-plan-draw-options.tt705-fs-options-size-locked #arrow-options.tt291-active-option,',
-      'body.fullscreen-portrait #tt291-plan-draw-options.tt705-fs-options-size-locked #freehand-options.tt291-active-option,',
-      'body.fullscreen-portrait #tt291-plan-draw-options.tt705-fs-options-size-locked #zone-options.tt291-active-option{',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options.tt706-has-active{display:flex!important}',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #arrow-options,',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #freehand-options,',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #zone-options{',
+      '  position:static!important;',
+      '  left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
+      '  transform:none!important;',
+      '  z-index:auto!important;',
+      '  margin:0!important;',
+      '  width:max-content!important;',
+      '  max-width:min(460px,calc(100vw - var(--tt706-fs-options-left,8px) - 12px))!important;',
+      '  min-width:0!important;',
+      '  min-height:0!important;',
+      '  overflow-x:auto!important;',
+      '  overflow-y:hidden!important;',
+      '  -webkit-overflow-scrolling:touch!important;',
+      '  box-sizing:border-box!important;',
+      '  background:rgba(17,26,20,.98)!important;',
+      '  border:1px solid #4ae87a!important;',
+      '  border-radius:8px!important;',
+      '  padding:3px 5px!important;',
+      '  box-shadow:0 6px 18px rgba(0,0,0,.55)!important;',
+      '  gap:4px!important;',
+      '  align-items:center!important;',
+      '  pointer-events:auto!important;',
+      '  white-space:nowrap!important;',
+      '  opacity:1!important;',
+      '  visibility:visible!important;',
       '  transition:none!important;',
       '  animation:none!important;',
-      '  transform:none!important;',
-      '  box-sizing:border-box!important;',
-      '}'
+      '}',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #arrow-options:not(.tt706-active-option),',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #freehand-options:not(.tt706-active-option),',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #zone-options:not(.tt706-active-option){display:none!important}',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options .tt706-active-option{display:flex!important}',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options select{height:25px!important;min-height:25px!important;max-width:130px!important;padding:1px 5px!important;font-size:.68rem!important}',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options button{height:25px!important;min-height:25px!important;padding:1px 6px!important;font-size:.66rem!important;white-space:nowrap!important}',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options label,',
+      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options span{font-size:.66rem!important;line-height:1!important;white-space:nowrap!important}',
+      '@media (max-width:720px){body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #arrow-options,body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #freehand-options,body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #zone-options{max-width:calc(100vw - 16px)!important}}'
     ].join('\n');
     document.head.appendChild(st);
   }
-  function setVersion(){
-    try{document.title='Taktiktavla TEST v705 fullscreen ritval stabil render';}catch(e){}
+
+  function container(){
+    var c=byId('tt706-fs-draw-options');
+    if(c)return c;
+    c=document.createElement('div');
+    c.id='tt706-fs-draw-options';
+    c.setAttribute('aria-label','Ritval helskärm');
+    document.body.appendChild(c);
+    return c;
+  }
+
+  function positionContainer(){
     try{
-      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
-        var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='705 TEST';
-      });
-      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v705 TEST';
+      var tools=byId('fs-top-tools');
+      var left=8, top=72;
+      if(tools){
+        var r=tools.getBoundingClientRect();
+        if(r && r.bottom)top=Math.max(4,Math.round(r.bottom+2));
+        if(r && r.left)left=Math.max(6,Math.round(r.left));
+      }
+      var layer=byId('tt616-layer-panel');
+      if(layer){
+        var lr=layer.getBoundingClientRect();
+        if(lr && lr.left && lr.left>80){
+          var maxLeft=Math.max(6,Math.round(lr.left-480));
+          left=Math.min(left,maxLeft);
+        }
+      }
+      document.documentElement.style.setProperty('--tt706-fs-options-left',left+'px');
+      document.documentElement.style.setProperty('--tt706-fs-options-top',top+'px');
     }catch(e){}
   }
-  function boot(){
-    ensureCss();
-    setVersion();
-    schedule();
+
+  function protect(el){
+    if(!el || el.dataset.tt706Protected)return;
+    el.dataset.tt706Protected='1';
+    ['pointerdown','mousedown','touchstart','click'].forEach(function(type){
+      el.addEventListener(type,function(ev){try{ev.stopPropagation();}catch(e){}},{capture:true,passive:true});
+    });
   }
 
-  ['pointerdown','mousedown','touchstart','click','input','change'].forEach(function(evt){
-    document.addEventListener(evt,freezeBeforeLegacyRerender,true);
-  });
-  ['fullscreenchange','webkitfullscreenchange','resize','orientationchange','click','touchend','keyup'].forEach(function(evt){
-    window.addEventListener(evt,function(){setTimeout(boot,50);},true);
-  });
+  function hideOldHolders(){
+    try{
+      var old=byId('tt291-plan-draw-options');
+      if(old)old.style.setProperty('display','none','important');
+      var slot=byId('tt667-draw-options-slot');
+      if(slot)slot.style.setProperty('display','none','important');
+    }catch(e){}
+  }
 
-  var oldUpdate=window.tt291UpdateDrawOptionsPlacement;
-  if(typeof oldUpdate==='function' && !oldUpdate.__tt705Wrapped){
-    var wrapped=function(){
-      var idBefore=activeId();
-      if(isFullscreen() && idBefore && idBefore===lastActiveId)lockCurrentSize(idBefore);
-      var r=oldUpdate.apply(this,arguments);
-      setTimeout(schedule,0);
-      setTimeout(schedule,90);
+  function claimOptions(){
+    var c=container();
+    var aid=activeOptionId();
+    var has=!!aid;
+    hideOldHolders();
+    OPTION_IDS.forEach(function(id){
+      var el=byId(id);
+      if(!el)return;
+      if(el.parentNode!==c)c.appendChild(el);
+      el.classList.remove('tt291-active-option','tt681-active-option','tt679-active-option','tt678-active-option','tt676-active-option','tt677-active-option','tt252-active-option','tt238-rita-options','tt674-taktik-options');
+      el.classList.toggle('tt706-active-option',id===aid);
+      el.style.setProperty('position','static','important');
+      el.style.setProperty('left','auto','important');
+      el.style.setProperty('right','auto','important');
+      el.style.setProperty('top','auto','important');
+      el.style.setProperty('bottom','auto','important');
+      el.style.setProperty('transform','none','important');
+      el.style.setProperty('z-index','auto','important');
+      el.style.setProperty('margin','0','important');
+      el.style.setProperty('visibility',id===aid?'visible':'hidden','important');
+      el.style.setProperty('opacity',id===aid?'1':'0','important');
+      el.style.setProperty('display',id===aid?'flex':'none','important');
+      protect(el);
+    });
+    c.classList.toggle('tt706-has-active',has);
+    c.style.setProperty('display',has?'flex':'none','important');
+  }
+
+  function releaseOptions(){
+    try{
+      var c=byId('tt706-fs-draw-options');
+      if(c)c.classList.remove('tt706-has-active');
+      if(c)c.style.setProperty('display','none','important');
+      OPTION_IDS.forEach(function(id){
+        var el=byId(id);
+        if(!el)return;
+        el.classList.remove('tt706-active-option');
+        if(c && el.parentNode===c){
+          var p=byId('pitch-wrapper')||document.body;
+          p.appendChild(el);
+        }
+        el.style.removeProperty('visibility');
+        el.style.removeProperty('opacity');
+      });
+    }catch(e){}
+  }
+
+  var applying=false;
+  function apply(){
+    if(applying)return;
+    applying=true;
+    try{
+      ensureCss();
+      var on=isFs() && isTaktikContext();
+      document.body.classList.toggle('tt706-fs-draw-owner',!!on);
+      if(on){
+        positionContainer();
+        claimOptions();
+      }else{
+        releaseOptions();
+      }
+      try{document.title='Taktiktavla TEST v706 fullscreen ritval en ägare';}catch(e){}
+      try{
+        document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+          var t=(el.textContent||'').trim();
+          if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='706 TEST';
+        });
+        var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+        if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v706 TEST';
+      }catch(e){}
+    }finally{
+      applying=false;
+    }
+  }
+
+  function schedule(){
+    apply();
+    setTimeout(apply,0);
+    setTimeout(apply,35);
+  }
+
+  var oldSetMode=typeof setMode==='function'?setMode:null;
+  if(oldSetMode && !oldSetMode._tt706Wrapped){
+    var wrappedSetMode=function(){
+      var r=oldSetMode.apply(this,arguments);
+      schedule();
       return r;
     };
-    wrapped.__tt705Wrapped=true;
-    window.tt291UpdateDrawOptionsPlacement=wrapped;
+    wrappedSetMode._tt706Wrapped=true;
+    setMode=wrappedSetMode;
+    window.setMode=wrappedSetMode;
   }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,0);setTimeout(boot,400);setTimeout(boot,1200);});
-  else{setTimeout(boot,0);setTimeout(boot,400);setTimeout(boot,1200);}
+  var oldSync=typeof syncFullscreenToolButtons==='function'?syncFullscreenToolButtons:null;
+  if(oldSync && !oldSync._tt706Wrapped){
+    var wrappedSync=function(){
+      var r=oldSync.apply(this,arguments);
+      schedule();
+      return r;
+    };
+    wrappedSync._tt706Wrapped=true;
+    syncFullscreenToolButtons=wrappedSync;
+    window.syncFullscreenToolButtons=wrappedSync;
+  }
+
+  var oldEnter=typeof enterFullscreenPortrait==='function'?enterFullscreenPortrait:null;
+  if(oldEnter && !oldEnter._tt706Wrapped){
+    var wrappedEnter=function(){
+      var r=oldEnter.apply(this,arguments);
+      schedule();
+      setTimeout(schedule,120);
+      return r;
+    };
+    wrappedEnter._tt706Wrapped=true;
+    enterFullscreenPortrait=wrappedEnter;
+    window.enterFullscreenPortrait=wrappedEnter;
+  }
+
+  var oldExit=typeof exitFullscreenPortrait==='function'?exitFullscreenPortrait:null;
+  if(oldExit && !oldExit._tt706Wrapped){
+    var wrappedExit=function(){
+      document.body.classList.remove('tt706-fs-draw-owner');
+      releaseOptions();
+      var r=oldExit.apply(this,arguments);
+      setTimeout(function(){document.body.classList.remove('tt706-fs-draw-owner');releaseOptions();},0);
+      return r;
+    };
+    wrappedExit._tt706Wrapped=true;
+    exitFullscreenPortrait=wrappedExit;
+    window.exitFullscreenPortrait=wrappedExit;
+  }
+
+  document.addEventListener('fullscreenchange',schedule,true);
+  document.addEventListener('webkitfullscreenchange',schedule,true);
+  ['click','touchend','pointerup','keyup','resize','orientationchange'].forEach(function(evt){
+    window.addEventListener(evt,function(ev){
+      try{if(ev && ev.target && ev.target.closest && ev.target.closest('#arrow-options,#freehand-options,#zone-options')){setTimeout(apply,0);return;}}catch(e){}
+      setTimeout(apply,25);
+    },true);
+  });
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(schedule,0);setTimeout(schedule,400);setTimeout(schedule,1200);});
+  else{setTimeout(schedule,0);setTimeout(schedule,400);setTimeout(schedule,1200);}
+
+  window.tt706ApplyFullscreenDrawOptionsOwner=apply;
 })();
-/* === slut v705 TEST === */
+/* === slut v706 TEST === */
