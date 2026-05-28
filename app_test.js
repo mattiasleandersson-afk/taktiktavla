@@ -44840,7 +44840,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v734 TEST: Taktiktavla fillista - ikoner närmare filnamn ===
+/* === v735 TEST: Taktiktavla fillista - ikoner närmare filnamn ===
    Bas: v722 TEST.
    Endast fillistans radbredd i Taktiktavla desktop.
    Syfte:
