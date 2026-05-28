@@ -44930,3 +44930,158 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
 })();
 /* === slut v723 TEST === */
+
+
+
+/* === v724 TEST: Taktiktavla kompaktare filpanel för mer planyta ===
+   Bas: v723 TEST.
+   Endast Taktiktavla desktop.
+   Syfte:
+   - Minska höjden på befintlig filpanel där den redan ligger.
+   - Ge planen mer vertikal plats utan att flytta paneler, ritverktyg eller lager.
+   - Behåll v722/v723:s synliga filikoner.
+*/
+(function(){
+  'use strict';
+  if(window.__tt724TavlaCompactPanelInstalled)return;
+  window.__tt724TavlaCompactPanelInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function isTavlaActive(){
+    try{
+      var tab=document.querySelector('.tab.on[data-panel="saves"]');
+      var panel=byId('panel-saves');
+      return !!(tab&&panel&&panel.classList.contains('on'));
+    }catch(e){return false;}
+  }
+
+  function ensureCss(){
+    if(byId('tt724-tavla-compact-panel-css'))return;
+    var st=document.createElement('style');
+    st.id='tt724-tavla-compact-panel-css';
+    st.textContent=[
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #bottompanel{',
+      '  flex:0 0 auto!important;',
+      '  min-height:0!important;',
+      '  max-height:31vh!important;',
+      '  overflow:hidden!important;',
+      '  padding-top:3px!important;',
+      '  padding-bottom:3px!important;',
+      '}',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on,',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.tt-v99-formation-top.on{',
+      '  min-height:0!important;',
+      '  max-height:calc(31vh - 6px)!important;',
+      '  padding-top:0!important;',
+      '  margin-top:0!important;',
+      '  overflow:hidden!important;',
+      '  box-sizing:border-box!important;',
+      '}',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on > div{',
+      '  display:flex!important;',
+      '  flex-direction:column!important;',
+      '  min-height:0!important;',
+      '  max-height:100%!important;',
+      '  overflow:hidden!important;',
+      '}',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on > div > div:first-child{',
+      '  margin-bottom:3px!important;',
+      '  gap:3px!important;',
+      '  flex-wrap:nowrap!important;',
+      '  overflow-x:auto!important;',
+      '  overflow-y:hidden!important;',
+      '  scrollbar-width:none!important;',
+      '}',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on > div > div:first-child::-webkit-scrollbar{display:none!important}',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on > div > div:first-child .btn{',
+      '  padding:3px 6px!important;',
+      '  font-size:.68rem!important;',
+      '  white-space:nowrap!important;',
+      '  flex:0 0 auto!important;',
+      '}',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #cloud-status{',
+      '  min-height:0!important;',
+      '  height:auto!important;',
+      '  margin-bottom:2px!important;',
+      '  font-size:.62rem!important;',
+      '  line-height:1.05!important;',
+      '  white-space:nowrap!important;',
+      '  overflow:hidden!important;',
+      '  text-overflow:ellipsis!important;',
+      '}',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #saves-search{',
+      '  padding:3px 6px!important;',
+      '  font-size:.7rem!important;',
+      '  margin-bottom:3px!important;',
+      '  height:24px!important;',
+      '  min-height:24px!important;',
+      '}',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list,',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.tt-v99-formation-top.on #saves-list{',
+      '  flex:1 1 auto!important;',
+      '  min-height:0!important;',
+      '  max-height:none!important;',
+      '  overflow-y:auto!important;',
+      '  overflow-x:hidden!important;',
+      '  margin-top:0!important;',
+      '  padding-bottom:10px!important;',
+      '}',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row{',
+      '  min-height:24px!important;',
+      '  height:24px!important;',
+      '  padding-top:1px!important;',
+      '  padding-bottom:1px!important;',
+      '}',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .folder-row,',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .tt554-folder-header,',
+      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .tt577-folder-header{',
+      '  min-height:22px!important;',
+      '  padding-top:2px!important;',
+      '  padding-bottom:2px!important;',
+      '}',
+      '@media (min-width:1280px){',
+      '  body.tt724-tavla-active:not(.fullscreen-portrait) #bottompanel{max-height:29vh!important}',
+      '  body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on,',
+      '  body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.tt-v99-formation-top.on{max-height:calc(29vh - 6px)!important}',
+      '}',
+      '@media (max-width:900px){',
+      '  body.tt724-tavla-active:not(.fullscreen-portrait) #bottompanel{max-height:36vh!important}',
+      '  body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on,',
+      '  body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.tt-v99-formation-top.on{max-height:calc(36vh - 6px)!important}',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v724 tavla kompakt filpanel';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='724 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v724 TEST';
+    }catch(e){}
+  }
+
+  function apply(){
+    ensureCss();
+    document.body.classList.toggle('tt724-tavla-active',isTavlaActive());
+    setVersion();
+  }
+
+  ['click','touchend','resize','orientationchange','input'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,0);setTimeout(apply,80);},true);
+  });
+  try{
+    var list=byId('saves-list');
+    if(list && window.MutationObserver){
+      var mo=new MutationObserver(function(){setTimeout(apply,0);});
+      mo.observe(list,{childList:true,subtree:true});
+    }
+  }catch(e){}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);});
+  else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
+})();
+/* === slut v724 TEST === */
