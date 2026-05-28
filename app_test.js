@@ -43513,3 +43513,245 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);}
 })();
 /* === slut v694 TEST === */
+
+
+
+/* === v696 TEST: rent fullscreen-lager för Taktikfilm ===
+   Bas: v694 TEST. v695 används inte.
+   Syfte:
+   - Fullscreen ska fungera som ett rent visningslager ovanpå appen.
+   - Dölj bakomliggande topbar/bottompanel/taktikbar/editpanel i fullscreen.
+   - Behåll fullscreen-ritverktyg, stegnav och lagerpanel.
+   - Komprimera lagerpanelen i fullscreen utan att ändra lagerlogik.
+*/
+(function(){
+  'use strict';
+  if(window.__tt696FullscreenCleanInstalled)return;
+  window.__tt696FullscreenCleanInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function isDesktop(){
+    try{return !!(window.matchMedia&&window.matchMedia('(min-width:1024px) and (pointer:fine)').matches);}
+    catch(e){return false;}
+  }
+  function isTaktikContext(){
+    try{return !!(playback||isEditingTaktik||editingTaktikIdx!==null||document.querySelector('.tab.on[data-panel="taktik"]'));}catch(e){return false;}
+  }
+
+  function ensureCss(){
+    if(byId('tt696-fullscreen-clean-css'))return;
+    var st=document.createElement('style');
+    st.id='tt696-fullscreen-clean-css';
+    st.textContent=[
+      'body.fullscreen-portrait.tt696-fs-clean{',
+      '  background:#050b07!important;',
+      '  overflow:hidden!important;',
+      '}',
+
+      /* Dölj bakomliggande app-UI i fullscreen. Behåll bara pitch, fs-kontroller och lager. */
+      'body.fullscreen-portrait.tt696-fs-clean #topbar,',
+      'body.fullscreen-portrait.tt696-fs-clean #bench-bar,',
+      'body.fullscreen-portrait.tt696-fs-clean #bottompanel,',
+      'body.fullscreen-portrait.tt696-fs-clean #panel-toggle-strip,',
+      'body.fullscreen-portrait.tt696-fs-clean #panel-show-btn,',
+      'body.fullscreen-portrait.tt696-fs-clean #taktikbar,',
+      'body.fullscreen-portrait.tt696-fs-clean #edit-taktik-ui,',
+      'body.fullscreen-portrait.tt696-fs-clean #rec-ui,',
+      'body.fullscreen-portrait.tt696-fs-clean #no-rec-ui{',
+      '  display:none!important;',
+      '  visibility:hidden!important;',
+      '  pointer-events:none!important;',
+      '}',
+
+      'body.fullscreen-portrait.tt696-fs-clean #pitch-wrapper{',
+      '  position:fixed!important;',
+      '  left:0!important;',
+      '  top:0!important;',
+      '  right:0!important;',
+      '  bottom:0!important;',
+      '  width:auto!important;',
+      '  height:auto!important;',
+      '  margin:0!important;',
+      '  box-sizing:border-box!important;',
+      '  display:flex!important;',
+      '  align-items:center!important;',
+      '  justify-content:center!important;',
+      '  overflow:hidden!important;',
+      '  background:#050b07!important;',
+      '  z-index:9990!important;',
+      '  padding:calc(env(safe-area-inset-top,0px) + 48px) 206px calc(env(safe-area-inset-bottom,0px) + 8px) calc(env(safe-area-inset-left,0px) + 8px)!important;',
+      '}',
+
+      'body.fullscreen-portrait.tt696-fs-clean #pitch-svg{',
+      '  display:block!important;',
+      '  height:100%!important;',
+      '  width:auto!important;',
+      '  max-height:100%!important;',
+      '  max-width:100%!important;',
+      '  z-index:9991!important;',
+      '}',
+
+      /* Roterad desktop-helskärm får egen beräkning så hela planen syns med lagerpanelen kvar. */
+      '@media (min-width:1024px) and (pointer:fine){',
+      '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-wrapper{',
+      '    padding:calc(env(safe-area-inset-top,0px) + 48px) 206px calc(env(safe-area-inset-bottom,0px) + 8px) calc(env(safe-area-inset-left,0px) + 8px)!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-svg{',
+      '    transform:rotate(90deg)!important;',
+      '    transform-origin:center center!important;',
+      '    width:min(calc(100vh - 64px), calc(100vw - 226px))!important;',
+      '    height:auto!important;',
+      '    max-width:none!important;',
+      '    max-height:none!important;',
+      '  }',
+      '}',
+
+      /* Fullscreen-kontroller ovanpå det rena lagret. */
+      'body.fullscreen-portrait.tt696-fs-clean #fs-top-tools{',
+      '  z-index:10040!important;',
+      '}',
+      'body.fullscreen-portrait.tt696-fs-clean #fs-restore-btn,',
+      'body.fullscreen-portrait.tt696-fs-clean #fs-portrait-nav,',
+      'body.fullscreen-portrait.tt696-fs-clean #ls-prev-side,',
+      'body.fullscreen-portrait.tt696-fs-clean #ls-next-side{',
+      '  z-index:10035!important;',
+      '}',
+
+      /* Lagerpanelen i fullscreen: smalare och mindre text, men samma funktioner. */
+      '@media (min-width:1024px) and (pointer:fine){',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel{',
+      '    display:block!important;',
+      '    position:fixed!important;',
+      '    right:calc(env(safe-area-inset-right,0px) + 6px)!important;',
+      '    top:calc(env(safe-area-inset-top,0px) + 54px)!important;',
+      '    width:194px!important;',
+      '    max-height:calc(100vh - 62px)!important;',
+      '    padding:6px!important;',
+      '    border-radius:10px!important;',
+      '    z-index:10030!important;',
+      '    overflow:auto!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel details{display:block!important;}',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel summary{',
+      '    display:flex!important;',
+      '    font-size:.72rem!important;',
+      '    margin-bottom:2px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-sub,',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-note,',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt630-layer-meta,',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt631-layer-count{',
+      '    display:none!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-row{',
+      '    margin-top:4px!important;',
+      '    padding:4px!important;',
+      '    gap:3px!important;',
+      '    grid-template-columns:auto minmax(0,1fr) auto!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-icon{',
+      '    min-width:25px!important;',
+      '    height:25px!important;',
+      '    padding:0 4px!important;',
+      '    font-size:.72rem!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-title{',
+      '    padding:1px 2px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-name{',
+      '    font-size:.66rem!important;',
+      '    line-height:1.1!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel button{',
+      '    padding:3px 5px!important;',
+      '    font-size:.62rem!important;',
+      '    border-radius:7px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-menu-button{',
+      '    width:25px!important;',
+      '    height:25px!important;',
+      '    font-size:.8rem!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-menu-panel{',
+      '    grid-column:1 / -1!important;',
+      '    grid-template-columns:1fr!important;',
+      '    gap:4px!important;',
+      '    margin-top:4px!important;',
+      '    padding-top:4px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt630-layer-add{',
+      '    margin-top:5px!important;',
+      '    padding:4px!important;',
+      '  }',
+      '}',
+
+      /* Mobil/små skärmar får inte denna desktop-komprimering. */
+      '@media (max-width:1023px){',
+      '  body.fullscreen-portrait.tt696-fs-clean #pitch-wrapper{',
+      '    padding:calc(env(safe-area-inset-top,0px) + 44px) 8px calc(env(safe-area-inset-bottom,0px) + 8px) 8px!important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function applyCleanState(){
+    ensureCss();
+    var on=document.body.classList.contains('fullscreen-portrait') && isTaktikContext();
+    document.body.classList.toggle('tt696-fs-clean',!!on);
+    document.body.classList.toggle('v66-taktik-fs',!!on);
+    if(on){
+      try{
+        var d=document.querySelector('#tt616-layer-panel details');
+        if(d)d.open=true;
+      }catch(e){}
+      try{if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();}catch(e){}
+    }
+  }
+
+  var oldEnter=null, oldExit=null;
+  try{oldEnter=enterFullscreenPortrait;}catch(e){}
+  try{oldExit=exitFullscreenPortrait;}catch(e){}
+
+  if(typeof oldEnter==='function' && !oldEnter._tt696Wrapped){
+    enterFullscreenPortrait=function(){
+      var r=oldEnter.apply(this,arguments);
+      setTimeout(applyCleanState,0);
+      setTimeout(applyCleanState,120);
+      return r;
+    };
+    enterFullscreenPortrait._tt696Wrapped=true;
+  }
+
+  if(typeof oldExit==='function' && !oldExit._tt696Wrapped){
+    exitFullscreenPortrait=function(){
+      document.body.classList.remove('tt696-fs-clean');
+      var r=oldExit.apply(this,arguments);
+      setTimeout(function(){document.body.classList.remove('tt696-fs-clean');},0);
+      return r;
+    };
+    exitFullscreenPortrait._tt696Wrapped=true;
+  }
+
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v696 fullscreen rent lager';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='696 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v696 TEST';
+    }catch(e){}
+  }
+
+  ['click','touchend','resize','orientationchange'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(applyCleanState,80);},true);
+  });
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',function(){ensureCss();setVersion();setTimeout(applyCleanState,300);});
+  }else{
+    ensureCss();setVersion();setTimeout(applyCleanState,300);
+  }
+})();
+/* === slut v696 TEST === */
