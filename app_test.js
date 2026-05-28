@@ -44269,3 +44269,121 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);}
 })();
 /* === slut v703 TEST === */
+
+
+/* === v718 TEST: Taktiktavla stabil in-place puts ===
+   Bas: v717 rollback / v708 stabil.
+   Mål:
+   - Inga flyttar av ritverktyg, ritval, filpanel, lagerpanel eller plan.
+   - Bara markera när Taktiktavla-fliken är aktiv och styla befintliga element där de redan bor.
+   - Stoppa tidigare misstag: ingen global layout, ingen overlay, ingen ny ritvalsägare.
+*/
+(function(){
+  'use strict';
+  if(window.__tt718TavlaInPlacePutsInstalled)return;
+  window.__tt718TavlaInPlacePutsInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function isTavlaActive(){
+    try{
+      var tab=document.querySelector('.tab.on[data-panel="saves"]');
+      var panel=byId('panel-saves');
+      return !!(tab && panel && panel.classList.contains('on'));
+    }catch(e){return false;}
+  }
+
+  function ensureCss(){
+    if(byId('tt718-tavla-inplace-css'))return;
+    var st=document.createElement('style');
+    st.id='tt718-tavla-inplace-css';
+    st.textContent=[
+      'body.tt718-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row{',
+      '  box-sizing:border-box!important;',
+      '  display:flex!important;',
+      '  align-items:center!important;',
+      '  gap:4px!important;',
+      '  max-width:100%!important;',
+      '  overflow-x:auto!important;',
+      '  overflow-y:hidden!important;',
+      '  position:static!important;',
+      '  transform:none!important;',
+      '  z-index:auto!important;',
+      '  padding:2px 0!important;',
+      '  margin:0!important;',
+      '  background:transparent!important;',
+      '}',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row .tt236-rita-tool,',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-arrow,',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-freehand,',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-zone,',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-text{',
+      '  width:32px!important;min-width:32px!important;max-width:32px!important;',
+      '  height:30px!important;min-height:30px!important;',
+      '  padding:3px 5px!important;font-size:.78rem!important;',
+      '}',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on{',
+      '  box-sizing:border-box!important;',
+      '}',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row{',
+      '  display:flex!important;',
+      '  align-items:center!important;',
+      '  gap:3px!important;',
+      '  min-width:0!important;',
+      '  box-sizing:border-box!important;',
+      '}',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row-name,',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .name,',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list [class*="name"]{',
+      '  flex:1 1 auto!important;',
+      '  min-width:0!important;',
+      '  overflow:hidden!important;',
+      '  text-overflow:ellipsis!important;',
+      '  white-space:nowrap!important;',
+      '}',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list button.sa,',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button{',
+      '  flex:0 0 23px!important;',
+      '  width:23px!important;min-width:23px!important;max-width:23px!important;',
+      '  height:23px!important;min-height:23px!important;',
+      '  padding:0!important;',
+      '  margin-left:1px!important;',
+      '  display:inline-flex!important;',
+      '  align-items:center!important;',
+      '  justify-content:center!important;',
+      '  font-size:.72rem!important;',
+      '  line-height:1!important;',
+      '  box-sizing:border-box!important;',
+      '}',
+      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row-sub{',
+      '  display:none!important;',
+      '}',
+      'body:not(.tt718-tavla-active) #tt718-marker{display:none!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v718 tavla in-place puts';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='718 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v718 TEST';
+    }catch(e){}
+  }
+
+  function apply(){
+    ensureCss();
+    document.body.classList.toggle('tt718-tavla-active',isTavlaActive());
+    setVersion();
+  }
+
+  ['click','touchend','resize','orientationchange'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,0);setTimeout(apply,80);},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);});
+  else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
+})();
+/* === slut v718 TEST === */
