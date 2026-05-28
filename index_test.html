@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v738 tavla in-place puts</title>
+<title>Taktiktavla TEST v739 tavla in-place puts</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v738 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
+  /* v739 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1950,7 +1950,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"738 TEST" !important;
+    content:"739 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1960,7 +1960,7 @@
 
 
 <style id="tt666-taktikfilm-desktop-layout-css">
-  /* v738 TEST: Första datorlayout för Taktikfilm-redigering.
+  /* v739 TEST: Första datorlayout för Taktikfilm-redigering.
      Bas: fungerande lagerlogik v660/v664 + språkputsen i v665.
      Endast desktop, inte fullscreen, inte mobil/iPad. */
   @media (min-width:1024px) and (pointer:fine){
@@ -2179,7 +2179,7 @@
 
 
 <style id="tt667-taktikfilm-desktop-layout-puts-css">
-  /* v738 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
+  /* v739 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
      - bredare stegspalt
      - ritverktygsval bredvid ritverktygen i övre raden
      - lagerpanelen öppen på desktop
@@ -2316,7 +2316,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">738 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">739 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2937,7 +2937,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=738-tavla-options-after-toolbar"></script>
+<script src="app_test.js?v=739-tavla-ritval-v708-princip"></script>
 
 <script>
 (function(){
@@ -4108,7 +4108,7 @@
     var st=document.createElement('style');
     st.id='tt681-taktikfilm-ritval-hoger-utan-regression-lagerpanel-css';
     st.textContent=[
-      'span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{content:"738 TEST"!important}',
+      'span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{content:"739 TEST"!important}',
       '@media (min-width:1024px) and (pointer:fine){',
       '  body.tt681-taktikfilm-ritval-owner:not(.fullscreen-portrait) #tt291-plan-draw-options,',
       '  body.tt681-taktikfilm-ritval-owner:not(.fullscreen-portrait) #tt667-draw-options-slot{display:none!important;visibility:hidden!important;pointer-events:none!important}',
@@ -4140,8 +4140,8 @@
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v738 tavla in-place puts';}catch(e){}
-    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='738 TEST';});}catch(e){}
+    try{document.title='Taktiktavla TEST v739 tavla in-place puts';}catch(e){}
+    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='739 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
     try{
@@ -4164,6 +4164,13 @@
         // tt681 är bara desktop-redigeringsägare; den får inte flytta tillbaka panelerna
         // till pitch-wrapper mellan klick/renderingar, eftersom det gav blink/ryck.
         if(document.body && document.body.classList.contains('fullscreen-portrait')){
+          return;
+        }
+        // v739: Samma princip för Taktiktavla. När tre-spaltsläget är aktivt
+        // ska Tavlans egna ritvalsfunktioner (tt238/tt239) äga panelerna.
+        // Annars flyttar tt681 dem tillbaka till pitch-wrapper efter varje klick/rendering,
+        // vilket ger blink och hopp.
+        if(document.body && document.body.classList.contains('tt733-tavla-active')){
           return;
         }
         restoreOptionsWhenInactive();
@@ -4311,7 +4318,7 @@
 </script>
 
 
-<!-- === v738 TEST: Taktiktavla tre spalter med direkt inline-layout === -->
+<!-- === v739 TEST: Taktiktavla tre spalter med direkt inline-layout === -->
 <style id="tt733-tavla-inline-layout-css">
 @media (min-width:900px){
   body.tt733-tavla-active:not(.fullscreen-portrait){ overflow:hidden!important; }
@@ -4392,8 +4399,8 @@
     var on=isTavla();
     document.body.classList.toggle('tt733-tavla-active',on);
     if(on){setTop();normalizeRows();openLayer();}
-    try{document.title='Taktiktavla TEST v738 tre-spalt direkt';}catch(e){}
-    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v738 TEST';}catch(e){}
+    try{document.title='Taktiktavla TEST v739 tre-spalt direkt';}catch(e){}
+    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v739 TEST';}catch(e){}
   }
   function schedule(){apply();setTimeout(apply,80);setTimeout(apply,250);}
   ['click','touchend','input','change','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(schedule,20);},true);});
@@ -4401,172 +4408,50 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule); else schedule();
 })();
 </script>
-<!-- === slut v738 TEST === -->
+<!-- === slut v739 TEST === -->
 
 
-<!-- === v738 TEST: Taktiktavla ritval efter hela ritraden utan blink === -->
-<style id="tt738-tavla-options-after-toolbar-css">
-@media (min-width:900px){
-  body.tt733-tavla-active:not(.fullscreen-portrait) .tt238-rita-scrollbar{
-    overflow-x:auto!important;
-    overflow-y:hidden!important;
-    flex-wrap:nowrap!important;
-    align-items:center!important;
+<!-- === v739 TEST: Taktiktavla ritval som v708-princip + liten fillistebredd === -->
+<style id="tt739-tavla-ritval-v708-princip-css">
+@media (min-width:1024px) and (pointer:fine){
+  body.tt733-tavla-active:not(.fullscreen-portrait) #bottompanel{
+    width:294px!important;
   }
-  body.tt733-tavla-active:not(.fullscreen-portrait) #arrow-options.tt738-tavla-final,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #freehand-options.tt738-tavla-final,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #zone-options.tt738-tavla-final{
-    position:static!important;
-    left:auto!important;
-    right:auto!important;
-    top:auto!important;
-    bottom:auto!important;
-    transform:none!important;
-    z-index:auto!important;
-    flex:0 0 auto!important;
-    margin:0 0 0 8px!important;
-    padding:0!important;
-    background:transparent!important;
-    border:0!important;
-    box-shadow:none!important;
-    max-width:none!important;
-    overflow:visible!important;
-    white-space:nowrap!important;
-    flex-wrap:nowrap!important;
-    align-items:center!important;
-    pointer-events:auto!important;
+  body.tt733-tavla-active:not(.fullscreen-portrait) #pitch-wrapper{
+    left:330px!important;
   }
-  body.tt733-tavla-active.tt738-options-settling:not(.fullscreen-portrait) #arrow-options,
-  body.tt733-tavla-active.tt738-options-settling:not(.fullscreen-portrait) #freehand-options,
-  body.tt733-tavla-active.tt738-options-settling:not(.fullscreen-portrait) #zone-options{
-    visibility:hidden!important;
-    opacity:0!important;
-    pointer-events:none!important;
+  body.tt733-tavla-active:not(.fullscreen-portrait) #pitch-svg{
+    height:min(calc(100vh - var(--tt733-top-num,112px) - 16px), calc((100vw - 560px) * 1.5))!important;
   }
-  body.tt733-tavla-active:not(.fullscreen-portrait) #arrow-options.tt738-tavla-final select,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #freehand-options.tt738-tavla-final select,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #zone-options.tt738-tavla-final select{
-    height:30px!important;
-    min-height:30px!important;
-    font-size:.75rem!important;
-    max-width:92px!important;
+  body.tt733-tavla-active:not(.fullscreen-portrait) #panel-saves .row.tt722-file-row{
+    grid-template-columns:minmax(46px,108px) repeat(6,19px)!important;
   }
-  body.tt733-tavla-active:not(.fullscreen-portrait) #arrow-options.tt738-tavla-final button,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #freehand-options.tt738-tavla-final button,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #zone-options.tt738-tavla-final button{
-    height:30px!important;
-    min-height:30px!important;
-    font-size:.75rem!important;
-    white-space:nowrap!important;
+  body.tt733-tavla-active:not(.fullscreen-portrait) #panel-saves .row.tt722-file-row .row-name{
+    width:108px!important;
+    max-width:108px!important;
   }
 }
 </style>
-<script id="tt738-tavla-options-after-toolbar-js">
+<script id="tt739-tavla-ritval-v708-princip-js">
 (function(){
   'use strict';
-  if(window.__tt738TavlaOptionsAfterToolbarInstalled)return;
-  window.__tt738TavlaOptionsAfterToolbarInstalled=true;
-
+  if(window.__tt739TavlaRitvalV708PrincipInstalled)return;
+  window.__tt739TavlaRitvalV708PrincipInstalled=true;
   function byId(id){return document.getElementById(id);}
-  function active(){return document.body.classList.contains('tt733-tavla-active') && !document.body.classList.contains('fullscreen-portrait');}
-  function visible(el){
-    if(!el)return false;
-    try{var r=el.getBoundingClientRect();var cs=getComputedStyle(el);return r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden';}catch(e){return false;}
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v739 ritval v708-princip';}catch(e){}
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='739 TEST';});
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v739 TEST';
+    }catch(e){}
   }
-  function ritaBar(){
-    var ref=byId('tt236-rita-move')||byId('btn-arrow')||byId('btn-freehand')||byId('btn-zone');
-    return ref&&ref.parentNode?ref.parentNode:null;
-  }
-  function finalAnchor(bar){
-    var ids=['tt236-rita-reset','tt236-rita-undo','tt236-rita-clear','btn-text','btn-zone','btn-freehand','btn-arrow','tt236-rita-move'];
-    for(var i=0;i<ids.length;i++){
-      var el=byId(ids[i]);
-      if(el&&el.parentNode===bar&&visible(el))return el;
-    }
-    return bar?bar.lastElementChild:null;
-  }
-  function moveAfter(el,anchor){
-    if(!el||!anchor||!anchor.parentNode)return;
-    var parent=anchor.parentNode;
-    var next=anchor.nextSibling;
-    if(next===el)return;
-    parent.insertBefore(el,next);
-  }
-  function placeFinal(){
-    if(!active())return;
-    var bar=ritaBar();
-    if(!bar)return;
-    bar.classList.add('tt238-rita-scrollbar');
-    var anchor=finalAnchor(bar);
-    if(!anchor)return;
-    ['arrow-options','freehand-options','zone-options'].forEach(function(id){
-      var el=byId(id); if(!el)return;
-      el.classList.remove('tt736-tavla-option','tt737-tavla-option');
-      el.classList.add('tt238-rita-options','tt738-tavla-final');
-      el.style.setProperty('position','static','important');
-      el.style.setProperty('left','auto','important');
-      el.style.setProperty('right','auto','important');
-      el.style.setProperty('top','auto','important');
-      el.style.setProperty('bottom','auto','important');
-      el.style.setProperty('transform','none','important');
-      el.style.setProperty('margin','0 0 0 8px','important');
-      el.style.setProperty('background','transparent','important');
-      el.style.setProperty('border','0','important');
-      el.style.setProperty('box-shadow','none','important');
-      el.style.setProperty('max-width','none','important');
-      el.style.setProperty('overflow','visible','important');
-      el.style.setProperty('white-space','nowrap','important');
-      el.style.setProperty('flex-wrap','nowrap','important');
-      moveAfter(el,anchor);
-    });
-    try{document.title='Taktiktavla TEST v738 ritval stabilt';}catch(e){}
-    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v738 TEST';}catch(e){}
-  }
-  function settle(){
-    if(!active())return;
-    document.body.classList.add('tt738-options-settling');
-    // Gamla tt238/tt239 kör sina flyttar på 0 och 30 ms efter setMode.
-    // Vi visar inte mellanläget, utan placerar slutläget efter dem.
-    setTimeout(placeFinal,35);
-    setTimeout(function(){placeFinal();document.body.classList.remove('tt738-options-settling');},70);
-  }
-  function cleanup(){
-    if(active())return;
-    document.body.classList.remove('tt738-options-settling');
-    ['arrow-options','freehand-options','zone-options'].forEach(function(id){var el=byId(id); if(el)el.classList.remove('tt738-tavla-final');});
-  }
-  function schedule(){placeFinal();setTimeout(placeFinal,80);setTimeout(cleanup,120);}
-
-  ['btn-arrow','btn-freehand','btn-zone'].forEach(function(id){
-    document.addEventListener('pointerdown',function(ev){try{if(ev.target&&ev.target.closest&&ev.target.closest('#'+id))settle();}catch(e){}},true);
-    document.addEventListener('mousedown',function(ev){try{if(ev.target&&ev.target.closest&&ev.target.closest('#'+id))settle();}catch(e){}},true);
-    document.addEventListener('touchstart',function(ev){try{if(ev.target&&ev.target.closest&&ev.target.closest('#'+id))settle();}catch(e){}},true);
-  });
-  var oldSetMode=typeof window.setMode==='function'?window.setMode:null;
-  if(oldSetMode && !oldSetMode.__tt738Wrapped){
-    var wrapped=function(mode){
-      if(active() && (mode==='arrow'||mode==='freehand'||mode==='zone')){
-        document.body.classList.add('tt738-options-settling');
-      }
-      var r=oldSetMode.apply(this,arguments);
-      if(active() && (mode==='arrow'||mode==='freehand'||mode==='zone')){
-        setTimeout(placeFinal,35);
-        setTimeout(function(){placeFinal();document.body.classList.remove('tt738-options-settling');},70);
-      }else{
-        setTimeout(placeFinal,50);
-      }
-      return r;
-    };
-    wrapped.__tt738Wrapped=true;
-    window.setMode=wrapped;
-    try{setMode=wrapped;}catch(e){}
-  }
-  ['click','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(schedule,40);},true);});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(schedule,0);setTimeout(schedule,400);});
-  else{setTimeout(schedule,0);setTimeout(schedule,400);}
+  function tick(){setVersion();}
+  ['click','touchend','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(tick,80);},true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick); else tick();
 })();
 </script>
-<!-- === slut v738 TEST === -->
+<!-- === slut v739 TEST === -->
 
 </body>
 </html>
