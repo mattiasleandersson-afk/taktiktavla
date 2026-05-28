@@ -44123,85 +44123,115 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v700 TEST: fullscreen lagerpanel bredare enrad ===
-   Bas: v699 TEST.
-   Endast layout i fullscreen:
-   - Lagerpanelen får lite mer bredd eftersom det fanns tomyta.
-   - Lagerrader hålls på en rad så punkter/status inte bryts ned.
+/* === v701 TEST: fullscreen lagerpanel bredare med rätt klass ===
+   Bas: v699 TEST. v700 används inte som bas.
+   Orsak: v700 träffade fel fullscreen-klass och gav därför ingen synlig ändring.
+   Endast fullscreen-layout på desktop:
+   - Panelen får lite mer bredd.
+   - Planens högerspalt justeras mot samma bredd.
+   - Lagerradens kolumner låses till en rad så punkterna inte hamnar under.
 */
 (function(){
   'use strict';
-  if(window.__tt700FullscreenLayerWidthInstalled)return;
-  window.__tt700FullscreenLayerWidthInstalled=true;
+  if(window.__tt701FullscreenLayerWidthInstalled)return;
+  window.__tt701FullscreenLayerWidthInstalled=true;
 
   function byId(id){return document.getElementById(id);}
 
   function ensureCss(){
-    if(byId('tt700-fullscreen-layer-width-css'))return;
+    if(byId('tt701-fullscreen-layer-width-css'))return;
     var st=document.createElement('style');
-    st.id='tt700-fullscreen-layer-width-css';
+    st.id='tt701-fullscreen-layer-width-css';
     st.textContent=[
-      'body.fullscreen-portrait.tt696-clean-fullscreen #tt616-layer-panel,',
-      'body.tt696-clean-fullscreen.fullscreen-portrait #tt616-layer-panel{',
-      '  width:190px!important;',
-      '  max-width:190px!important;',
-      '  min-width:170px!important;',
+      '@media (min-width:1024px) and (pointer:fine){',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel{',
+      '    width:184px!important;',
+      '    min-width:184px!important;',
+      '    max-width:184px!important;',
+      '    right:calc(env(safe-area-inset-right,0px) + 5px)!important;',
+      '    padding:5px!important;',
+      '    box-sizing:border-box!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #pitch-wrapper{',
+      '    padding-right:198px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-wrapper{',
+      '    padding-right:198px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-svg{',
+      '    width:min(calc(100vh - 58px), calc(100vw - 212px))!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-row{',
+      '    display:grid!important;',
+      '    grid-template-columns:21px minmax(0,1fr) auto 21px!important;',
+      '    align-items:center!important;',
+      '    gap:3px!important;',
+      '    white-space:nowrap!important;',
+      '    overflow:hidden!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-row > *{',
+      '    min-width:0!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-title{',
+      '    min-width:0!important;',
+      '    overflow:hidden!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-name{',
+      '    display:block!important;',
+      '    overflow:hidden!important;',
+      '    text-overflow:ellipsis!important;',
+      '    white-space:nowrap!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-menu-button{',
+      '    grid-column:auto!important;',
+      '    width:21px!important;',
+      '    height:21px!important;',
+      '    min-width:21px!important;',
+      '    flex:0 0 21px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel button{',
+      '    white-space:nowrap!important;',
+      '  }',
       '}',
-      'body.fullscreen-portrait.tt696-clean-fullscreen #tt630-free-layer-list,',
-      'body.tt696-clean-fullscreen.fullscreen-portrait #tt630-free-layer-list{',
-      '  max-width:100%!important;',
-      '}',
-      'body.fullscreen-portrait.tt696-clean-fullscreen #tt630-free-layer-list > *,',
-      'body.tt696-clean-fullscreen.fullscreen-portrait #tt630-free-layer-list > *{',
-      '  white-space:nowrap!important;',
-      '  flex-wrap:nowrap!important;',
-      '  overflow:hidden!important;',
-      '}',
-      'body.fullscreen-portrait.tt696-clean-fullscreen #tt630-free-layer-list button,',
-      'body.tt696-clean-fullscreen.fullscreen-portrait #tt630-free-layer-list button{',
-      '  flex:0 0 auto!important;',
-      '}',
-      'body.fullscreen-portrait.tt696-clean-fullscreen #tt630-free-layer-list span,',
-      'body.fullscreen-portrait.tt696-clean-fullscreen #tt630-free-layer-list div,',
-      'body.tt696-clean-fullscreen.fullscreen-portrait #tt630-free-layer-list span,',
-      'body.tt696-clean-fullscreen.fullscreen-portrait #tt630-free-layer-list div{',
-      '  min-width:0!important;',
-      '}',
-      'body.fullscreen-portrait.tt696-clean-fullscreen #tt616-layer-panel .tt-layer-name,',
-      'body.tt696-clean-fullscreen.fullscreen-portrait #tt616-layer-panel .tt-layer-name{',
-      '  overflow:hidden!important;',
-      '  text-overflow:ellipsis!important;',
-      '  white-space:nowrap!important;',
-      '}',
-      'body.fullscreen-portrait.tt696-clean-fullscreen #pitch-wrapper,',
-      'body.tt696-clean-fullscreen.fullscreen-portrait #pitch-wrapper{',
-      '  margin-right:198px!important;',
+      '@media (min-width:1280px) and (pointer:fine){',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel{',
+      '    width:190px!important;',
+      '    min-width:190px!important;',
+      '    max-width:190px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #pitch-wrapper,',
+      '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-wrapper{',
+      '    padding-right:204px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-svg{',
+      '    width:min(calc(100vh - 58px), calc(100vw - 218px))!important;',
+      '  }',
       '}'
     ].join('\n');
     document.head.appendChild(st);
   }
 
-  function setVersion(){
-    try{document.title='Taktiktavla TEST v700 fullscreen lagerpanel enrad';}catch(e){}
+  function apply(){
+    ensureCss();
+    try{
+      var d=document.querySelector('#tt616-layer-panel details');
+      if(document.body.classList.contains('fullscreen-portrait') && d)d.open=true;
+    }catch(e){}
+    try{document.title='Taktiktavla TEST v701 fullscreen lagerpanel enrad';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='700 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='701 TEST';
       });
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v700 TEST';
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v701 TEST';
     }catch(e){}
   }
 
-  function tick(){
-    ensureCss();
-    setVersion();
-  }
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);});
-  else{setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);}
-  ['resize','orientationchange','click','touchend'].forEach(function(evt){
-    window.addEventListener(evt,function(){setTimeout(tick,80);},true);
+  ['fullscreenchange','resize','orientationchange','click','touchend','keydown'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,70);},true);
   });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);});
+  else{setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);}
 })();
-/* === slut v700 TEST === */
+/* === slut v701 TEST === */
