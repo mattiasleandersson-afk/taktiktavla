@@ -25456,7 +25456,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
     try{
       if(!document.body.classList.contains("fullscreen-portrait"))return;
-      if(document.body.classList.contains("tt706-fs-draw-owner"))return;
 
       var tools=document.getElementById("fs-top-tools");
       var topPx=null;
@@ -25622,7 +25621,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
     try{
       if(!document.body.classList.contains("fullscreen-portrait"))return;
-      if(document.body.classList.contains("tt706-fs-draw-owner"))return;
 
       var tools=document.getElementById("fs-top-tools");
       var topPx=null;
@@ -25775,7 +25773,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
     try{
       if(!document.body.classList.contains("fullscreen-portrait"))return;
-      if(document.body.classList.contains("tt706-fs-draw-owner"))return;
 
       var tools=document.getElementById("fs-top-tools");
       var topPx=null;
@@ -28267,13 +28264,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
       var taktik=isTaktikActive291();
       var fs=document.body.classList.contains('fullscreen-portrait');
-      if(fs && document.body.classList.contains('tt706-fs-draw-owner')){
-        document.body.classList.add('tt291-taktik-active');
-        document.body.classList.remove('tt291-plane-options');
-        var oldPlane706=document.getElementById('tt291-plan-draw-options');
-        if(oldPlane706)oldPlane706.style.setProperty('display','none','important');
-        return;
-      }
       var matcher=isMatcherActive291();
       var activeOpt=activeOptionId291();
       var planeMode=(fs || taktik) && !matcher && !!activeOpt;
@@ -44282,299 +44272,338 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v706 TEST: fullscreen ritval en ägare ===
-   Bas: v703 TEST. v704/v705 används inte som bas.
-   Syfte:
-   - Fullscreen får en enda ägare för arrow/freehand/zone-options.
-   - v291 och äldre v228-v230 fullscreen-placeringar spärras från att flytta panelerna när v706 är aktiv.
-   - Panelerna flyttas en gång till en egen fullscreen-container och bara synlighet växlas.
-   - Olika verktyg får behålla sin naturliga storlek.
+/* === v713 TEST: Taktiktavla desktop layout cleanup ===
+   Bas: app v707/v703 + index v708.
+   Mål:
+   - Taktiktavla desktop får en egen controller i appfilen.
+   - Filer vänster, plan mitten, lager höger.
+   - Befintlig Tavla-ritrad placeras i en stabil rad ovanför planen.
+   - Gamla ritvalsägare får inte synas i mellanlägen: v713 gör sista placeringen och döljer övriga.
+   - Fillistans faktiska renderade rader normaliseras efter render, inte bara via antagen CSS.
 */
 (function(){
   'use strict';
-  if(window.__tt706FullscreenDrawOptionsOneOwnerInstalled)return;
-  window.__tt706FullscreenDrawOptionsOneOwnerInstalled=true;
+  if(window.__tt713TavlaDesktopCleanupInstalled)return;
+  window.__tt713TavlaDesktopCleanupInstalled=true;
 
-  var OPTION_IDS=['arrow-options','freehand-options','zone-options'];
-  var MODE_TO_OPTION={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
+  var VERSION='713 TEST';
+  var host=null;
+  var originalParents={};
+  var settlingTimer=null;
 
   function byId(id){return document.getElementById(id);}
-  function isFs(){return !!(document.body && document.body.classList.contains('fullscreen-portrait'));}
-  function isTaktikContext(){
+  function desktop(){try{return window.matchMedia&&window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}}
+  function isTaktikActive(){
     try{
-      if(typeof playback!=='undefined' && playback)return true;
-      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
-      if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null)return true;
-      var p=byId('panel-taktik');
-      if(p && p.classList.contains('on'))return true;
+      if(document.body.classList.contains('fullscreen-portrait'))return true;
       if(document.querySelector('.tab.on[data-panel="taktik"]'))return true;
+      var p=byId('panel-taktik'); if(p&&p.classList.contains('on'))return true;
+      if(typeof playback!=='undefined'&&playback)return true;
+      if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)return true;
+      if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null)return true;
     }catch(e){}
     return false;
   }
-  function curMode(){try{return String((typeof mode!=='undefined'&&mode)||window.mode||'');}catch(e){return '';}}
-  function activeOptionId(){return MODE_TO_OPTION[curMode()]||null;}
-
-  function ensureCss(){
-    if(byId('tt706-fs-draw-owner-css'))return;
+  function isActive(){
+    try{
+      if(!desktop())return false;
+      if(isTaktikActive())return false;
+      if(document.body.classList.contains('fullscreen-portrait'))return false;
+      var saves=byId('panel-saves');
+      return !!(saves&&saves.classList.contains('on'));
+    }catch(e){return false;}
+  }
+  function toolIds(){return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];}
+  function optionIds(){return ['arrow-options','freehand-options','zone-options'];}
+  function activeOptionId(){
+    try{
+      if(mode==='arrow')return 'arrow-options';
+      if(mode==='freehand')return 'freehand-options';
+      if(mode==='zone')return 'zone-options';
+    }catch(e){}
+    return null;
+  }
+  function activeButtonId(){
+    try{
+      if(mode==='arrow')return 'btn-arrow';
+      if(mode==='freehand')return 'btn-freehand';
+      if(mode==='zone')return 'btn-zone';
+    }catch(e){}
+    return null;
+  }
+  function rememberParent(el){
+    if(!el||!el.id)return;
+    if(!originalParents[el.id] && el.parentNode && el.parentNode.id!=='tt713-tavla-tools-host')originalParents[el.id]=el.parentNode;
+  }
+  function putAfter(el,anchor){
+    if(!el||!anchor||!anchor.parentNode)return;
+    var parent=anchor.parentNode;
+    var next=anchor.nextSibling;
+    if(next===el)return;
+    parent.insertBefore(el,next);
+  }
+  function getHost(){
+    if(host&&document.body.contains(host))return host;
+    host=byId('tt713-tavla-tools-host');
+    if(!host){
+      host=document.createElement('div');
+      host.id='tt713-tavla-tools-host';
+      host.setAttribute('aria-label','Taktiktavla ritverktyg');
+      document.body.appendChild(host);
+    }
+    return host;
+  }
+  function restoreToolsIfInactive(){
+    if(isActive())return;
+    try{
+      var h=byId('tt713-tavla-tools-host');
+      toolIds().concat(optionIds()).forEach(function(id){
+        var el=byId(id), par=originalParents[id];
+        if(el&&par&&el.parentNode===h)par.appendChild(el);
+        if(el){el.classList.remove('tt713-owned-tool','tt713-owned-option','tt713-active-option');}
+      });
+      document.body.classList.remove('tt713-tavla-desktop','tt713-tavla-settling');
+      if(h)h.style.display='none';
+    }catch(e){}
+  }
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v713 taktiktavla desktop cleanup';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent=VERSION;
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v713 TEST';
+    }catch(e){}
+  }
+  function injectCss(){
+    if(byId('tt713-tavla-desktop-cleanup-css'))return;
     var st=document.createElement('style');
-    st.id='tt706-fs-draw-owner-css';
+    st.id='tt713-tavla-desktop-cleanup-css';
     st.textContent=[
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt291-plan-draw-options,',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt667-draw-options-slot{display:none!important;visibility:hidden!important;pointer-events:none!important}',
-      'body:not(.fullscreen-portrait) #tt706-fs-draw-options{display:none!important}',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options{',
-      '  position:fixed!important;',
-      '  left:var(--tt706-fs-options-left,8px)!important;',
-      '  top:var(--tt706-fs-options-top,72px)!important;',
-      '  right:auto!important;',
-      '  bottom:auto!important;',
-      '  transform:none!important;',
-      '  z-index:2147483200!important;',
-      '  display:none;',
-      '  align-items:center!important;',
-      '  justify-content:flex-start!important;',
-      '  max-width:calc(100vw - var(--tt706-fs-options-left,8px) - 12px)!important;',
-      '  pointer-events:auto!important;',
-      '  overflow:visible!important;',
-      '  box-sizing:border-box!important;',
+      '@media (min-width:1024px) and (pointer:fine){',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait){overflow:hidden!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #topbar{position:relative!important;z-index:240!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host{',
+      '  display:flex!important;position:fixed!important;left:358px!important;right:314px!important;',
+      '  top:var(--tt713-tools-top,112px)!important;height:auto!important;min-height:34px!important;',
+      '  align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:visible!important;',
+      '  padding:3px 4px!important;margin:0!important;box-sizing:border-box!important;',
+      '  background:rgba(7,14,10,.94)!important;border:1px solid rgba(74,232,122,.22)!important;border-radius:10px!important;',
+      '  box-shadow:none!important;z-index:145!important;scrollbar-width:thin!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host .btn,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host button{flex:0 0 auto!important;height:28px!important;min-height:28px!important;padding:2px 7px!important;font-size:.72rem!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #tt236-rita-move,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #btn-arrow,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #btn-freehand,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #btn-zone,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #btn-text,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #tt236-rita-clear,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #tt236-rita-undo,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #tt236-rita-reset{display:inline-flex!important;visibility:visible!important;pointer-events:auto!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt252-ipad-rita-row{display:none!important;visibility:hidden!important;pointer-events:none!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #btn-movement{display:none!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #arrow-options,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #freehand-options,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #zone-options{display:none!important;visibility:hidden!important;pointer-events:none!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #arrow-options.tt713-active-option,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #freehand-options.tt713-active-option,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #zone-options.tt713-active-option{',
+      '  display:flex!important;visibility:visible!important;pointer-events:auto!important;position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;',
+      '  z-index:auto!important;flex:0 0 auto!important;margin:0 5px 0 0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;max-width:none!important;gap:4px!important;align-items:center!important;white-space:nowrap!important;overflow:visible!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #arrow-options.tt713-active-option select,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #freehand-options.tt713-active-option select,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #zone-options.tt713-active-option select{height:28px!important;min-height:28px!important;font-size:.72rem!important;max-width:88px!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #arrow-options.tt713-active-option button,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #freehand-options.tt713-active-option button,',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #zone-options.tt713-active-option button{height:28px!important;min-height:28px!important;font-size:.72rem!important;white-space:nowrap!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #bottompanel{',
+      '  display:block!important;position:fixed!important;left:8px!important;top:var(--tt713-content-top,154px)!important;bottom:8px!important;width:342px!important;height:auto!important;max-height:none!important;',
+      '  padding:0!important;margin:0!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important;z-index:82!important;pointer-events:none!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-toggle-strip,body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-show-btn{display:none!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on{',
+      '  display:block!important;height:100%!important;width:100%!important;max-height:none!important;box-sizing:border-box!important;padding:6px!important;margin:0!important;overflow:hidden!important;',
+      '  background:rgba(14,23,16,.96)!important;border:1px solid rgba(74,232,122,.22)!important;border-radius:10px!important;box-shadow:none!important;pointer-events:auto!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on > div{display:flex!important;flex-direction:column!important;height:100%!important;min-height:0!important;width:100%!important;gap:4px!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on > div > div:first-child{display:flex!important;flex-wrap:wrap!important;gap:3px!important;margin:0!important;flex:0 0 auto!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on .btn,body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on button{padding:2px 5px!important;font-size:.64rem!important;line-height:1.05!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #cloud-status{display:none!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-search{flex:0 0 auto!important;margin:0!important;padding:5px 7px!important;font-size:.72rem!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-list{flex:1 1 auto!important;min-height:0!important;max-height:none!important;height:auto!important;overflow-y:auto!important;overflow-x:hidden!important;margin:0!important;padding:1px 0 30px!important;-webkit-overflow-scrolling:touch!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt713-save-row{display:grid!important;grid-template-columns:minmax(0,1fr) 23px 23px 23px 23px!important;gap:2px!important;align-items:center!important;min-height:30px!important;padding:2px!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt713-save-row .row-name{min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:.72rem!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt713-save-row .row-sub{display:none!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt713-save-row button.sa{width:23px!important;min-width:23px!important;max-width:23px!important;height:23px!important;min-height:23px!important;padding:0!important;font-size:.68rem!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #pitch-wrapper{',
+      '  position:fixed!important;left:358px!important;right:314px!important;top:var(--tt713-content-top,154px)!important;bottom:8px!important;width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;',
+      '  margin:0!important;padding:0!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;background:transparent!important;z-index:40!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #pitch-svg{height:100%!important;width:auto!important;max-width:100%!important;max-height:100%!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel{',
+      '  display:block!important;visibility:visible!important;position:fixed!important;right:8px!important;top:var(--tt713-content-top,154px)!important;bottom:8px!important;width:298px!important;max-height:none!important;overflow:auto!important;z-index:90!important;box-sizing:border-box!important;pointer-events:auto!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel details{display:block!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel summary{display:none!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt642-layer-mobile-toggle{display:none!important;}',
       '}',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options.tt706-has-active{display:flex!important}',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #arrow-options,',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #freehand-options,',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #zone-options{',
-      '  position:static!important;',
-      '  left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
-      '  transform:none!important;',
-      '  z-index:auto!important;',
-      '  margin:0!important;',
-      '  width:max-content!important;',
-      '  max-width:min(460px,calc(100vw - var(--tt706-fs-options-left,8px) - 12px))!important;',
-      '  min-width:0!important;',
-      '  min-height:0!important;',
-      '  overflow-x:auto!important;',
-      '  overflow-y:hidden!important;',
-      '  -webkit-overflow-scrolling:touch!important;',
-      '  box-sizing:border-box!important;',
-      '  background:rgba(17,26,20,.98)!important;',
-      '  border:1px solid #4ae87a!important;',
-      '  border-radius:8px!important;',
-      '  padding:3px 5px!important;',
-      '  box-shadow:0 6px 18px rgba(0,0,0,.55)!important;',
-      '  gap:4px!important;',
-      '  align-items:center!important;',
-      '  pointer-events:auto!important;',
-      '  white-space:nowrap!important;',
-      '  opacity:1!important;',
-      '  visibility:visible!important;',
-      '  transition:none!important;',
-      '  animation:none!important;',
-      '}',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #arrow-options:not(.tt706-active-option),',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #freehand-options:not(.tt706-active-option),',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #zone-options:not(.tt706-active-option){display:none!important}',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options .tt706-active-option{display:flex!important}',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options select{height:25px!important;min-height:25px!important;max-width:130px!important;padding:1px 5px!important;font-size:.68rem!important}',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options button{height:25px!important;min-height:25px!important;padding:1px 6px!important;font-size:.66rem!important;white-space:nowrap!important}',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options label,',
-      'body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options span{font-size:.66rem!important;line-height:1!important;white-space:nowrap!important}',
-      '@media (max-width:720px){body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #arrow-options,body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #freehand-options,body.fullscreen-portrait.tt706-fs-draw-owner #tt706-fs-draw-options #zone-options{max-width:calc(100vw - 16px)!important}}'
+      '@media (min-width:1280px) and (pointer:fine){',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #bottompanel{width:360px!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host{left:376px!important;right:326px!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #pitch-wrapper{left:376px!important;right:326px!important;}',
+      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel{width:310px!important;}',
+      '}'
     ].join('\n');
     document.head.appendChild(st);
   }
-
-  function container(){
-    var c=byId('tt706-fs-draw-options');
-    if(c)return c;
-    c=document.createElement('div');
-    c.id='tt706-fs-draw-options';
-    c.setAttribute('aria-label','Ritval helskärm');
-    document.body.appendChild(c);
-    return c;
-  }
-
-  function positionContainer(){
+  function measureLayout(){
     try{
-      var tools=byId('fs-top-tools');
-      var left=8, top=72;
-      if(tools){
-        var r=tools.getBoundingClientRect();
-        if(r && r.bottom)top=Math.max(4,Math.round(r.bottom+2));
-        if(r && r.left)left=Math.max(6,Math.round(r.left));
+      var tb=byId('topbar');
+      var top=92;
+      if(tb){
+        var r=tb.getBoundingClientRect();
+        top=Math.max(72,Math.ceil(r.bottom)+5);
       }
-      var layer=byId('tt616-layer-panel');
-      if(layer){
-        var lr=layer.getBoundingClientRect();
-        if(lr && lr.left && lr.left>80){
-          var maxLeft=Math.max(6,Math.round(lr.left-480));
-          left=Math.min(left,maxLeft);
-        }
-      }
-      document.documentElement.style.setProperty('--tt706-fs-options-left',left+'px');
-      document.documentElement.style.setProperty('--tt706-fs-options-top',top+'px');
+      var h=host?Math.max(34,Math.ceil(host.getBoundingClientRect().height||34)):38;
+      document.documentElement.style.setProperty('--tt713-tools-top',top+'px');
+      document.documentElement.style.setProperty('--tt713-content-top',(top+h+7)+'px');
     }catch(e){}
   }
-
-  function protect(el){
-    if(!el || el.dataset.tt706Protected)return;
-    el.dataset.tt706Protected='1';
-    ['pointerdown','mousedown','touchstart','click'].forEach(function(type){
-      el.addEventListener(type,function(ev){try{ev.stopPropagation();}catch(e){}},{capture:true,passive:true});
-    });
-  }
-
-  function hideOldHolders(){
+  function ensureLayerOpen(){
     try{
-      var old=byId('tt291-plan-draw-options');
-      if(old)old.style.setProperty('display','none','important');
-      var slot=byId('tt667-draw-options-slot');
-      if(slot)slot.style.setProperty('display','none','important');
+      if(!isActive())return;
+      var d=document.querySelector('#tt616-layer-panel details');
+      if(d)d.open=true;
+      var list=byId('tt630-free-layer-list');
+      if(list&&!list.innerHTML.trim()&&typeof window.tt631RefreshFreeLayerPanel==='function')window.tt631RefreshFreeLayerPanel();
     }catch(e){}
   }
-
-  function claimOptions(){
-    var c=container();
-    var aid=activeOptionId();
-    var has=!!aid;
-    hideOldHolders();
-    OPTION_IDS.forEach(function(id){
-      var el=byId(id);
-      if(!el)return;
-      if(el.parentNode!==c)c.appendChild(el);
-      el.classList.remove('tt291-active-option','tt681-active-option','tt679-active-option','tt678-active-option','tt676-active-option','tt677-active-option','tt252-active-option','tt238-rita-options','tt674-taktik-options');
-      el.classList.toggle('tt706-active-option',id===aid);
-      el.style.setProperty('position','static','important');
-      el.style.setProperty('left','auto','important');
-      el.style.setProperty('right','auto','important');
-      el.style.setProperty('top','auto','important');
-      el.style.setProperty('bottom','auto','important');
-      el.style.setProperty('transform','none','important');
-      el.style.setProperty('z-index','auto','important');
-      el.style.setProperty('margin','0','important');
-      el.style.setProperty('visibility',id===aid?'visible':'hidden','important');
-      el.style.setProperty('opacity',id===aid?'1':'0','important');
-      el.style.setProperty('display',id===aid?'flex':'none','important');
-      protect(el);
-    });
-    c.classList.toggle('tt706-has-active',has);
-    c.style.setProperty('display',has?'flex':'none','important');
-  }
-
-  function releaseOptions(){
+  function normalizeSaveRows(){
     try{
-      var c=byId('tt706-fs-draw-options');
-      if(c)c.classList.remove('tt706-has-active');
-      if(c)c.style.setProperty('display','none','important');
-      OPTION_IDS.forEach(function(id){
-        var el=byId(id);
-        if(!el)return;
-        el.classList.remove('tt706-active-option');
-        if(c && el.parentNode===c){
-          var p=byId('pitch-wrapper')||document.body;
-          p.appendChild(el);
-        }
-        el.style.removeProperty('visibility');
-        el.style.removeProperty('opacity');
+      if(!isActive())return;
+      var rows=document.querySelectorAll('#panel-saves.on #saves-list .row');
+      rows.forEach(function(row){
+        row.classList.add('tt713-save-row');
+        var buttons=row.querySelectorAll('button.sa');
+        buttons.forEach(function(btn){
+          var raw=(btn.textContent||'').trim();
+          var low=raw.toLowerCase();
+          if(low.indexOf('flytta')>=0 || raw.indexOf('⇆')>=0){btn.textContent='⇆';btn.title='Flytta';}
+          else if(low.indexOf('ladda')>=0 || low.indexOf('öppna')>=0 || raw==='▶'){btn.textContent='▶';btn.title='Öppna';}
+          else if(low.indexOf('till')>=0 || low.indexOf('film')>=0 || raw==='🎬'){btn.textContent='🎬';btn.title='Ny film från taktiktavla';}
+          else if(raw==='×' || raw==='x' || low.indexOf('radera')>=0){btn.textContent='×';btn.title='Radera';}
+          btn.setAttribute('aria-label',btn.title||raw);
+        });
       });
     }catch(e){}
   }
-
-  var applying=false;
-  function apply(){
-    if(applying)return;
-    applying=true;
-    try{
-      ensureCss();
-      var on=isFs() && isTaktikContext();
-      document.body.classList.toggle('tt706-fs-draw-owner',!!on);
-      if(on){
-        positionContainer();
-        claimOptions();
-      }else{
-        releaseOptions();
+  function startSettling(){
+    try{document.body.classList.add('tt713-tavla-settling');}catch(e){}
+    if(settlingTimer)clearTimeout(settlingTimer);
+    settlingTimer=setTimeout(function(){try{document.body.classList.remove('tt713-tavla-settling');}catch(e){}},280);
+  }
+  function ownToolsAndOptions(){
+    if(!isActive()){restoreToolsIfInactive();return;}
+    var h=getHost();
+    h.style.display='flex';
+    toolIds().forEach(function(id){
+      var el=byId(id);
+      if(!el)return;
+      rememberParent(el);
+      el.classList.add('tt713-owned-tool');
+      if(el.parentNode!==h)h.appendChild(el);
+      el.style.removeProperty('display');
+      el.style.removeProperty('visibility');
+    });
+    var activeOpt=activeOptionId();
+    var activeBtn=byId(activeButtonId());
+    optionIds().forEach(function(id){
+      var el=byId(id);
+      if(!el)return;
+      rememberParent(el);
+      el.classList.add('tt713-owned-option');
+      el.classList.remove('tt713-active-option');
+      if(el.parentNode!==h)h.appendChild(el);
+    });
+    if(activeOpt&&activeBtn){
+      var opt=byId(activeOpt);
+      if(opt){
+        if(opt.parentNode!==h)h.appendChild(opt);
+        putAfter(opt,activeBtn);
+        opt.classList.add('tt713-active-option');
       }
-      try{document.title='Taktiktavla TEST v706 fullscreen ritval en ägare';}catch(e){}
-      try{
-        document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
-          var t=(el.textContent||'').trim();
-          if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='706 TEST';
-        });
-        var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-        if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v706 TEST';
-      }catch(e){}
-    }finally{
-      applying=false;
     }
   }
-
-  function schedule(){
-    apply();
-    setTimeout(apply,0);
-    setTimeout(apply,35);
+  function protectOptions(){
+    try{
+      optionIds().forEach(function(id){
+        var el=byId(id);
+        if(!el||el.dataset.tt713Protected)return;
+        el.dataset.tt713Protected='1';
+        ['pointerdown','touchstart','mousedown','click'].forEach(function(type){
+          el.addEventListener(type,function(ev){ev.stopPropagation();},{capture:true,passive:true});
+        });
+        ['change','input'].forEach(function(type){
+          el.addEventListener(type,function(ev){ev.stopPropagation();schedule(70);},true);
+        });
+      });
+    }catch(e){}
   }
-
+  function apply(){
+    injectCss();
+    var active=isActive();
+    document.body.classList.toggle('tt713-tavla-desktop',active);
+    if(active){
+      ownToolsAndOptions();
+      measureLayout();
+      ensureLayerOpen();
+      normalizeSaveRows();
+      protectOptions();
+    }else restoreToolsIfInactive();
+    setVersion();
+  }
+  function schedule(delay){
+    if(delay){setTimeout(apply,delay);return;}
+    try{if(window.requestAnimationFrame)requestAnimationFrame(apply);else apply();}catch(e){apply();}
+    setTimeout(apply,35);
+    setTimeout(apply,110);
+    setTimeout(apply,240);
+  }
   var oldSetMode=typeof setMode==='function'?setMode:null;
-  if(oldSetMode && !oldSetMode._tt706Wrapped){
-    var wrappedSetMode=function(){
+  if(oldSetMode&&!oldSetMode.__tt713Wrapped){
+    var wrapped=function(){
+      if(isActive())startSettling();
       var r=oldSetMode.apply(this,arguments);
       schedule();
       return r;
     };
-    wrappedSetMode._tt706Wrapped=true;
-    setMode=wrappedSetMode;
-    window.setMode=wrappedSetMode;
+    wrapped.__tt713Wrapped=true;
+    setMode=wrapped;
+    window.setMode=wrapped;
   }
-
-  var oldSync=typeof syncFullscreenToolButtons==='function'?syncFullscreenToolButtons:null;
-  if(oldSync && !oldSync._tt706Wrapped){
-    var wrappedSync=function(){
-      var r=oldSync.apply(this,arguments);
-      schedule();
+  var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
+  if(oldRender&&!oldRender.__tt713Wrapped){
+    var renderWrapped=function(){
+      var r=oldRender.apply(this,arguments);
+      schedule(0);
+      schedule(80);
       return r;
     };
-    wrappedSync._tt706Wrapped=true;
-    syncFullscreenToolButtons=wrappedSync;
-    window.syncFullscreenToolButtons=wrappedSync;
+    renderWrapped.__tt713Wrapped=true;
+    renderSavesList=renderWrapped;
+    window.renderSavesList=renderWrapped;
   }
-
-  var oldEnter=typeof enterFullscreenPortrait==='function'?enterFullscreenPortrait:null;
-  if(oldEnter && !oldEnter._tt706Wrapped){
-    var wrappedEnter=function(){
-      var r=oldEnter.apply(this,arguments);
-      schedule();
-      setTimeout(schedule,120);
-      return r;
-    };
-    wrappedEnter._tt706Wrapped=true;
-    enterFullscreenPortrait=wrappedEnter;
-    window.enterFullscreenPortrait=wrappedEnter;
-  }
-
-  var oldExit=typeof exitFullscreenPortrait==='function'?exitFullscreenPortrait:null;
-  if(oldExit && !oldExit._tt706Wrapped){
-    var wrappedExit=function(){
-      document.body.classList.remove('tt706-fs-draw-owner');
-      releaseOptions();
-      var r=oldExit.apply(this,arguments);
-      setTimeout(function(){document.body.classList.remove('tt706-fs-draw-owner');releaseOptions();},0);
-      return r;
-    };
-    wrappedExit._tt706Wrapped=true;
-    exitFullscreenPortrait=wrappedExit;
-    window.exitFullscreenPortrait=wrappedExit;
-  }
-
-  document.addEventListener('fullscreenchange',schedule,true);
-  document.addEventListener('webkitfullscreenchange',schedule,true);
-  ['click','touchend','pointerup','keyup','resize','orientationchange'].forEach(function(evt){
-    window.addEventListener(evt,function(ev){
-      try{if(ev && ev.target && ev.target.closest && ev.target.closest('#arrow-options,#freehand-options,#zone-options')){setTimeout(apply,0);return;}}catch(e){}
-      setTimeout(apply,25);
-    },true);
-  });
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(schedule,0);setTimeout(schedule,400);setTimeout(schedule,1200);});
-  else{setTimeout(schedule,0);setTimeout(schedule,400);setTimeout(schedule,1200);}
-
-  window.tt706ApplyFullscreenDrawOptionsOwner=apply;
+  document.addEventListener('click',function(ev){
+    try{
+      var t=ev.target;
+      if(t&&t.closest&&t.closest('#tt713-tavla-tools-host button,#btn-arrow,#btn-freehand,#btn-zone,#tt236-rita-move,#tt236-rita-clear,#tt236-rita-undo,#tt236-rita-reset'))startSettling();
+      if(t&&t.closest&&t.closest('#arrow-options,#freehand-options,#zone-options'))return;
+    }catch(e){}
+    schedule();
+  },true);
+  window.addEventListener('resize',function(){schedule();},true);
+  window.addEventListener('orientationchange',function(){schedule();},true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){schedule();setTimeout(schedule,600);});
+  else{schedule();setTimeout(schedule,600);}
+  setTimeout(schedule,1200);
+  window.tt713ApplyTavlaDesktopCleanup=apply;
 })();
-/* === slut v706 TEST === */
+/* === slut v713 TEST === */
