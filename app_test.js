@@ -44387,3 +44387,129 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
 })();
 /* === slut v718 TEST === */
+
+
+
+/* === v719 TEST: Taktiktavla lagerpanel in-place puts ===
+   Bas: v718 TEST.
+   Endast nästa försiktiga steg:
+   - Rör inte ritverktyg, filpanel, plan eller Taktikfilm.
+   - Putsa befintlig lagerpanel när Taktiktavla-fliken är aktiv.
+   - Håll allt scoped till body.tt719-tavla-active.
+*/
+(function(){
+  'use strict';
+  if(window.__tt719TavlaLayerPanelPutsInstalled)return;
+  window.__tt719TavlaLayerPanelPutsInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function isTavlaActive(){
+    try{
+      var tab=document.querySelector('.tab.on[data-panel="saves"]');
+      var panel=byId('panel-saves');
+      return !!(tab && panel && panel.classList.contains('on'));
+    }catch(e){return false;}
+  }
+
+  function ensureCss(){
+    if(byId('tt719-tavla-layerpanel-css'))return;
+    var st=document.createElement('style');
+    st.id='tt719-tavla-layerpanel-css';
+    st.textContent=[
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel{',
+      '  width:230px!important;',
+      '  min-width:230px!important;',
+      '  max-width:230px!important;',
+      '  right:8px!important;',
+      '  top:92px!important;',
+      '  max-height:calc(100vh - 108px)!important;',
+      '  box-sizing:border-box!important;',
+      '  padding:8px!important;',
+      '  border-radius:12px!important;',
+      '  overflow:auto!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel details{',
+      '  display:block!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel summary{',
+      '  display:flex!important;',
+      '  align-items:center!important;',
+      '  gap:6px!important;',
+      '  font-size:.74rem!important;',
+      '  padding:2px 0 6px!important;',
+      '  cursor:pointer!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt616-layer-row{',
+      '  display:grid!important;',
+      '  grid-template-columns:22px 22px minmax(0,1fr) 22px!important;',
+      '  align-items:center!important;',
+      '  gap:3px!important;',
+      '  padding:3px 2px!important;',
+      '  min-height:26px!important;',
+      '  box-sizing:border-box!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-icon,',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-menu-button{',
+      '  width:22px!important;',
+      '  min-width:22px!important;',
+      '  max-width:22px!important;',
+      '  height:22px!important;',
+      '  min-height:22px!important;',
+      '  padding:0!important;',
+      '  display:flex!important;',
+      '  align-items:center!important;',
+      '  justify-content:center!important;',
+      '  box-sizing:border-box!important;',
+      '  font-size:.72rem!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-title{',
+      '  min-width:0!important;',
+      '  overflow:hidden!important;',
+      '  padding:0 2px!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt616-layer-name{',
+      '  display:block!important;',
+      '  white-space:nowrap!important;',
+      '  overflow:hidden!important;',
+      '  text-overflow:ellipsis!important;',
+      '  font-size:.73rem!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt616-layer-meta,',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt616-layer-help,',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-help,',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-meta{',
+      '  display:none!important;',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function apply(){
+    ensureCss();
+    var active=isTavlaActive();
+    document.body.classList.toggle('tt719-tavla-active',active);
+    if(active){
+      try{
+        var d=document.querySelector('#tt616-layer-panel details');
+        if(d)d.open=true;
+      }catch(e){}
+      try{if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();}catch(e){}
+    }
+    try{document.title='Taktiktavla TEST v719 tavla lagerpanel puts';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='719 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v719 TEST';
+    }catch(e){}
+  }
+
+  ['click','touchend','resize','orientationchange'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,0);setTimeout(apply,80);},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);});
+  else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
+})();
+/* === slut v719 TEST === */
