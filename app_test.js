@@ -44933,155 +44933,191 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v724 TEST: Taktiktavla kompaktare filpanel för mer planyta ===
-   Bas: v723 TEST.
-   Endast Taktiktavla desktop.
-   Syfte:
-   - Minska höjden på befintlig filpanel där den redan ligger.
-   - Ge planen mer vertikal plats utan att flytta paneler, ritverktyg eller lager.
-   - Behåll v722/v723:s synliga filikoner.
+/* === v725 TEST: Taktiktavla desktop tre-spaltsyta ===
+   Bas: v723 TEST. v724 används inte som bas.
+   Målbild:
+   - En sammanhållen Taktiktavla-arbetsyta på desktop.
+   - Vänster: ritverktyg överst, fillista under.
+   - Mitten: plan, maximalt utrymme.
+   - Höger: lagerpanel.
+   Försiktighetsprincip:
+   - Endast aktiv när Taktiktavla-fliken (#panel-saves.on) är aktiv.
+   - Rör inte Taktikfilm/Matcher/Snabbtavla.
+   - Ritverktyg visas som proxyknappar i vänsterspalten; originalknapparnas eventlogik behålls.
+   - Flyttar befintliga huvuddelar med platshållare och återställer dem när läget lämnas.
 */
 (function(){
   'use strict';
-  if(window.__tt724TavlaCompactPanelInstalled)return;
-  window.__tt724TavlaCompactPanelInstalled=true;
+  if(window.__tt725TavlaThreeColumnInstalled)return;
+  window.__tt725TavlaThreeColumnInstalled=true;
+
+  var state={active:false, placeholders:{}, workspace:null, left:null, center:null, right:null, tools:null};
+  var toolMap=[
+    ['btn-arrow','↗','Pil'],
+    ['btn-freehand','✎','Fri'],
+    ['btn-zone','□','Zon'],
+    ['btn-text','T','Text'],
+    ['btn-undo','↶','Ångra'],
+    ['btn-reset','↺','Återställ']
+  ];
 
   function byId(id){return document.getElementById(id);}
+  function isDesktop(){try{return window.matchMedia('(min-width: 980px) and (pointer: fine)').matches;}catch(e){return window.innerWidth>=980;}}
   function isTavlaActive(){
-    try{
-      var tab=document.querySelector('.tab.on[data-panel="saves"]');
-      var panel=byId('panel-saves');
-      return !!(tab&&panel&&panel.classList.contains('on'));
-    }catch(e){return false;}
+    try{return isDesktop() && !document.body.classList.contains('fullscreen-portrait') && byId('panel-saves') && byId('panel-saves').classList.contains('on');}
+    catch(e){return false;}
   }
-
+  function makePh(id,node){
+    var ph=state.placeholders[id];
+    if(ph)return ph;
+    ph=document.createComment('tt725-placeholder-'+id);
+    if(node&&node.parentNode)node.parentNode.insertBefore(ph,node);
+    state.placeholders[id]=ph;
+    return ph;
+  }
+  function restoreNode(id,node){
+    var ph=state.placeholders[id];
+    if(ph&&ph.parentNode&&node){ph.parentNode.insertBefore(node,ph.nextSibling);}
+  }
   function ensureCss(){
-    if(byId('tt724-tavla-compact-panel-css'))return;
+    if(byId('tt725-tavla-threecol-css'))return;
     var st=document.createElement('style');
-    st.id='tt724-tavla-compact-panel-css';
+    st.id='tt725-tavla-threecol-css';
     st.textContent=[
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #bottompanel{',
-      '  flex:0 0 auto!important;',
-      '  min-height:0!important;',
-      '  max-height:31vh!important;',
-      '  overflow:hidden!important;',
-      '  padding-top:3px!important;',
-      '  padding-bottom:3px!important;',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait){overflow:hidden!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #panel-toggle-strip,',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #bottompanel{display:none!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #btn-arrow,',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #btn-freehand,',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #btn-zone,',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #btn-text,',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #btn-undo,',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #btn-reset{display:none!important;}',
+      '#tt725-tavla-workspace{',
+      '  display:grid;',
+      '  grid-template-columns:235px minmax(300px,1fr) 188px;',
+      '  gap:7px;',
+      '  height:calc(100dvh - var(--tt725-top,76px));',
+      '  min-height:0;',
+      '  padding:6px 8px 8px;',
+      '  box-sizing:border-box;',
+      '  background:#08110b;',
+      '  border-top:1px solid rgba(74,232,122,.18);',
+      '  overflow:hidden;',
       '}',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on,',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.tt-v99-formation-top.on{',
-      '  min-height:0!important;',
-      '  max-height:calc(31vh - 6px)!important;',
-      '  padding-top:0!important;',
-      '  margin-top:0!important;',
-      '  overflow:hidden!important;',
-      '  box-sizing:border-box!important;',
-      '}',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on > div{',
-      '  display:flex!important;',
-      '  flex-direction:column!important;',
-      '  min-height:0!important;',
-      '  max-height:100%!important;',
-      '  overflow:hidden!important;',
-      '}',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on > div > div:first-child{',
-      '  margin-bottom:3px!important;',
-      '  gap:3px!important;',
-      '  flex-wrap:nowrap!important;',
-      '  overflow-x:auto!important;',
-      '  overflow-y:hidden!important;',
-      '  scrollbar-width:none!important;',
-      '}',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on > div > div:first-child::-webkit-scrollbar{display:none!important}',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on > div > div:first-child .btn{',
-      '  padding:3px 6px!important;',
-      '  font-size:.68rem!important;',
-      '  white-space:nowrap!important;',
-      '  flex:0 0 auto!important;',
-      '}',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #cloud-status{',
-      '  min-height:0!important;',
-      '  height:auto!important;',
-      '  margin-bottom:2px!important;',
-      '  font-size:.62rem!important;',
-      '  line-height:1.05!important;',
-      '  white-space:nowrap!important;',
-      '  overflow:hidden!important;',
-      '  text-overflow:ellipsis!important;',
-      '}',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #saves-search{',
-      '  padding:3px 6px!important;',
-      '  font-size:.7rem!important;',
-      '  margin-bottom:3px!important;',
-      '  height:24px!important;',
-      '  min-height:24px!important;',
-      '}',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list,',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.tt-v99-formation-top.on #saves-list{',
-      '  flex:1 1 auto!important;',
-      '  min-height:0!important;',
-      '  max-height:none!important;',
-      '  overflow-y:auto!important;',
-      '  overflow-x:hidden!important;',
-      '  margin-top:0!important;',
-      '  padding-bottom:10px!important;',
-      '}',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row{',
-      '  min-height:24px!important;',
-      '  height:24px!important;',
-      '  padding-top:1px!important;',
-      '  padding-bottom:1px!important;',
-      '}',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .folder-row,',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .tt554-folder-header,',
-      'body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .tt577-folder-header{',
-      '  min-height:22px!important;',
-      '  padding-top:2px!important;',
-      '  padding-bottom:2px!important;',
-      '}',
-      '@media (min-width:1280px){',
-      '  body.tt724-tavla-active:not(.fullscreen-portrait) #bottompanel{max-height:29vh!important}',
-      '  body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on,',
-      '  body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.tt-v99-formation-top.on{max-height:calc(29vh - 6px)!important}',
-      '}',
-      '@media (max-width:900px){',
-      '  body.tt724-tavla-active:not(.fullscreen-portrait) #bottompanel{max-height:36vh!important}',
-      '  body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.on,',
-      '  body.tt724-tavla-active:not(.fullscreen-portrait) #panel-saves.tt-v99-formation-top.on{max-height:calc(36vh - 6px)!important}',
-      '}'
+      '#tt725-tavla-left,#tt725-tavla-center,#tt725-tavla-right{min-width:0;min-height:0;overflow:hidden;box-sizing:border-box;}',
+      '#tt725-tavla-left{display:flex;flex-direction:column;gap:6px;padding:0 0 0 0;}',
+      '#tt725-tavla-center{display:flex;align-items:center;justify-content:center;padding:0;}',
+      '#tt725-tavla-right{display:flex;flex-direction:column;padding:0;}',
+      '#tt725-tavla-tools{display:flex;align-items:center;gap:3px;flex-wrap:wrap;flex:0 0 auto;background:rgba(14,23,16,.96);border:1px solid #1f3b28;border-radius:8px;padding:5px;box-sizing:border-box;}',
+      '#tt725-tavla-tools .tt725-tool{height:24px;min-width:26px;padding:0 6px;font-size:.72rem;line-height:1;display:inline-flex;align-items:center;justify-content:center;}',
+      '#tt725-tavla-tools .tt725-tool.on{background:#233d2a;border-color:#4ae87a;color:#4ae87a;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #panel-saves{display:block!important;visibility:visible!important;position:relative!important;inset:auto!important;width:100%!important;max-width:none!important;min-width:0!important;height:100%!important;flex:1 1 auto!important;overflow:hidden!important;background:rgba(14,23,16,.96)!important;border:1px solid #1f3b28!important;border-radius:8px!important;padding:6px!important;box-sizing:border-box!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #panel-saves>div{height:100%!important;display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #panel-saves #saves-list{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow:auto!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #panel-saves #cloud-status{display:none!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #panel-saves #saves-search{height:27px!important;min-height:27px!important;margin-bottom:5px!important;font-size:.73rem!important;padding:3px 6px!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #panel-saves>div>div:first-child{gap:3px!important;margin-bottom:5px!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #panel-saves>div>div:first-child .btn{height:24px!important;min-height:24px!important;padding:1px 5px!important;font-size:.65rem!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #pitch-wrapper{position:relative!important;inset:auto!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:0!important;box-sizing:border-box!important;background:transparent!important;overflow:hidden!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #pitch-svg{height:100%!important;max-height:100%!important;width:auto!important;max-width:100%!important;display:block!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #tt616-layer-panel{display:block!important;visibility:visible!important;position:relative!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;width:100%!important;min-width:0!important;max-width:none!important;height:100%!important;max-height:none!important;overflow:auto!important;background:rgba(14,23,16,.96)!important;border:1px solid #1f3b28!important;border-radius:8px!important;padding:6px!important;box-sizing:border-box!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #tt616-layer-panel details{display:block!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #tt616-layer-panel summary{display:none!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #tt616-layer-panel .tt616-layer-sub,',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #tt616-layer-panel .tt616-layer-note,',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-count{display:none!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #tt616-layer-panel .tt616-layer-row{grid-template-columns:22px 22px minmax(0,1fr) 22px!important;gap:3px!important;padding:3px!important;}',
+      'body.tt725-tavla-threecol:not(.fullscreen-portrait) #tt616-layer-panel button{height:22px!important;min-height:22px!important;padding:0 4px!important;font-size:.66rem!important;}',
+      '@media (min-width:1280px){#tt725-tavla-workspace{grid-template-columns:245px minmax(360px,1fr) 200px;gap:8px;}}',
+      '@media (max-width:1100px){#tt725-tavla-workspace{grid-template-columns:220px minmax(260px,1fr) 176px;gap:6px;padding-left:6px;padding-right:6px;}#tt725-tavla-tools .tt725-tool{min-width:24px;padding:0 5px;}}'
     ].join('\n');
     document.head.appendChild(st);
   }
-
+  function ensureWorkspace(){
+    if(state.workspace && state.workspace.parentNode)return;
+    var ws=document.createElement('div'); ws.id='tt725-tavla-workspace';
+    var left=document.createElement('div'); left.id='tt725-tavla-left';
+    var center=document.createElement('div'); center.id='tt725-tavla-center';
+    var right=document.createElement('div'); right.id='tt725-tavla-right';
+    var tools=document.createElement('div'); tools.id='tt725-tavla-tools';
+    left.appendChild(tools); ws.appendChild(left); ws.appendChild(center); ws.appendChild(right);
+    var pitch=byId('pitch-wrapper');
+    if(pitch && pitch.parentNode)pitch.parentNode.insertBefore(ws,pitch);
+    else document.body.appendChild(ws);
+    state.workspace=ws; state.left=left; state.center=center; state.right=right; state.tools=tools;
+    buildToolProxies();
+  }
+  function buildToolProxies(){
+    if(!state.tools)return;
+    state.tools.innerHTML='';
+    toolMap.forEach(function(item){
+      var orig=byId(item[0]);
+      var b=document.createElement('button');
+      b.type='button'; b.className='btn tt725-tool'; b.dataset.target=item[0]; b.textContent=item[1]; b.title=item[2]; b.setAttribute('aria-label',item[2]);
+      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var o=byId(item[0]); if(o)o.click(); setTimeout(syncTools,0); setTimeout(syncTools,80);},true);
+      state.tools.appendChild(b);
+      if(orig && orig.title)b.title=orig.title;
+    });
+  }
+  function syncTools(){
+    if(!state.tools)return;
+    Array.prototype.slice.call(state.tools.querySelectorAll('.tt725-tool')).forEach(function(b){
+      var o=byId(b.dataset.target);
+      var on=!!(o && o.classList && o.classList.contains('on'));
+      b.classList.toggle('on',on);
+    });
+  }
+  function enter(){
+    ensureCss(); ensureWorkspace();
+    var panel=byId('panel-saves'), pitch=byId('pitch-wrapper'), layer=byId('tt616-layer-panel');
+    if(!panel||!pitch)return;
+    makePh('panel-saves',panel); makePh('pitch-wrapper',pitch); if(layer)makePh('tt616-layer-panel',layer);
+    if(state.left && panel.parentNode!==state.left)state.left.appendChild(panel);
+    if(state.center && pitch.parentNode!==state.center)state.center.appendChild(pitch);
+    if(layer && state.right && layer.parentNode!==state.right)state.right.appendChild(layer);
+    try{if(layer){var d=layer.querySelector('details'); if(d)d.open=true; if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();}}catch(e){}
+    document.body.classList.add('tt725-tavla-threecol','tt722-tavla-active');
+    document.documentElement.style.setProperty('--tt725-top',((byId('topbar')&&byId('topbar').getBoundingClientRect().height)||76)+'px');
+    panel.classList.add('on');
+    state.active=true;
+    syncTools();
+  }
+  function leave(){
+    if(!state.active && !document.body.classList.contains('tt725-tavla-threecol'))return;
+    var panel=byId('panel-saves'), pitch=byId('pitch-wrapper'), layer=byId('tt616-layer-panel');
+    restoreNode('panel-saves',panel); restoreNode('pitch-wrapper',pitch); restoreNode('tt616-layer-panel',layer);
+    if(state.workspace&&state.workspace.parentNode)state.workspace.parentNode.removeChild(state.workspace);
+    state.workspace=state.left=state.center=state.right=state.tools=null;
+    document.body.classList.remove('tt725-tavla-threecol');
+    state.active=false;
+  }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v724 tavla kompakt filpanel';}catch(e){}
+    try{document.title='Taktiktavla TEST v725 tavla tre spalter';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='724 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='725 TEST';
       });
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v724 TEST';
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v725 TEST';
     }catch(e){}
   }
-
   function apply(){
     ensureCss();
-    document.body.classList.toggle('tt724-tavla-active',isTavlaActive());
+    if(isTavlaActive())enter(); else leave();
     setVersion();
   }
-
-  ['click','touchend','resize','orientationchange','input'].forEach(function(evt){
-    window.addEventListener(evt,function(){setTimeout(apply,0);setTimeout(apply,80);},true);
+  ['click','touchend','resize','orientationchange','input','keydown'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,0);setTimeout(apply,100);},true);
   });
   try{
-    var list=byId('saves-list');
-    if(list && window.MutationObserver){
+    if(window.MutationObserver){
       var mo=new MutationObserver(function(){setTimeout(apply,0);});
-      mo.observe(list,{childList:true,subtree:true});
+      mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style']});
     }
   }catch(e){}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);});
   else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
 })();
-/* === slut v724 TEST === */
+/* === slut v725 TEST === */
