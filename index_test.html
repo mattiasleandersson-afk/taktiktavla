@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v735 tavla in-place puts</title>
+<title>Taktiktavla TEST v736 tavla in-place puts</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v735 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
+  /* v736 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1950,7 +1950,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"735 TEST" !important;
+    content:"736 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1960,7 +1960,7 @@
 
 
 <style id="tt666-taktikfilm-desktop-layout-css">
-  /* v735 TEST: Första datorlayout för Taktikfilm-redigering.
+  /* v736 TEST: Första datorlayout för Taktikfilm-redigering.
      Bas: fungerande lagerlogik v660/v664 + språkputsen i v665.
      Endast desktop, inte fullscreen, inte mobil/iPad. */
   @media (min-width:1024px) and (pointer:fine){
@@ -2179,7 +2179,7 @@
 
 
 <style id="tt667-taktikfilm-desktop-layout-puts-css">
-  /* v735 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
+  /* v736 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
      - bredare stegspalt
      - ritverktygsval bredvid ritverktygen i övre raden
      - lagerpanelen öppen på desktop
@@ -2316,7 +2316,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">735 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">736 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2937,7 +2937,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=735-options-right"></script>
+<script src="app_test.js?v=736-options-after-tools"></script>
 
 <script>
 (function(){
@@ -4108,7 +4108,7 @@
     var st=document.createElement('style');
     st.id='tt681-taktikfilm-ritval-hoger-utan-regression-lagerpanel-css';
     st.textContent=[
-      'span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{content:"735 TEST"!important}',
+      'span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{content:"736 TEST"!important}',
       '@media (min-width:1024px) and (pointer:fine){',
       '  body.tt681-taktikfilm-ritval-owner:not(.fullscreen-portrait) #tt291-plan-draw-options,',
       '  body.tt681-taktikfilm-ritval-owner:not(.fullscreen-portrait) #tt667-draw-options-slot{display:none!important;visibility:hidden!important;pointer-events:none!important}',
@@ -4140,8 +4140,8 @@
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v735 tavla in-place puts';}catch(e){}
-    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='735 TEST';});}catch(e){}
+    try{document.title='Taktiktavla TEST v736 tavla in-place puts';}catch(e){}
+    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='736 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
     try{
@@ -4311,7 +4311,7 @@
 </script>
 
 
-<!-- === v735 TEST: Taktiktavla tre spalter med direkt inline-layout === -->
+<!-- === v736 TEST: Taktiktavla tre spalter med direkt inline-layout === -->
 <style id="tt733-tavla-inline-layout-css">
 @media (min-width:900px){
   body.tt733-tavla-active:not(.fullscreen-portrait){ overflow:hidden!important; }
@@ -4392,8 +4392,8 @@
     var on=isTavla();
     document.body.classList.toggle('tt733-tavla-active',on);
     if(on){setTop();normalizeRows();openLayer();}
-    try{document.title='Taktiktavla TEST v735 tre-spalt direkt';}catch(e){}
-    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v735 TEST';}catch(e){}
+    try{document.title='Taktiktavla TEST v736 tre-spalt direkt';}catch(e){}
+    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v736 TEST';}catch(e){}
   }
   function schedule(){apply();setTimeout(apply,80);setTimeout(apply,250);}
   ['click','touchend','input','change','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(schedule,20);},true);});
@@ -4401,122 +4401,124 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule); else schedule();
 })();
 </script>
-<!-- === slut v735 TEST === -->
+<!-- === slut v736 TEST === -->
 
 
-<!-- === v735 TEST: Taktiktavla ritval till höger om ikonraden + liten fillisteputs === -->
-<style id="tt735-tavla-options-right-css">
-@media (min-width:1024px) and (pointer:fine){
-  body.tt733-tavla-active:not(.fullscreen-portrait) #bottompanel{
-    width:322px!important;
-  }
-  body.tt733-tavla-active:not(.fullscreen-portrait) #pitch-wrapper{
-    left:338px!important;
-    right:214px!important;
-  }
-  body.tt733-tavla-active:not(.fullscreen-portrait) #pitch-svg{
-    height:min(calc(100vh - var(--tt733-top-num,112px) - 16px), calc((100vw - 568px) * 1.5))!important;
-  }
-  body.tt733-tavla-active:not(.fullscreen-portrait) #panel-saves .row.tt722-file-row{
-    grid-template-columns:minmax(52px,112px) repeat(6,19px)!important;
-    column-gap:2px!important;
-  }
-  body.tt733-tavla-active:not(.fullscreen-portrait) #panel-saves .row.tt722-file-row .row-name{
-    width:112px!important;
-    max-width:112px!important;
-  }
-
-  body.tt733-tavla-active:not(.fullscreen-portrait) #arrow-options,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #freehand-options,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #zone-options{
+<!-- === v736 TEST: Taktiktavla ritval fast höger om verktygsikoner === -->
+<style id="tt736-tavla-options-after-tools-css">
+@media (min-width:900px){
+  body.tt733-tavla-active:not(.fullscreen-portrait) #arrow-options.tt736-tavla-option,
+  body.tt733-tavla-active:not(.fullscreen-portrait) #freehand-options.tt736-tavla-option,
+  body.tt733-tavla-active:not(.fullscreen-portrait) #zone-options.tt736-tavla-option{
     position:fixed!important;
-    top:var(--tt735-option-top, 78px)!important;
-    left:var(--tt735-option-left, 360px)!important;
+    left:var(--tt736-option-left,390px)!important;
+    top:var(--tt736-option-top,78px)!important;
     right:auto!important;
     bottom:auto!important;
     transform:none!important;
-    z-index:420!important;
-    max-width:calc(100vw - var(--tt735-option-left,360px) - 12px)!important;
+    z-index:650!important;
+    margin:0!important;
+    background:rgba(14,23,16,.98)!important;
+    border:1px solid rgba(74,232,122,.34)!important;
+    border-radius:8px!important;
+    box-shadow:0 3px 12px rgba(0,0,0,.35)!important;
+    padding:3px 5px!important;
+    max-width:calc(100vw - var(--tt736-option-left,390px) - 12px)!important;
     overflow-x:auto!important;
     overflow-y:hidden!important;
     white-space:nowrap!important;
     flex-wrap:nowrap!important;
-    background:rgba(14,23,16,.97)!important;
-    border:1px solid rgba(74,232,122,.34)!important;
-    border-radius:8px!important;
-    padding:3px 4px!important;
-    box-shadow:0 3px 12px rgba(0,0,0,.35)!important;
+    align-items:center!important;
     box-sizing:border-box!important;
+    pointer-events:auto!important;
   }
-  body.tt733-tavla-active:not(.fullscreen-portrait) #arrow-options select,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #freehand-options select,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #zone-options select,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #arrow-options button,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #freehand-options button,
-  body.tt733-tavla-active:not(.fullscreen-portrait) #zone-options button{
+  body.tt733-tavla-active:not(.fullscreen-portrait) #arrow-options.tt736-tavla-option select,
+  body.tt733-tavla-active:not(.fullscreen-portrait) #freehand-options.tt736-tavla-option select,
+  body.tt733-tavla-active:not(.fullscreen-portrait) #zone-options.tt736-tavla-option select,
+  body.tt733-tavla-active:not(.fullscreen-portrait) #arrow-options.tt736-tavla-option button,
+  body.tt733-tavla-active:not(.fullscreen-portrait) #freehand-options.tt736-tavla-option button,
+  body.tt733-tavla-active:not(.fullscreen-portrait) #zone-options.tt736-tavla-option button{
     flex:0 0 auto!important;
+    white-space:nowrap!important;
   }
 }
 </style>
-<script id="tt735-tavla-options-right-js">
+<script id="tt736-tavla-options-after-tools-js">
 (function(){
   'use strict';
-  if(window.__tt735TavlaOptionsRightInstalled)return;
-  window.__tt735TavlaOptionsRightInstalled=true;
+  if(window.__tt736TavlaOptionsAfterToolsInstalled)return;
+  window.__tt736TavlaOptionsAfterToolsInstalled=true;
 
   function byId(id){return document.getElementById(id);}
-  function isDesktop(){try{return window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return true;}}
-  function active(){return isDesktop() && document.body.classList.contains('tt733-tavla-active') && !document.body.classList.contains('fullscreen-portrait');}
-  function anchor(){
-    return byId('btn-zone') || byId('btn-freehand') || byId('btn-reset') || byId('btn-arrow');
+  function active(){return document.body.classList.contains('tt733-tavla-active') && !document.body.classList.contains('fullscreen-portrait');}
+  function toolButtons(){
+    return ['btn-arrow','btn-text','btn-undo','btn-reset','btn-freehand','btn-zone'].map(byId).filter(Boolean);
   }
-  function setVars(){
+  function setAnchorVars(){
     if(!active())return;
     try{
-      var a=anchor();
-      if(!a)return;
-      var r=a.getBoundingClientRect();
-      var top=Math.max(8, Math.round(r.top + (r.height-30)/2));
-      var left=Math.round(r.right + 8);
-      document.documentElement.style.setProperty('--tt735-option-top', top+'px');
-      document.documentElement.style.setProperty('--tt735-option-left', left+'px');
+      var buttons=toolButtons();
+      if(!buttons.length)return;
+      var right=0, top=99999, midTop=null;
+      buttons.forEach(function(b){
+        var r=b.getBoundingClientRect();
+        if(r.width<1||r.height<1)return;
+        right=Math.max(right,r.right);
+        top=Math.min(top,r.top);
+        midTop = midTop===null ? r.top + Math.max(0,(r.height-28)/2) : Math.min(midTop,r.top + Math.max(0,(r.height-28)/2));
+      });
+      if(!right)return;
+      document.documentElement.style.setProperty('--tt736-option-left', Math.round(right+8)+'px');
+      document.documentElement.style.setProperty('--tt736-option-top', Math.max(8,Math.round(midTop!==null?midTop:top))+'px');
     }catch(e){}
   }
-  function normalizeOptions(){
+  function forceOptionBox(el){
+    try{
+      el.classList.add('tt736-tavla-option');
+      // Inline !important så äldre tt238/tt239-regler inte kan sätta tillbaka position:static.
+      el.style.setProperty('position','fixed','important');
+      el.style.setProperty('left','var(--tt736-option-left,390px)','important');
+      el.style.setProperty('top','var(--tt736-option-top,78px)','important');
+      el.style.setProperty('right','auto','important');
+      el.style.setProperty('bottom','auto','important');
+      el.style.setProperty('transform','none','important');
+      el.style.setProperty('z-index','650','important');
+      el.style.setProperty('margin','0','important');
+      el.style.setProperty('max-width','calc(100vw - var(--tt736-option-left,390px) - 12px)','important');
+      el.style.setProperty('overflow-x','auto','important');
+      el.style.setProperty('overflow-y','hidden','important');
+      el.style.setProperty('white-space','nowrap','important');
+      el.style.setProperty('flex-wrap','nowrap','important');
+    }catch(e){}
+  }
+  function apply(){
     if(!active())return;
-    setVars();
+    setAnchorVars();
     ['arrow-options','freehand-options','zone-options'].forEach(function(id){
       var el=byId(id); if(!el)return;
-      el.classList.add('tt735-tavla-option-box');
-      // Behåll appens egen display-state. Vi ändrar inte synlighet, bara slutposition.
-      if(el.style.display && el.style.display!=='none'){
-        el.style.position='fixed';
-        el.style.right='auto';
-        el.style.bottom='auto';
-      }
+      forceOptionBox(el);
     });
+    try{document.title='Taktiktavla TEST v736 ritval höger om verktyg';}catch(e){}
+    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v736 TEST';}catch(e){}
   }
-  function setVersion(){
-    try{document.title='Taktiktavla TEST v735 ritval höger om ikoner';}catch(e){}
-    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v735 TEST';}catch(e){}
+  function cleanup(){
+    if(active())return;
+    ['arrow-options','freehand-options','zone-options'].forEach(function(id){var el=byId(id); if(el)el.classList.remove('tt736-tavla-option');});
   }
-  function tick(){setVars(); normalizeOptions(); setVersion();}
-  function schedule(){tick(); setTimeout(tick,0); setTimeout(tick,60); setTimeout(tick,180);}
-
+  function schedule(){apply(); setTimeout(apply,0); setTimeout(apply,60); setTimeout(apply,180); setTimeout(cleanup,220);}
   ['pointerdown','mousedown','touchstart','click','change','input','resize','orientationchange'].forEach(function(evt){
     window.addEventListener(evt,function(){setTimeout(schedule,0);},true);
   });
   if(typeof MutationObserver!=='undefined'){
     try{
-      var mo=new MutationObserver(function(){setTimeout(normalizeOptions,0);});
+      var mo=new MutationObserver(function(){setTimeout(apply,0);});
       ['arrow-options','freehand-options','zone-options'].forEach(function(id){var el=byId(id); if(el)mo.observe(el,{attributes:true,attributeFilter:['style','class']});});
     }catch(e){}
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);
-  else schedule();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule); else schedule();
 })();
 </script>
-<!-- === slut v735 TEST === -->
+<!-- === slut v736 TEST === -->
 
 </body>
 </html>
