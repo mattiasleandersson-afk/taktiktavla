@@ -43272,49 +43272,101 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v693 TEST: liggande plan i Taktikfilm-redigeringsläge desktop ===
-   Bas: v692 TEST.
-   Endast ny layoutväxel i redigeringsläge på desktop.
+/* === v694 TEST: putsad liggande redigering Taktikfilm desktop ===
+   Bas: v693 TEST.
+   Endast layout/ikon för liggande redigering.
    Rör inte Taktikfilm state, Avsluta, Info/Kopiera/Klistra, lagerlogik eller Supabase.
 */
 (function(){
   'use strict';
-  if(window.__tt693EditLandscapeInstalled)return;
-  window.__tt693EditLandscapeInstalled=true;
+  if(window.__tt694EditLandscapeInstalled)return;
+  window.__tt694EditLandscapeInstalled=true;
 
-  var LS_KEY='tt693_taktikfilm_edit_landscape';
+  var LS_KEY='tt694_taktikfilm_edit_landscape';
+  var OLD_LS_KEY='tt693_taktikfilm_edit_landscape';
+
   function byId(id){return document.getElementById(id);}
   function isDesktop(){try{return window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}}
   function isEditor(){return document.body.classList.contains('tt688-taktikfilm-editor-active') && document.body.classList.contains('tt666-taktik-desktop-layout') && !document.body.classList.contains('fullscreen-portrait');}
-  function wanted(){try{return localStorage.getItem(LS_KEY)==='1';}catch(e){return false;}}
-  function setWanted(on){try{localStorage.setItem(LS_KEY,on?'1':'0');}catch(e){}}
+  function wanted(){
+    try{
+      var v=localStorage.getItem(LS_KEY);
+      if(v===null)v=localStorage.getItem(OLD_LS_KEY);
+      return v==='1';
+    }catch(e){return false;}
+  }
+  function setWanted(on){
+    try{
+      localStorage.setItem(LS_KEY,on?'1':'0');
+      localStorage.setItem(OLD_LS_KEY,on?'1':'0');
+    }catch(e){}
+  }
 
   function ensureCss(){
-    if(byId('tt693-edit-landscape-css'))return;
+    if(byId('tt694-edit-landscape-css'))return;
     var st=document.createElement('style');
-    st.id='tt693-edit-landscape-css';
+    st.id='tt694-edit-landscape-css';
     st.textContent=[
       '@media (min-width:1024px) and (pointer:fine){',
-      'body.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt693-edit-rotate-btn{',
-      '  display:inline-flex!important;align-items:center!important;justify-content:center!important;',
-      '  color:#e8c84a!important;border-color:#e8c84a!important;',
+      'body.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt694-edit-landscape-btn{',
+      '  display:inline-flex!important;',
+      '  align-items:center!important;',
+      '  justify-content:center!important;',
+      '  box-sizing:border-box!important;',
+      '  width:26px!important;',
+      '  min-width:26px!important;',
+      '  max-width:26px!important;',
+      '  height:26px!important;',
+      '  min-height:26px!important;',
+      '  max-height:26px!important;',
+      '  padding:0!important;',
+      '  margin:0 2px!important;',
+      '  line-height:1!important;',
+      '  font-size:0!important;',
+      '  color:#e8c84a!important;',
+      '  border-color:#e8c84a!important;',
+      '  flex:0 0 26px!important;',
       '}',
-      'body.tt693-edit-landscape.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt693-edit-rotate-btn{',
-      '  background:#e8c84a!important;color:#0a1a0d!important;border-color:#e8c84a!important;',
+      '#tt694-edit-landscape-btn svg{',
+      '  width:18px!important;',
+      '  height:18px!important;',
+      '  display:block!important;',
+      '  pointer-events:none!important;',
       '}',
-      'body.tt693-edit-landscape.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #pitch-wrapper{',
-      '  overflow:hidden!important;align-items:center!important;justify-content:center!important;',
+      'body.tt694-edit-landscape.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt694-edit-landscape-btn{',
+      '  background:#e8c84a!important;',
+      '  color:#0a1a0d!important;',
+      '  border-color:#e8c84a!important;',
       '}',
-      'body.tt693-edit-landscape.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #pitch-svg{',
-      '  transform:rotate(90deg)!important;transform-origin:center center!important;',
-      '  max-width:none!important;max-height:none!important;height:auto!important;',
+      'body.tt694-edit-landscape.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #pitch-wrapper{',
+      '  overflow:hidden!important;',
+      '  align-items:center!important;',
+      '  justify-content:center!important;',
       '}',
-      'body:not(.tt688-taktikfilm-editor-active) #tt693-edit-rotate-btn,',
-      'body.fullscreen-portrait #tt693-edit-rotate-btn{display:none!important;}',
+      'body.tt694-edit-landscape.tt666-taktik-desktop-layout.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #pitch-svg{',
+      '  transform:rotate(90deg)!important;',
+      '  transform-origin:center center!important;',
+      '  transform-box:fill-box!important;',
+      '  width:var(--tt694-landscape-pitch-w, 320px)!important;',
+      '  height:auto!important;',
+      '  max-width:none!important;',
+      '  max-height:none!important;',
+      '  flex:0 0 auto!important;',
       '}',
-      '@media not all and (min-width:1024px) and (pointer:fine){#tt693-edit-rotate-btn{display:none!important;}}'
+      'body:not(.tt688-taktikfilm-editor-active) #tt694-edit-landscape-btn,',
+      'body.fullscreen-portrait #tt694-edit-landscape-btn{display:none!important;}',
+      '}',
+      '@media not all and (min-width:1024px) and (pointer:fine){#tt694-edit-landscape-btn{display:none!important;}}'
     ].join('\n');
     document.head.appendChild(st);
+  }
+
+  function landscapeIcon(){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+
+      '<rect x="4" y="7" width="16" height="10" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/>'+
+      '<path d="M8 4h4.5c4.2 0 7.5 3.3 7.5 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'+
+      '<path d="M17 9.5l3 2.4 2.2-3.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
+      '</svg>';
   }
 
   function placeButton(){
@@ -43322,22 +43374,30 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var bar=byId('taktikbar');
     if(!bar)return null;
     var row=bar.querySelector('div:nth-child(2)') || bar.querySelector('div') || bar;
-    var btn=byId('tt693-edit-rotate-btn');
+
+    var old=byId('tt693-edit-rotate-btn');
+    if(old&&old.parentNode)old.parentNode.removeChild(old);
+
+    var btn=byId('tt694-edit-landscape-btn');
     if(!btn){
       btn=document.createElement('button');
-      btn.id='tt693-edit-rotate-btn';
+      btn.id='tt694-edit-landscape-btn';
       btn.type='button';
-      btn.className='ls-btn btn';
+      btn.className='btn';
       btn.title='Liggande plan i redigeringsläge';
-      btn.textContent='↻';
+      btn.setAttribute('aria-label','Liggande plan i redigeringsläge');
+      btn.innerHTML=landscapeIcon();
       btn.addEventListener('click',function(e){
         e.preventDefault();
         e.stopPropagation();
-        var on=!document.body.classList.contains('tt693-edit-landscape');
+        var on=!document.body.classList.contains('tt694-edit-landscape');
         setWanted(on);
         apply();
       },true);
+    }else if(!btn.querySelector('svg')){
+      btn.innerHTML=landscapeIcon();
     }
+
     var anchor=byId('btn-tb-reset-start') || byId('btn-tb-undo') || byId('btn-tb-clear') || byId('btn-tb-text') || row.lastElementChild;
     if(btn.parentNode!==row){
       if(anchor&&anchor.parentNode===row)row.insertBefore(btn,anchor.nextSibling);
@@ -43350,37 +43410,52 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var svg=byId('pitch-svg');
     var wrap=byId('pitch-wrapper');
     if(!svg||!wrap)return;
-    if(!document.body.classList.contains('tt693-edit-landscape')){
+    if(!document.body.classList.contains('tt694-edit-landscape')){
+      svg.style.removeProperty('--tt694-landscape-pitch-w');
       svg.style.width='';
       svg.style.height='';
       return;
     }
+
     var r=wrap.getBoundingClientRect();
     if(!r.width||!r.height)return;
+
     var vb=(svg.getAttribute('viewBox')||'0 0 680 1000').split(/\s+/).map(Number);
-    var vbW=vb[2]||680, vbH=vb[3]||1000;
+    var vbW=vb[2]||680;
+    var vbH=vb[3]||1000;
     var aspect=vbW/vbH;
-    var unrotatedWidth=Math.max(120, Math.min(r.height*0.94, r.width*aspect*0.94));
-    svg.style.width=Math.floor(unrotatedWidth)+'px';
+
+    /* När SVG:n roteras blir visuell bredd = svg-höjd och visuell höjd = svg-bredd.
+       Därför måste den oroterade bredden klara både wrapper-höjd och wrapper-bredd*aspect.
+       0.78 ger säker marginal så hela planen syns även med topp-/bottenmenyer och browserzoom. */
+    var safeW=Math.min(r.height*0.78, r.width*aspect*0.78);
+    safeW=Math.max(160, Math.floor(safeW));
+
+    svg.style.setProperty('--tt694-landscape-pitch-w', safeW+'px');
+    svg.style.width=safeW+'px';
     svg.style.height='auto';
   }
 
   function updateButton(btn){
-    btn=btn||byId('tt693-edit-rotate-btn');
+    btn=btn||byId('tt694-edit-landscape-btn');
     if(!btn)return;
-    var on=document.body.classList.contains('tt693-edit-landscape');
+    var on=document.body.classList.contains('tt694-edit-landscape');
     btn.classList.toggle('active',on);
     btn.setAttribute('aria-pressed',on?'true':'false');
     btn.title=on?'Återgå till stående plan i redigeringsläge':'Liggande plan i redigeringsläge';
+    btn.setAttribute('aria-label',btn.title);
   }
 
   function apply(){
     var active=isDesktop() && isEditor() && wanted();
-    document.body.classList.toggle('tt693-edit-landscape',active);
+    document.body.classList.remove('tt693-edit-landscape');
+    document.body.classList.toggle('tt694-edit-landscape',active);
+
     /* Återanvänd befintlig koordinat-remappning för desktop-roterad plan. */
     if(!document.body.classList.contains('fullscreen-portrait')){
       document.body.classList.toggle('tt523-fs-rotated-desktop',active);
     }
+
     var btn=placeButton();
     updateButton(btn);
     fitRotatedPitch();
@@ -43388,22 +43463,26 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function clearWhenNotEditor(){
     if(isEditor())return;
-    document.body.classList.remove('tt693-edit-landscape');
+    document.body.classList.remove('tt693-edit-landscape','tt694-edit-landscape');
     if(!document.body.classList.contains('fullscreen-portrait'))document.body.classList.remove('tt523-fs-rotated-desktop');
     var svg=byId('pitch-svg');
-    if(svg){svg.style.width='';svg.style.height='';}
+    if(svg){
+      svg.style.removeProperty('--tt694-landscape-pitch-w');
+      svg.style.width='';
+      svg.style.height='';
+    }
     updateButton();
   }
 
   function setVersion(){
-    try{document.title='Taktiktavla TEST v693 liggande redigering';}catch(e){}
+    try{document.title='Taktiktavla TEST v694 liggande redigering puts';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='693 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='694 TEST';
       });
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v693 TEST';
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v694 TEST';
     }catch(e){}
   }
 
@@ -43418,16 +43497,19 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   ['click','touchend','resize','orientationchange'].forEach(function(evt){
     window.addEventListener(evt,function(){setTimeout(tick,70);setTimeout(fitRotatedPitch,180);},true);
   });
-  if(typeof render==='function' && !render._tt693Wrapped){
+
+  if(typeof render==='function' && !render._tt694Wrapped){
     var oldRender=render;
     render=function(){
       var res=oldRender.apply(this,arguments);
       setTimeout(fitRotatedPitch,0);
+      setTimeout(fitRotatedPitch,80);
       return res;
     };
-    render._tt693Wrapped=true;
+    render._tt694Wrapped=true;
   }
+
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);});
   else{setTimeout(tick,0);setTimeout(tick,400);setTimeout(tick,1200);}
 })();
-/* === slut v693 TEST === */
+/* === slut v694 TEST === */
