@@ -44932,273 +44932,199 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v723 TEST === */
 
 
-/* === v727 TEST: Taktiktavla tre-spaltslayout utan att flytta fel toppmenyknappar ===
-   Bas: v723 TEST. v724/v725/v726 används inte som bas.
-   Mål:
-   - En sammanhållen Taktiktavla-arbetsyta på desktop.
-   - Vänster: bara riktiga ritverktyg överst + fillista under.
-   - Mitten: planen.
-   - Höger: lagerpanel.
-   - Flyttar inte hela topbar-raden, bara exakt de verktyg som hör till ritning.
-   - Återställer allt när man lämnar Taktiktavla så det inte läcker till Taktikfilm/Matcher.
+
+/* === v729 TEST: Taktiktavla separat proxy-ritrad, utan att flytta toppmenyn ===
+   Bas: v728 rollback / v723 stabil.
+   Syfte:
+   - Flytta inte befintliga globala verktygsknappar.
+   - Skapa en separat Taktiktavla-rad inne i panel-saves.
+   - Proxyknappar anropar befintlig mode/undo/reset-logik utan att ändra toppmenyns DOM.
+   - Ritvalsboxar positioneras visuellt bredvid proxy-raden utan att flyttas i DOM.
 */
 (function(){
   'use strict';
-  if(window.__tt727TavlaThreeColumnsInstalled)return;
-  window.__tt727TavlaThreeColumnsInstalled=true;
+  if(window.__tt729TavlaProxyToolsInstalled)return;
+  window.__tt729TavlaProxyToolsInstalled=true;
 
-  var moved=[];
-  var activeNow=false;
-  var restoreScheduled=false;
+  var VERSION='729 TEST';
+  var optionIds=['arrow-options','freehand-options','zone-options'];
 
   function byId(id){return document.getElementById(id);}
-  function isDesktop(){try{return window.matchMedia&&window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}}
+  function qs(s){try{return document.querySelector(s);}catch(e){return null;}}
   function isTavlaActive(){
     try{
-      var tab=document.querySelector('.tab.on[data-panel="saves"]');
+      if(document.body.classList.contains('fullscreen-portrait'))return false;
+      if(qs('.tab.on[data-panel="saves"]'))return true;
       var p=byId('panel-saves');
-      return !!(tab&&p&&p.classList.contains('on')&&!document.body.classList.contains('fullscreen-portrait'));
+      return !!(p&&p.classList.contains('on'));
     }catch(e){return false;}
   }
-  function topOffset(){
+  function isDesktop(){try{return window.matchMedia&&window.matchMedia('(min-width:900px) and (pointer:fine)').matches;}catch(e){return false;}}
+  function activeOptId(){
     try{
-      var top=byId('topbar');
-      var r=top?top.getBoundingClientRect():null;
-      var h=r?Math.ceil(r.bottom):76;
-      return Math.max(72,Math.min(132,h+8));
-    }catch(e){return 84;}
+      if(mode==='arrow')return 'arrow-options';
+      if(mode==='freehand')return 'freehand-options';
+      if(mode==='zone')return 'zone-options';
+    }catch(e){}
+    return null;
   }
+
   function ensureCss(){
-    if(byId('tt727-tavla-three-cols-css'))return;
+    if(byId('tt729-tavla-proxy-tools-css'))return;
     var st=document.createElement('style');
-    st.id='tt727-tavla-three-cols-css';
+    st.id='tt729-tavla-proxy-tools-css';
     st.textContent=[
-      '@media (min-width:1024px) and (pointer:fine){',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait){overflow:hidden!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #topbar{position:relative!important;z-index:130!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #bench-bar{display:none!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tavla-workspace{',
-      '    display:grid!important;',
-      '    grid-template-columns:244px minmax(320px,1fr) 268px!important;',
-      '    grid-template-rows:1fr!important;',
-      '    gap:8px!important;',
-      '    position:fixed!important;',
-      '    left:8px!important;right:8px!important;',
-      '    top:var(--tt727-top,84px)!important;bottom:8px!important;',
-      '    padding:8px!important;',
-      '    box-sizing:border-box!important;',
-      '    background:rgba(10,18,13,.96)!important;',
-      '    border:1px solid rgba(74,232,122,.20)!important;',
-      '    border-radius:14px!important;',
-      '    z-index:40!important;',
-      '    overflow:hidden!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left,',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-center,',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-right{',
-      '    min-width:0!important;min-height:0!important;',
-      '    box-sizing:border-box!important;',
-      '    background:rgba(14,23,16,.72)!important;',
-      '    border:1px solid rgba(74,232,122,.14)!important;',
-      '    border-radius:11px!important;',
-      '    overflow:hidden!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left{display:flex!important;flex-direction:column!important;gap:6px!important;padding:6px!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools{',
-      '    display:flex!important;align-items:center!important;gap:4px!important;',
-      '    flex:0 0 auto!important;min-height:34px!important;',
-      '    max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;',
-      '    padding:0 0 3px 0!important;margin:0!important;background:transparent!important;border:0!important;',
-      '    scrollbar-width:thin!important;white-space:nowrap!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools .btn,',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools button{',
-      '    flex:0 0 auto!important;min-width:30px!important;width:30px!important;height:30px!important;',
-      '    padding:3px 5px!important;font-size:.78rem!important;line-height:1!important;',
-      '    display:inline-flex!important;align-items:center!important;justify-content:center!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #arrow-options,',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #freehand-options,',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #zone-options{',
-      '    position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
-      '    transform:none!important;z-index:auto!important;flex:0 0 auto!important;',
-      '    margin:0 4px 0 0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;',
-      '    max-width:none!important;gap:3px!important;align-items:center!important;white-space:nowrap!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #arrow-options select,',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #freehand-options select,',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #zone-options select{',
-      '    height:28px!important;min-height:28px!important;font-size:.68rem!important;max-width:86px!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #arrow-options button,',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #freehand-options button,',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #zone-options button{height:28px!important;min-height:28px!important;font-size:.68rem!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left #bottompanel{',
-      '    display:block!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
-      '    width:100%!important;height:auto!important;flex:1 1 auto!important;min-height:0!important;max-height:none!important;',
-      '    margin:0!important;padding:0!important;background:transparent!important;border:0!important;overflow:hidden!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left #panel-saves{',
-      '    display:block!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;',
-      '    padding:0!important;margin:0!important;background:transparent!important;border:0!important;overflow:hidden!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left #panel-saves > div{display:flex!important;flex-direction:column!important;height:100%!important;min-height:0!important;width:100%!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left #panel-saves > div > div:first-child{',
-      '    flex:0 0 auto!important;display:flex!important;gap:3px!important;flex-wrap:wrap!important;margin-bottom:4px!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left #panel-saves > div > div:first-child .btn{',
-      '    padding:3px 6px!important;font-size:.68rem!important;min-height:25px!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #cloud-status{display:none!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #saves-search{flex:0 0 auto!important;margin-bottom:4px!important;padding:4px 7px!important;font-size:.72rem!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #saves-list{',
-      '    flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow:auto!important;padding:0 2px 36px 0!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row{',
-      '    grid-template-columns:minmax(32px,74px) repeat(6,18px)!important;column-gap:1px!important;padding-left:1px!important;padding-right:1px!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row .row-name{',
-      '    width:74px!important;max-width:74px!important;font-size:.70rem!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row button{',
-      '    width:18px!important;min-width:18px!important;max-width:18px!important;height:20px!important;min-height:20px!important;font-size:.60rem!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-center{display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important;background:rgba(5,12,8,.45)!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-center #pitch-wrapper{',
-      '    position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
-      '    width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;',
-      '    display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;background:transparent!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-center #pitch-svg{height:100%!important;width:auto!important;max-width:100%!important;max-height:100%!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-right{padding:6px!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-right #tt616-layer-panel{',
-      '    display:block!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
-      '    width:100%!important;height:100%!important;max-height:none!important;margin:0!important;padding:0!important;overflow:auto!important;',
-      '    background:transparent!important;border:0!important;box-shadow:none!important;',
-      '  }',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-right #tt616-layer-panel details{display:block!important;height:100%!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-right #tt616-layer-panel summary{display:none!important;}',
-      '}',
-      '@media (min-width:1280px) and (pointer:fine){',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tavla-workspace{grid-template-columns:252px minmax(360px,1fr) 276px!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row{grid-template-columns:minmax(36px,82px) repeat(6,19px)!important;}',
-      '  body.tt727-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row .row-name{width:82px!important;max-width:82px!important;}',
-      '}'
+      '#tt729-tavla-toolrow{display:none}',
+      'body.tt729-tavla-proxy-tools #tt729-tavla-toolrow{display:flex!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:visible!important;-webkit-overflow-scrolling:touch!important;background:rgba(17,26,20,.94)!important;border:1px solid #2d4a35!important;border-radius:10px!important;padding:4px 5px!important;margin:0 0 6px 0!important;box-sizing:border-box!important;max-width:100%!important;position:relative!important;z-index:30!important}',
+      'body.tt729-tavla-proxy-tools #tt729-tavla-toolrow .tt729-tool{flex:0 0 auto!important;min-width:28px!important;height:27px!important;padding:2px 6px!important;font-size:.78rem!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}',
+      'body.tt729-tavla-proxy-tools #tt729-tavla-toolrow .tt729-tool.on{background:#4ae87a!important;color:#07140b!important;border-color:#4ae87a!important}',
+      'body.tt729-tavla-proxy-tools #tt729-tavla-toolrow .tt729-sep{width:1px;height:20px;background:#2d4a35;flex:0 0 1px;margin:0 1px}',
+      'body.tt729-tavla-proxy-tools #tt729-tavla-toolrow .tt729-opt-slot{display:flex!important;align-items:center!important;gap:4px!important;min-width:0!important;flex:1 1 auto!important;overflow:visible!important}',
+      /* Dölj de gamla globala Tavla-ritraderna bara när proxy-raden är aktiv. De flyttas inte. */
+      'body.tt729-tavla-proxy-tools #tt252-ipad-rita-row{display:none!important;visibility:hidden!important;pointer-events:none!important}',
+      'body.tt729-tavla-proxy-tools .tt248-tavla-rita-row:not(#tt729-tavla-toolrow){display:none!important;visibility:hidden!important;pointer-events:none!important}',
+      'body.tt729-tavla-proxy-tools #topbar #btn-arrow,body.tt729-tavla-proxy-tools #topbar #btn-freehand,body.tt729-tavla-proxy-tools #topbar #btn-zone,body.tt729-tavla-proxy-tools #topbar #btn-text,body.tt729-tavla-proxy-tools #topbar #btn-movement,body.tt729-tavla-proxy-tools #topbar #tt236-rita-move,body.tt729-tavla-proxy-tools #topbar #tt236-rita-clear,body.tt729-tavla-proxy-tools #topbar #tt236-rita-undo,body.tt729-tavla-proxy-tools #topbar #tt236-rita-reset{display:none!important;visibility:hidden!important;pointer-events:none!important}',
+      'body.tt729-tavla-proxy-tools #arrow-options,body.tt729-tavla-proxy-tools #freehand-options,body.tt729-tavla-proxy-tools #zone-options{position:fixed!important;z-index:400!important;pointer-events:auto!important;background:rgba(17,26,20,.96)!important;border:1px solid #2d4a35!important;border-radius:9px!important;padding:3px 5px!important;box-shadow:0 4px 14px rgba(0,0,0,.35)!important;max-width:calc(100vw - 20px)!important}',
+      'body.tt729-tavla-proxy-tools #arrow-options select,body.tt729-tavla-proxy-tools #freehand-options select,body.tt729-tavla-proxy-tools #zone-options select{font-size:.72rem!important;height:24px!important}',
+      '@media (max-width:899px),(pointer:coarse){body.tt729-tavla-proxy-tools #tt729-tavla-toolrow{display:none!important}}'
     ].join('\n');
     document.head.appendChild(st);
   }
 
-  function ensureWorkspace(){
-    var ws=byId('tt727-tavla-workspace');
-    if(!ws){
-      ws=document.createElement('div');ws.id='tt727-tavla-workspace';
-      ws.innerHTML='<div id="tt727-left"><div id="tt727-tools" aria-label="Ritverktyg Taktiktavla"></div></div><div id="tt727-center"></div><div id="tt727-right"></div>';
-      var top=byId('topbar');
-      var bench=byId('bench-bar');
-      if(bench&&bench.parentNode)bench.parentNode.insertBefore(ws,bench.nextSibling);
-      else if(top&&top.parentNode)top.parentNode.insertBefore(ws,top.nextSibling);
-      else document.body.appendChild(ws);
-    }
-    return ws;
+  function makeBtn(id,txt,title,modeName,fn){
+    var b=document.createElement('button');
+    b.id=id;
+    b.type='button';
+    b.className='btn tt729-tool';
+    b.textContent=txt;
+    b.title=title||txt;
+    b.dataset.mode=modeName||'';
+    b.addEventListener('click',function(ev){
+      ev.preventDefault();ev.stopPropagation();if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
+      try{fn&&fn();}catch(e){}
+      scheduleApply();
+      return false;
+    },true);
+    return b;
   }
-
-  function rememberMove(node,newParent){
-    if(!node||!newParent)return;
-    if(!node.__tt727Placeholder){
-      var ph=document.createComment('tt727-ph-'+(node.id||node.tagName));
-      node.parentNode&&node.parentNode.insertBefore(ph,node);
-      node.__tt727Placeholder=ph;
-      moved.push(node);
-    }
-    if(node.parentNode!==newParent)newParent.appendChild(node);
+  function clickIf(id){var el=byId(id); if(el){el.click();return true;} return false;}
+  function setModeSafe(m){try{if(typeof setMode==='function')setMode(m);else mode=m;}catch(e){try{mode=m;}catch(_e){}} try{if(typeof render==='function')render();}catch(e){} }
+  function clearDrawings(){
+    try{if(!confirm('Rensa ritningar på tavlan?'))return;}catch(e){}
+    try{if(typeof saveUndo==='function')saveUndo();}catch(e){}
+    try{arrows=[];labels=[];freehandPaths=[];zones=[];tempArrow=null;currentFreehand=null;draftZone=null;}catch(e){}
+    try{if(typeof render==='function')render();}catch(e){}
   }
+  function undoSafe(){try{if(typeof doUndo==='function'){doUndo();return;}}catch(e){} if(!clickIf('btn-undo')){try{if(typeof undo==='function')undo();}catch(e){}}}
+  function resetSafe(){if(!clickIf('tt236-rita-reset')){try{clearCoachboardToFormation();}catch(e){try{byId('btn-reset')&&byId('btn-reset').click();}catch(_e){}}}}
 
-  function restoreAll(){
-    if(restoreScheduled)return;
-    restoreScheduled=true;
-    setTimeout(function(){
-      restoreScheduled=false;
-      if(isDesktop()&&isTavlaActive())return;
-      moved.slice().forEach(function(node){
-        try{
-          var ph=node.__tt727Placeholder;
-          if(ph&&ph.parentNode)ph.parentNode.insertBefore(node,ph.nextSibling);
-        }catch(e){}
-      });
-      try{document.body.classList.remove('tt727-tavla-active');}catch(e){}
-      activeNow=false;
-    },0);
-  }
-
-  function makeTools(){
-    try{if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar();}catch(e){}
-    var tools=byId('tt727-tools');
-    if(!tools)return;
-    ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'].forEach(function(id){
-      var el=byId(id); if(el)rememberMove(el,tools);
-    });
-    try{if(typeof window.tt239MoveNormalTavlaOptionsNextToTool==='function')window.tt239MoveNormalTavlaOptionsNextToTool();}catch(e){}
-    // Säkerställ att fel toppmenyknappar inte följer med.
-    ['btn-movement','btn-half','btn-backup','btn-daylight','btn-fs-topbar'].forEach(function(id){
-      var el=byId(id);
-      if(el&&tools.contains(el)){var ph=el.__tt727Placeholder;if(ph&&ph.parentNode)ph.parentNode.insertBefore(el,ph.nextSibling);}
-    });
-  }
-
-  function activate(){
+  function ensureRow(){
     ensureCss();
-    var active=isDesktop()&&isTavlaActive();
-    document.body.classList.toggle('tt727-tavla-active',active);
-    if(!active){restoreAll();return;}
-    activeNow=true;
-    document.documentElement.style.setProperty('--tt727-top',topOffset()+'px');
-    var ws=ensureWorkspace();
-    var left=byId('tt727-left'), center=byId('tt727-center'), right=byId('tt727-right');
-    if(!ws||!left||!center||!right)return;
-    makeTools();
-    var bottom=byId('bottompanel'); if(bottom)rememberMove(bottom,left);
-    var pitch=byId('pitch-wrapper'); if(pitch)rememberMove(pitch,center);
-    var layers=byId('tt616-layer-panel'); if(layers)rememberMove(layers,right);
-    try{var d=document.querySelector('#tt616-layer-panel details'); if(d)d.open=true;}catch(e){}
-    try{if(typeof renderSavesList==='function'){} }catch(e){}
-    try{document.title='Taktiktavla TEST v727 tavla tre spalter';}catch(e){}
+    var panel=byId('panel-saves');
+    if(!panel)return null;
+    var row=byId('tt729-tavla-toolrow');
+    if(!row){
+      row=document.createElement('div');
+      row.id='tt729-tavla-toolrow';
+      row.setAttribute('aria-label','Taktiktavla ritverktyg');
+      row.appendChild(makeBtn('tt729-tool-move','✋','Flytta spelare/boll','move',function(){setModeSafe('move');}));
+      row.appendChild(makeBtn('tt729-tool-arrow','↗','Pil','arrow',function(){setModeSafe('arrow');}));
+      row.appendChild(makeBtn('tt729-tool-freehand','✎','Frihand','freehand',function(){setModeSafe('freehand');}));
+      row.appendChild(makeBtn('tt729-tool-zone','□','Zon','zone',function(){setModeSafe('zone');}));
+      row.appendChild(makeBtn('tt729-tool-text','T','Text','text',function(){setModeSafe('text');}));
+      var sep=document.createElement('span');sep.className='tt729-sep';row.appendChild(sep);
+      row.appendChild(makeBtn('tt729-tool-clear','🧽','Sudda/rensa ritningar','',clearDrawings));
+      row.appendChild(makeBtn('tt729-tool-undo','↶','Ångra','',undoSafe));
+      row.appendChild(makeBtn('tt729-tool-reset','↻','Återställ tavlan','',resetSafe));
+      var slot=document.createElement('div');slot.id='tt729-tavla-option-slot';slot.className='tt729-opt-slot';row.appendChild(slot);
+    }
+    var first=panel.firstElementChild;
+    if(row.parentNode!==panel)panel.insertBefore(row,first||null);
+    else if(panel.firstElementChild!==row)panel.insertBefore(row,panel.firstElementChild);
+    return row;
+  }
+
+  function updateButtons(){
+    var m='';try{m=mode||'';}catch(e){}
+    ['move','arrow','freehand','zone','text'].forEach(function(x){
+      var b=byId('tt729-tool-'+(x==='freehand'?'freehand':x));
+      if(b)b.classList.toggle('on',m===x);
+    });
+  }
+
+  function placeOptions(){
+    var active=activeOptId();
+    optionIds.forEach(function(id){
+      var el=byId(id); if(!el)return;
+      if(!isTavlaActive()||!isDesktop()||active!==id){
+        if(isTavlaActive()&&isDesktop())el.style.setProperty('display','none','important');
+        return;
+      }
+      var btnMap={'arrow-options':'tt729-tool-arrow','freehand-options':'tt729-tool-freehand','zone-options':'tt729-tool-zone'};
+      var btn=byId(btnMap[id]);
+      var row=byId('tt729-tavla-toolrow');
+      if(!btn||!row)return;
+      var rb=row.getBoundingClientRect();
+      var bb=btn.getBoundingClientRect();
+      var left=Math.min(Math.max(bb.right+6,8),Math.max(8,window.innerWidth-340));
+      var top=Math.max(8,rb.top+Math.round((rb.height-28)/2));
+      el.style.setProperty('display','flex','important');
+      el.style.setProperty('left',left+'px','important');
+      el.style.setProperty('top',top+'px','important');
+      el.style.setProperty('right','auto','important');
+      el.style.setProperty('bottom','auto','important');
+      el.style.setProperty('transform','none','important');
+      el.style.setProperty('gap','4px','important');
+      el.style.setProperty('align-items','center','important');
+    });
+  }
+
+  function normalizeFileRows(){
     try{
-      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
-        var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='727 TEST';
+      if(!isTavlaActive())return;
+      var list=byId('saves-list'); if(!list)return;
+      list.querySelectorAll('button').forEach(function(b){
+        b.style.setProperty('min-width','23px','important');
+        b.style.setProperty('max-width','25px','important');
+        b.style.setProperty('height','23px','important');
+        b.style.setProperty('padding','1px 4px','important');
+        b.style.setProperty('font-size','.68rem','important');
       });
-      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v727 TEST';
+      list.querySelectorAll('.row-name').forEach(function(n){
+        n.style.setProperty('max-width','120px','important');
+        n.style.setProperty('overflow','hidden','important');
+        n.style.setProperty('text-overflow','ellipsis','important');
+        n.style.setProperty('white-space','nowrap','important');
+      });
     }catch(e){}
   }
 
-  function schedule(){
-    setTimeout(activate,0);
-    setTimeout(activate,80);
-    setTimeout(activate,220);
+  function setActive(){
+    var active=isTavlaActive()&&isDesktop();
+    document.body.classList.toggle('tt729-tavla-proxy-tools',!!active);
+    if(active){ensureRow();updateButtons();normalizeFileRows();placeOptions();}
+    else{
+      optionIds.forEach(function(id){var el=byId(id); if(el){el.style.removeProperty('left');el.style.removeProperty('top');el.style.removeProperty('right');el.style.removeProperty('bottom');el.style.removeProperty('transform');}});
+    }
+    try{document.title='Taktiktavla TEST v729 proxy-ritrad';}catch(e){}
+    try{
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v729 TEST';
+    }catch(e){}
+  }
+  function scheduleApply(){setActive();setTimeout(setActive,0);setTimeout(setActive,70);setTimeout(setActive,180);}
+
+  var oldSetMode=typeof setMode==='function'?setMode:null;
+  if(oldSetMode&&!oldSetMode.__tt729Wrapped){
+    var wrapped=function(){var r=oldSetMode.apply(this,arguments);scheduleApply();return r;};
+    wrapped.__tt729Wrapped=true; setMode=wrapped; window.setMode=wrapped;
   }
 
-  // Kör efter gamla tt238/tt239/tt248 så v727 blir sista ägare när Taktiktavla är aktivt.
-  var oldSetMode=typeof setMode==='function'?setMode:null;
-  if(oldSetMode && !oldSetMode.__tt727Wrapped){
-    var wrapped=function(){var r=oldSetMode.apply(this,arguments);schedule();return r;};
-    wrapped.__tt727Wrapped=true;
-    setMode=wrapped; window.setMode=wrapped;
-  }
-  try{
-    if(typeof renderSavesList==='function'&&!renderSavesList.__tt727Wrapped){
-      var oldRender=renderSavesList;
-      renderSavesList=function(){var r=oldRender.apply(this,arguments);schedule();return r;};
-      renderSavesList.__tt727Wrapped=true;
-    }
-  }catch(e){}
-  ['click','touchend','resize','orientationchange','input'].forEach(function(evt){
-    window.addEventListener(evt,function(){schedule();},true);
+  ['click','touchend','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(scheduleApply,60);},true);});
+  optionIds.forEach(function(id){
+    setTimeout(function(){var el=byId(id); if(!el||el.dataset.tt729Protected)return; el.dataset.tt729Protected='1'; ['click','pointerdown','mousedown','touchstart'].forEach(function(t){el.addEventListener(t,function(ev){ev.stopPropagation();},true);}); ['change','input'].forEach(function(t){el.addEventListener(t,function(ev){ev.stopPropagation();setTimeout(placeOptions,40);},true);});},0);
   });
-  if(window.MutationObserver){
-    try{new MutationObserver(function(){schedule();}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});}catch(e){}
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){schedule();setTimeout(schedule,700);});
-  else{schedule();setTimeout(schedule,700);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(scheduleApply,0);setTimeout(scheduleApply,400);setTimeout(scheduleApply,1200);});
+  else{setTimeout(scheduleApply,0);setTimeout(scheduleApply,400);setTimeout(scheduleApply,1200);}
 })();
-/* === slut v727 TEST === */
+/* === slut v729 TEST === */
