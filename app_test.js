@@ -44272,338 +44272,449 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v713 TEST: Taktiktavla desktop layout cleanup ===
-   Bas: app v707/v703 + index v708.
+/* === v714 TEST: Taktiktavla desktoplayout kontrollerad ===
+   Bas:
+   - app v707/v703 stabil
+   - index v708
+   Ersätter inte Taktikfilm. Rör bara Taktiktavla på desktop.
    Mål:
-   - Taktiktavla desktop får en egen controller i appfilen.
-   - Filer vänster, plan mitten, lager höger.
-   - Befintlig Tavla-ritrad placeras i en stabil rad ovanför planen.
-   - Gamla ritvalsägare får inte synas i mellanlägen: v713 gör sista placeringen och döljer övriga.
-   - Fillistans faktiska renderade rader normaliseras efter render, inte bara via antagen CSS.
+   - Verktyg längst till vänster ovanför fillistan.
+   - Ritval i en fast slot bredvid verktygen, utan blink från tt238/tt239-mellanläge.
+   - Fillistan: symbolknappar närmare filnamnet och alla symboler synliga.
+   - Panelerna börjar under toppmenyn och ritraden.
 */
 (function(){
   'use strict';
-  if(window.__tt713TavlaDesktopCleanupInstalled)return;
-  window.__tt713TavlaDesktopCleanupInstalled=true;
+  if(window.__tt714TavlaDesktopControlledInstalled)return;
+  window.__tt714TavlaDesktopControlledInstalled=true;
 
-  var VERSION='713 TEST';
-  var host=null;
-  var originalParents={};
-  var settlingTimer=null;
+  var VERSION='714 TEST';
+  var savedToolPlaces={};
+  var desiredTools=[
+    'tt236-rita-move',
+    'btn-arrow',
+    'btn-freehand',
+    'btn-zone',
+    'btn-text',
+    'tt236-rita-clear',
+    'tt236-rita-undo',
+    'tt236-rita-reset'
+  ];
+  var optionIds=['arrow-options','freehand-options','zone-options'];
 
   function byId(id){return document.getElementById(id);}
-  function desktop(){try{return window.matchMedia&&window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}}
-  function isTaktikActive(){
+  function desktop(){return window.matchMedia && window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}
+  function visible(el){
+    if(!el)return false;
     try{
-      if(document.body.classList.contains('fullscreen-portrait'))return true;
-      if(document.querySelector('.tab.on[data-panel="taktik"]'))return true;
-      var p=byId('panel-taktik'); if(p&&p.classList.contains('on'))return true;
-      if(typeof playback!=='undefined'&&playback)return true;
-      if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)return true;
-      if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null)return true;
-    }catch(e){}
-    return false;
-  }
-  function isActive(){
-    try{
-      if(!desktop())return false;
-      if(isTaktikActive())return false;
-      if(document.body.classList.contains('fullscreen-portrait'))return false;
-      var saves=byId('panel-saves');
-      return !!(saves&&saves.classList.contains('on'));
+      var cs=getComputedStyle(el);
+      return cs.display!=='none' && cs.visibility!=='hidden' && el.offsetParent!==null;
     }catch(e){return false;}
   }
-  function toolIds(){return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];}
-  function optionIds(){return ['arrow-options','freehand-options','zone-options'];}
-  function activeOptionId(){
+  function tavlaActive(){
     try{
-      if(mode==='arrow')return 'arrow-options';
-      if(mode==='freehand')return 'freehand-options';
-      if(mode==='zone')return 'zone-options';
-    }catch(e){}
-    return null;
+      if(!desktop())return false;
+      if(document.body.classList.contains('fullscreen-portrait'))return false;
+      var tab=document.querySelector('.tab.on[data-panel="saves"]');
+      var p=byId('panel-saves');
+      return !!(tab || (p && p.classList.contains('on')) || visible(p));
+    }catch(e){return false;}
   }
-  function activeButtonId(){
-    try{
-      if(mode==='arrow')return 'btn-arrow';
-      if(mode==='freehand')return 'btn-freehand';
-      if(mode==='zone')return 'btn-zone';
-    }catch(e){}
-    return null;
-  }
-  function rememberParent(el){
-    if(!el||!el.id)return;
-    if(!originalParents[el.id] && el.parentNode && el.parentNode.id!=='tt713-tavla-tools-host')originalParents[el.id]=el.parentNode;
-  }
-  function putAfter(el,anchor){
-    if(!el||!anchor||!anchor.parentNode)return;
-    var parent=anchor.parentNode;
-    var next=anchor.nextSibling;
-    if(next===el)return;
-    parent.insertBefore(el,next);
-  }
-  function getHost(){
-    if(host&&document.body.contains(host))return host;
-    host=byId('tt713-tavla-tools-host');
-    if(!host){
-      host=document.createElement('div');
-      host.id='tt713-tavla-tools-host';
-      host.setAttribute('aria-label','Taktiktavla ritverktyg');
-      document.body.appendChild(host);
-    }
-    return host;
-  }
-  function restoreToolsIfInactive(){
-    if(isActive())return;
-    try{
-      var h=byId('tt713-tavla-tools-host');
-      toolIds().concat(optionIds()).forEach(function(id){
-        var el=byId(id), par=originalParents[id];
-        if(el&&par&&el.parentNode===h)par.appendChild(el);
-        if(el){el.classList.remove('tt713-owned-tool','tt713-owned-option','tt713-active-option');}
-      });
-      document.body.classList.remove('tt713-tavla-desktop','tt713-tavla-settling');
-      if(h)h.style.display='none';
-    }catch(e){}
-  }
+
   function setVersion(){
-    try{document.title='Taktiktavla TEST v713 taktiktavla desktop cleanup';}catch(e){}
+    try{document.title='Taktiktavla TEST v714 taktiktavla desktop';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
         if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent=VERSION;
       });
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v713 TEST';
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v714 TEST';
     }catch(e){}
   }
-  function injectCss(){
-    if(byId('tt713-tavla-desktop-cleanup-css'))return;
+
+  function ensureCss(){
+    if(byId('tt714-tavla-desktop-css'))return;
     var st=document.createElement('style');
-    st.id='tt713-tavla-desktop-cleanup-css';
+    st.id='tt714-tavla-desktop-css';
     st.textContent=[
       '@media (min-width:1024px) and (pointer:fine){',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait){overflow:hidden!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #topbar{position:relative!important;z-index:240!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host{',
-      '  display:flex!important;position:fixed!important;left:358px!important;right:314px!important;',
-      '  top:var(--tt713-tools-top,112px)!important;height:auto!important;min-height:34px!important;',
-      '  align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:visible!important;',
-      '  padding:3px 4px!important;margin:0!important;box-sizing:border-box!important;',
-      '  background:rgba(7,14,10,.94)!important;border:1px solid rgba(74,232,122,.22)!important;border-radius:10px!important;',
-      '  box-shadow:none!important;z-index:145!important;scrollbar-width:thin!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host .btn,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host button{flex:0 0 auto!important;height:28px!important;min-height:28px!important;padding:2px 7px!important;font-size:.72rem!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #tt236-rita-move,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #btn-arrow,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #btn-freehand,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #btn-zone,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #btn-text,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #tt236-rita-clear,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #tt236-rita-undo,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #tt236-rita-reset{display:inline-flex!important;visibility:visible!important;pointer-events:auto!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt252-ipad-rita-row{display:none!important;visibility:hidden!important;pointer-events:none!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #btn-movement{display:none!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #arrow-options,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #freehand-options,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #zone-options{display:none!important;visibility:hidden!important;pointer-events:none!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #arrow-options.tt713-active-option,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #freehand-options.tt713-active-option,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #zone-options.tt713-active-option{',
-      '  display:flex!important;visibility:visible!important;pointer-events:auto!important;position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;',
-      '  z-index:auto!important;flex:0 0 auto!important;margin:0 5px 0 0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;max-width:none!important;gap:4px!important;align-items:center!important;white-space:nowrap!important;overflow:visible!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #arrow-options.tt713-active-option select,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #freehand-options.tt713-active-option select,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #zone-options.tt713-active-option select{height:28px!important;min-height:28px!important;font-size:.72rem!important;max-width:88px!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #arrow-options.tt713-active-option button,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #freehand-options.tt713-active-option button,',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host #zone-options.tt713-active-option button{height:28px!important;min-height:28px!important;font-size:.72rem!important;white-space:nowrap!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #bottompanel{',
-      '  display:block!important;position:fixed!important;left:8px!important;top:var(--tt713-content-top,154px)!important;bottom:8px!important;width:342px!important;height:auto!important;max-height:none!important;',
-      '  padding:0!important;margin:0!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important;z-index:82!important;pointer-events:none!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-toggle-strip,body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-show-btn{display:none!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on{',
-      '  display:block!important;height:100%!important;width:100%!important;max-height:none!important;box-sizing:border-box!important;padding:6px!important;margin:0!important;overflow:hidden!important;',
-      '  background:rgba(14,23,16,.96)!important;border:1px solid rgba(74,232,122,.22)!important;border-radius:10px!important;box-shadow:none!important;pointer-events:auto!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on > div{display:flex!important;flex-direction:column!important;height:100%!important;min-height:0!important;width:100%!important;gap:4px!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on > div > div:first-child{display:flex!important;flex-wrap:wrap!important;gap:3px!important;margin:0!important;flex:0 0 auto!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on .btn,body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on button{padding:2px 5px!important;font-size:.64rem!important;line-height:1.05!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #cloud-status{display:none!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-search{flex:0 0 auto!important;margin:0!important;padding:5px 7px!important;font-size:.72rem!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-list{flex:1 1 auto!important;min-height:0!important;max-height:none!important;height:auto!important;overflow-y:auto!important;overflow-x:hidden!important;margin:0!important;padding:1px 0 30px!important;-webkit-overflow-scrolling:touch!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt713-save-row{display:grid!important;grid-template-columns:minmax(0,1fr) 23px 23px 23px 23px!important;gap:2px!important;align-items:center!important;min-height:30px!important;padding:2px!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt713-save-row .row-name{min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:.72rem!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt713-save-row .row-sub{display:none!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt713-save-row button.sa{width:23px!important;min-width:23px!important;max-width:23px!important;height:23px!important;min-height:23px!important;padding:0!important;font-size:.68rem!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #pitch-wrapper{',
-      '  position:fixed!important;left:358px!important;right:314px!important;top:var(--tt713-content-top,154px)!important;bottom:8px!important;width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;',
-      '  margin:0!important;padding:0!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;background:transparent!important;z-index:40!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #pitch-svg{height:100%!important;width:auto!important;max-width:100%!important;max-height:100%!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel{',
-      '  display:block!important;visibility:visible!important;position:fixed!important;right:8px!important;top:var(--tt713-content-top,154px)!important;bottom:8px!important;width:298px!important;max-height:none!important;overflow:auto!important;z-index:90!important;box-sizing:border-box!important;pointer-events:auto!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel details{display:block!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel summary{display:none!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt642-layer-mobile-toggle{display:none!important;}',
-      '}',
-      '@media (min-width:1280px) and (pointer:fine){',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #bottompanel{width:360px!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt713-tavla-tools-host{left:376px!important;right:326px!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #pitch-wrapper{left:376px!important;right:326px!important;}',
-      'body.tt713-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel{width:310px!important;}',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait){',
+      '   overflow:hidden!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #topbar{',
+      '   position:relative!important;',
+      '   z-index:500!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #tt714-tavla-toolbar{',
+      '   position:fixed!important;',
+      '   left:10px!important;',
+      '   top:var(--tt714-top,72px)!important;',
+      '   z-index:420!important;',
+      '   display:flex!important;',
+      '   align-items:center!important;',
+      '   gap:4px!important;',
+      '   height:36px!important;',
+      '   max-width:calc(100vw - 340px)!important;',
+      '   overflow:visible!important;',
+      '   background:rgba(8,24,14,.96)!important;',
+      '   border:1px solid rgba(74,232,122,.35)!important;',
+      '   border-radius:12px!important;',
+      '   padding:4px 6px!important;',
+      '   box-shadow:0 8px 20px rgba(0,0,0,.28)!important;',
+      '   box-sizing:border-box!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #tt714-tavla-toolbar .btn,',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #tt714-tavla-toolbar .tt236-rita-tool{',
+      '   width:32px!important;',
+      '   min-width:32px!important;',
+      '   max-width:32px!important;',
+      '   height:28px!important;',
+      '   min-height:28px!important;',
+      '   padding:2px 4px!important;',
+      '   font-size:.82rem!important;',
+      '   line-height:1!important;',
+      '   display:inline-flex!important;',
+      '   align-items:center!important;',
+      '   justify-content:center!important;',
+      '   flex:0 0 auto!important;',
+      '   white-space:nowrap!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #tt714-tavla-toolbar #tt714-tavla-options-slot{',
+      '   display:flex!important;',
+      '   align-items:center!important;',
+      '   gap:4px!important;',
+      '   margin-left:4px!important;',
+      '   min-width:0!important;',
+      '   overflow:visible!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #tt714-tavla-options-slot #arrow-options,',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #tt714-tavla-options-slot #freehand-options,',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #tt714-tavla-options-slot #zone-options{',
+      '   position:static!important;',
+      '   left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
+      '   transform:none!important;',
+      '   z-index:auto!important;',
+      '   background:rgba(17,26,20,.98)!important;',
+      '   border:1px solid rgba(74,232,122,.28)!important;',
+      '   border-radius:10px!important;',
+      '   padding:3px 5px!important;',
+      '   gap:4px!important;',
+      '   box-shadow:none!important;',
+      '   flex:0 0 auto!important;',
+      ' }',
+      ' body.tt714-tavla-desktop.tt714-placing-options #arrow-options,',
+      ' body.tt714-tavla-desktop.tt714-placing-options #freehand-options,',
+      ' body.tt714-tavla-desktop.tt714-placing-options #zone-options{',
+      '   visibility:hidden!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #panel-toggle-strip{display:none!important;}',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #bottompanel{',
+      '   display:block!important;',
+      '   position:fixed!important;',
+      '   left:10px!important;',
+      '   top:calc(var(--tt714-top,72px) + 44px)!important;',
+      '   width:314px!important;',
+      '   max-width:314px!important;',
+      '   height:calc(100vh - var(--tt714-top,72px) - 54px)!important;',
+      '   max-height:calc(100vh - var(--tt714-top,72px) - 54px)!important;',
+      '   overflow:hidden!important;',
+      '   z-index:300!important;',
+      '   background:rgba(8,24,14,.92)!important;',
+      '   border:1px solid rgba(74,232,122,.28)!important;',
+      '   border-radius:14px!important;',
+      '   box-shadow:none!important;',
+      '   padding:8px!important;',
+      '   box-sizing:border-box!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #bottompanel .panel{display:none!important;}',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #bottompanel #panel-saves.on,',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #bottompanel #panel-saves{',
+      '   display:block!important;',
+      '   width:100%!important;',
+      '   max-width:none!important;',
+      '   height:100%!important;',
+      '   overflow:hidden!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #panel-saves>div{height:100%!important;display:flex!important;flex-direction:column!important;min-width:0!important;}',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #panel-saves input#saves-search{height:27px!important;padding:3px 7px!important;margin-bottom:5px!important;font-size:.72rem!important;}',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #panel-saves #cloud-status{display:none!important;}',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #saves-list{',
+      '   flex:1 1 auto!important;',
+      '   min-height:0!important;',
+      '   max-height:none!important;',
+      '   overflow-y:auto!important;',
+      '   overflow-x:hidden!important;',
+      '   padding:0 2px 34px 0!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #saves-list .row{',
+      '   display:grid!important;',
+      '   grid-template-columns:minmax(0,1fr) 22px 22px 22px 22px!important;',
+      '   gap:1px!important;',
+      '   align-items:center!important;',
+      '   min-height:31px!important;',
+      '   padding:3px 2px 3px 5px!important;',
+      '   margin-bottom:2px!important;',
+      '   box-sizing:border-box!important;',
+      '   overflow:hidden!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #saves-list .row-name{',
+      '   grid-column:1!important;',
+      '   min-width:0!important;',
+      '   overflow:hidden!important;',
+      '   text-overflow:ellipsis!important;',
+      '   white-space:nowrap!important;',
+      '   font-size:.75rem!important;',
+      '   line-height:1.05!important;',
+      '   padding-right:2px!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #saves-list .row-sub{display:none!important;}',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #saves-list .sa{',
+      '   width:22px!important;',
+      '   min-width:22px!important;',
+      '   max-width:22px!important;',
+      '   height:22px!important;',
+      '   min-height:22px!important;',
+      '   padding:0!important;',
+      '   margin:0!important;',
+      '   display:inline-flex!important;',
+      '   align-items:center!important;',
+      '   justify-content:center!important;',
+      '   overflow:hidden!important;',
+      '   white-space:nowrap!important;',
+      '   font-size:.72rem!important;',
+      '   line-height:1!important;',
+      '   border-radius:7px!important;',
+      '   text-indent:0!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #pitch-wrapper{',
+      '   position:fixed!important;',
+      '   left:338px!important;',
+      '   right:318px!important;',
+      '   top:calc(var(--tt714-top,72px) + 44px)!important;',
+      '   bottom:10px!important;',
+      '   width:auto!important;',
+      '   height:auto!important;',
+      '   margin:0!important;',
+      '   z-index:120!important;',
+      '   display:flex!important;',
+      '   align-items:center!important;',
+      '   justify-content:center!important;',
+      '   background:rgba(8,24,14,.30)!important;',
+      '   border:1px solid rgba(74,232,122,.18)!important;',
+      '   border-radius:14px!important;',
+      '   overflow:visible!important;',
+      '   box-sizing:border-box!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #pitch-svg{',
+      '   width:min(100%, calc((100vh - var(--tt714-top,72px) - 70px) * .6667))!important;',
+      '   height:min(100%, calc((100vw - 670px) * 1.5))!important;',
+      '   max-width:100%!important;',
+      '   max-height:100%!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel{',
+      '   display:block!important;',
+      '   position:fixed!important;',
+      '   right:10px!important;',
+      '   top:calc(var(--tt714-top,72px) + 44px)!important;',
+      '   width:296px!important;',
+      '   max-width:296px!important;',
+      '   height:calc(100vh - var(--tt714-top,72px) - 54px)!important;',
+      '   max-height:calc(100vh - var(--tt714-top,72px) - 54px)!important;',
+      '   z-index:310!important;',
+      '   border-radius:14px!important;',
+      '   box-shadow:none!important;',
+      '   overflow:auto!important;',
+      ' }',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel details{display:block!important;}',
+      ' body.tt714-tavla-desktop:not(.fullscreen-portrait) #tt616-layer-panel details[open]>*{visibility:visible!important;}',
       '}'
     ].join('\n');
     document.head.appendChild(st);
   }
-  function measureLayout(){
+
+  function ensureTopVar(){
     try{
       var tb=byId('topbar');
-      var top=92;
-      if(tb){
-        var r=tb.getBoundingClientRect();
-        top=Math.max(72,Math.ceil(r.bottom)+5);
+      var bottom=tb?Math.ceil(tb.getBoundingClientRect().bottom):58;
+      document.documentElement.style.setProperty('--tt714-top',Math.max(58,bottom+6)+'px');
+    }catch(e){}
+  }
+
+  function ensureToolbar(){
+    var tb=byId('tt714-tavla-toolbar');
+    if(!tb){
+      tb=document.createElement('div');
+      tb.id='tt714-tavla-toolbar';
+      var slot=document.createElement('div');
+      slot.id='tt714-tavla-options-slot';
+      tb.appendChild(slot);
+      document.body.appendChild(tb);
+    }
+    var slot=byId('tt714-tavla-options-slot');
+    if(!slot){
+      slot=document.createElement('div');
+      slot.id='tt714-tavla-options-slot';
+      tb.appendChild(slot);
+    }
+    return {bar:tb,slot:slot};
+  }
+
+  function rememberPlace(el){
+    if(!el||savedToolPlaces[el.id])return;
+    savedToolPlaces[el.id]={parent:el.parentNode,next:el.nextSibling};
+  }
+
+  function restoreTools(){
+    desiredTools.forEach(function(id){
+      var el=byId(id), place=savedToolPlaces[id];
+      if(el&&place&&place.parent){
+        try{
+          if(place.next&&place.next.parentNode===place.parent)place.parent.insertBefore(el,place.next);
+          else place.parent.appendChild(el);
+        }catch(e){}
       }
-      var h=host?Math.max(34,Math.ceil(host.getBoundingClientRect().height||34)):38;
-      document.documentElement.style.setProperty('--tt713-tools-top',top+'px');
-      document.documentElement.style.setProperty('--tt713-content-top',(top+h+7)+'px');
-    }catch(e){}
+    });
+    optionIds.forEach(function(id){
+      var el=byId(id);
+      if(el&&byId('pitch-wrapper')&&el.parentNode!==byId('pitch-wrapper')){
+        try{byId('pitch-wrapper').appendChild(el);}catch(e){}
+      }
+    });
   }
-  function ensureLayerOpen(){
-    try{
-      if(!isActive())return;
-      var d=document.querySelector('#tt616-layer-panel details');
-      if(d)d.open=true;
-      var list=byId('tt630-free-layer-list');
-      if(list&&!list.innerHTML.trim()&&typeof window.tt631RefreshFreeLayerPanel==='function')window.tt631RefreshFreeLayerPanel();
-    }catch(e){}
+
+  function ensureToolButtonsExist(){
+    try{if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar();}catch(e){}
   }
+
+  function moveToolsAndOptions(){
+    ensureToolButtonsExist();
+    var parts=ensureToolbar();
+    var bar=parts.bar, slot=parts.slot;
+    desiredTools.forEach(function(id){
+      var el=byId(id);
+      if(!el)return;
+      rememberPlace(el);
+      el.classList.add('tt714-tavla-tool');
+      if(el.parentNode!==bar)bar.insertBefore(el,slot);
+    });
+    optionIds.forEach(function(id){
+      var opt=byId(id);
+      if(!opt)return;
+      opt.classList.add('tt714-tavla-option');
+      if(opt.parentNode!==slot)slot.appendChild(opt);
+    });
+  }
+
   function normalizeSaveRows(){
+    var list=byId('saves-list');
+    if(!list)return;
     try{
-      if(!isActive())return;
-      var rows=document.querySelectorAll('#panel-saves.on #saves-list .row');
-      rows.forEach(function(row){
-        row.classList.add('tt713-save-row');
-        var buttons=row.querySelectorAll('button.sa');
+      Array.prototype.slice.call(list.querySelectorAll('.row')).forEach(function(row){
+        row.classList.add('tt714-save-row');
+        var buttons=Array.prototype.slice.call(row.querySelectorAll('button.sa'));
         buttons.forEach(function(btn){
-          var raw=(btn.textContent||'').trim();
-          var low=raw.toLowerCase();
-          if(low.indexOf('flytta')>=0 || raw.indexOf('⇆')>=0){btn.textContent='⇆';btn.title='Flytta';}
-          else if(low.indexOf('ladda')>=0 || low.indexOf('öppna')>=0 || raw==='▶'){btn.textContent='▶';btn.title='Öppna';}
-          else if(low.indexOf('till')>=0 || low.indexOf('film')>=0 || raw==='🎬'){btn.textContent='🎬';btn.title='Ny film från taktiktavla';}
-          else if(raw==='×' || raw==='x' || low.indexOf('radera')>=0){btn.textContent='×';btn.title='Radera';}
-          btn.setAttribute('aria-label',btn.title||raw);
+          var txt=(btn.textContent||'').trim();
+          var title=btn.getAttribute('title')||txt;
+          if(/flytta/i.test(txt)){btn.textContent='⇆';btn.title=title||'Flytta';}
+          else if(/ladda/i.test(txt)){btn.textContent='↗';btn.title=title||'Ladda';}
+          else if(/till\s*taktikfilm/i.test(txt)){btn.textContent='🎬';btn.title=title||'Till taktikfilm';}
+          else if(txt==='×'||/radera/i.test(title)){btn.textContent='×';btn.title=title||'Radera';}
         });
       });
     }catch(e){}
   }
-  function startSettling(){
-    try{document.body.classList.add('tt713-tavla-settling');}catch(e){}
-    if(settlingTimer)clearTimeout(settlingTimer);
-    settlingTimer=setTimeout(function(){try{document.body.classList.remove('tt713-tavla-settling');}catch(e){}},280);
+
+  function openLayerPanel(){
+    try{
+      var p=byId('tt616-layer-panel');
+      if(!p)return;
+      var d=p.querySelector('details');
+      if(d)d.open=true;
+      if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();
+    }catch(e){}
   }
-  function ownToolsAndOptions(){
-    if(!isActive()){restoreToolsIfInactive();return;}
-    var h=getHost();
-    h.style.display='flex';
-    toolIds().forEach(function(id){
-      var el=byId(id);
-      if(!el)return;
-      rememberParent(el);
-      el.classList.add('tt713-owned-tool');
-      if(el.parentNode!==h)h.appendChild(el);
-      el.style.removeProperty('display');
-      el.style.removeProperty('visibility');
+
+  function placeOptionsAfterOldOwners(){
+    if(!tavlaActive())return;
+    try{document.body.classList.add('tt714-placing-options');}catch(e){}
+    moveToolsAndOptions();
+    normalizeSaveRows();
+    openLayerPanel();
+    requestAnimationFrame(function(){
+      moveToolsAndOptions();
+      try{document.body.classList.remove('tt714-placing-options');}catch(e){}
     });
-    var activeOpt=activeOptionId();
-    var activeBtn=byId(activeButtonId());
-    optionIds().forEach(function(id){
-      var el=byId(id);
-      if(!el)return;
-      rememberParent(el);
-      el.classList.add('tt713-owned-option');
-      el.classList.remove('tt713-active-option');
-      if(el.parentNode!==h)h.appendChild(el);
-    });
-    if(activeOpt&&activeBtn){
-      var opt=byId(activeOpt);
-      if(opt){
-        if(opt.parentNode!==h)h.appendChild(opt);
-        putAfter(opt,activeBtn);
-        opt.classList.add('tt713-active-option');
-      }
+  }
+
+  function apply(){
+    ensureCss();
+    ensureTopVar();
+    setVersion();
+    var active=tavlaActive();
+    document.body.classList.toggle('tt714-tavla-desktop',active);
+    if(active){
+      moveToolsAndOptions();
+      normalizeSaveRows();
+      openLayerPanel();
+    }else{
+      document.body.classList.remove('tt714-placing-options');
+      restoreTools();
     }
   }
-  function protectOptions(){
-    try{
-      optionIds().forEach(function(id){
-        var el=byId(id);
-        if(!el||el.dataset.tt713Protected)return;
-        el.dataset.tt713Protected='1';
-        ['pointerdown','touchstart','mousedown','click'].forEach(function(type){
-          el.addEventListener(type,function(ev){ev.stopPropagation();},{capture:true,passive:true});
-        });
-        ['change','input'].forEach(function(type){
-          el.addEventListener(type,function(ev){ev.stopPropagation();schedule(70);},true);
-        });
-      });
-    }catch(e){}
-  }
-  function apply(){
-    injectCss();
-    var active=isActive();
-    document.body.classList.toggle('tt713-tavla-desktop',active);
-    if(active){
-      ownToolsAndOptions();
-      measureLayout();
-      ensureLayerOpen();
-      normalizeSaveRows();
-      protectOptions();
-    }else restoreToolsIfInactive();
-    setVersion();
-  }
-  function schedule(delay){
-    if(delay){setTimeout(apply,delay);return;}
-    try{if(window.requestAnimationFrame)requestAnimationFrame(apply);else apply();}catch(e){apply();}
-    setTimeout(apply,35);
-    setTimeout(apply,110);
-    setTimeout(apply,240);
-  }
-  var oldSetMode=typeof setMode==='function'?setMode:null;
-  if(oldSetMode&&!oldSetMode.__tt713Wrapped){
-    var wrapped=function(){
-      if(isActive())startSettling();
-      var r=oldSetMode.apply(this,arguments);
-      schedule();
-      return r;
-    };
-    wrapped.__tt713Wrapped=true;
-    setMode=wrapped;
-    window.setMode=wrapped;
-  }
+
   var oldRender=typeof renderSavesList==='function'?renderSavesList:null;
-  if(oldRender&&!oldRender.__tt713Wrapped){
-    var renderWrapped=function(){
+  if(oldRender && !oldRender._tt714Wrapped){
+    renderSavesList=function(){
       var r=oldRender.apply(this,arguments);
-      schedule(0);
-      schedule(80);
+      setTimeout(apply,0);
+      setTimeout(apply,80);
       return r;
     };
-    renderWrapped.__tt713Wrapped=true;
-    renderSavesList=renderWrapped;
-    window.renderSavesList=renderWrapped;
+    renderSavesList._tt714Wrapped=true;
   }
+
+  var oldSetMode=typeof setMode==='function'?setMode:null;
+  if(oldSetMode && !oldSetMode._tt714Wrapped){
+    setMode=function(){
+      if(tavlaActive())document.body.classList.add('tt714-placing-options');
+      var r=oldSetMode.apply(this,arguments);
+      if(tavlaActive()){
+        setTimeout(placeOptionsAfterOldOwners,0);
+        setTimeout(placeOptionsAfterOldOwners,35);
+        setTimeout(placeOptionsAfterOldOwners,90);
+      }
+      return r;
+    };
+    setMode._tt714Wrapped=true;
+    window.setMode=setMode;
+  }
+
   document.addEventListener('click',function(ev){
     try{
+      if(!tavlaActive())return;
       var t=ev.target;
-      if(t&&t.closest&&t.closest('#tt713-tavla-tools-host button,#btn-arrow,#btn-freehand,#btn-zone,#tt236-rita-move,#tt236-rita-clear,#tt236-rita-undo,#tt236-rita-reset'))startSettling();
-      if(t&&t.closest&&t.closest('#arrow-options,#freehand-options,#zone-options'))return;
+      if(t&&t.closest&&t.closest('#tt714-tavla-toolbar .tt714-tavla-tool')){
+        document.body.classList.add('tt714-placing-options');
+        setTimeout(placeOptionsAfterOldOwners,0);
+        setTimeout(placeOptionsAfterOldOwners,35);
+        setTimeout(placeOptionsAfterOldOwners,90);
+      }else if(t&&t.closest&&t.closest('#arrow-options,#freehand-options,#zone-options')){
+        setTimeout(placeOptionsAfterOldOwners,0);
+      }else{
+        setTimeout(apply,80);
+      }
     }catch(e){}
-    schedule();
   },true);
-  window.addEventListener('resize',function(){schedule();},true);
-  window.addEventListener('orientationchange',function(){schedule();},true);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){schedule();setTimeout(schedule,600);});
-  else{schedule();setTimeout(schedule,600);}
-  setTimeout(schedule,1200);
-  window.tt713ApplyTavlaDesktopCleanup=apply;
+
+  ['resize','orientationchange'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,80);setTimeout(apply,240);},true);
+  });
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',function(){[0,120,450,1000].forEach(function(ms){setTimeout(apply,ms);});});
+  }else{
+    [0,120,450,1000].forEach(function(ms){setTimeout(apply,ms);});
+  }
 })();
-/* === slut v713 TEST === */
+/* === slut v714 TEST === */
