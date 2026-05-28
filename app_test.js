@@ -44837,3 +44837,96 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
 })();
 /* === slut v722 TEST === */
+
+
+
+/* === v723 TEST: Taktiktavla fillista - ikoner närmare filnamn ===
+   Bas: v722 TEST.
+   Endast fillistans radbredd i Taktiktavla desktop.
+   Syfte:
+   - Behåll alla ikoner synliga från v722.
+   - Ge filnamnet mindre/maxad bredd så ikonraden börjar längre till vänster.
+   - Förbered för kommande steg där planen ska få mer plats.
+*/
+(function(){
+  'use strict';
+  if(window.__tt723TavlaFileIconsCloserInstalled)return;
+  window.__tt723TavlaFileIconsCloserInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+
+  function ensureCss(){
+    if(byId('tt723-tavla-file-icons-closer-css'))return;
+    var st=document.createElement('style');
+    st.id='tt723-tavla-file-icons-closer-css';
+    st.textContent=[
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row{',
+      '  grid-template-columns:minmax(38px,88px) repeat(6,19px)!important;',
+      '  justify-content:start!important;',
+      '  justify-items:start!important;',
+      '  column-gap:1px!important;',
+      '  padding-left:2px!important;',
+      '  padding-right:2px!important;',
+      '}',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row .row-name{',
+      '  width:88px!important;',
+      '  max-width:88px!important;',
+      '  min-width:0!important;',
+      '  padding-right:2px!important;',
+      '  justify-self:start!important;',
+      '}',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row button{',
+      '  width:19px!important;',
+      '  min-width:19px!important;',
+      '  max-width:19px!important;',
+      '  justify-self:start!important;',
+      '}',
+      '@media (max-width:1180px){',
+      '  body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row{',
+      '    grid-template-columns:minmax(34px,74px) repeat(6,18px)!important;',
+      '    column-gap:1px!important;',
+      '  }',
+      '  body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row .row-name{',
+      '    width:74px!important;',
+      '    max-width:74px!important;',
+      '  }',
+      '  body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row button{',
+      '    width:18px!important;min-width:18px!important;max-width:18px!important;',
+      '  }',
+      '}',
+      '@media (min-width:1350px){',
+      '  body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row{',
+      '    grid-template-columns:minmax(42px,104px) repeat(6,20px)!important;',
+      '  }',
+      '  body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row .row-name{',
+      '    width:104px!important;max-width:104px!important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v723 tavla fillista ikoner närmare';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='723 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v723 TEST';
+    }catch(e){}
+  }
+
+  function apply(){
+    ensureCss();
+    setVersion();
+  }
+
+  ['click','touchend','resize','orientationchange','input'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,0);setTimeout(apply,80);},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);});
+  else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
+})();
+/* === slut v723 TEST === */
