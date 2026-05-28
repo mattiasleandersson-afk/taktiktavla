@@ -44663,290 +44663,177 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v720 TEST === */
 
 
-/* === v721 TEST: Taktiktavla fillista - kompakt radmeny ===
-   Bas: v720 TEST.
-   Endast Taktiktavla-fillistan där den redan ligger.
+
+/* === v722 TEST: Taktiktavla fillista - filnamn kortare, alla ikoner synliga ===
+   Bas: v720 TEST. v721 används inte som bas.
    Syfte:
-   - Få plats med filnamn och åtgärder utan att raden rinner ut på bredden.
-   - Behåll Ladda/Öppna synlig.
-   - Flytta övriga radknappar till en skärmsäker ⋯-meny.
-   - Flyttar inte plan, ritverktyg, lagerpanel eller andra vyer.
+   - Motsatt riktning från v721: filnamnet får kontrollerat mindre bredd.
+   - Alla ordinarie åtgärdsknappar ska synas på raden som ikoner.
+   - Ingen flytt till ⋯-meny för fillistan.
+   - Endast Taktiktavla när fliken är aktiv.
 */
 (function(){
   'use strict';
-  if(window.__tt721TavlaFileListCompactMenuInstalled)return;
-  window.__tt721TavlaFileListCompactMenuInstalled=true;
+  if(window.__tt722TavlaFileIconsVisibleInstalled)return;
+  window.__tt722TavlaFileIconsVisibleInstalled=true;
 
   function byId(id){return document.getElementById(id);}
-  function active(){
+  function isTavlaActive(){
     try{
-      return document.body.classList.contains('tt718-tavla-active') && !document.body.classList.contains('fullscreen-portrait');
+      var tab=document.querySelector('.tab.on[data-panel="saves"]');
+      var panel=byId('panel-saves');
+      return !!(tab&&panel&&panel.classList.contains('on'));
     }catch(e){return false;}
-  }
-  function isPrimaryLoadButton(btn){
-    var t=String(btn.textContent||'').trim();
-    var title=String(btn.title||btn.getAttribute('aria-label')||'').toLowerCase();
-    return t==='Ladda' || t==='👁' || title.indexOf('ladda')>=0 || title.indexOf('öppna')>=0;
-  }
-  function shortTextFor(btn){
-    var title=String(btn.title||btn.getAttribute('aria-label')||'').toLowerCase();
-    var text=String(btn.textContent||'').trim();
-    if(title.indexOf('sluta dela')>=0)return '🙈';
-    if(title.indexOf('dela')>=0)return '👥';
-    if(title.indexOf('kopiera')>=0)return '⧉';
-    if(title.indexOf('taktikfilm')>=0)return '↗';
-    if(title.indexOf('flytta')>=0)return '⇆';
-    if(title.indexOf('radera')>=0)return '×';
-    if(title.indexOf('ladda')>=0)return 'Ladda';
-    return text;
   }
 
   function ensureCss(){
-    if(byId('tt721-tavla-filelist-css'))return;
+    if(byId('tt722-tavla-file-icons-css'))return;
     var st=document.createElement('style');
-    st.id='tt721-tavla-filelist-css';
+    st.id='tt722-tavla-file-icons-css';
     st.textContent=[
-      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row{',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row{',
       '  display:grid!important;',
-      '  grid-template-columns:minmax(0,1fr) auto auto!important;',
+      '  grid-template-columns:minmax(46px,1fr) repeat(6,20px)!important;',
       '  align-items:center!important;',
-      '  gap:3px!important;',
+      '  column-gap:2px!important;',
+      '  row-gap:0!important;',
       '  width:100%!important;',
       '  min-width:0!important;',
+      '  max-width:100%!important;',
+      '  overflow:hidden!important;',
       '  box-sizing:border-box!important;',
-      '  position:relative!important;',
+      '  padding-left:2px!important;',
+      '  padding-right:2px!important;',
       '}',
-      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row-name{',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row-name{',
       '  grid-column:1!important;',
       '  min-width:0!important;',
-      '  width:100%!important;',
+      '  max-width:100%!important;',
       '  overflow:hidden!important;',
       '  text-overflow:ellipsis!important;',
       '  white-space:nowrap!important;',
-      '  padding-right:2px!important;',
+      '  padding-right:1px!important;',
+      '  font-size:.74rem!important;',
       '}',
-      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row-sub{',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row-sub{',
       '  display:none!important;',
       '}',
-      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .tt721-primary-load{',
-      '  grid-column:2!important;',
-      '  width:34px!important;',
-      '  min-width:34px!important;',
-      '  max-width:34px!important;',
-      '  height:23px!important;',
-      '  min-height:23px!important;',
-      '  padding:0 3px!important;',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button.sa,',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button.del,',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button{',
+      '  width:20px!important;',
+      '  min-width:20px!important;',
+      '  max-width:20px!important;',
+      '  height:21px!important;',
+      '  min-height:21px!important;',
+      '  padding:0!important;',
       '  margin:0!important;',
       '  display:inline-flex!important;',
       '  align-items:center!important;',
       '  justify-content:center!important;',
-      '  font-size:.62rem!important;',
-      '  line-height:1!important;',
-      '  box-sizing:border-box!important;',
-      '}',
-      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .tt721-file-menu{',
-      '  grid-column:3!important;',
-      '  position:relative!important;',
-      '  width:24px!important;',
-      '  min-width:24px!important;',
-      '  max-width:24px!important;',
-      '  height:23px!important;',
-      '}',
-      'body.tt718-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .tt721-file-menu-btn{',
-      '  width:24px!important;',
-      '  min-width:24px!important;',
-      '  max-width:24px!important;',
-      '  height:23px!important;',
-      '  padding:0!important;',
-      '  margin:0!important;',
-      '  display:flex!important;',
-      '  align-items:center!important;',
-      '  justify-content:center!important;',
-      '  font-size:.78rem!important;',
-      '  line-height:1!important;',
-      '  box-sizing:border-box!important;',
-      '}',
-      'body.tt718-tavla-active:not(.fullscreen-portrait) .tt721-file-menu-panel{',
-      '  position:fixed!important;',
-      '  z-index:12100!important;',
-      '  width:210px!important;',
-      '  max-width:calc(100vw - 16px)!important;',
-      '  padding:7px!important;',
-      '  border:1px solid rgba(74,232,122,.30)!important;',
-      '  border-radius:10px!important;',
-      '  background:rgba(5,18,10,.985)!important;',
-      '  box-shadow:0 14px 30px rgba(0,0,0,.50)!important;',
-      '  display:none!important;',
-      '  grid-template-columns:1fr 1fr!important;',
-      '  gap:6px!important;',
-      '  box-sizing:border-box!important;',
-      '  overflow-y:auto!important;',
-      '  overflow-x:hidden!important;',
-      '}',
-      'body.tt718-tavla-active:not(.fullscreen-portrait) .tt721-file-menu.tt721-open .tt721-file-menu-panel{',
-      '  display:grid!important;',
-      '}',
-      'body.tt718-tavla-active:not(.fullscreen-portrait) .tt721-file-menu-panel button.sa{',
-      '  width:100%!important;',
-      '  min-width:0!important;',
-      '  max-width:none!important;',
-      '  height:28px!important;',
-      '  min-height:28px!important;',
-      '  padding:3px 5px!important;',
-      '  margin:0!important;',
+      '  overflow:hidden!important;',
+      '  white-space:nowrap!important;',
       '  font-size:.68rem!important;',
-      '  line-height:1.1!important;',
-      '  display:flex!important;',
-      '  align-items:center!important;',
-      '  justify-content:center!important;',
+      '  line-height:1!important;',
       '  box-sizing:border-box!important;',
       '}',
-      'body.tt718-tavla-active:not(.fullscreen-portrait) .tt721-file-menu-panel button.del{',
-      '  grid-column:1 / -1!important;',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button:nth-of-type(1){grid-column:2!important}',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button:nth-of-type(2){grid-column:3!important}',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button:nth-of-type(3){grid-column:4!important}',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button:nth-of-type(4){grid-column:5!important}',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button:nth-of-type(5){grid-column:6!important}',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button:nth-of-type(6){grid-column:7!important}',
+      'body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row .tt722-hidden-extra{display:none!important}',
+      '@media (max-width:1180px){',
+      '  body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row{',
+      '    grid-template-columns:minmax(40px,1fr) repeat(6,18px)!important;',
+      '    column-gap:1px!important;',
+      '  }',
+      '  body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button.sa,',
+      '  body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button.del,',
+      '  body.tt722-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row button{',
+      '    width:18px!important;min-width:18px!important;max-width:18px!important;font-size:.62rem!important;',
+      '  }',
       '}'
     ].join('\n');
     document.head.appendChild(st);
   }
 
-  function closeOtherMenus(except){
-    try{
-      document.querySelectorAll('.tt721-file-menu.tt721-open').forEach(function(m){
-        if(m!==except)m.classList.remove('tt721-open');
-      });
-    }catch(e){}
-  }
-
-  function placePanel(menu){
-    if(!menu)return;
-    var panel=menu.querySelector('.tt721-file-menu-panel');
-    var btn=menu.querySelector('.tt721-file-menu-btn');
-    if(!panel||!btn)return;
-    var vw=Math.max(320,window.innerWidth||document.documentElement.clientWidth||1024);
-    var vh=Math.max(320,window.innerHeight||document.documentElement.clientHeight||768);
-    var gap=8;
-    var rect=btn.getBoundingClientRect();
-    var w=Math.min(210,vw-gap*2);
-    panel.style.width=w+'px';
-    panel.style.maxHeight=(vh-gap*2)+'px';
-    panel.style.visibility='hidden';
-    panel.style.display='grid';
-    panel.style.left='0px';
-    panel.style.top='0px';
-
-    var desiredH=Math.min(panel.scrollHeight||220,vh-gap*2);
-    var below=vh-rect.bottom-gap;
-    var above=rect.top-gap;
-    var top,maxH;
-    if(below>=Math.min(desiredH,150) || below>=above){
-      top=Math.min(vh-gap-80,rect.bottom+5);
-      maxH=Math.max(110,vh-top-gap);
-    }else{
-      maxH=Math.max(110,Math.min(desiredH,above));
-      top=Math.max(gap,rect.top-5-maxH);
-    }
-    var left=rect.right-w;
-    if(left<gap)left=gap;
-    if(left+w>vw-gap)left=vw-gap-w;
-    panel.style.left=Math.round(left)+'px';
-    panel.style.top=Math.round(top)+'px';
-    panel.style.maxHeight=Math.round(maxH)+'px';
-    panel.style.visibility='visible';
+  function normalizeButton(btn){
+    if(!btn)return;
+    var txt=String(btn.textContent||'').trim();
+    var title=String(btn.title||btn.getAttribute('aria-label')||'').trim();
+    var key=(title+' '+txt).toLowerCase();
+    if(key.indexOf('ladda')>=0){btn.textContent='▶';btn.title='Ladda';btn.setAttribute('aria-label','Ladda');return;}
+    if(key.indexOf('taktikfilm')>=0 || key.indexOf('ny film')>=0 || txt==='↗'){btn.textContent='🎬';btn.title='Till taktikfilm';btn.setAttribute('aria-label','Till taktikfilm');return;}
+    if(key.indexOf('flytta')>=0 || txt==='⇆'){btn.textContent='⇆';btn.title='Flytta till mapp';btn.setAttribute('aria-label','Flytta till mapp');return;}
+    if(key.indexOf('kopiera')>=0 || txt==='⧉'){btn.textContent='⧉';btn.title='Kopiera';btn.setAttribute('aria-label','Kopiera');return;}
+    if(key.indexOf('dela')>=0 || txt==='👥' || txt==='🙈'){btn.textContent=(txt==='🙈'?'🙈':'👥');btn.setAttribute('aria-label',btn.title||'Dela');return;}
+    if(key.indexOf('radera')>=0 || txt==='×' || txt==='x'){btn.textContent='×';btn.title='Radera';btn.setAttribute('aria-label','Radera');return;}
   }
 
   function normalizeRows(){
-    if(!active())return;
     var list=byId('saves-list');
     if(!list)return;
     Array.prototype.slice.call(list.querySelectorAll('.row')).forEach(function(row){
-      if(row.classList.contains('tt721-file-row-done'))return;
-      var name=row.querySelector('.row-name');
-      if(!name)return;
-      var buttons=Array.prototype.slice.call(row.querySelectorAll('button.sa'));
-      if(buttons.length<2)return;
-
-      var primary=null;
-      for(var i=0;i<buttons.length;i++){
-        if(isPrimaryLoadButton(buttons[i])){primary=buttons[i];break;}
-      }
-      if(!primary)primary=buttons[0];
-      primary.classList.add('tt721-primary-load');
-      primary.textContent='Ladda';
-
-      var menu=document.createElement('span');
-      menu.className='tt721-file-menu';
-      var trigger=document.createElement('button');
-      trigger.className='sa tt721-file-menu-btn';
-      trigger.type='button';
-      trigger.textContent='⋯';
-      trigger.title='Fler åtgärder';
-      trigger.setAttribute('aria-label','Fler åtgärder');
-      var panel=document.createElement('span');
-      panel.className='tt721-file-menu-panel';
-      menu.appendChild(trigger);
-      menu.appendChild(panel);
-
-      buttons.forEach(function(btn){
-        if(btn===primary)return;
-        btn.textContent=shortTextFor(btn);
-        panel.appendChild(btn);
+      if(!row || row.classList.contains('folder-row'))return;
+      row.classList.add('tt722-file-row');
+      var buttons=Array.prototype.slice.call(row.querySelectorAll('button'));
+      buttons.forEach(function(b){
+        b.classList.remove('tt721-primary-load','tt721-file-menu-btn');
+        normalizeButton(b);
       });
-      row.appendChild(menu);
-      row.classList.add('tt721-file-row-done');
-
-      trigger.addEventListener('click',function(e){
-        e.preventDefault();e.stopPropagation();
-        var open=!menu.classList.contains('tt721-open');
-        closeOtherMenus(menu);
-        menu.classList.toggle('tt721-open',open);
-        if(open)setTimeout(function(){placePanel(menu);},0);
-      },true);
-      panel.addEventListener('click',function(e){e.stopPropagation();setTimeout(function(){menu.classList.remove('tt721-open');},40);},true);
+      var menu=row.querySelector('.tt721-file-menu');
+      if(menu){
+        // Om någon råkat blanda in v721 ska dess extra meny döljas i v722.
+        menu.classList.add('tt722-hidden-extra');
+      }
     });
-    try{document.querySelectorAll('.tt721-file-menu.tt721-open').forEach(placePanel);}catch(e){}
+  }
+
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v722 tavla fillista ikoner synliga';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='722 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v722 TEST';
+    }catch(e){}
   }
 
   function apply(){
     ensureCss();
-    normalizeRows();
-    try{document.title='Taktiktavla TEST v721 tavla fillista kompakt meny';}catch(e){}
-    try{
-      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
-        var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='721 TEST';
-      });
-      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v721 TEST';
-    }catch(e){}
+    var active=isTavlaActive();
+    document.body.classList.toggle('tt722-tavla-active',active);
+    if(active)normalizeRows();
+    setVersion();
   }
 
-  var oldRender=null;
-  try{oldRender=renderSavesList;}catch(e){}
-  if(typeof oldRender==='function' && !oldRender._tt721Wrapped){
-    renderSavesList=function(){
-      var r=oldRender.apply(this,arguments);
-      setTimeout(apply,0);
-      setTimeout(apply,100);
-      return r;
-    };
-    renderSavesList._tt721Wrapped=true;
-  }
-
-  ['click','touchend','resize','orientationchange','scroll'].forEach(function(evt){
-    window.addEventListener(evt,function(e){
-      if(evt==='click' || evt==='touchend'){
-        try{if(!e.target.closest('.tt721-file-menu'))closeOtherMenus(null);}catch(_e){}
-      }
-      setTimeout(apply,0);
-      setTimeout(function(){document.querySelectorAll('.tt721-file-menu.tt721-open').forEach(placePanel);},80);
-    },true);
-  });
   try{
-    var mo=new MutationObserver(function(){setTimeout(apply,0);});
-    var start=function(){var list=byId('saves-list'); if(list)mo.observe(list,{childList:true,subtree:true});};
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start); else start();
+    if(typeof renderSavesList==='function' && !renderSavesList._tt722Wrapped){
+      var old=renderSavesList;
+      renderSavesList=function(){
+        var r=old.apply(this,arguments);
+        setTimeout(apply,0);setTimeout(apply,80);
+        return r;
+      };
+      renderSavesList._tt722Wrapped=true;
+    }
   }catch(e){}
 
+  ['click','touchend','resize','orientationchange','input'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,0);setTimeout(apply,80);},true);
+  });
+  try{
+    var list=byId('saves-list');
+    if(list && window.MutationObserver){
+      var mo=new MutationObserver(function(){setTimeout(apply,0);});
+      mo.observe(list,{childList:true,subtree:true});
+    }
+  }catch(e){}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);});
   else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
 })();
-/* === slut v721 TEST === */
+/* === slut v722 TEST === */
