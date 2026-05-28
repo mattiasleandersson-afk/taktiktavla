@@ -44513,3 +44513,151 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
 })();
 /* === slut v719 TEST === */
+
+
+/* === v720 TEST: Taktiktavla lagerpanel meny inom synlig skärm ===
+   Bas: v719 TEST.
+   Endast ⋯-menyn i Taktiktavla-lagerpanelen.
+   Syfte:
+   - Låt den öppna menyn visas som en viewport-säker popover.
+   - Den får egen scroll om innehållet är högre än skärmen.
+   - Rör inte lagerlogik, Taktikfilm, fullscreen eller ritverktyg.
+*/
+(function(){
+  'use strict';
+  if(window.__tt720TavlaLayerMenuViewportInstalled)return;
+  window.__tt720TavlaLayerMenuViewportInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function active(){
+    try{
+      return document.body.classList.contains('tt719-tavla-active') && !document.body.classList.contains('fullscreen-portrait');
+    }catch(e){return false;}
+  }
+
+  function ensureCss(){
+    if(byId('tt720-tavla-layer-menu-css'))return;
+    var st=document.createElement('style');
+    st.id='tt720-tavla-layer-menu-css';
+    st.textContent=[
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-menu{',
+      '  position:relative!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-menu-panel{',
+      '  position:fixed!important;',
+      '  grid-column:auto!important;',
+      '  margin:0!important;',
+      '  padding:8px!important;',
+      '  border:1px solid rgba(74,232,122,.28)!important;',
+      '  border-radius:10px!important;',
+      '  background:rgba(5,18,10,.98)!important;',
+      '  box-shadow:0 16px 34px rgba(0,0,0,.52)!important;',
+      '  z-index:12050!important;',
+      '  width:260px!important;',
+      '  max-width:calc(100vw - 16px)!important;',
+      '  overflow-y:auto!important;',
+      '  overflow-x:hidden!important;',
+      '  overscroll-behavior:contain!important;',
+      '  box-sizing:border-box!important;',
+      '  display:none!important;',
+      '  grid-template-columns:1fr 1fr!important;',
+      '  gap:6px!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-layer-menu-panel{',
+      '  display:grid!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-menu-panel button{',
+      '  min-height:28px!important;',
+      '  padding:4px 6px!important;',
+      '  font-size:.69rem!important;',
+      '  line-height:1.1!important;',
+      '  white-space:normal!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-menu-panel .tt665-menu-section{',
+      '  font-size:.62rem!important;',
+      '  padding-top:3px!important;',
+      '}',
+      'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-menu-panel .tt661-wide{',
+      '  grid-column:1 / -1!important;',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function placePanel(panel,btn){
+    if(!panel||!btn)return;
+    var vw=Math.max(320,window.innerWidth||document.documentElement.clientWidth||1024);
+    var vh=Math.max(320,window.innerHeight||document.documentElement.clientHeight||768);
+    var gap=8;
+    var rect=btn.getBoundingClientRect();
+    var w=Math.min(260,vw-(gap*2));
+
+    panel.style.width=w+'px';
+    panel.style.maxWidth=(vw-(gap*2))+'px';
+    panel.style.visibility='hidden';
+    panel.style.display='grid';
+    panel.style.left='0px';
+    panel.style.top='0px';
+    panel.style.maxHeight=(vh-(gap*2))+'px';
+
+    var desiredH=Math.min(panel.scrollHeight||360,vh-(gap*2));
+    var below=vh-rect.bottom-(gap*2);
+    var above=rect.top-(gap*2);
+    var top,maxH;
+    if(below>=Math.min(desiredH,220) || below>=above){
+      top=Math.min(vh-gap-80,rect.bottom+6);
+      maxH=Math.max(120,vh-top-gap);
+    }else{
+      maxH=Math.max(120,Math.min(desiredH,above));
+      top=Math.max(gap,rect.top-6-maxH);
+    }
+
+    var left=rect.right-w;
+    if(left<gap)left=gap;
+    if(left+w>vw-gap)left=vw-gap-w;
+
+    panel.style.left=Math.round(left)+'px';
+    panel.style.top=Math.round(top)+'px';
+    panel.style.maxHeight=Math.round(maxH)+'px';
+    panel.style.visibility='visible';
+  }
+
+  function placeOpenMenus(){
+    ensureCss();
+    if(!active())return;
+    try{
+      document.querySelectorAll('#tt616-layer-panel .tt661-layer-menu.tt663-menu-open').forEach(function(menu){
+        var btn=menu.querySelector('.tt661-layer-menu-button');
+        var panel=menu.querySelector('.tt661-layer-menu-panel');
+        placePanel(panel,btn);
+      });
+    }catch(e){}
+  }
+
+  function apply(){
+    ensureCss();
+    placeOpenMenus();
+    try{document.title='Taktiktavla TEST v720 tavla lagermeny skärmfix';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='720 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v720 TEST';
+    }catch(e){}
+  }
+
+  ['click','touchend','resize','orientationchange','scroll'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,0);setTimeout(placeOpenMenus,80);},true);
+  });
+  try{
+    var mo=new MutationObserver(function(){setTimeout(placeOpenMenus,0);});
+    var start=function(){var p=byId('tt616-layer-panel'); if(p)mo.observe(p,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','aria-expanded']});};
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start); else start();
+  }catch(e){}
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);});
+  else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
+})();
+/* === slut v720 TEST === */
