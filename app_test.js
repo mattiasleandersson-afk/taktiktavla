@@ -43871,3 +43871,101 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(tick,0);setTimeout(tick,400);}
 })();
 /* === slut v697 TEST === */
+
+
+
+/* === v698 TEST: samma skärm-/riktningsikon i fullscreen som i redigering ===
+   Bas: v697 TEST.
+   Endast ikon/visuell puts för fullscreen-rotationsknappen.
+*/
+(function(){
+  'use strict';
+  if(window.__tt698FullscreenRotateIconInstalled)return;
+  window.__tt698FullscreenRotateIconInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function icon(){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+
+      '<rect x="4" y="7" width="16" height="10" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/>'+
+      '<path d="M8 4h4.5c4.2 0 7.5 3.3 7.5 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'+
+      '<path d="M17 9.5l3 2.4 2.2-3.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
+      '</svg>';
+  }
+  function ensureCss(){
+    if(byId('tt698-fullscreen-rotate-icon-css'))return;
+    var st=document.createElement('style');
+    st.id='tt698-fullscreen-rotate-icon-css';
+    st.textContent=[
+      'body.fullscreen-portrait #fs-rotate-desktop-btn{',
+      '  display:inline-flex!important;',
+      '  align-items:center!important;',
+      '  justify-content:center!important;',
+      '  width:34px!important;',
+      '  min-width:34px!important;',
+      '  height:32px!important;',
+      '  padding:4px 7px!important;',
+      '  font-size:0!important;',
+      '  line-height:1!important;',
+      '  color:#e8c84a!important;',
+      '}',
+      'body.fullscreen-portrait #fs-rotate-desktop-btn svg{',
+      '  width:18px!important;',
+      '  height:18px!important;',
+      '  display:block!important;',
+      '  pointer-events:none!important;',
+      '}',
+      'body.fullscreen-portrait #fs-rotate-desktop-btn.active{',
+      '  background:#e8c84a!important;',
+      '  color:#0a1a0d!important;',
+      '  border-color:#e8c84a!important;',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+  function apply(){
+    ensureCss();
+    var b=byId('fs-rotate-desktop-btn');
+    if(!b)return;
+    b.title='Liggande planvy';
+    b.setAttribute('aria-label','Liggande planvy');
+    if(!b.querySelector('svg'))b.innerHTML=icon();
+  }
+  var oldSetup=null;
+  try{oldSetup=setupFullscreenPortraitToolbar;}catch(e){}
+  if(typeof oldSetup==='function' && !oldSetup._tt698Wrapped){
+    setupFullscreenPortraitToolbar=function(){
+      var r=oldSetup.apply(this,arguments);
+      apply();
+      setTimeout(apply,0);
+      return r;
+    };
+    setupFullscreenPortraitToolbar._tt698Wrapped=true;
+  }
+  var oldSync=null;
+  try{oldSync=syncDesktopFullscreenRotateV523;}catch(e){}
+  if(typeof oldSync==='function' && !oldSync._tt698Wrapped){
+    syncDesktopFullscreenRotateV523=function(){
+      var r=oldSync.apply(this,arguments);
+      apply();
+      return r;
+    };
+    syncDesktopFullscreenRotateV523._tt698Wrapped=true;
+  }
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v698 fullscreen rotationsikon';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='698 TEST';
+      });
+      var ban=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(ban)ban.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v698 TEST';
+    }catch(e){}
+  }
+  ['click','touchend','resize','orientationchange'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,60);},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion();setTimeout(apply,0);setTimeout(apply,400);});
+  else{setVersion();setTimeout(apply,0);setTimeout(apply,400);}
+})();
+/* === slut v698 TEST === */
