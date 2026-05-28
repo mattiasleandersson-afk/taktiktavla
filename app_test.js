@@ -44930,3 +44930,275 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(apply,0);setTimeout(apply,300);setTimeout(apply,1000);}
 })();
 /* === slut v723 TEST === */
+
+
+/* === v727 TEST: Taktiktavla tre-spaltslayout utan att flytta fel toppmenyknappar ===
+   Bas: v723 TEST. v724/v725/v726 används inte som bas.
+   Mål:
+   - En sammanhållen Taktiktavla-arbetsyta på desktop.
+   - Vänster: bara riktiga ritverktyg överst + fillista under.
+   - Mitten: planen.
+   - Höger: lagerpanel.
+   - Flyttar inte hela topbar-raden, bara exakt de verktyg som hör till ritning.
+   - Återställer allt när man lämnar Taktiktavla så det inte läcker till Taktikfilm/Matcher.
+*/
+(function(){
+  'use strict';
+  if(window.__tt727TavlaThreeColumnsInstalled)return;
+  window.__tt727TavlaThreeColumnsInstalled=true;
+
+  var moved=[];
+  var activeNow=false;
+  var restoreScheduled=false;
+
+  function byId(id){return document.getElementById(id);}
+  function isDesktop(){try{return window.matchMedia&&window.matchMedia('(min-width:1024px) and (pointer:fine)').matches;}catch(e){return false;}}
+  function isTavlaActive(){
+    try{
+      var tab=document.querySelector('.tab.on[data-panel="saves"]');
+      var p=byId('panel-saves');
+      return !!(tab&&p&&p.classList.contains('on')&&!document.body.classList.contains('fullscreen-portrait'));
+    }catch(e){return false;}
+  }
+  function topOffset(){
+    try{
+      var top=byId('topbar');
+      var r=top?top.getBoundingClientRect():null;
+      var h=r?Math.ceil(r.bottom):76;
+      return Math.max(72,Math.min(132,h+8));
+    }catch(e){return 84;}
+  }
+  function ensureCss(){
+    if(byId('tt727-tavla-three-cols-css'))return;
+    var st=document.createElement('style');
+    st.id='tt727-tavla-three-cols-css';
+    st.textContent=[
+      '@media (min-width:1024px) and (pointer:fine){',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait){overflow:hidden!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #topbar{position:relative!important;z-index:130!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #bench-bar{display:none!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tavla-workspace{',
+      '    display:grid!important;',
+      '    grid-template-columns:244px minmax(320px,1fr) 268px!important;',
+      '    grid-template-rows:1fr!important;',
+      '    gap:8px!important;',
+      '    position:fixed!important;',
+      '    left:8px!important;right:8px!important;',
+      '    top:var(--tt727-top,84px)!important;bottom:8px!important;',
+      '    padding:8px!important;',
+      '    box-sizing:border-box!important;',
+      '    background:rgba(10,18,13,.96)!important;',
+      '    border:1px solid rgba(74,232,122,.20)!important;',
+      '    border-radius:14px!important;',
+      '    z-index:40!important;',
+      '    overflow:hidden!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left,',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-center,',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-right{',
+      '    min-width:0!important;min-height:0!important;',
+      '    box-sizing:border-box!important;',
+      '    background:rgba(14,23,16,.72)!important;',
+      '    border:1px solid rgba(74,232,122,.14)!important;',
+      '    border-radius:11px!important;',
+      '    overflow:hidden!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left{display:flex!important;flex-direction:column!important;gap:6px!important;padding:6px!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools{',
+      '    display:flex!important;align-items:center!important;gap:4px!important;',
+      '    flex:0 0 auto!important;min-height:34px!important;',
+      '    max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;',
+      '    padding:0 0 3px 0!important;margin:0!important;background:transparent!important;border:0!important;',
+      '    scrollbar-width:thin!important;white-space:nowrap!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools .btn,',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools button{',
+      '    flex:0 0 auto!important;min-width:30px!important;width:30px!important;height:30px!important;',
+      '    padding:3px 5px!important;font-size:.78rem!important;line-height:1!important;',
+      '    display:inline-flex!important;align-items:center!important;justify-content:center!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #arrow-options,',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #freehand-options,',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #zone-options{',
+      '    position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
+      '    transform:none!important;z-index:auto!important;flex:0 0 auto!important;',
+      '    margin:0 4px 0 0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;',
+      '    max-width:none!important;gap:3px!important;align-items:center!important;white-space:nowrap!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #arrow-options select,',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #freehand-options select,',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #zone-options select{',
+      '    height:28px!important;min-height:28px!important;font-size:.68rem!important;max-width:86px!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #arrow-options button,',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #freehand-options button,',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tools #zone-options button{height:28px!important;min-height:28px!important;font-size:.68rem!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left #bottompanel{',
+      '    display:block!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
+      '    width:100%!important;height:auto!important;flex:1 1 auto!important;min-height:0!important;max-height:none!important;',
+      '    margin:0!important;padding:0!important;background:transparent!important;border:0!important;overflow:hidden!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left #panel-saves{',
+      '    display:block!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;',
+      '    padding:0!important;margin:0!important;background:transparent!important;border:0!important;overflow:hidden!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left #panel-saves > div{display:flex!important;flex-direction:column!important;height:100%!important;min-height:0!important;width:100%!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left #panel-saves > div > div:first-child{',
+      '    flex:0 0 auto!important;display:flex!important;gap:3px!important;flex-wrap:wrap!important;margin-bottom:4px!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-left #panel-saves > div > div:first-child .btn{',
+      '    padding:3px 6px!important;font-size:.68rem!important;min-height:25px!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #cloud-status{display:none!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #saves-search{flex:0 0 auto!important;margin-bottom:4px!important;padding:4px 7px!important;font-size:.72rem!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #saves-list{',
+      '    flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow:auto!important;padding:0 2px 36px 0!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row{',
+      '    grid-template-columns:minmax(32px,74px) repeat(6,18px)!important;column-gap:1px!important;padding-left:1px!important;padding-right:1px!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row .row-name{',
+      '    width:74px!important;max-width:74px!important;font-size:.70rem!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row button{',
+      '    width:18px!important;min-width:18px!important;max-width:18px!important;height:20px!important;min-height:20px!important;font-size:.60rem!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-center{display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important;background:rgba(5,12,8,.45)!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-center #pitch-wrapper{',
+      '    position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
+      '    width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;',
+      '    display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;background:transparent!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-center #pitch-svg{height:100%!important;width:auto!important;max-width:100%!important;max-height:100%!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-right{padding:6px!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-right #tt616-layer-panel{',
+      '    display:block!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;',
+      '    width:100%!important;height:100%!important;max-height:none!important;margin:0!important;padding:0!important;overflow:auto!important;',
+      '    background:transparent!important;border:0!important;box-shadow:none!important;',
+      '  }',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-right #tt616-layer-panel details{display:block!important;height:100%!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-right #tt616-layer-panel summary{display:none!important;}',
+      '}',
+      '@media (min-width:1280px) and (pointer:fine){',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #tt727-tavla-workspace{grid-template-columns:252px minmax(360px,1fr) 276px!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row{grid-template-columns:minmax(36px,82px) repeat(6,19px)!important;}',
+      '  body.tt727-tavla-active:not(.fullscreen-portrait) #panel-saves.on #saves-list .row.tt722-file-row .row-name{width:82px!important;max-width:82px!important;}',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function ensureWorkspace(){
+    var ws=byId('tt727-tavla-workspace');
+    if(!ws){
+      ws=document.createElement('div');ws.id='tt727-tavla-workspace';
+      ws.innerHTML='<div id="tt727-left"><div id="tt727-tools" aria-label="Ritverktyg Taktiktavla"></div></div><div id="tt727-center"></div><div id="tt727-right"></div>';
+      var top=byId('topbar');
+      var bench=byId('bench-bar');
+      if(bench&&bench.parentNode)bench.parentNode.insertBefore(ws,bench.nextSibling);
+      else if(top&&top.parentNode)top.parentNode.insertBefore(ws,top.nextSibling);
+      else document.body.appendChild(ws);
+    }
+    return ws;
+  }
+
+  function rememberMove(node,newParent){
+    if(!node||!newParent)return;
+    if(!node.__tt727Placeholder){
+      var ph=document.createComment('tt727-ph-'+(node.id||node.tagName));
+      node.parentNode&&node.parentNode.insertBefore(ph,node);
+      node.__tt727Placeholder=ph;
+      moved.push(node);
+    }
+    if(node.parentNode!==newParent)newParent.appendChild(node);
+  }
+
+  function restoreAll(){
+    if(restoreScheduled)return;
+    restoreScheduled=true;
+    setTimeout(function(){
+      restoreScheduled=false;
+      if(isDesktop()&&isTavlaActive())return;
+      moved.slice().forEach(function(node){
+        try{
+          var ph=node.__tt727Placeholder;
+          if(ph&&ph.parentNode)ph.parentNode.insertBefore(node,ph.nextSibling);
+        }catch(e){}
+      });
+      try{document.body.classList.remove('tt727-tavla-active');}catch(e){}
+      activeNow=false;
+    },0);
+  }
+
+  function makeTools(){
+    try{if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar();}catch(e){}
+    var tools=byId('tt727-tools');
+    if(!tools)return;
+    ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'].forEach(function(id){
+      var el=byId(id); if(el)rememberMove(el,tools);
+    });
+    try{if(typeof window.tt239MoveNormalTavlaOptionsNextToTool==='function')window.tt239MoveNormalTavlaOptionsNextToTool();}catch(e){}
+    // Säkerställ att fel toppmenyknappar inte följer med.
+    ['btn-movement','btn-half','btn-backup','btn-daylight','btn-fs-topbar'].forEach(function(id){
+      var el=byId(id);
+      if(el&&tools.contains(el)){var ph=el.__tt727Placeholder;if(ph&&ph.parentNode)ph.parentNode.insertBefore(el,ph.nextSibling);}
+    });
+  }
+
+  function activate(){
+    ensureCss();
+    var active=isDesktop()&&isTavlaActive();
+    document.body.classList.toggle('tt727-tavla-active',active);
+    if(!active){restoreAll();return;}
+    activeNow=true;
+    document.documentElement.style.setProperty('--tt727-top',topOffset()+'px');
+    var ws=ensureWorkspace();
+    var left=byId('tt727-left'), center=byId('tt727-center'), right=byId('tt727-right');
+    if(!ws||!left||!center||!right)return;
+    makeTools();
+    var bottom=byId('bottompanel'); if(bottom)rememberMove(bottom,left);
+    var pitch=byId('pitch-wrapper'); if(pitch)rememberMove(pitch,center);
+    var layers=byId('tt616-layer-panel'); if(layers)rememberMove(layers,right);
+    try{var d=document.querySelector('#tt616-layer-panel details'); if(d)d.open=true;}catch(e){}
+    try{if(typeof renderSavesList==='function'){} }catch(e){}
+    try{document.title='Taktiktavla TEST v727 tavla tre spalter';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='727 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v727 TEST';
+    }catch(e){}
+  }
+
+  function schedule(){
+    setTimeout(activate,0);
+    setTimeout(activate,80);
+    setTimeout(activate,220);
+  }
+
+  // Kör efter gamla tt238/tt239/tt248 så v727 blir sista ägare när Taktiktavla är aktivt.
+  var oldSetMode=typeof setMode==='function'?setMode:null;
+  if(oldSetMode && !oldSetMode.__tt727Wrapped){
+    var wrapped=function(){var r=oldSetMode.apply(this,arguments);schedule();return r;};
+    wrapped.__tt727Wrapped=true;
+    setMode=wrapped; window.setMode=wrapped;
+  }
+  try{
+    if(typeof renderSavesList==='function'&&!renderSavesList.__tt727Wrapped){
+      var oldRender=renderSavesList;
+      renderSavesList=function(){var r=oldRender.apply(this,arguments);schedule();return r;};
+      renderSavesList.__tt727Wrapped=true;
+    }
+  }catch(e){}
+  ['click','touchend','resize','orientationchange','input'].forEach(function(evt){
+    window.addEventListener(evt,function(){schedule();},true);
+  });
+  if(window.MutationObserver){
+    try{new MutationObserver(function(){schedule();}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});}catch(e){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){schedule();setTimeout(schedule,700);});
+  else{schedule();setTimeout(schedule,700);}
+})();
+/* === slut v727 TEST === */
