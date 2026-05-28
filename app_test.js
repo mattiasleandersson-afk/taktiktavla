@@ -44123,88 +44123,120 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v701 TEST: fullscreen lagerpanel bredare med rätt klass ===
-   Bas: v699 TEST. v700 används inte som bas.
-   Orsak: v700 träffade fel fullscreen-klass och gav därför ingen synlig ändring.
-   Endast fullscreen-layout på desktop:
-   - Panelen får lite mer bredd.
-   - Planens högerspalt justeras mot samma bredd.
-   - Lagerradens kolumner låses till en rad så punkterna inte hamnar under.
+/* === v702 TEST: fullscreen lagerpanel rätt bredd utan att krympa planen ===
+   Bas: v699 TEST. v700/v701 används inte som bas.
+   Orsak:
+   - v699 gjorde panelen för smal och ändrade lagerraden till 3 kolumner trots att raden har 4 huvuddelar:
+     öga, lås, namn, ⋯.
+   - v701 ökade både panelbredd och planens högerspalt för mycket, vilket gav intryck av att planen/lagerpanelen krympte.
+   Fix:
+   - Återställ lagerraden till 4 kolumner i fullscreen.
+   - Ge panelen måttlig bredd så ⋯ får plats på samma rad.
+   - Ta panelbredden från tomytan mellan plan och panel genom att bara öka pitch-padding lite, inte lika mycket som panelen.
 */
 (function(){
   'use strict';
-  if(window.__tt701FullscreenLayerWidthInstalled)return;
-  window.__tt701FullscreenLayerWidthInstalled=true;
+  if(window.__tt702FullscreenLayerPanelWidthInstalled)return;
+  window.__tt702FullscreenLayerPanelWidthInstalled=true;
 
   function byId(id){return document.getElementById(id);}
 
   function ensureCss(){
-    if(byId('tt701-fullscreen-layer-width-css'))return;
+    if(byId('tt702-fullscreen-layer-panel-width-css'))return;
     var st=document.createElement('style');
-    st.id='tt701-fullscreen-layer-width-css';
+    st.id='tt702-fullscreen-layer-panel-width-css';
     st.textContent=[
       '@media (min-width:1024px) and (pointer:fine){',
       '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel{',
-      '    width:184px!important;',
-      '    min-width:184px!important;',
-      '    max-width:184px!important;',
+      '    width:176px!important;',
+      '    min-width:176px!important;',
+      '    max-width:176px!important;',
       '    right:calc(env(safe-area-inset-right,0px) + 5px)!important;',
       '    padding:5px!important;',
       '    box-sizing:border-box!important;',
       '  }',
+
+      /* Behåll nästan samma planyta som v699. Öka bara lite från 164 till 174. */
       '  body.fullscreen-portrait.tt696-fs-clean #pitch-wrapper{',
-      '    padding-right:198px!important;',
+      '    padding-right:174px!important;',
       '  }',
       '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-wrapper{',
-      '    padding-right:198px!important;',
+      '    padding-right:174px!important;',
       '  }',
       '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-svg{',
-      '    width:min(calc(100vh - 58px), calc(100vw - 212px))!important;',
+      '    width:min(calc(100vh - 58px), calc(100vw - 188px))!important;',
       '  }',
+
+      /* Raden har fyra huvuddelar: öga, lås, namn, meny. */
       '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-row{',
       '    display:grid!important;',
-      '    grid-template-columns:21px minmax(0,1fr) auto 21px!important;',
+      '    grid-template-columns:21px 21px minmax(0,1fr) 21px!important;',
       '    align-items:center!important;',
       '    gap:3px!important;',
+      '    margin-top:3px!important;',
+      '    padding:3px!important;',
       '    white-space:nowrap!important;',
-      '    overflow:hidden!important;',
+      '    overflow:visible!important;',
       '  }',
-      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-row > *{',
-      '    min-width:0!important;',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-icon{',
+      '    width:21px!important;',
+      '    min-width:21px!important;',
+      '    max-width:21px!important;',
+      '    height:21px!important;',
+      '    padding:0!important;',
+      '    box-sizing:border-box!important;',
+      '    display:flex!important;',
+      '    align-items:center!important;',
+      '    justify-content:center!important;',
       '  }',
       '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-title{',
       '    min-width:0!important;',
+      '    width:100%!important;',
       '    overflow:hidden!important;',
+      '    padding:0 1px!important;',
       '  }',
       '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-name{',
       '    display:block!important;',
+      '    white-space:nowrap!important;',
       '    overflow:hidden!important;',
       '    text-overflow:ellipsis!important;',
-      '    white-space:nowrap!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-menu{',
+      '    width:21px!important;',
+      '    min-width:21px!important;',
+      '    max-width:21px!important;',
+      '    justify-self:end!important;',
+      '    position:relative!important;',
       '  }',
       '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-menu-button{',
-      '    grid-column:auto!important;',
       '    width:21px!important;',
-      '    height:21px!important;',
       '    min-width:21px!important;',
-      '    flex:0 0 21px!important;',
+      '    max-width:21px!important;',
+      '    height:21px!important;',
+      '    padding:0!important;',
+      '    box-sizing:border-box!important;',
+      '    display:flex!important;',
+      '    align-items:center!important;',
+      '    justify-content:center!important;',
+      '    line-height:1!important;',
       '  }',
-      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel button{',
-      '    white-space:nowrap!important;',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-menu-panel{',
+      '    width:100%!important;',
+      '    min-width:0!important;',
       '  }',
       '}',
       '@media (min-width:1280px) and (pointer:fine){',
       '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel{',
-      '    width:190px!important;',
-      '    min-width:190px!important;',
-      '    max-width:190px!important;',
+      '    width:184px!important;',
+      '    min-width:184px!important;',
+      '    max-width:184px!important;',
       '  }',
       '  body.fullscreen-portrait.tt696-fs-clean #pitch-wrapper,',
       '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-wrapper{',
-      '    padding-right:204px!important;',
+      '    padding-right:180px!important;',
       '  }',
       '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-svg{',
-      '    width:min(calc(100vh - 58px), calc(100vw - 218px))!important;',
+      '    width:min(calc(100vh - 58px), calc(100vw - 194px))!important;',
       '  }',
       '}'
     ].join('\n');
@@ -44217,14 +44249,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var d=document.querySelector('#tt616-layer-panel details');
       if(document.body.classList.contains('fullscreen-portrait') && d)d.open=true;
     }catch(e){}
-    try{document.title='Taktiktavla TEST v701 fullscreen lagerpanel enrad';}catch(e){}
+    try{document.title='Taktiktavla TEST v702 fullscreen lagerpanel rätt bredd';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='701 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='702 TEST';
       });
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v701 TEST';
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v702 TEST';
     }catch(e){}
   }
 
@@ -44234,4 +44266,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);});
   else{setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);}
 })();
-/* === slut v701 TEST === */
+/* === slut v702 TEST === */
