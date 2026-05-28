@@ -43755,3 +43755,119 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 })();
 /* === slut v696 TEST === */
+
+
+
+/* === v697 TEST: fullscreen utan testbanner + tangentstyrning ===
+   Bas: v696 TEST.
+   Syfte:
+   - Dölj testmiljöbanner i fullscreen så visningsläget blir lättare att bedöma.
+   - Ta bort banner-padding i fullscreen.
+   - Tangenter i fullscreen:
+     Escape = stäng fullscreen
+     Pil vänster = föregående steg
+     Pil höger = nästa steg
+   - Tangenterna gäller bara när body.fullscreen-portrait är aktiv och inte när man skriver i input/textarea/select.
+*/
+(function(){
+  'use strict';
+  if(window.__tt697FullscreenKeysAndBannerInstalled)return;
+  window.__tt697FullscreenKeysAndBannerInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function isFullscreen(){return document.body&&document.body.classList&&document.body.classList.contains('fullscreen-portrait');}
+  function isTypingTarget(t){
+    if(!t)return false;
+    var tag=(t.tagName||'').toLowerCase();
+    return tag==='input'||tag==='textarea'||tag==='select'||!!t.isContentEditable;
+  }
+
+  function ensureCss(){
+    if(byId('tt697-fullscreen-banner-css'))return;
+    var st=document.createElement('style');
+    st.id='tt697-fullscreen-banner-css';
+    st.textContent=[
+      'body.fullscreen-portrait{padding-top:0!important;}',
+      'body.fullscreen-portrait #tt610-test-env-banner,',
+      'body.fullscreen-portrait #tt609-test-env-banner{display:none!important;visibility:hidden!important;pointer-events:none!important;}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function clickIfPossible(id){
+    var el=byId(id);
+    if(el && !el.disabled){
+      el.click();
+      return true;
+    }
+    return false;
+  }
+
+  function closeFullscreen(){
+    if(clickIfPossible('fs-restore-btn'))return;
+    try{
+      if(typeof exitFullscreenPortrait==='function'){
+        exitFullscreenPortrait();
+        return;
+      }
+    }catch(e){}
+    try{
+      document.body.classList.remove('fullscreen-portrait','tt523-fs-rotated-desktop','tt696-clean-fullscreen');
+    }catch(e){}
+  }
+
+  function prevStep(){
+    if(clickIfPossible('fs-prev-btn'))return;
+    try{if(byId('btn-prev'))byId('btn-prev').click();}catch(e){}
+    try{if(typeof updateFsPortraitNav==='function')setTimeout(updateFsPortraitNav,50);}catch(e){}
+  }
+
+  function nextStep(){
+    if(clickIfPossible('fs-next-btn'))return;
+    try{if(byId('btn-next'))byId('btn-next').click();}catch(e){}
+    try{if(typeof updateFsPortraitNav==='function')setTimeout(updateFsPortraitNav,50);}catch(e){}
+  }
+
+  function onKey(e){
+    if(!isFullscreen())return;
+    if(isTypingTarget(e.target))return;
+    var key=e.key||e.code||'';
+    if(key==='Escape' || key==='Esc'){
+      e.preventDefault();
+      e.stopPropagation();
+      closeFullscreen();
+      return;
+    }
+    if(key==='ArrowLeft' || key==='Left'){
+      e.preventDefault();
+      e.stopPropagation();
+      prevStep();
+      return;
+    }
+    if(key==='ArrowRight' || key==='Right'){
+      e.preventDefault();
+      e.stopPropagation();
+      nextStep();
+      return;
+    }
+  }
+
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v697 fullscreen tangentstyrning';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='697 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v697 TEST';
+    }catch(e){}
+  }
+
+  ensureCss();
+  window.addEventListener('keydown',onKey,true);
+  function tick(){ensureCss();setVersion();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tick,0);setTimeout(tick,400);});
+  else{setTimeout(tick,0);setTimeout(tick,400);}
+})();
+/* === slut v697 TEST === */
