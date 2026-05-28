@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v741 fullscreen lager minimera</title>
+<title>Taktiktavla TEST v742 fullscreen lager minimera</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -1693,7 +1693,7 @@
 
 
 <style id="tt616-layer-panel-ui-only-css">
-  /* v741 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
+  /* v742 TEST: tydligare språk i kompakt lagerpanel, byggd från fungerande v664.
      Bygger från fungerande v657 och lägger masslåsning för fria lager i Taktikfilm. */
   #tt616-layer-panel{
     position:fixed;
@@ -1950,7 +1950,7 @@
   }
   #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
   span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"741 TEST" !important;
+    content:"742 TEST" !important;
     font-size:0.6rem !important;
     color:#2d4a35 !important;
     letter-spacing:0.5px !important;
@@ -1960,7 +1960,7 @@
 
 
 <style id="tt666-taktikfilm-desktop-layout-css">
-  /* v741 TEST: Första datorlayout för Taktikfilm-redigering.
+  /* v742 TEST: Första datorlayout för Taktikfilm-redigering.
      Bas: fungerande lagerlogik v660/v664 + språkputsen i v665.
      Endast desktop, inte fullscreen, inte mobil/iPad. */
   @media (min-width:1024px) and (pointer:fine){
@@ -2179,7 +2179,7 @@
 
 
 <style id="tt667-taktikfilm-desktop-layout-puts-css">
-  /* v741 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
+  /* v742 TEST: finputs av Taktikfilm desktop-layout ovanpå v666.
      - bredare stegspalt
      - ritverktygsval bredvid ritverktygen i övre raden
      - lagerpanelen öppen på desktop
@@ -2316,7 +2316,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">741 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">742 TEST</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2937,7 +2937,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=741-fullscreen-layer-toggle"></script>
+<script src="app_test.js?v=742-mobile-layer-toggle-position"></script>
 
 <script>
 (function(){
@@ -4108,7 +4108,7 @@
     var st=document.createElement('style');
     st.id='tt681-taktikfilm-ritval-hoger-utan-regression-lagerpanel-css';
     st.textContent=[
-      'span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{content:"741 TEST"!important}',
+      'span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{content:"742 TEST"!important}',
       '@media (min-width:1024px) and (pointer:fine){',
       '  body.tt681-taktikfilm-ritval-owner:not(.fullscreen-portrait) #tt291-plan-draw-options,',
       '  body.tt681-taktikfilm-ritval-owner:not(.fullscreen-portrait) #tt667-draw-options-slot{display:none!important;visibility:hidden!important;pointer-events:none!important}',
@@ -4140,8 +4140,8 @@
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v741 fullscreen lager minimera';}catch(e){}
-    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='741 TEST';});}catch(e){}
+    try{document.title='Taktiktavla TEST v742 fullscreen lager minimera';}catch(e){}
+    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='742 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
     try{
@@ -4318,7 +4318,7 @@
 </script>
 
 
-<!-- === v741 TEST: Taktiktavla tre spalter med direkt inline-layout === -->
+<!-- === v742 TEST: Taktiktavla tre spalter med direkt inline-layout === -->
 <style id="tt733-tavla-inline-layout-css">
 @media (min-width:900px){
   body.tt733-tavla-active:not(.fullscreen-portrait){ overflow:hidden!important; }
@@ -4399,8 +4399,8 @@
     var on=isTavla();
     document.body.classList.toggle('tt733-tavla-active',on);
     if(on){setTop();normalizeRows();openLayer();}
-    try{document.title='Taktiktavla TEST v741 tre-spalt direkt';}catch(e){}
-    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v741 TEST';}catch(e){}
+    try{document.title='Taktiktavla TEST v742 tre-spalt direkt';}catch(e){}
+    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v742 TEST';}catch(e){}
   }
   function schedule(){apply();setTimeout(apply,80);setTimeout(apply,250);}
   ['click','touchend','input','change','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(schedule,20);},true);});
@@ -4408,10 +4408,10 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule); else schedule();
 })();
 </script>
-<!-- === slut v741 TEST === -->
+<!-- === slut v742 TEST === -->
 
 
-<!-- === v741 TEST: Taktiktavla ritval som v708-princip + liten fillistebredd === -->
+<!-- === v742 TEST: Taktiktavla ritval som v708-princip + liten fillistebredd === -->
 <style id="tt739-tavla-ritval-v708-princip-css">
 @media (min-width:1024px) and (pointer:fine){
   body.tt733-tavla-active:not(.fullscreen-portrait) #bottompanel{
@@ -4439,11 +4439,11 @@
   window.__tt739TavlaRitvalV708PrincipInstalled=true;
   function byId(id){return document.getElementById(id);}
   function setVersion(){
-    try{document.title='Taktiktavla TEST v741 ritval v708-princip';}catch(e){}
+    try{document.title='Taktiktavla TEST v742 ritval v708-princip';}catch(e){}
     try{
-      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='741 TEST';});
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='742 TEST';});
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v741 TEST';
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v742 TEST';
     }catch(e){}
   }
   function tick(){setVersion();}
@@ -4451,7 +4451,117 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick); else tick();
 })();
 </script>
-<!-- === slut v741 TEST === -->
+<!-- === slut v742 TEST === -->
+
+
+<!-- === v742 TEST: iPhone lagerknapp placering Taktiktavla/fullscreen === -->
+<style id="tt742-mobile-layer-toggle-position-css">
+@media (max-width:720px){
+  /* Grund: behåll gamla tt642 om inget särskilt läge är aktivt. */
+
+  /* Taktiktavla på iPhone: flytta Lager-knappen bort från fillistan och lägg den vid planens högersida. */
+  body.tt742-mobile-tavla-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle{
+    left:auto!important;
+    right:calc(env(safe-area-inset-right,0px) + 10px)!important;
+    top:calc(env(safe-area-inset-top,0px) + 118px)!important;
+    bottom:auto!important;
+    transform:none!important;
+    z-index:99992!important;
+  }
+
+  /* I fullscreen för Taktiktavla/Snabbtavla: lägg Lager-knappen längst ner, men inom klickbart safe-area. */
+  body.fullscreen-portrait.tt742-mobile-board-fullscreen:not(.v66-taktik-fs) #tt642-layer-mobile-toggle{
+    left:auto!important;
+    right:calc(env(safe-area-inset-right,0px) + 12px)!important;
+    top:auto!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 16px)!important;
+    transform:none!important;
+    z-index:100120!important;
+    padding:9px 13px!important;
+  }
+
+  /* När panelen öppnas i fullscreen ska den inte hamna bakom knappen längst ner. */
+  body.fullscreen-portrait.tt742-mobile-board-fullscreen.tt642-layer-panel-mobile-open:not(.v66-taktik-fs) #tt616-layer-panel{
+    top:calc(env(safe-area-inset-top,0px) + 54px)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 64px)!important;
+    left:10px!important;
+    right:10px!important;
+    width:auto!important;
+    max-height:none!important;
+    overflow:auto!important;
+  }
+
+  /* Om lagerpanelen är stängd i fullscreen ska bara knappen ligga kvar nere. */
+  body.fullscreen-portrait.tt742-mobile-board-fullscreen:not(.tt642-layer-panel-mobile-open):not(.v66-taktik-fs) #tt616-layer-panel{
+    display:none!important;
+  }
+}
+</style>
+<script id="tt742-mobile-layer-toggle-position-js">
+(function(){
+  'use strict';
+  if(window.__tt742MobileLayerTogglePositionInstalled)return;
+  window.__tt742MobileLayerTogglePositionInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function mobile(){try{return !!(window.matchMedia&&window.matchMedia('(max-width:720px)').matches);}catch(e){return false;}}
+  function activePanelName(){
+    try{
+      var tab=document.querySelector('.tab.on[data-panel]');
+      if(tab)return String(tab.getAttribute('data-panel')||'');
+    }catch(e){}
+    try{
+      var p=document.querySelector('.panel.on');
+      if(p&&p.id)return String(p.id).replace(/^panel-/,'');
+    }catch(e){}
+    return '';
+  }
+  function isTaktikfilmFullscreen(){
+    try{
+      if(document.body.classList.contains('v66-taktik-fs'))return true;
+      if(document.body.classList.contains('tt696-fs-clean') && document.querySelector('.tab.on[data-panel="taktik"]'))return true;
+      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
+      if(typeof playback!=='undefined' && playback)return true;
+    }catch(e){}
+    return false;
+  }
+  function isBoardPanel(){
+    var p=activePanelName();
+    return p==='saves' || p==='snabb' || p==='quick' || p==='board';
+  }
+  function ensureButtonLabel(){
+    try{
+      var btn=byId('tt642-layer-mobile-toggle');
+      if(btn){btn.textContent='Lager';btn.title='Visa/dölj lager';}
+    }catch(e){}
+  }
+  function apply(){
+    var isMob=mobile();
+    var panel=activePanelName();
+    var fs=document.body.classList.contains('fullscreen-portrait');
+    var taktikfilm=isTaktikfilmFullscreen();
+    document.body.classList.toggle('tt742-mobile-tavla-active',!!(isMob && !fs && panel==='saves'));
+    document.body.classList.toggle('tt742-mobile-board-fullscreen',!!(isMob && fs && !taktikfilm && isBoardPanel()));
+    if(isMob)ensureButtonLabel();
+    try{document.title='Taktiktavla TEST v742 mobil lagerknapp';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='742 TEST';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v742 TEST';
+    }catch(e){}
+  }
+  function schedule(){setTimeout(apply,0);setTimeout(apply,90);setTimeout(apply,240);}
+  ['click','touchend','resize','orientationchange','fullscreenchange','hashchange'].forEach(function(evt){
+    window.addEventListener(evt,schedule,true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){schedule();setTimeout(apply,900);});
+  else{schedule();setTimeout(apply,900);}
+})();
+</script>
+<!-- === slut v742 TEST === -->
 
 </body>
 </html>
