@@ -43969,3 +43969,154 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setVersion();setTimeout(apply,0);setTimeout(apply,400);}
 })();
 /* === slut v698 TEST === */
+
+
+
+/* === v699 TEST: fullscreen puts - smalare lagerpanel och mer planyta ===
+   Bas: v698 TEST.
+   Endast fullscreen-layout på desktop.
+   Syfte:
+   - Behåll v696/v697/v698:s fungerande fullscreen-lager, tangentstyrning och rotationsikon.
+   - Ge planen mer plats genom att göra lagerpanelen smalare.
+   - Dölj extra text i lagerpanelen och visa endast kompakt status.
+*/
+(function(){
+  'use strict';
+  if(window.__tt699FullscreenCompactLayerInstalled)return;
+  window.__tt699FullscreenCompactLayerInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+
+  function ensureCss(){
+    if(byId('tt699-fullscreen-compact-layer-css'))return;
+    var st=document.createElement('style');
+    st.id='tt699-fullscreen-compact-layer-css';
+    st.textContent=[
+      '@media (min-width:1024px) and (pointer:fine){',
+      '  body.fullscreen-portrait.tt696-fs-clean #pitch-wrapper{',
+      '    padding:calc(env(safe-area-inset-top,0px) + 46px) 164px calc(env(safe-area-inset-bottom,0px) + 6px) calc(env(safe-area-inset-left,0px) + 6px)!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-wrapper{',
+      '    padding:calc(env(safe-area-inset-top,0px) + 46px) 164px calc(env(safe-area-inset-bottom,0px) + 6px) calc(env(safe-area-inset-left,0px) + 6px)!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-svg{',
+      '    width:min(calc(100vh - 58px), calc(100vw - 178px))!important;',
+      '  }',
+      '',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel{',
+      '    width:150px!important;',
+      '    right:calc(env(safe-area-inset-right,0px) + 5px)!important;',
+      '    top:calc(env(safe-area-inset-top,0px) + 50px)!important;',
+      '    max-height:calc(100vh - 56px)!important;',
+      '    padding:5px!important;',
+      '    border-radius:9px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel summary{',
+      '    font-size:.66rem!important;',
+      '    line-height:1.05!important;',
+      '    min-height:0!important;',
+      '    margin-bottom:1px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-sub,',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-note,',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt630-layer-meta,',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt631-layer-count,',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-help,',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-desc{',
+      '    display:none!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-row{',
+      '    margin-top:3px!important;',
+      '    padding:3px!important;',
+      '    gap:2px!important;',
+      '    grid-template-columns:auto minmax(0,1fr) auto!important;',
+      '    border-radius:8px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-icon{',
+      '    min-width:21px!important;',
+      '    height:21px!important;',
+      '    padding:0 3px!important;',
+      '    font-size:.62rem!important;',
+      '    border-radius:7px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-title{',
+      '    padding:0 1px!important;',
+      '    min-width:0!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt616-layer-name{',
+      '    font-size:.6rem!important;',
+      '    line-height:1.05!important;',
+      '    white-space:nowrap!important;',
+      '    overflow:hidden!important;',
+      '    text-overflow:ellipsis!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel button{',
+      '    padding:2px 4px!important;',
+      '    font-size:.56rem!important;',
+      '    border-radius:6px!important;',
+      '    min-height:21px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-menu-button{',
+      '    width:21px!important;',
+      '    height:21px!important;',
+      '    min-width:21px!important;',
+      '    padding:0!important;',
+      '    font-size:.7rem!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt661-layer-menu-panel{',
+      '    gap:3px!important;',
+      '    margin-top:3px!important;',
+      '    padding-top:3px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #tt616-layer-panel .tt630-layer-add{',
+      '    margin-top:4px!important;',
+      '    padding:3px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #fs-top-tools{',
+      '    gap:4px!important;',
+      '    padding:4px 6px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean #fs-top-tools .btn,',
+      '  body.fullscreen-portrait.tt696-fs-clean #fs-top-tools button{',
+      '    min-height:28px!important;',
+      '  }',
+      '}',
+      '@media (min-width:1280px) and (pointer:fine){',
+      '  body.fullscreen-portrait.tt696-fs-clean #pitch-wrapper{',
+      '    padding-right:158px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-wrapper{',
+      '    padding-right:158px!important;',
+      '  }',
+      '  body.fullscreen-portrait.tt696-fs-clean.tt523-fs-rotated-desktop #pitch-svg{',
+      '    width:min(calc(100vh - 58px), calc(100vw - 172px))!important;',
+      '  }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function apply(){
+    ensureCss();
+    try{
+      var d=document.querySelector('#tt616-layer-panel details');
+      if(document.body.classList.contains('fullscreen-portrait') && d)d.open=true;
+    }catch(e){}
+    try{document.title='Taktiktavla TEST v699 fullscreen puts';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='699 TEST';
+      });
+      var ban=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(ban)ban.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v699 TEST';
+    }catch(e){}
+  }
+
+  ['fullscreenchange','resize','orientationchange','click','touchend','keydown'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(apply,60);},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);});
+  else{setTimeout(apply,0);setTimeout(apply,400);setTimeout(apply,1200);}
+})();
+/* === slut v699 TEST === */
