@@ -45163,10 +45163,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v747 TEST: Objektstorlek Kon/Pinne i Taktiktavla ===
-   Bas: v746.
-   Samma objektägare som v746, men objekt har egen size-egenskap.
-   Högerklick på dator eller tryck på iPhone/iPad öppnar storlekspanel. */
+/* === v748 TEST: Objektknapp + mindre standardstorlek ===
+   Bas: v747.
+   Samma objektägare som v747. Ändrar bara storleksskala och knappplacering/ikon. */
 (function(){
   'use strict';
   if(window.__tt747ObjectTools)return;
@@ -45189,10 +45188,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tacticObjects=objectsRef;
 
   function num(v,fb){return typeof v==='number' && isFinite(v)?v:fb;}
-  function objectSize(o){return Math.max(0.55,Math.min(2.2,num(o&&o.size,1)));}
+  function objectSize(o){return Math.max(0.45,Math.min(1.8,num(o&&o.size,0.75)));}
   function setObjectSize(o,val){
     if(!o)return;
-    o.size=Math.max(0.55,Math.min(2.2,val));
+    o.size=Math.max(0.45,Math.min(1.8,val));
     try{if(typeof tt631RefreshLayerPanelSoon==='function')tt631RefreshLayerPanelSoon();}catch(e){}
     try{render();}catch(e){}
   }
@@ -45241,6 +45240,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     st.id='tt747-object-style';
     st.textContent=[
       '#tt747-object-btn{color:#e8c84a!important;border-color:#e8c84a!important}',
+      '#tt747-object-btn .tt748-cone-icon{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px}',
+      '#tt747-object-btn .tt748-cone-icon svg{display:block;width:20px;height:20px}',
       '#tt747-object-btn.on,#tt747-object-btn.active{background:rgba(232,200,74,.12)!important;color:#ffdd44!important;border-color:#ffdd44!important}',
       '#tt747-object-panel,#tt747-size-panel{position:fixed;z-index:760;display:none;gap:6px;align-items:center;padding:6px;background:rgba(8,16,12,.96);border:1px solid rgba(232,200,74,.55);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.32)}',
       '#tt747-object-panel button,#tt747-size-panel button{height:30px;min-width:42px;border-radius:8px;border:1px solid rgba(232,200,74,.45);background:rgba(255,255,255,.04);color:#f4e7ad;font-weight:800;cursor:pointer;white-space:nowrap}',
@@ -45289,10 +45290,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     label.textContent='Storlek';
     sizePanel.appendChild(label);
     [
-      ['0.75','Liten',0.75],
-      ['1','Normal',1],
-      ['1.3','Stor',1.3],
-      ['1.6','XL',1.6]
+      ['0.55','Liten',0.55],
+      ['0.75','Normal',0.75],
+      ['1','Stor',1],
+      ['1.3','XL',1.3]
     ].forEach(function(item){
       var b=document.createElement('button');
       b.type='button';
@@ -45315,7 +45316,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       e.preventDefault();e.stopPropagation();
       var o=findObject(selectedId);if(!o)return;
       try{if(typeof saveUndo==='function')saveUndo();}catch(_e){}
-      setObjectSize(o,objectSize(o)-0.15);openSizePanel(o);
+      setObjectSize(o,objectSize(o)-0.10);openSizePanel(o);
     });
     var plus=document.createElement('button');
     plus.type='button';plus.textContent='+';plus.title='Öka';
@@ -45323,7 +45324,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       e.preventDefault();e.stopPropagation();
       var o=findObject(selectedId);if(!o)return;
       try{if(typeof saveUndo==='function')saveUndo();}catch(_e){}
-      setObjectSize(o,objectSize(o)+0.15);openSizePanel(o);
+      setObjectSize(o,objectSize(o)+0.10);openSizePanel(o);
     });
     sizePanel.appendChild(minus);sizePanel.appendChild(plus);
     document.body.appendChild(sizePanel);
@@ -45387,6 +45388,18 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){}
   }
 
+  function placeObjectButtonInRitaRow(b){
+    if(!b)return;
+    try{
+      var ref=document.querySelector('.tt248-tavla-rita-row #btn-zone') || document.querySelector('#tt252-ipad-rita-row #btn-zone') || document.getElementById('btn-zone') || document.getElementById('btn-freehand') || document.getElementById('btn-arrow') || document.getElementById('btn-text');
+      if(ref && ref.parentNode){
+        if(b.parentNode!==ref.parentNode || ref.nextSibling!==b)ref.parentNode.insertBefore(b,ref.nextSibling);
+      }else if(!b.parentNode){
+        document.body.appendChild(b);
+      }
+    }catch(e){}
+  }
+
   function ensureButton(){
     ensureStyle();ensurePanel();ensureSizePanel();
     var b=document.getElementById('tt747-object-btn');
@@ -45395,12 +45408,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       b.type='button';
       b.id='tt747-object-btn';
       b.className='btn tt236-rita-tool';
-      b.textContent='▣ Objekt';
+      b.innerHTML='<span class="tt748-cone-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3L5 20h14L12 3z" fill="#f47b20" stroke="#fff3d0" stroke-width="1.7"/><rect x="7.4" y="13" width="9.2" height="2.8" rx="1" fill="#fff3d0"/><rect x="4.3" y="19" width="15.4" height="2.3" rx="1" fill="#ffdd44"/></svg></span>';
       b.title='Objekt: kon/pinne';
       b.setAttribute('aria-label','Objekt');
-      var ref=document.getElementById('btn-zone')||document.getElementById('btn-freehand')||document.getElementById('btn-arrow')||document.getElementById('btn-text');
-      if(ref&&ref.parentNode)ref.parentNode.insertBefore(b,ref.nextSibling);
-      else document.body.appendChild(b);
       b.addEventListener('click',function(e){
         e.preventDefault();e.stopPropagation();
         closeSizePanel();
@@ -45409,6 +45419,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       });
     }
     objectButton=b;
+    placeObjectButtonInRitaRow(b);
     syncPanel();
   }
 
@@ -45563,7 +45574,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{if(typeof saveUndo==='function')saveUndo();}catch(e){}
     closeSizePanel();
     var pt=svgPt(clientX,clientY);
-    var obj={id:'obj'+(idCounter++),type:objectToolType||'cone',x:pt.x,y:pt.y,size:1};
+    var obj={id:'obj'+(idCounter++),type:objectToolType||'cone',x:pt.x,y:pt.y,size:0.75};
     try{if(typeof tt631MarkObjectLayer==='function')tt631MarkObjectLayer(obj);}catch(e){}
     arr().push(obj);
     try{if(typeof tt631RefreshLayerPanelSoon==='function')tt631RefreshLayerPanelSoon();}catch(e){}
@@ -45656,14 +45667,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v747 objektstorlek';}catch(e){}
+    try{document.title='Taktiktavla TEST v748 objektknapp';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='747 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='748 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v747 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v748 TEST';
     }catch(e){}
   }
 
