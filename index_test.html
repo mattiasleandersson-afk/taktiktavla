@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v768 formationsruta bredd</title>
+<title>Taktiktavla TEST v770 taktiktavla ruta bredd formation</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2937,7 +2937,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=768-formationsruta-bredd"></script>
+<script src="app_test.js?v=770-taktiktavla-ruta-bredd-formation"></script>
 
 <script>
 (function(){
@@ -4157,7 +4157,7 @@
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
+    try{document.title='Taktiktavla TEST v770 taktiktavla ruta bredd formation';}catch(e){}
     try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
@@ -4357,7 +4357,7 @@
   body.tt733-tavla-active:not(.fullscreen-portrait) #bottompanel{ 
     position:fixed!important; display:block!important; visibility:visible!important; opacity:1!important;
     left:8px!important; top:var(--tt733-top,112px)!important; bottom:8px!important;
-    width:300px!important; max-width:300px!important; min-width:300px!important;
+    width:340px!important; max-width:340px!important; min-width:340px!important;
     height:auto!important; min-height:0!important; max-height:none!important;
     margin:0!important; padding:0!important; overflow:hidden!important;
     background:rgba(14,23,16,.97)!important; border:1px solid rgba(74,232,122,.22)!important;
@@ -4374,12 +4374,12 @@
   body.tt733-tavla-active:not(.fullscreen-portrait) #panel-saves .row.tt722-file-row .row-name{ width:100px!important; max-width:100px!important; }
   body.tt733-tavla-active:not(.fullscreen-portrait) #pitch-wrapper{
     position:fixed!important; display:flex!important; align-items:center!important; justify-content:center!important;
-    left:318px!important; right:214px!important; top:var(--tt733-top,112px)!important; bottom:8px!important;
+    left:358px!important; right:214px!important; top:var(--tt733-top,112px)!important; bottom:8px!important;
     width:auto!important; height:auto!important; min-height:0!important; max-height:none!important; margin:0!important; padding:0!important;
     box-sizing:border-box!important; z-index:70!important; background:transparent!important;
   }
   body.tt733-tavla-active:not(.fullscreen-portrait) #pitch-svg{
-    height:min(calc(100vh - var(--tt733-top-num,112px) - 16px), calc((100vw - 548px) * 1.5))!important;
+    height:min(calc(100vh - var(--tt733-top-num,112px) - 16px), calc((100vw - 588px) * 1.5))!important;
     width:auto!important; max-height:100%!important; max-width:100%!important;
   }
   body.tt733-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel{
@@ -4427,7 +4427,7 @@
     var on=isTavla();
     document.body.classList.toggle('tt733-tavla-active',on);
     if(on){setTop();normalizeRows();openLayer();}
-    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
+    try{document.title='Taktiktavla TEST v770 taktiktavla ruta bredd formation';}catch(e){}
     try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v745 TEST';}catch(e){}
   }
   function schedule(){apply();setTimeout(apply,80);setTimeout(apply,250);}
@@ -4443,20 +4443,22 @@
 <style id="tt739-tavla-ritval-v708-princip-css">
 @media (min-width:1024px) and (pointer:fine){
   body.tt733-tavla-active:not(.fullscreen-portrait) #bottompanel{
-    width:294px!important;
+    width:340px!important;
+    max-width:340px!important;
+    min-width:340px!important;
   }
   body.tt733-tavla-active:not(.fullscreen-portrait) #pitch-wrapper{
-    left:330px!important;
+    left:358px!important;
   }
   body.tt733-tavla-active:not(.fullscreen-portrait) #pitch-svg{
-    height:min(calc(100vh - var(--tt733-top-num,112px) - 16px), calc((100vw - 560px) * 1.5))!important;
+    height:min(calc(100vh - var(--tt733-top-num,112px) - 16px), calc((100vw - 588px) * 1.5))!important;
   }
   body.tt733-tavla-active:not(.fullscreen-portrait) #panel-saves .row.tt722-file-row{
-    grid-template-columns:minmax(46px,108px) repeat(6,19px)!important;
+    grid-template-columns:minmax(64px,132px) repeat(6,19px)!important;
   }
   body.tt733-tavla-active:not(.fullscreen-portrait) #panel-saves .row.tt722-file-row .row-name{
-    width:108px!important;
-    max-width:108px!important;
+    width:132px!important;
+    max-width:132px!important;
   }
 }
 </style>
@@ -4467,7 +4469,7 @@
   window.__tt739TavlaRitvalV708PrincipInstalled=true;
   function byId(id){return document.getElementById(id);}
   function setVersion(){
-    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
+    try{document.title='Taktiktavla TEST v770 taktiktavla ruta bredd formation';}catch(e){}
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
@@ -4571,7 +4573,7 @@
     document.body.classList.toggle('tt742-mobile-tavla-active',!!(isMob && !fs && panel==='saves'));
     document.body.classList.toggle('tt742-mobile-board-fullscreen',!!(isMob && fs && !taktikfilm && isBoardPanel()));
     if(isMob)ensureButtonLabel();
-    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
+    try{document.title='Taktiktavla TEST v770 taktiktavla ruta bredd formation';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4719,7 +4721,7 @@
     }else{
       document.body.classList.remove('tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
+    try{document.title='Taktiktavla TEST v770 taktiktavla ruta bredd formation';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4817,7 +4819,7 @@
     if(on){
       try{document.body.classList.remove('tt642-layer-panel-mobile-open','tt741-board-fs-layer-toggle','tt741-fs-layers-collapsed');}catch(e){}
     }
-    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
+    try{document.title='Taktiktavla TEST v770 taktiktavla ruta bredd formation';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4895,7 +4897,7 @@
     }else{
       document.body.classList.remove('tt745-snabb-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
+    try{document.title='Taktiktavla TEST v770 taktiktavla ruta bredd formation';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4995,7 +4997,7 @@
 
 
 
-<!-- === v767 TEST: aktiv stegmarkering i Taktikfilm === -->
+<!-- === v769 TEST: aktiv stegmarkering i Taktikfilm === -->
 <style id="tt767-active-step-mark-css">
   #edit-taktik-steps .row.tt767-active-step-row,
   #edit-taktik-steps .row.on,
@@ -5081,14 +5083,14 @@
     var idx=currentStepIndex();
     markEditList(idx);
     markPlayList();
-    try{document.title='Taktiktavla TEST v767 aktiv stegmarkering';}catch(e){}
+    try{document.title='Taktiktavla TEST v769 rollback v767';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='767 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='769 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v767 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v769 TEST';
     }catch(e){}
   }
   function schedule(){setTimeout(apply,0);setTimeout(apply,80);}
@@ -5121,7 +5123,7 @@
   else{schedule();setTimeout(apply,500);}
 })();
 </script>
-<!-- === slut v767 TEST === -->
+<!-- === slut v769 TEST === -->
 
 </body>
 </html>
