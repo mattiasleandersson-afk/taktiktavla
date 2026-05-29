@@ -45163,10 +45163,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v757 TEST: Objekt i Snabbtavla vanligt läge ===
-   Bas: v755.
-   Behåller v755:s fungerande objektknapp i Taktiktavla och tillåter samma objektägare
-   i Snabbtavla vanligt läge. Fullscreen lämnas medvetet orört i detta steg. */
+/* === v758 TEST: Objekt i Taktiktavla/Snabbtavla fullscreen ===
+   Bas: v757.
+   Behåller v757:s fungerande objektknapp i Taktiktavla och Snabbtavla vanligt läge.
+   Lägger nu till samma objektägare i Taktiktavla fullscreen och Snabbtavla fullscreen.
+   Rör inte Taktikfilm. */
 (function(){
   'use strict';
   if(window.__tt751ObjectTools)return;
@@ -45261,8 +45262,26 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       return !!(tab || (panel&&panel.classList.contains('on')));
     }catch(e){return false;}
   }
+  function isFullscreenBoard758(){
+    try{
+      if(!document.body.classList.contains('fullscreen-portrait'))return false;
+      if(document.body.classList.contains('v66-taktik-fs'))return false;
+      if(document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen'))return false;
+      if(document.body.classList.contains('tt696-fs-clean') && document.querySelector('.tab.on[data-panel="taktik"]'))return false;
+      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return false;
+      var p=activePanelName756();
+      if(p==='saves' || p==='formations' || p==='snabb' || p==='quick' || p==='board')return true;
+      if(document.body.classList.contains('tt742-mobile-board-fullscreen'))return true;
+      if(document.body.classList.contains('tt745-snabb-fullscreen'))return true;
+      var fsZone=document.getElementById('fs-tb-zone');
+      var saves=document.getElementById('panel-saves');
+      var forms=document.getElementById('panel-formations');
+      return !!(fsZone && ((saves&&saves.classList.contains('on')) || (forms&&forms.classList.contains('on'))));
+    }catch(e){return false;}
+  }
   function isTavlaActive(){
     try{
+      if(isFullscreenBoard758())return true;
       if(isSnabbNormal756())return true;
       if(document.body.classList.contains('tt733-tavla-active'))return true;
       var tab=document.querySelector('.tab.on[data-panel="saves"]');
@@ -45272,6 +45291,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   function isNormalTavla(){
     try{
+      if(isFullscreenBoard758())return true;
       if(document.body.classList.contains('fullscreen-portrait'))return false;
       if(document.body.classList.contains('tt696-fs-clean'))return false;
     }catch(e){}
@@ -45293,9 +45313,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       '#tt747-size-panel .tt747-size-label{color:#f4e7ad;font-size:12px;font-weight:800;padding:0 3px;white-space:nowrap}',
       '#tt747-size-panel .tt749-size-divider{width:1px;height:22px;background:rgba(232,200,74,.28);margin:0 2px}',
       '#tt747-size-panel button.tt749-scope-btn{min-width:64px}',
-      'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn,body.tt756-snabb-object-active #tt747-object-btn{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;transform:none!important;flex:0 0 auto!important}',
-      'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn:not(.tt751-object-ready),body.tt756-snabb-object-active #tt747-object-btn:not(.tt751-object-ready){display:none!important}',
-      'body:not(.tt733-tavla-active):not(.tt756-snabb-object-active) #tt747-object-btn{display:none!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn,body.tt756-snabb-object-active #tt747-object-btn,body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-btn{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;transform:none!important;flex:0 0 auto!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn:not(.tt751-object-ready),body.tt756-snabb-object-active #tt747-object-btn:not(.tt751-object-ready),body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-btn:not(.tt751-object-ready){display:none!important}',
+      'body:not(.tt733-tavla-active):not(.tt756-snabb-object-active):not(.tt758-object-fullscreen) #tt747-object-btn{display:none!important}',
+      'body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-btn{height:30px!important;min-width:30px!important;padding:4px 6px!important;border-radius:7px!important}',
       '.tt747-object-g{cursor:pointer}',
       '.tt747-object-hit{fill:transparent;stroke:transparent;stroke-width:16;pointer-events:stroke}',
       '.tt747-obj-delete .del-circ{fill:#1b1515;stroke:#ff6b6b;stroke-width:2}',
@@ -45464,6 +45485,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function validRitaRow(row){
     if(!row)return false;
     try{
+      if(isFullscreenBoard758() && row.querySelector('#fs-tb-zone'))return true;
       if(!(row.classList.contains('tt248-tavla-rita-row') || row.id==='tt252-ipad-rita-row' || row.classList.contains('tt238-rita-scrollbar')))return false;
       if(document.body.classList.contains('tt248-taktik-active'))return false;
       return !!row.querySelector('#btn-zone');
@@ -45472,6 +45494,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function activeRitaRow(){
     try{
+      if(isFullscreenBoard758()){
+        var fsZone=document.getElementById('fs-tb-zone');
+        if(fsZone && fsZone.parentNode)return fsZone.parentNode;
+      }
       var rows=Array.prototype.slice.call(document.querySelectorAll('#tt252-ipad-rita-row,.tt248-tavla-rita-row,.tt238-rita-scrollbar'));
       var best=null;
       rows.forEach(function(row){
@@ -45500,7 +45526,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!b)return;
     try{
       var row=activeRitaRow();
-      var ref=row?row.querySelector('#btn-zone'):null;
+      var ref=row?(row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone')):null;
       b.classList.remove('tt751-object-ready','tt749-object-ready');
       if(row && ref){
         if(b.parentNode!==row || b.previousElementSibling!==ref){
@@ -45784,6 +45810,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function refreshUi(){
     try{document.body.classList.toggle('tt756-snabb-object-active',!!isSnabbNormal756());}catch(e){}
+    try{document.body.classList.toggle('tt758-object-fullscreen',!!isFullscreenBoard758());}catch(e){}
     ensureButton();
     if(objectButton)objectButton.style.display=isNormalTavla()?'inline-flex':'none';
     if(!isNormalTavla() && mode==='object'){
@@ -45792,14 +45819,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v757 snabbtavla ritval stabilt';}catch(e){}
+    try{document.title='Taktiktavla TEST v758 objekt fullscreen';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='757 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='758 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v757 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v758 TEST';
     }catch(e){}
   }
 
@@ -45822,7 +45849,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v757 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v758 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45869,4 +45896,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v757 TEST === */
+/* === slut v758 TEST === */
