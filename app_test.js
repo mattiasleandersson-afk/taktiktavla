@@ -45163,7 +45163,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v758 TEST: Objekt i Taktiktavla/Snabbtavla fullscreen ===
+/* === v759 TEST: Fullscreen objektruta framför verktyg ===
    Bas: v757.
    Behåller v757:s fungerande objektknapp i Taktiktavla och Snabbtavla vanligt läge.
    Lägger nu till samma objektägare i Taktiktavla fullscreen och Snabbtavla fullscreen.
@@ -45307,7 +45307,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       '#tt747-object-btn .tt748-cone-icon{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px}',
       '#tt747-object-btn .tt748-cone-icon svg{display:block;width:20px;height:20px}',
       '#tt747-object-btn.on,#tt747-object-btn.active{background:rgba(232,200,74,.12)!important;color:#ffdd44!important;border-color:#ffdd44!important}',
-      '#tt747-object-panel,#tt747-size-panel{position:fixed;z-index:760;display:none;gap:6px;align-items:center;padding:6px;background:rgba(8,16,12,.96);border:1px solid rgba(232,200,74,.55);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.32)}',
+      '#tt747-object-panel,#tt747-size-panel{position:fixed;z-index:10080;display:none;gap:6px;align-items:center;padding:6px;background:rgba(8,16,12,.98);border:1px solid rgba(232,200,74,.65);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.42)}',
       '#tt747-object-panel button,#tt747-size-panel button{height:30px;min-width:42px;border-radius:8px;border:1px solid rgba(232,200,74,.45);background:rgba(255,255,255,.04);color:#f4e7ad;font-weight:800;cursor:pointer;white-space:nowrap}',
       '#tt747-object-panel button.on,#tt747-size-panel button.on{background:rgba(74,232,122,.16);border-color:#4ae87a;color:#4ae87a}',
       '#tt747-size-panel .tt747-size-label{color:#f4e7ad;font-size:12px;font-weight:800;padding:0 3px;white-space:nowrap}',
@@ -45317,6 +45317,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn:not(.tt751-object-ready),body.tt756-snabb-object-active #tt747-object-btn:not(.tt751-object-ready),body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-btn:not(.tt751-object-ready){display:none!important}',
       'body:not(.tt733-tavla-active):not(.tt756-snabb-object-active):not(.tt758-object-fullscreen) #tt747-object-btn{display:none!important}',
       'body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-btn{height:30px!important;min-width:30px!important;padding:4px 6px!important;border-radius:7px!important}',
+      'body.fullscreen-portrait.tt758-object-fullscreen #fs-top-tools{max-width:calc(100vw - 8px)!important;width:auto!important;overflow-x:auto!important;overflow-y:visible!important;gap:4px!important;padding:4px 6px!important;z-index:10040!important}',
+      'body.fullscreen-portrait.tt758-object-fullscreen #fs-top-tools .ls-btn,body.fullscreen-portrait.tt758-object-fullscreen #fs-top-tools button{flex:0 0 auto!important}',
+      'body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-panel{z-index:10090!important}',
       '.tt747-object-g{cursor:pointer}',
       '.tt747-object-hit{fill:transparent;stroke:transparent;stroke-width:16;pointer-events:stroke}',
       '.tt747-obj-delete .del-circ{fill:#1b1515;stroke:#ff6b6b;stroke-width:2}',
@@ -45473,8 +45476,21 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!objectPanel || !objectButton || objectPanel.style.display==='none')return;
     try{
       var r=objectButton.getBoundingClientRect();
-      var left=Math.min(window.innerWidth-150,Math.max(8,r.right+8));
-      var top=Math.min(window.innerHeight-46,Math.max(8,r.top));
+      var isFs=!!(document.body && document.body.classList && document.body.classList.contains('fullscreen-portrait') && document.body.classList.contains('tt758-object-fullscreen'));
+      var panelW=objectPanel.offsetWidth || 158;
+      var panelH=objectPanel.offsetHeight || 42;
+      var left,top;
+      if(isFs){
+        // v759: i fullscreen ska objektrutan öppnas under verktygsrutan och framför den,
+        // inte bakom hela #fs-top-tools. Lägg den under konknappen och klampa inom skärmen.
+        left=Math.min(window.innerWidth-panelW-8,Math.max(8,r.left));
+        top=Math.min(window.innerHeight-panelH-8,Math.max(8,r.bottom+8));
+        objectPanel.style.zIndex='10090';
+      }else{
+        left=Math.min(window.innerWidth-panelW-8,Math.max(8,r.right+8));
+        top=Math.min(window.innerHeight-panelH-8,Math.max(8,r.top));
+        objectPanel.style.zIndex='10080';
+      }
       objectPanel.style.left=left+'px';
       objectPanel.style.top=top+'px';
     }catch(e){}
@@ -45819,14 +45835,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v758 objekt fullscreen';}catch(e){}
+    try{document.title='Taktiktavla TEST v759 fullscreen objektpanel';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='758 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='759 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v758 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v759 TEST';
     }catch(e){}
   }
 
@@ -45849,7 +45865,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v758 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v759 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45896,4 +45912,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v758 TEST === */
+/* === slut v759 TEST === */
