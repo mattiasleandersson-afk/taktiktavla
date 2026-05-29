@@ -1,6 +1,6 @@
 /* === v585 TESTMILJÖ FASTA FILNAMN ===
    Klistra denna fil i GitHub som: app_test.js
-   Klistra indexfilen i GitHub som: index_test.html
+   Klisstra indexfilen i GitHub som: index_test.html
    Index laddar app_test.js?v=585-test och ska inte peka på produktionens app.js.
 */
 /* === v585-testmiljo-storage-scope ===
