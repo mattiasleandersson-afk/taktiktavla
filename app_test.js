@@ -45912,7 +45912,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v767 aktiv stegmarkering';}catch(e){}
+    try{document.title='Taktiktavla TEST v768 formationsruta bredd';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -46043,3 +46043,100 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
 /* === slut v766 TEST === */
+
+
+/* === v768 TEST: Taktiktavla desktop - bredare formationsruta + rubrik "Formation" ===
+   Bas: v767. Endast desktop/Taktiktavla.
+   Syfte: Taktiktavlans filruta/quick-formation är för smal på dator, och rubriken i formationsraden ska heta "Formation" i stället för "Snabbtavla".
+   Rör inte mobil, Taktikfilm, Snabbtavla, formationlogik eller sparning. */
+(function(){
+  'use strict';
+  if(window.__tt768TavlaFormationBoxWidth)return;
+  window.__tt768TavlaFormationBoxWidth=true;
+
+  function byId(id){return document.getElementById(id);}
+  function desktop(){try{return !!(window.matchMedia && window.matchMedia('(min-width:1024px) and (pointer:fine)').matches);}catch(e){return true;}}
+  function tavlaActive(){
+    try{
+      if(!desktop())return false;
+      if(document.body.classList.contains('fullscreen-portrait'))return false;
+      if(document.body.classList.contains('tt733-tavla-active'))return true;
+      var tab=document.querySelector('.tab.on[data-panel="saves"]');
+      var panel=byId('panel-saves');
+      return !!(tab && panel && panel.classList.contains('on'));
+    }catch(e){return false;}
+  }
+  function css(){
+    if(byId('tt768-tavla-formation-width-css'))return;
+    var st=document.createElement('style');
+    st.id='tt768-tavla-formation-width-css';
+    st.textContent=[
+      '@media (min-width:1024px) and (pointer:fine){',
+      '  body.tt768-tavla-formation-wide.tt733-tavla-active:not(.fullscreen-portrait) #bottompanel{',
+      '    width:340px!important;max-width:340px!important;min-width:340px!important;',
+      '  }',
+      '  body.tt768-tavla-formation-wide.tt733-tavla-active:not(.fullscreen-portrait) #pitch-wrapper{',
+      '    left:366px!important;',
+      '  }',
+      '  body.tt768-tavla-formation-wide.tt733-tavla-active:not(.fullscreen-portrait) #pitch-svg{',
+      '    height:min(calc(100vh - var(--tt733-top-num,112px) - 16px), calc((100vw - 596px) * 1.5))!important;',
+      '  }',
+      '  body.tt768-tavla-formation-wide.tt733-tavla-active:not(.fullscreen-portrait) #tt205-quick-formation{',
+      '    width:100%!important;max-width:none!important;box-sizing:border-box!important;',
+      '  }',
+      '  body.tt768-tavla-formation-wide.tt733-tavla-active:not(.fullscreen-portrait) #tt205-qf-head{',
+      '    gap:8px!important;padding:6px 9px!important;',
+      '  }',
+      '  body.tt768-tavla-formation-wide.tt733-tavla-active:not(.fullscreen-portrait) #tt205-qf-buttons{',
+      '    grid-template-columns:repeat(auto-fit,minmax(70px,1fr))!important;gap:5px!important;',
+      '  }',
+      '  body.tt768-tavla-formation-wide.tt733-tavla-active:not(.fullscreen-portrait) #panel-saves .row.tt722-file-row{',
+      '    grid-template-columns:minmax(58px,126px) repeat(6,19px)!important;',
+      '  }',
+      '  body.tt768-tavla-formation-wide.tt733-tavla-active:not(.fullscreen-portrait) #panel-saves .row.tt722-file-row .row-name{',
+      '    width:126px!important;max-width:126px!important;',
+      '  }',
+      '}',
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+  function renameQuickFormationHead(){
+    try{
+      var head=byId('tt205-qf-head');
+      if(!head)return;
+      var spans=head.querySelectorAll('span');
+      if(spans && spans.length){spans[0].textContent='Formation';}
+      head.setAttribute('title','Formation');
+      head.setAttribute('aria-label','Formation');
+    }catch(e){}
+  }
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v768 formationsruta bredd';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='768 TEST';
+      });
+      var banner=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v768 TEST';
+    }catch(e){}
+  }
+  function apply(){
+    css();
+    document.body.classList.toggle('tt768-tavla-formation-wide',!!tavlaActive());
+    renameQuickFormationHead();
+    setVersion();
+  }
+  function schedule(){setTimeout(apply,0);setTimeout(apply,80);setTimeout(apply,240);}
+  ['click','touchend','pointerup','input','change','resize','orientationchange','hashchange'].forEach(function(evt){window.addEventListener(evt,schedule,true);});
+  if(window.MutationObserver){
+    try{
+      var mo=new MutationObserver(function(){schedule();});
+      if(document.body)mo.observe(document.body,{childList:true,subtree:true,characterData:true});
+      else document.addEventListener('DOMContentLoaded',function(){mo.observe(document.body,{childList:true,subtree:true,characterData:true});});
+    }catch(e){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){schedule();setTimeout(apply,800);});
+  else{schedule();setTimeout(apply,800);}
+})();
+/* === slut v768 TEST === */
