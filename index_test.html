@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v764 objekt taktikfilm fullscreen</title>
+<title>Taktiktavla TEST v765 taktikfilm fullscreen nav lager</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2937,7 +2937,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=764-objekt-taktikfilm-fullscreen"></script>
+<script src="app_test.js?v=765-taktikfilm-fullscreen-nav-lager"></script>
 
 <script>
 (function(){
@@ -4140,7 +4140,7 @@
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v764 objekt taktikfilm fullscreen';}catch(e){}
+    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
     try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
@@ -4410,7 +4410,7 @@
     var on=isTavla();
     document.body.classList.toggle('tt733-tavla-active',on);
     if(on){setTop();normalizeRows();openLayer();}
-    try{document.title='Taktiktavla TEST v764 objekt taktikfilm fullscreen';}catch(e){}
+    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
     try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v745 TEST';}catch(e){}
   }
   function schedule(){apply();setTimeout(apply,80);setTimeout(apply,250);}
@@ -4450,7 +4450,7 @@
   window.__tt739TavlaRitvalV708PrincipInstalled=true;
   function byId(id){return document.getElementById(id);}
   function setVersion(){
-    try{document.title='Taktiktavla TEST v764 objekt taktikfilm fullscreen';}catch(e){}
+    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
@@ -4554,7 +4554,7 @@
     document.body.classList.toggle('tt742-mobile-tavla-active',!!(isMob && !fs && panel==='saves'));
     document.body.classList.toggle('tt742-mobile-board-fullscreen',!!(isMob && fs && !taktikfilm && isBoardPanel()));
     if(isMob)ensureButtonLabel();
-    try{document.title='Taktiktavla TEST v764 objekt taktikfilm fullscreen';}catch(e){}
+    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4702,7 +4702,7 @@
     }else{
       document.body.classList.remove('tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v764 objekt taktikfilm fullscreen';}catch(e){}
+    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4800,7 +4800,7 @@
     if(on){
       try{document.body.classList.remove('tt642-layer-panel-mobile-open','tt741-board-fs-layer-toggle','tt741-fs-layers-collapsed');}catch(e){}
     }
-    try{document.title='Taktiktavla TEST v764 objekt taktikfilm fullscreen';}catch(e){}
+    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4878,7 +4878,7 @@
     }else{
       document.body.classList.remove('tt745-snabb-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v764 objekt taktikfilm fullscreen';}catch(e){}
+    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4909,6 +4909,73 @@
 }
 </style>
 
+
+
+<!-- === v765 TEST: Taktikfilm fullscreen lodrät toppnav + lagerpanel tillbaka === -->
+<style id="tt765-taktikfilm-fullscreen-topnav-layer-css">
+  /* Endast Taktikfilm i fullscreen. Flyttar stegnavigering/spela-knappar från sidopanel till toppremsa. */
+  body.fullscreen-portrait.v66-taktik-fs:not(.tt523-fs-rotated-desktop) #fs-portrait-nav{
+    position:fixed!important;
+    left:50%!important;
+    right:auto!important;
+    top:calc(env(safe-area-inset-top,0px) + 8px)!important;
+    bottom:auto!important;
+    transform:translateX(-50%)!important;
+    z-index:10070!important;
+    width:auto!important;
+    max-width:calc(100vw - 16px)!important;
+    display:flex!important;
+    flex-direction:row!important;
+    flex-wrap:nowrap!important;
+    justify-content:center!important;
+    align-items:center!important;
+    gap:5px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:5px 7px!important;
+    border-radius:12px!important;
+    background:rgba(17,26,20,.94)!important;
+    border:1px solid #2d4a35!important;
+    box-shadow:0 4px 16px rgba(0,0,0,.35)!important;
+  }
+  body.fullscreen-portrait.v66-taktik-fs:not(.tt523-fs-rotated-desktop) #fs-portrait-nav .ls-btn,
+  body.fullscreen-portrait.v66-taktik-fs:not(.tt523-fs-rotated-desktop) #fs-portrait-nav button,
+  body.fullscreen-portrait.v66-taktik-fs:not(.tt523-fs-rotated-desktop) #fs-portrait-nav select{
+    flex:0 0 auto!important;
+    min-height:28px!important;
+    height:28px!important;
+    padding:3px 7px!important;
+    font-size:.7rem!important;
+    white-space:nowrap!important;
+  }
+  body.fullscreen-portrait.v66-taktik-fs:not(.tt523-fs-rotated-desktop) #fs-step-label{
+    flex:0 0 auto!important;
+    min-width:46px!important;
+    font-size:.68rem!important;
+    white-space:nowrap!important;
+  }
+
+  /* Desktop/surfplattebredd: återställ lagerpanelen i Taktikfilm fullscreen.
+     Mobilens v743-knapp fortsätter styra öppna/stäng på små skärmar. */
+  @media (min-width:721px){
+    body.fullscreen-portrait.v66-taktik-fs:not(.tt745-snabb-fullscreen) #tt616-layer-panel{
+      display:block!important;
+      visibility:visible!important;
+      pointer-events:auto!important;
+      position:fixed!important;
+      left:auto!important;
+      right:calc(env(safe-area-inset-right,0px) + 10px)!important;
+      top:calc(env(safe-area-inset-top,0px) + 58px)!important;
+      bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important;
+      width:min(260px, 32vw)!important;
+      max-height:none!important;
+      overflow:auto!important;
+      z-index:10050!important;
+    }
+  }
+</style>
+<!-- === slut v765 TEST === -->
+
 </body>
 </html>
 
@@ -4925,6 +4992,6 @@
     z-index:10090 !important;
   }
 </style>
-<!-- === v764 TEST: Fullscreen objektruta framför verktyg ===
+<!-- === v765 TEST: Fullscreen objektruta framför verktyg ===
      Bas: v758. Själva objektlogiken ligger i app_test.js. Breddar fullscreen-verktygsrutan och visar objektrutan framför/under.
      Ingen SQL och ingen Supabase-ändring. -->
