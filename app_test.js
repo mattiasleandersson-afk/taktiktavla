@@ -45196,7 +45196,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v764 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v765 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -45912,14 +45912,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v764 objekt taktikfilm fullscreen';}catch(e){}
+    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='764 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='765 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v764 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v765 TEST';
     }catch(e){}
   }
 
@@ -45942,7 +45942,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v764 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v765 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45989,11 +45989,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v764 TEST === */
+/* === slut v765 TEST === */
 
 
 
-/* === v764 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v765 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46042,4 +46042,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v764 TEST === */
+/* === slut v765 TEST === */
