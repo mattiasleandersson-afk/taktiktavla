@@ -45143,14 +45143,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!on){
       document.body.classList.remove('tt741-fs-layers-collapsed');
     }
-    try{document.title='Taktiktavla TEST v743 mobil taktikfilm lager';}catch(e){}
+    try{document.title='Taktiktavla TEST v744 matcher lager/bottenfix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='743 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='744 TEST';
       });
       var banner=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v743 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v744 TEST';
     }catch(e){}
   }
 
