@@ -45196,7 +45196,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v773 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v774 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -45916,10 +45916,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='773 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='774 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v773 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v774 TEST';
     }catch(e){}
   }
 
@@ -45942,7 +45942,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v773 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v774 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45989,11 +45989,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v773 TEST === */
+/* === slut v774 TEST === */
 
 
 
-/* === v773 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v774 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46042,10 +46042,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v773 TEST === */
+/* === slut v774 TEST === */
 
 
-/* === v773 TEST: Taktiktavla formationsval applicerar även spelform ===
+/* === v774 TEST: Taktiktavla formationsval applicerar även spelform ===
    Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
 (function(){
   'use strict';
@@ -46087,4 +46087,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
-/* === slut v773 TEST === */
+/* === slut v774 TEST === */
