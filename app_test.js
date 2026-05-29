@@ -45147,10 +45147,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='752 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='753 TEST';
       });
       var banner=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v752 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v753 TEST';
     }catch(e){}
   }
 
@@ -45163,10 +45163,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v752 TEST: Objekt i Taktiktavla/Snabbtavla även fullscreen ===
-   Bas: v751.
-   Utökar samma objektägare från v751: kon/pinne i Taktiktavla, Taktiktavla fullscreen,
-   Snabbtavla och Snabbtavla fullscreen. Rör inte Taktikfilm eller Matcher. */
+/* === v753 TEST: Objekt i Taktiktavla/Snabbtavla även fullscreen - lägesfix ===
+   Bas: v751. Fixversion efter v752: samma objektägare men säkrare lägesdetektering,
+   så Taktiktavla/Snabbtavla inte döljs av Taktikfilm-playback-variabler. */
 (function(){
   'use strict';
   if(window.__tt752ObjectTools)return;
@@ -45254,11 +45253,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   function isTaktikfilmActive(){
     try{
+      var p=activePanelName();
+      if(p==='taktik')return true;
+      if(document.body.classList.contains('tt248-taktik-active'))return true;
       if(document.body.classList.contains('v66-taktik-fs'))return true;
       if(document.body.classList.contains('tt696-fs-clean') && document.querySelector('.tab.on[data-panel="taktik"]'))return true;
-      if(activePanelName()==='taktik')return true;
       if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
-      if(typeof playback!=='undefined' && playback)return true;
+      /* OBS: använd inte den globala variabeln playback här. Den kan vara sann även när
+         användaren står i Taktiktavla/Snabbtavla och gjorde att v752 dolde objektknappen överallt. */
     }catch(e){}
     return false;
   }
@@ -45865,14 +45867,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!boardOn)closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v752 objekt i tavla/snabb/fullscreen';}catch(e){}
+    try{document.title='Taktiktavla TEST v753 objekt tavla snabb fullscreen fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='752 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='753 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v752 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v753 TEST';
     }catch(e){}
   }
 
@@ -45895,7 +45897,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v752 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v753 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45942,4 +45944,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v752 TEST === */
+/* === slut v753 TEST === */
