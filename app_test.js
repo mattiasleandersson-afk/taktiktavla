@@ -45163,7 +45163,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v756 TEST: Objekt i Snabbtavla vanligt läge ===
+/* === v757 TEST: Objekt i Snabbtavla vanligt läge ===
    Bas: v755.
    Behåller v755:s fungerande objektknapp i Taktiktavla och tillåter samma objektägare
    i Snabbtavla vanligt läge. Fullscreen lämnas medvetet orört i detta steg. */
@@ -45792,14 +45792,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v756 objekt i snabbtavla';}catch(e){}
+    try{document.title='Taktiktavla TEST v757 snabbtavla ritval stabilt';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='756 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='757 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v756 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v757 TEST';
     }catch(e){}
   }
 
@@ -45822,7 +45822,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v756 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v757 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45869,4 +45869,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v756 TEST === */
+/* === slut v757 TEST === */
