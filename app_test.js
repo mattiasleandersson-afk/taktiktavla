@@ -45163,12 +45163,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v748 TEST: Objektknapp + mindre standardstorlek ===
-   Bas: v747.
-   Samma objektägare som v747. Ändrar bara storleksskala och knappplacering/ikon. */
+/* === v749 TEST: Objektknapp stabil + storlek för en/alla ===
+   Bas: v748.
+   Samma objektägare som v748. Stabiliserar knappens plats i ritraden
+   och lägger storleksval för enstaka objekt eller alla av samma typ. */
 (function(){
   'use strict';
-  if(window.__tt747ObjectTools)return;
+  if(window.__tt749ObjectTools)return;
+  window.__tt749ObjectTools=true;
   window.__tt747ObjectTools=true;
 
   var objectToolType='cone';
@@ -45178,6 +45180,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var objectsRef=null;
   var touchDragTimer=null;
   var touchMoved=false;
+  var sizeScope='one';
 
   function arr(){
     if(!Array.isArray(objectsRef))objectsRef=[];
@@ -45217,6 +45220,28 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     for(var i=0;i<list.length;i++)if(list[i].id===id)return list[i];
     return null;
   }
+  function sameTypeLabel(o){
+    return (o&&o.type==='pole')?'Alla pinnar':'Alla koner';
+  }
+  function sizeTargets(o){
+    if(!o)return [];
+    if(sizeScope==='sameType'){
+      return arr().filter(function(x){return x&&x.type===o.type;});
+    }
+    return [o];
+  }
+  function setSizeByScope(o,val){
+    if(!o)return;
+    var next=Math.max(0.45,Math.min(1.8,val));
+    var targets=sizeTargets(o);
+    targets.forEach(function(x){x.size=next;});
+    try{if(typeof tt631RefreshLayerPanelSoon==='function')tt631RefreshLayerPanelSoon();}catch(e){}
+    try{render();}catch(e){}
+  }
+  function adjustSizeByScope(o,delta){
+    if(!o)return;
+    setSizeByScope(o,objectSize(o)+delta);
+  }
 
   function isTavlaActive(){
     try{
@@ -45247,6 +45272,17 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       '#tt747-object-panel button,#tt747-size-panel button{height:30px;min-width:42px;border-radius:8px;border:1px solid rgba(232,200,74,.45);background:rgba(255,255,255,.04);color:#f4e7ad;font-weight:800;cursor:pointer;white-space:nowrap}',
       '#tt747-object-panel button.on,#tt747-size-panel button.on{background:rgba(74,232,122,.16);border-color:#4ae87a;color:#4ae87a}',
       '#tt747-size-panel .tt747-size-label{color:#f4e7ad;font-size:12px;font-weight:800;padding:0 3px;white-space:nowrap}',
+      '#tt747-size-panel .tt749-size-divider{width:1px;height:22px;background:rgba(232,200,74,.28);margin:0 2px}',
+      '#tt747-size-panel button.tt749-scope-btn{min-width:64px}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-arrow,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-arrow{order:10!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-text,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-text{order:20!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-freehand,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-freehand{order:30!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-zone,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-zone{order:40!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #tt747-object-btn,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #tt747-object-btn{order:50!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;transform:none!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #tt236-rita-clear,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #tt236-rita-clear{order:60!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-undo,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-undo{order:70!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-reset,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-reset{order:80!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn:not(.tt749-object-ready){display:none!important}',
       'body:not(.tt733-tavla-active) #tt747-object-btn{display:none!important}',
       '.tt747-object-g{cursor:pointer}',
       '.tt747-object-hit{fill:transparent;stroke:transparent;stroke-width:16;pointer-events:stroke}',
@@ -45289,6 +45325,24 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     label.className='tt747-size-label';
     label.textContent='Storlek';
     sizePanel.appendChild(label);
+
+    var one=document.createElement('button');
+    one.type='button';one.className='tt749-scope-btn';one.dataset.scope='one';one.textContent='Denna';one.title='Ändra bara markerat objekt';
+    var same=document.createElement('button');
+    same.type='button';same.className='tt749-scope-btn';same.dataset.scope='sameType';same.textContent='Alla';same.title='Ändra alla objekt av samma typ';
+    [one,same].forEach(function(b){
+      b.addEventListener('click',function(e){
+        e.preventDefault();e.stopPropagation();
+        sizeScope=b.dataset.scope||'one';
+        var o=findObject(selectedId);
+        if(o)openSizePanel(o);
+      });
+      sizePanel.appendChild(b);
+    });
+    var div=document.createElement('span');
+    div.className='tt749-size-divider';
+    sizePanel.appendChild(div);
+
     [
       ['0.55','Liten',0.55],
       ['0.75','Normal',0.75],
@@ -45304,7 +45358,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         var o=findObject(selectedId);
         if(o){
           try{if(typeof saveUndo==='function')saveUndo();}catch(_e){}
-          setObjectSize(o,item[2]);
+          setSizeByScope(o,item[2]);
           openSizePanel(o);
         }
       });
@@ -45316,7 +45370,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       e.preventDefault();e.stopPropagation();
       var o=findObject(selectedId);if(!o)return;
       try{if(typeof saveUndo==='function')saveUndo();}catch(_e){}
-      setObjectSize(o,objectSize(o)-0.10);openSizePanel(o);
+      adjustSizeByScope(o,-0.10);openSizePanel(o);
     });
     var plus=document.createElement('button');
     plus.type='button';plus.textContent='+';plus.title='Öka';
@@ -45324,7 +45378,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       e.preventDefault();e.stopPropagation();
       var o=findObject(selectedId);if(!o)return;
       try{if(typeof saveUndo==='function')saveUndo();}catch(_e){}
-      setObjectSize(o,objectSize(o)+0.10);openSizePanel(o);
+      adjustSizeByScope(o,0.10);openSizePanel(o);
     });
     sizePanel.appendChild(minus);sizePanel.appendChild(plus);
     document.body.appendChild(sizePanel);
@@ -45357,6 +45411,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     sizePanel.style.left=left+'px';
     sizePanel.style.top=top+'px';
     sizePanel.style.display='flex';
+    var same=sizePanel.querySelector('button[data-scope="sameType"]');
+    if(same)same.textContent=sameTypeLabel(o);
+    Array.from(sizePanel.querySelectorAll('button[data-scope]')).forEach(function(b){
+      b.classList.toggle('on',(b.dataset.scope||'one')===sizeScope);
+    });
     var s=objectSize(o);
     Array.from(sizePanel.querySelectorAll('button[data-size]')).forEach(function(b){
       b.classList.toggle('on',Math.abs(parseFloat(b.dataset.size)-s)<0.05);
@@ -45391,13 +45450,21 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function placeObjectButtonInRitaRow(b){
     if(!b)return;
     try{
-      var ref=document.querySelector('.tt248-tavla-rita-row #btn-zone') || document.querySelector('#tt252-ipad-rita-row #btn-zone') || document.getElementById('btn-zone') || document.getElementById('btn-freehand') || document.getElementById('btn-arrow') || document.getElementById('btn-text');
+      var row=document.querySelector('.tt248-tavla-rita-row') || document.getElementById('tt252-ipad-rita-row');
+      var ref=(row&&row.querySelector('#btn-zone')) || document.querySelector('.tt248-tavla-rita-row #btn-zone') || document.querySelector('#tt252-ipad-rita-row #btn-zone') || document.getElementById('btn-zone');
       if(ref && ref.parentNode){
-        if(b.parentNode!==ref.parentNode || ref.nextSibling!==b)ref.parentNode.insertBefore(b,ref.nextSibling);
-      }else if(!b.parentNode){
-        document.body.appendChild(b);
+        var parent=ref.parentNode;
+        if(b.parentNode!==parent || ref.nextSibling!==b){
+          parent.insertBefore(b,ref.nextSibling);
+        }
+        b.classList.add('tt749-object-ready');
+      }else{
+        b.classList.remove('tt749-object-ready');
+        if(!b.parentNode)document.body.appendChild(b);
       }
-    }catch(e){}
+    }catch(e){
+      try{b.classList.remove('tt749-object-ready');}catch(_e){}
+    }
   }
 
   function ensureButton(){
@@ -45667,14 +45734,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v748 objektknapp';}catch(e){}
+    try{document.title='Taktiktavla TEST v749 objektknapp stabil';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='748 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='749 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v748 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v749 TEST';
     }catch(e){}
   }
 
