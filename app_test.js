@@ -45163,19 +45163,22 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v746 TEST: Objektgrund Kon/Pinne i Taktiktavla ===
-   Bas: v745.
-   Princip: en egen objektägare. Döda träningsobjekt sparas i state men kopplas inte till spelare,
-   matchlogik, Taktikfilm-steg eller animation. Första steg: Taktiktavla normalvy. */
+/* === v747 TEST: Objektstorlek Kon/Pinne i Taktiktavla ===
+   Bas: v746.
+   Samma objektägare som v746, men objekt har egen size-egenskap.
+   Högerklick på dator eller tryck på iPhone/iPad öppnar storlekspanel. */
 (function(){
   'use strict';
-  if(window.__tt746ObjectTools)return;
-  window.__tt746ObjectTools=true;
+  if(window.__tt747ObjectTools)return;
+  window.__tt747ObjectTools=true;
 
   var objectToolType='cone';
   var objectPanel=null;
   var objectButton=null;
+  var sizePanel=null;
   var objectsRef=null;
+  var touchDragTimer=null;
+  var touchMoved=false;
 
   function arr(){
     if(!Array.isArray(objectsRef))objectsRef=[];
@@ -45185,13 +45188,23 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   objectsRef=Array.isArray(window.tacticObjects)?window.tacticObjects:[];
   window.tacticObjects=objectsRef;
 
+  function num(v,fb){return typeof v==='number' && isFinite(v)?v:fb;}
+  function objectSize(o){return Math.max(0.55,Math.min(2.2,num(o&&o.size,1)));}
+  function setObjectSize(o,val){
+    if(!o)return;
+    o.size=Math.max(0.55,Math.min(2.2,val));
+    try{if(typeof tt631RefreshLayerPanelSoon==='function')tt631RefreshLayerPanelSoon();}catch(e){}
+    try{render();}catch(e){}
+  }
+
   function cloneObjects(list){
     return (list||[]).map(function(o){
       return {
         id:o.id,
         type:o.type||'cone',
-        x:typeof o.x==='number'?o.x:200,
-        y:typeof o.y==='number'?o.y:300,
+        x:num(o.x,200),
+        y:num(o.y,300),
+        size:objectSize(o),
         layerId:o.layerId||'layer-1'
       };
     });
@@ -45199,6 +45212,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function replaceObjects(list){
     objectsRef=cloneObjects(list||[]);
     window.tacticObjects=objectsRef;
+  }
+  function findObject(id){
+    var list=arr();
+    for(var i=0;i<list.length;i++)if(list[i].id===id)return list[i];
+    return null;
   }
 
   function isTavlaActive(){
@@ -45218,20 +45236,21 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function ensureStyle(){
-    if(document.getElementById('tt746-object-style'))return;
+    if(document.getElementById('tt747-object-style'))return;
     var st=document.createElement('style');
-    st.id='tt746-object-style';
+    st.id='tt747-object-style';
     st.textContent=[
-      '#tt746-object-btn{color:#e8c84a!important;border-color:#e8c84a!important}',
-      '#tt746-object-btn.on,#tt746-object-btn.active{background:rgba(232,200,74,.12)!important;color:#ffdd44!important;border-color:#ffdd44!important}',
-      '#tt746-object-panel{position:fixed;z-index:760;display:none;gap:6px;align-items:center;padding:6px;background:rgba(8,16,12,.96);border:1px solid rgba(232,200,74,.55);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.32)}',
-      '#tt746-object-panel button{height:30px;min-width:58px;border-radius:8px;border:1px solid rgba(232,200,74,.45);background:rgba(255,255,255,.04);color:#f4e7ad;font-weight:800;cursor:pointer}',
-      '#tt746-object-panel button.on{background:rgba(74,232,122,.16);border-color:#4ae87a;color:#4ae87a}',
-      'body:not(.tt733-tavla-active) #tt746-object-btn{display:none!important}',
-      '.tt746-object-g{cursor:pointer}',
-      '.tt746-object-hit{fill:transparent;stroke:transparent;stroke-width:16;pointer-events:stroke}',
-      '.tt746-obj-delete .del-circ{fill:#1b1515;stroke:#ff6b6b;stroke-width:2}',
-      '.tt746-obj-delete .del-txt{fill:#ffb5b5;font-size:15px;font-weight:900;text-anchor:middle;dominant-baseline:central;pointer-events:none}'
+      '#tt747-object-btn{color:#e8c84a!important;border-color:#e8c84a!important}',
+      '#tt747-object-btn.on,#tt747-object-btn.active{background:rgba(232,200,74,.12)!important;color:#ffdd44!important;border-color:#ffdd44!important}',
+      '#tt747-object-panel,#tt747-size-panel{position:fixed;z-index:760;display:none;gap:6px;align-items:center;padding:6px;background:rgba(8,16,12,.96);border:1px solid rgba(232,200,74,.55);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.32)}',
+      '#tt747-object-panel button,#tt747-size-panel button{height:30px;min-width:42px;border-radius:8px;border:1px solid rgba(232,200,74,.45);background:rgba(255,255,255,.04);color:#f4e7ad;font-weight:800;cursor:pointer;white-space:nowrap}',
+      '#tt747-object-panel button.on,#tt747-size-panel button.on{background:rgba(74,232,122,.16);border-color:#4ae87a;color:#4ae87a}',
+      '#tt747-size-panel .tt747-size-label{color:#f4e7ad;font-size:12px;font-weight:800;padding:0 3px;white-space:nowrap}',
+      'body:not(.tt733-tavla-active) #tt747-object-btn{display:none!important}',
+      '.tt747-object-g{cursor:pointer}',
+      '.tt747-object-hit{fill:transparent;stroke:transparent;stroke-width:16;pointer-events:stroke}',
+      '.tt747-obj-delete .del-circ{fill:#1b1515;stroke:#ff6b6b;stroke-width:2}',
+      '.tt747-obj-delete .del-txt{fill:#ffb5b5;font-size:15px;font-weight:900;text-anchor:middle;dominant-baseline:central;pointer-events:none}'
     ].join('\n');
     document.head.appendChild(st);
   }
@@ -45239,7 +45258,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function ensurePanel(){
     if(objectPanel)return objectPanel;
     objectPanel=document.createElement('div');
-    objectPanel.id='tt746-object-panel';
+    objectPanel.id='tt747-object-panel';
     objectPanel.setAttribute('aria-label','Objektval');
     var cone=document.createElement('button');
     cone.type='button';cone.dataset.obj='cone';cone.textContent='🔺 Kon';cone.title='Placera kon';
@@ -45249,6 +45268,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       b.addEventListener('click',function(e){
         e.preventDefault();e.stopPropagation();
         objectToolType=b.dataset.obj||'cone';
+        closeSizePanel();
         syncPanel();
         try{if(typeof setMode==='function')setMode('object');}catch(_e){}
       });
@@ -45258,6 +45278,90 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     syncPanel();
     return objectPanel;
   }
+
+  function ensureSizePanel(){
+    if(sizePanel)return sizePanel;
+    sizePanel=document.createElement('div');
+    sizePanel.id='tt747-size-panel';
+    sizePanel.setAttribute('aria-label','Objektstorlek');
+    var label=document.createElement('span');
+    label.className='tt747-size-label';
+    label.textContent='Storlek';
+    sizePanel.appendChild(label);
+    [
+      ['0.75','Liten',0.75],
+      ['1','Normal',1],
+      ['1.3','Stor',1.3],
+      ['1.6','XL',1.6]
+    ].forEach(function(item){
+      var b=document.createElement('button');
+      b.type='button';
+      b.dataset.size=item[0];
+      b.textContent=item[1];
+      b.addEventListener('click',function(e){
+        e.preventDefault();e.stopPropagation();
+        var o=findObject(selectedId);
+        if(o){
+          try{if(typeof saveUndo==='function')saveUndo();}catch(_e){}
+          setObjectSize(o,item[2]);
+          openSizePanel(o);
+        }
+      });
+      sizePanel.appendChild(b);
+    });
+    var minus=document.createElement('button');
+    minus.type='button';minus.textContent='−';minus.title='Minska';
+    minus.addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();
+      var o=findObject(selectedId);if(!o)return;
+      try{if(typeof saveUndo==='function')saveUndo();}catch(_e){}
+      setObjectSize(o,objectSize(o)-0.15);openSizePanel(o);
+    });
+    var plus=document.createElement('button');
+    plus.type='button';plus.textContent='+';plus.title='Öka';
+    plus.addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();
+      var o=findObject(selectedId);if(!o)return;
+      try{if(typeof saveUndo==='function')saveUndo();}catch(_e){}
+      setObjectSize(o,objectSize(o)+0.15);openSizePanel(o);
+    });
+    sizePanel.appendChild(minus);sizePanel.appendChild(plus);
+    document.body.appendChild(sizePanel);
+    document.addEventListener('mousedown',function(e){
+      if(!sizePanel||sizePanel.style.display==='none')return;
+      if(sizePanel.contains(e.target))return;
+      try{if(e.target.closest&&e.target.closest('.tt747-object-g'))return;}catch(_e){}
+      closeSizePanel();
+    },true);
+    return sizePanel;
+  }
+  function closeSizePanel(){if(sizePanel)sizePanel.style.display='none';}
+  function pointToClient(o){
+    try{
+      if(!svg||!svg.createSVGPoint)return null;
+      var p=svg.createSVGPoint();p.x=o.x;p.y=o.y;
+      var ctm=svg.getScreenCTM();
+      if(!ctm)return null;
+      var q=p.matrixTransform(ctm);
+      return {x:q.x,y:q.y};
+    }catch(e){return null;}
+  }
+  function openSizePanel(o,clientX,clientY){
+    if(!o||!isTavlaActive())return;
+    ensureSizePanel();
+    var c=(typeof clientX==='number'&&typeof clientY==='number')?{x:clientX,y:clientY}:pointToClient(o);
+    var left=(c?c.x+14:80), top=(c?c.y-12:80);
+    left=Math.min(window.innerWidth-260,Math.max(8,left));
+    top=Math.min(window.innerHeight-48,Math.max(8,top));
+    sizePanel.style.left=left+'px';
+    sizePanel.style.top=top+'px';
+    sizePanel.style.display='flex';
+    var s=objectSize(o);
+    Array.from(sizePanel.querySelectorAll('button[data-size]')).forEach(function(b){
+      b.classList.toggle('on',Math.abs(parseFloat(b.dataset.size)-s)<0.05);
+    });
+  }
+
   function syncPanel(){
     try{
       if(objectButton){
@@ -45269,6 +45373,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         objectPanel.style.display=(mode==='object'&&isNormalTavla())?'flex':'none';
         positionPanel();
       }
+      if(sizePanel&&sizePanel.style.display!=='none'&&!findObject(selectedId))closeSizePanel();
     }catch(e){}
   }
   function positionPanel(){
@@ -45283,21 +45388,22 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function ensureButton(){
-    ensureStyle();ensurePanel();
-    var b=document.getElementById('tt746-object-btn');
+    ensureStyle();ensurePanel();ensureSizePanel();
+    var b=document.getElementById('tt747-object-btn');
     if(!b){
       b=document.createElement('button');
       b.type='button';
-      b.id='tt746-object-btn';
+      b.id='tt747-object-btn';
       b.className='btn tt236-rita-tool';
-      b.textContent='▣';
+      b.textContent='▣ Objekt';
       b.title='Objekt: kon/pinne';
       b.setAttribute('aria-label','Objekt');
-      var ref=document.getElementById('btn-text')||document.getElementById('btn-zone')||document.getElementById('btn-freehand');
+      var ref=document.getElementById('btn-zone')||document.getElementById('btn-freehand')||document.getElementById('btn-arrow')||document.getElementById('btn-text');
       if(ref&&ref.parentNode)ref.parentNode.insertBefore(b,ref.nextSibling);
       else document.body.appendChild(b);
       b.addEventListener('click',function(e){
         e.preventDefault();e.stopPropagation();
+        closeSizePanel();
         try{if(typeof setMode==='function')setMode(mode==='object'?'move':'object');}catch(_e){}
         syncPanel();
       });
@@ -45331,32 +45437,40 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   function renderOneObject(ns,o){
     var g=document.createElementNS(ns,'g');
-    g.setAttribute('class','tt746-object-g');
+    g.setAttribute('class','tt747-object-g');
     g.setAttribute('data-id',o.id);
     g.setAttribute('transform','translate('+o.x+','+o.y+')');
     try{if(typeof tt633ApplyFreeLayerVisibility==='function')tt633ApplyFreeLayerVisibility(g,o);}catch(e){}
     try{if(typeof applyDrawingObjectHitMode==='function')applyDrawingObjectHitMode(g);}catch(e){}
     var shape=(o.type==='pole')?makePole(ns,o):makeCone(ns,o);
+    shape.setAttribute('transform','scale('+objectSize(o)+')');
     g.appendChild(shape);
     var hit=document.createElementNS(ns,'circle');
-    hit.setAttribute('class','tt746-object-hit');
-    hit.setAttribute('cx','0');hit.setAttribute('cy','0');hit.setAttribute('r','24');
+    hit.setAttribute('class','tt747-object-hit');
+    hit.setAttribute('cx','0');hit.setAttribute('cy','0');hit.setAttribute('r',Math.max(24,26*objectSize(o)));
     g.appendChild(hit);
 
-    function select(ev){
+    function select(ev,openPanel){
       ev.preventDefault();ev.stopPropagation();
       selectedId=o.id;
       render();
+      if(openPanel)openSizePanel(o,ev.clientX,ev.clientY);
     }
     function startDrag(clientX,clientY){
       if(mode!=='move')return false;
       try{if(typeof saveUndo==='function')saveUndo();}catch(e){}
       var pt=svgPt(clientX,clientY);
-      dragging={type:'tt746-object',id:o.id,ox:o.x-pt.x,oy:o.y-pt.y};
+      dragging={type:'tt747-object',id:o.id,ox:o.x-pt.x,oy:o.y-pt.y};
       selectedId=o.id;
+      closeSizePanel();
       return true;
     }
+    g.addEventListener('contextmenu',function(ev){
+      ev.preventDefault();ev.stopPropagation();
+      selectedId=o.id;render();openSizePanel(o,ev.clientX,ev.clientY);
+    });
     g.addEventListener('mousedown',function(ev){
+      if(ev.button===2)return;
       if(mode==='move'){
         ev.preventDefault();ev.stopPropagation();
         if(startDrag(ev.clientX,ev.clientY)){
@@ -45365,29 +45479,41 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           window.addEventListener('mousemove',mm);window.addEventListener('mouseup',mu);
         }
       }else{
-        select(ev);
+        select(ev,false);
       }
+    });
+    g.addEventListener('click',function(ev){
+      if(mode==='move')return;
+      ev.preventDefault();ev.stopPropagation();
+      selectedId=o.id;render();
+      if(('ontouchstart' in window) || (navigator.maxTouchPoints&&navigator.maxTouchPoints>0))openSizePanel(o,ev.clientX,ev.clientY);
     });
     g.addEventListener('touchstart',function(ev){
       if(!ev.touches||!ev.touches.length)return;
       ev.preventDefault();ev.stopPropagation();
-      if(mode==='move'&&startDrag(ev.touches[0].clientX,ev.touches[0].clientY)){
-        function tm(ev2){ev2.preventDefault();if(ev2.touches&&ev2.touches.length)moveObjectDrag(ev2.touches[0].clientX,ev2.touches[0].clientY);}
-        function te(){window.removeEventListener('touchmove',tm);window.removeEventListener('touchend',te);dragging=null;render();}
+      touchMoved=false;
+      var t=ev.touches[0];
+      if(mode==='move'&&startDrag(t.clientX,t.clientY)){
+        function tm(ev2){ev2.preventDefault();touchMoved=true;if(ev2.touches&&ev2.touches.length)moveObjectDrag(ev2.touches[0].clientX,ev2.touches[0].clientY);}
+        function te(ev3){
+          window.removeEventListener('touchmove',tm);window.removeEventListener('touchend',te);dragging=null;render();
+          if(!touchMoved){selectedId=o.id;openSizePanel(o,t.clientX,t.clientY);}
+        }
         window.addEventListener('touchmove',tm,{passive:false});window.addEventListener('touchend',te);
       }else{
-        selectedId=o.id;render();
+        selectedId=o.id;render();openSizePanel(o,t.clientX,t.clientY);
       }
     },{passive:false});
 
     if(selectedId===o.id){
+      var s=objectSize(o);
       var dg=document.createElementNS(ns,'g');
-      dg.setAttribute('class','del-g tt746-obj-delete');
+      dg.setAttribute('class','del-g tt747-obj-delete');
       dg.style.cursor='pointer';
       var dc=document.createElementNS(ns,'circle');
-      dc.setAttribute('class','del-circ');dc.setAttribute('cx','18');dc.setAttribute('cy','-20');dc.setAttribute('r','10');
+      dc.setAttribute('class','del-circ');dc.setAttribute('cx',18*s);dc.setAttribute('cy',-22*s);dc.setAttribute('r','10');
       var dt=document.createElementNS(ns,'text');
-      dt.setAttribute('class','del-txt');dt.setAttribute('x','18');dt.setAttribute('y','-20');dt.textContent='×';
+      dt.setAttribute('class','del-txt');dt.setAttribute('x',18*s);dt.setAttribute('y',-22*s);dt.textContent='×';
       dg.appendChild(dc);dg.appendChild(dt);g.appendChild(dg);
       function del(ev){
         ev.preventDefault();ev.stopPropagation();
@@ -45395,7 +45521,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         var lid=o.layerId||'layer-1';
         replaceObjects(arr().filter(function(x){return x.id!==o.id;}));
         try{if(window.tt649SyncLayerDeletion)window.tt649SyncLayerDeletion(lid);}catch(e){}
-        selectedId=null;render();
+        selectedId=null;closeSizePanel();render();
       }
       dg.addEventListener('mousedown',del);
       dg.addEventListener('touchstart',del,{passive:false});
@@ -45405,7 +45531,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function renderObjects(){
     try{
       if(!svg)return;
-      var old=svg.querySelectorAll('.tt746-object-g');
+      var old=svg.querySelectorAll('.tt746-object-g,.tt747-object-g');
       for(var i=0;i<old.length;i++)old[i].remove();
       if(!isTavlaActive())return;
       var ns='http://www.w3.org/2000/svg';
@@ -45414,7 +45540,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){}
   }
   function moveObjectDrag(clientX,clientY){
-    if(!dragging||dragging.type!=='tt746-object')return;
+    if(!dragging||dragging.type!=='tt747-object')return;
     var pt=svgPt(clientX,clientY);
     var nx=clamp(pt.x+(dragging.ox||0),10,W-10);
     var ny=clamp(pt.y+(dragging.oy||0),10,H-10);
@@ -45422,21 +45548,22 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     for(var i=0;i<list.length;i++){
       if(list[i].id===dragging.id){list[i].x=nx;list[i].y=ny;break;}
     }
-    var g=svg.querySelector('.tt746-object-g[data-id="'+dragging.id+'"]');
+    var g=svg.querySelector('.tt747-object-g[data-id="'+dragging.id+'"]');
     if(g)g.setAttribute('transform','translate('+nx+','+ny+')');
   }
 
   function placeObjectFromEvent(ev,clientX,clientY){
     if(mode!=='object' || !isTavlaActive())return false;
-    try{if(ev.target && ev.target.closest && ev.target.closest('.tt746-object-g'))return false;}catch(e){}
+    try{if(ev.target && ev.target.closest && ev.target.closest('.tt747-object-g,.tt746-object-g'))return false;}catch(e){}
     if(typeof tt634BlockIfActiveLayerLocked==='function' && tt634BlockIfActiveLayerLocked()){
       ev.preventDefault();ev.stopImmediatePropagation();
       return true;
     }
     ev.preventDefault();ev.stopImmediatePropagation();
     try{if(typeof saveUndo==='function')saveUndo();}catch(e){}
+    closeSizePanel();
     var pt=svgPt(clientX,clientY);
-    var obj={id:'obj'+(idCounter++),type:objectToolType||'cone',x:pt.x,y:pt.y};
+    var obj={id:'obj'+(idCounter++),type:objectToolType||'cone',x:pt.x,y:pt.y,size:1};
     try{if(typeof tt631MarkObjectLayer==='function')tt631MarkObjectLayer(obj);}catch(e){}
     arr().push(obj);
     try{if(typeof tt631RefreshLayerPanelSoon==='function')tt631RefreshLayerPanelSoon();}catch(e){}
@@ -45446,8 +45573,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function bindSvg(){
-    if(!svg || svg.dataset.tt746ObjectBound)return;
-    svg.dataset.tt746ObjectBound='1';
+    if(!svg || svg.dataset.tt747ObjectBound)return;
+    svg.dataset.tt747ObjectBound='1';
     svg.addEventListener('mousedown',function(ev){placeObjectFromEvent(ev,ev.clientX,ev.clientY);},true);
     svg.addEventListener('touchstart',function(ev){
       if(ev.touches&&ev.touches.length)placeObjectFromEvent(ev,ev.touches[0].clientX,ev.touches[0].clientY);
@@ -45462,6 +45589,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       try{svg.style.cursor='crosshair';}catch(e){}
     }
     if(m!=='object' && objectPanel)objectPanel.style.display='none';
+    if(m!=='move')closeSizePanel();
     syncPanel();
   };
 
@@ -45507,12 +45635,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function patchClearButton(){
     var b=document.getElementById('tt236-rita-clear');
-    if(b&&!b.dataset.tt746ObjectClear){
-      b.dataset.tt746ObjectClear='1';
+    if(b&&!b.dataset.tt747ObjectClear){
+      b.dataset.tt747ObjectClear='1';
       b.addEventListener('click',function(){
         if(!isTavlaActive())return;
         replaceObjects([]);
         selectedId=null;
+        closeSizePanel();
         try{render();}catch(e){}
       });
     }
@@ -45524,13 +45653,23 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla() && mode==='object'){
       try{setMode('move');}catch(e){}
     }
+    if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
+    try{document.title='Taktiktavla TEST v747 objektstorlek';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='747 TEST';
+      });
+      var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v747 TEST';
+    }catch(e){}
   }
 
   bindSvg();
   refreshUi();
   try{render();}catch(e){}
   setInterval(refreshUi,600);
-  window.addEventListener('resize',function(){setTimeout(syncPanel,50);});
+  window.addEventListener('resize',function(){setTimeout(function(){syncPanel();var o=findObject(selectedId);if(o&&sizePanel&&sizePanel.style.display!=='none')openSizePanel(o);},50);});
 })();
