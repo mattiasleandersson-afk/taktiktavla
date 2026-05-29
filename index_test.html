@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v765 taktikfilm fullscreen nav lager</title>
+<title>Taktiktavla TEST v766 lager koner visa framåt</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2937,7 +2937,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=765-taktikfilm-fullscreen-nav-lager"></script>
+<script src="app_test.js?v=766-lager-koner-visa-framat"></script>
 
 <script>
 (function(){
@@ -3154,7 +3154,7 @@
   window.tt635EnsureFreeLayersFromCurrentObjects=function(){
     var known={};
     for(var i=0;i<state.layers.length;i++)known[state.layers[i].id]=true;
-    ['arrows','labels','freehandPaths','zones'].forEach(function(name){
+    ['arrows','labels','freehandPaths','zones','tacticObjects'].forEach(function(name){
       var arr=safeArr(name);
       for(var j=0;j<arr.length;j++){
         var lid=(arr[j]&&arr[j].layerId)||'layer-1';
@@ -3191,7 +3191,7 @@
   function applyFreeLayerDomOrder(){
     var root=document.getElementById('pitch-svg');
     if(!root)return;
-    var nodes=Array.prototype.slice.call(root.querySelectorAll('.zone-g[data-tt-free-layer-id],.freehand-g[data-tt-free-layer-id],.arrow-g[data-tt-free-layer-id],.label-g[data-tt-free-layer-id]'));
+    var nodes=Array.prototype.slice.call(root.querySelectorAll('.zone-g[data-tt-free-layer-id],.freehand-g[data-tt-free-layer-id],.arrow-g[data-tt-free-layer-id],.label-g[data-tt-free-layer-id],.tt747-object-g[data-tt-free-layer-id]'));
     if(!nodes.length)return;
     var anchor=root.querySelector('.player-token,.ball-token,.mv-path-g,.mv-preview');
     nodes.forEach(function(n,i){n.__tt643DomOrder=i;});
@@ -3245,7 +3245,7 @@
 
   function countObjectsByLayer(layerId){
     var count=0;
-    ['arrows','labels','freehandPaths','zones'].forEach(function(name){
+    ['arrows','labels','freehandPaths','zones','tacticObjects'].forEach(function(name){
       var arr=safeArr(name);
       for(var i=0;i<arr.length;i++){
         var obj=arr[i]||{};
@@ -3258,7 +3258,7 @@
 
   function findLayerObjectById(id){
     if(!id)return null;
-    var groups=['arrows','labels','freehandPaths','zones'];
+    var groups=['arrows','labels','freehandPaths','zones','tacticObjects'];
     for(var gi=0;gi<groups.length;gi++){
       var arr=safeArr(groups[gi]);
       for(var i=0;i<arr.length;i++){
@@ -3342,6 +3342,15 @@
         made++;
       }
     }catch(e){}
+    try{
+      var tos=safeArr('tacticObjects');
+      for(var oi=0;oi<tos.length;oi++){
+        var o=tos[oi]||{};
+        if((o.layerId||'layer-1')!==sourceLayerId)continue;
+        tos.push({id:nextFreeLayerObjectId('obj'),type:o.type||'cone',x:o.x,y:o.y,size:o.size,layerId:targetLayerId});
+        made++;
+      }
+    }catch(e){}
     return made;
   }
 
@@ -3366,6 +3375,11 @@
       var z0=safeArr('zones').length;
       window.zones=zones=zones.filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;});
       removed+=z0-zones.length;
+    }catch(e){}
+    try{
+      var o0=safeArr('tacticObjects').length;
+      window.tacticObjects=(Array.isArray(window.tacticObjects)?window.tacticObjects:[]).filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;});
+      removed+=o0-window.tacticObjects.length;
     }catch(e){}
     try{
       if(window.__tt638LastSelectedLayerObjectId && !findLayerObjectById(window.__tt638LastSelectedLayerObjectId)){
@@ -3437,14 +3451,14 @@
       var arr=Array.isArray(snap[name])?snap[name]:[];
       return arr.filter(function(o){return ((o&&o.layerId)||'layer-1')===layerId;}).map(cloneSimple);
     }
-    return {arrows:pick('arrows'),labels:pick('labels'),freehandPaths:pick('freehandPaths'),zones:pick('zones')};
+    return {arrows:pick('arrows'),labels:pick('labels'),freehandPaths:pick('freehandPaths'),zones:pick('zones'),tacticObjects:pick('tacticObjects')};
   }
 
   function replaceLayerObjectsInStep(step, layerId, bundle){
     if(!step)return;
     var oldFreeLayers=null;
     try{oldFreeLayers=step.freeLayers?cloneSimple(step.freeLayers):null;}catch(e){oldFreeLayers=null;}
-    ['arrows','labels','freehandPaths','zones'].forEach(function(name){
+    ['arrows','labels','freehandPaths','zones','tacticObjects'].forEach(function(name){
       var existing=Array.isArray(step[name])?step[name]:[];
       var incoming=Array.isArray(bundle&&bundle[name])?bundle[name]:[];
       step[name]=existing.filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;}).concat(incoming.map(cloneSimple));
@@ -3568,7 +3582,7 @@
   function countLayerObjectsInSnap(snap, layerId){
     var n=0;
     snap=snap||{};
-    ['arrows','labels','freehandPaths','zones'].forEach(function(name){
+    ['arrows','labels','freehandPaths','zones','tacticObjects'].forEach(function(name){
       var arr=Array.isArray(snap[name])?snap[name]:[];
       for(var i=0;i<arr.length;i++){
         if(((arr[i]&&arr[i].layerId)||'layer-1')===layerId)n++;
@@ -3578,7 +3592,7 @@
   }
 
   function bundleObjectCount(bundle){
-    return (bundle&&bundle.arrows?bundle.arrows.length:0)+(bundle&&bundle.labels?bundle.labels.length:0)+(bundle&&bundle.freehandPaths?bundle.freehandPaths.length:0)+(bundle&&bundle.zones?bundle.zones.length:0);
+    return (bundle&&bundle.arrows?bundle.arrows.length:0)+(bundle&&bundle.labels?bundle.labels.length:0)+(bundle&&bundle.freehandPaths?bundle.freehandPaths.length:0)+(bundle&&bundle.zones?bundle.zones.length:0)+(bundle&&bundle.tacticObjects?bundle.tacticObjects.length:0);
   }
 
   function findLayerSourceBundle(tk, cur, layerId, currentSnapObj){
@@ -3592,7 +3606,7 @@
         if(next<tk.steps.length && tk.steps[next] && countLayerObjectsInSnap(tk.steps[next],layerId)>0)return objectsFromSnapByLayer(tk.steps[next],layerId);
       }
     }
-    return {arrows:[],labels:[],freehandPaths:[],zones:[]};
+    return {arrows:[],labels:[],freehandPaths:[],zones:[],tacticObjects:[]};
   }
 
   function replaceLayerObjectsInGlobals(layerId,bundle){
@@ -3607,6 +3621,9 @@
     }catch(e){}
     try{
       window.zones=zones=(Array.isArray(zones)?zones:[]).filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;}).concat((bundle.zones||[]).map(cloneSimple));
+    }catch(e){}
+    try{
+      window.tacticObjects=(Array.isArray(window.tacticObjects)?window.tacticObjects:[]).filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;}).concat((bundle.tacticObjects||[]).map(cloneSimple));
     }catch(e){}
   }
 
@@ -3776,7 +3793,7 @@
     try{snap=(typeof currentSnap==='function')?currentSnap():tk.steps[cur];}catch(e){snap=tk.steps[cur];}
     if(!snap)return;
     var bundle=objectsFromSnapByLayer(snap, layer.id);
-    var count=(bundle.arrows.length+bundle.labels.length+bundle.freehandPaths.length+bundle.zones.length);
+    var count=(bundle.arrows.length+bundle.labels.length+bundle.freehandPaths.length+bundle.zones.length+(bundle.tacticObjects?bundle.tacticObjects.length:0));
     if(count<1){
       alert('Lagret är tomt i aktivt steg.');
       return;
@@ -4140,7 +4157,7 @@
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
+    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
     try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
@@ -4410,7 +4427,7 @@
     var on=isTavla();
     document.body.classList.toggle('tt733-tavla-active',on);
     if(on){setTop();normalizeRows();openLayer();}
-    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
+    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
     try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v745 TEST';}catch(e){}
   }
   function schedule(){apply();setTimeout(apply,80);setTimeout(apply,250);}
@@ -4450,7 +4467,7 @@
   window.__tt739TavlaRitvalV708PrincipInstalled=true;
   function byId(id){return document.getElementById(id);}
   function setVersion(){
-    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
+    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
@@ -4554,7 +4571,7 @@
     document.body.classList.toggle('tt742-mobile-tavla-active',!!(isMob && !fs && panel==='saves'));
     document.body.classList.toggle('tt742-mobile-board-fullscreen',!!(isMob && fs && !taktikfilm && isBoardPanel()));
     if(isMob)ensureButtonLabel();
-    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
+    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4702,7 +4719,7 @@
     }else{
       document.body.classList.remove('tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
+    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4800,7 +4817,7 @@
     if(on){
       try{document.body.classList.remove('tt642-layer-panel-mobile-open','tt741-board-fs-layer-toggle','tt741-fs-layers-collapsed');}catch(e){}
     }
-    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
+    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4878,7 +4895,7 @@
     }else{
       document.body.classList.remove('tt745-snabb-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v765 taktikfilm fullscreen nav lager';}catch(e){}
+    try{document.title='Taktiktavla TEST v766 lager koner visa framåt';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4911,7 +4928,7 @@
 
 
 
-<!-- === v765 TEST: Taktikfilm fullscreen lodrät toppnav + lagerpanel tillbaka === -->
+<!-- === v766 TEST: Taktikfilm fullscreen lodrät toppnav + lagerpanel tillbaka === -->
 <style id="tt765-taktikfilm-fullscreen-topnav-layer-css">
   /* Endast Taktikfilm i fullscreen. Flyttar stegnavigering/spela-knappar från sidopanel till toppremsa. */
   body.fullscreen-portrait.v66-taktik-fs:not(.tt523-fs-rotated-desktop) #fs-portrait-nav{
@@ -4974,7 +4991,7 @@
     }
   }
 </style>
-<!-- === slut v765 TEST === -->
+<!-- === slut v766 TEST === -->
 
 </body>
 </html>
@@ -4992,6 +5009,6 @@
     z-index:10090 !important;
   }
 </style>
-<!-- === v765 TEST: Fullscreen objektruta framför verktyg ===
+<!-- === v766 TEST: Fullscreen objektruta framför verktyg ===
      Bas: v758. Själva objektlogiken ligger i app_test.js. Breddar fullscreen-verktygsrutan och visar objektrutan framför/under.
      Ingen SQL och ingen Supabase-ändring. -->
