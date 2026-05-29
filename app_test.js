@@ -44289,9 +44289,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(document.body.classList.contains('fullscreen-portrait'))return false;
       if(document.body.classList.contains('tt696-fs-clean'))return false;
       if(document.body.classList.contains('v66-taktik-fs'))return false;
-      if(document.querySelector('.tab.on[data-panel="taktik"]'))return !!(typeof isEditingTaktik!=='undefined' && isEditingTaktik);
-      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
-      if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null)return true;
+      var tabOn=!!document.querySelector('.tab.on[data-panel="taktik"]');
+      var editOn=(typeof isEditingTaktik!=='undefined' && isEditingTaktik===true);
+      var idxOn=(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null && editingTaktikIdx!==undefined);
+      if(tabOn && (editOn||idxOn))return true;
+      if(editOn)return true;
+      if(idxOn && document.getElementById('edit-taktik-ui') && document.getElementById('edit-taktik-ui').style.display!=='none')return true;
       if(document.body.classList.contains('tt688-taktikfilm-editor-active'))return true;
     }catch(e){}
     return false;
@@ -45176,7 +45179,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v760 TEST: Objekt i Taktikfilm redigering + återställd lagerpanel ===
+/* === v761 TEST: Taktikfilm-lägesfix för objektknapp + lagerpanel ===
    Bas: v759.
    Behåller v759:s fungerande objekt i Tavla/Snabbtavla/fullscreen.
    Lägger till samma objektägare i Taktikfilm vanligt redigeringsläge.
@@ -45856,14 +45859,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v760 objekt i taktikfilm';}catch(e){}
+    try{document.title='Taktiktavla TEST v761 objektknapp lägesfix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='760 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='761 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v760 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v761 TEST';
     }catch(e){}
   }
 
@@ -45886,7 +45889,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v760 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v761 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering. */
 (function(){
   'use strict';
@@ -45931,10 +45934,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v760 TEST === */
+/* === slut v761 TEST === */
 
 
-/* === v760 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v761 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45981,4 +45984,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v760 TEST === */
+/* === slut v761 TEST === */
