@@ -45196,7 +45196,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v766 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v771 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -45912,14 +45912,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v769 rollback v767';}catch(e){}
+    try{document.title='Taktiktavla TEST v771 taktiktavla formationsruta bredare fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='766 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='771 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v766 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v771 TEST';
     }catch(e){}
   }
 
@@ -45942,7 +45942,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v766 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v771 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45989,11 +45989,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v766 TEST === */
+/* === slut v771 TEST === */
 
 
 
-/* === v766 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v771 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46042,4 +46042,49 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v766 TEST === */
+/* === slut v771 TEST === */
+
+
+/* === v771 TEST: Taktiktavla formationsval applicerar även spelform ===
+   Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
+(function(){
+  'use strict';
+  if(window.__tt771TavlaFormationApplyFix)return;
+  window.__tt771TavlaFormationApplyFix=true;
+  function byId(id){return document.getElementById(id);}
+  function isTavla(){try{return !!(document.body.classList.contains('tt733-tavla-active') || document.querySelector('.tab.on[data-panel="saves"]') || (byId('panel-saves')&&byId('panel-saves').classList.contains('on')));}catch(e){return false;}}
+  function formationsFor(fmt){try{return (window.FORMATIONS&&FORMATIONS[fmt])?FORMATIONS[fmt]:((window.FORMATIONS&&FORMATIONS[11])||['4-4-2']);}catch(e){return ['4-4-2'];}}
+  function applyFormationLocal(fmt,formation){
+    fmt=parseInt(fmt,10)||11;
+    formation=String(formation||'').trim() || (formationsFor(fmt)[0]||'4-4-2');
+    try{window.format=fmt; format=fmt;}catch(e){}
+    try{var sel=byId('fmt-sel'); if(sel)sel.value=String(fmt);}catch(e){}
+    try{var q=byId('tt205-qf-format'); if(q)q.value=String(fmt);}catch(e){}
+    try{if(typeof buildFormationBtns==='function')buildFormationBtns();}catch(e){}
+    try{document.querySelectorAll('#formation-btns .btn,#tt205-qf-buttons .btn').forEach(function(b){b.classList.toggle('on',(b.textContent||'').trim()===formation);});}catch(e){}
+    try{if(typeof initPlayers==='function')initPlayers(formation);}catch(e){}
+    try{if(typeof render==='function')render();}catch(e){}
+    try{if(typeof showToast==='function')showToast('Formation: '+formation);}catch(e){}
+  }
+  function syncLabel(){
+    try{var wrap=byId('tt205-quick-formation'); if(!wrap)return; var first=wrap.querySelector('#tt205-qf-head span:first-child'); if(first)first.textContent='Formation';}catch(e){}
+  }
+  function patch(){
+    if(!isTavla())return;
+    syncLabel();
+    var sel=byId('tt205-qf-format');
+    if(sel && !sel.dataset.tt771FormatApply){
+      sel.dataset.tt771FormatApply='1';
+      sel.addEventListener('change',function(ev){var fmt=parseInt(sel.value,10)||11; applyFormationLocal(fmt,formationsFor(fmt)[0]);},true);
+    }
+    var box=byId('tt205-qf-buttons');
+    if(box && !box.dataset.tt771ButtonApply){
+      box.dataset.tt771ButtonApply='1';
+      box.addEventListener('click',function(ev){var btn=ev.target&&ev.target.closest?ev.target.closest('button.btn'):null; if(!btn||!box.contains(btn))return; ev.preventDefault();ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation(); var fmt=parseInt((byId('tt205-qf-format')||{}).value,10)||((typeof format!=='undefined'&&format)||11); applyFormationLocal(fmt,(btn.textContent||'').trim());},true);
+    }
+    try{document.title='Taktiktavla TEST v771 taktiktavla formationsruta bredare fix';}catch(e){}
+  }
+  ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
+})();
+/* === slut v771 TEST === */
