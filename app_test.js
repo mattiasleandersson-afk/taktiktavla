@@ -45163,15 +45163,16 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v749 TEST: Objektknapp stabil + storlek för en/alla ===
-   Bas: v748.
-   Samma objektägare som v748. Stabiliserar knappens plats i ritraden
-   och lägger storleksval för enstaka objekt eller alla av samma typ. */
+/* === v750 TEST: Objektknapp utan radomkastning + storlek för en/alla ===
+   Bas: v749.
+   Behåller storleksvalet för en/alla, men tar bort v749:s breda order-styrning
+   som kunde ändra ordningen på övriga ritverktyg. */
 (function(){
   'use strict';
-  if(window.__tt749ObjectTools)return;
-  window.__tt749ObjectTools=true;
+  if(window.__tt750ObjectTools)return;
+  window.__tt750ObjectTools=true;
   window.__tt747ObjectTools=true;
+  window.__tt749ObjectTools=true;
 
   var objectToolType='cone';
   var objectPanel=null;
@@ -45274,14 +45275,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       '#tt747-size-panel .tt747-size-label{color:#f4e7ad;font-size:12px;font-weight:800;padding:0 3px;white-space:nowrap}',
       '#tt747-size-panel .tt749-size-divider{width:1px;height:22px;background:rgba(232,200,74,.28);margin:0 2px}',
       '#tt747-size-panel button.tt749-scope-btn{min-width:64px}',
-      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-arrow,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-arrow{order:10!important}',
-      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-text,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-text{order:20!important}',
-      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-freehand,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-freehand{order:30!important}',
-      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-zone,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-zone{order:40!important}',
-      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #tt747-object-btn,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #tt747-object-btn{order:50!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;transform:none!important}',
-      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #tt236-rita-clear,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #tt236-rita-clear{order:60!important}',
-      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-undo,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-undo{order:70!important}',
-      'body.tt733-tavla-active:not(.fullscreen-portrait) .tt248-tavla-rita-row #btn-reset,body.tt733-tavla-active:not(.fullscreen-portrait) #tt252-ipad-rita-row #btn-reset{order:80!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;transform:none!important;flex:0 0 auto!important}',
       'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn:not(.tt749-object-ready){display:none!important}',
       'body:not(.tt733-tavla-active) #tt747-object-btn{display:none!important}',
       '.tt747-object-g{cursor:pointer}',
@@ -45734,14 +45728,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v749 objektknapp stabil';}catch(e){}
+    try{document.title='Taktiktavla TEST v750 objektknapp radordning fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='749 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='750 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v749 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v750 TEST';
     }catch(e){}
   }
 
