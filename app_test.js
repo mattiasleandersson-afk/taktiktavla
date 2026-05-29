@@ -45163,7 +45163,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v754 TEST: Objektknapp stabil plats + Matcher döljer lager ===
+/* === v755 TEST: Objektknapp stabil plats + Matcher döljer lager ===
    Bas: v750.
    Objektknappen får bara synas när den verkligen ligger direkt efter Zon i ritverktygsraden.
    Matcher döljer lagerpanel/knappar igen. */
@@ -45178,7 +45178,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var objectToolType='cone';
   var objectPanel=null;
   var objectButton=null;
-  var fsObjectButton=null;
   var sizePanel=null;
   var objectsRef=null;
   var touchDragTimer=null;
@@ -45246,54 +45245,21 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     setSizeByScope(o,objectSize(o)+delta);
   }
 
-  function isTaktikfilmActive(){
-    try{
-      if(document.body.classList.contains('tt248-taktik-active'))return true;
-      if(document.body.classList.contains('v66-taktik-fs'))return true;
-      var t=document.querySelector('.tab.on[data-panel="taktik"]');
-      if(t)return true;
-    }catch(e){}
-    return false;
-  }
-  function isMatcherActive(){
-    try{
-      if(document.body.classList.contains('tt751-matcher-active'))return true;
-      var t=document.querySelector('.tab.on[data-panel="lag"],.tab.on[data-panel="match"],.tab.on[data-panel="matcher"]');
-      if(t)return true;
-      var lag=document.getElementById('panel-lag');
-      if(lag&&lag.classList.contains('on'))return true;
-    }catch(e){}
-    return false;
-  }
   function isTavlaActive(){
     try{
-      if(isTaktikfilmActive()||isMatcherActive())return false;
       if(document.body.classList.contains('tt733-tavla-active'))return true;
       var tab=document.querySelector('.tab.on[data-panel="saves"]');
       var panel=document.getElementById('panel-saves');
       return !!(tab || (panel&&panel.classList.contains('on')));
     }catch(e){return false;}
   }
-  function isSnabbActive(){
+  function isNormalTavla(){
     try{
-      if(isTaktikfilmActive()||isMatcherActive())return false;
-      var tab=document.querySelector('.tab.on[data-panel="formations"],.tab.on[data-panel="snabb"],.tab.on[data-panel="quick"]');
-      var panel=document.getElementById('panel-formations')||document.getElementById('panel-snabb')||document.getElementById('panel-quick');
-      if(tab || (panel&&panel.classList.contains('on')))return true;
-      var txt=(document.querySelector('.tab.on')||{}).textContent||'';
-      if(/snabbtavla/i.test(txt))return true;
+      if(document.body.classList.contains('fullscreen-portrait'))return false;
+      if(document.body.classList.contains('tt696-fs-clean'))return false;
     }catch(e){}
-    return false;
+    return isTavlaActive();
   }
-  function isBoardActive(){return isTavlaActive()||isSnabbActive();}
-  function isFullscreenBoard(){
-    try{return document.body.classList.contains('fullscreen-portrait') && isBoardActive() && !isTaktikfilmActive();}catch(e){return false;}
-  }
-  function isNormalBoard(){
-    try{if(document.body.classList.contains('fullscreen-portrait'))return false;}catch(e){}
-    return isBoardActive();
-  }
-  function isNormalTavla(){return isNormalBoard();}
 
   function ensureStyle(){
     if(document.getElementById('tt747-object-style'))return;
@@ -45310,12 +45276,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       '#tt747-size-panel .tt747-size-label{color:#f4e7ad;font-size:12px;font-weight:800;padding:0 3px;white-space:nowrap}',
       '#tt747-size-panel .tt749-size-divider{width:1px;height:22px;background:rgba(232,200,74,.28);margin:0 2px}',
       '#tt747-size-panel button.tt749-scope-btn{min-width:64px}',
-      'body.tt754-object-active:not(.fullscreen-portrait) #tt747-object-btn{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;transform:none!important;flex:0 0 auto!important}',
-      'body.tt754-object-active:not(.fullscreen-portrait) #tt747-object-btn:not(.tt751-object-ready){display:none!important}',
-      'body:not(.tt754-object-active) #tt747-object-btn{display:none!important}',
-      '#tt754-fs-object-btn{display:none}',
-      'body.fullscreen-portrait.tt754-object-active #tt754-fs-object-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:30px!important;height:28px!important;padding:2px 5px!important;color:#e8c84a!important;border-color:#e8c84a!important}',
-      'body.fullscreen-portrait.tt754-object-active #tt754-fs-object-btn.on,body.fullscreen-portrait.tt754-object-active #tt754-fs-object-btn.active{background:rgba(232,200,74,.12)!important;color:#ffdd44!important;border-color:#ffdd44!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;transform:none!important;flex:0 0 auto!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn:not(.tt751-object-ready){display:none!important}',
+      'body:not(.tt733-tavla-active) #tt747-object-btn{display:none!important}',
       '.tt747-object-g{cursor:pointer}',
       '.tt747-object-hit{fill:transparent;stroke:transparent;stroke-width:16;pointer-events:stroke}',
       '.tt747-obj-delete .del-circ{fill:#1b1515;stroke:#ff6b6b;stroke-width:2}',
@@ -45434,7 +45397,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){return null;}
   }
   function openSizePanel(o,clientX,clientY){
-    if(!o||!isBoardActive())return;
+    if(!o||!isTavlaActive())return;
     ensureSizePanel();
     var c=(typeof clientX==='number'&&typeof clientY==='number')?{x:clientX,y:clientY}:pointToClient(o);
     var left=(c?c.x+14:80), top=(c?c.y-12:80);
@@ -45460,13 +45423,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         objectButton.classList.toggle('on',mode==='object');
         objectButton.classList.toggle('active',mode==='object');
       }
-      if(fsObjectButton){
-        fsObjectButton.classList.toggle('on',mode==='object');
-        fsObjectButton.classList.toggle('active',mode==='object');
-      }
       if(objectPanel){
         Array.from(objectPanel.querySelectorAll('button')).forEach(function(b){b.classList.toggle('on',b.dataset.obj===objectToolType);});
-        objectPanel.style.display=(mode==='object'&&(isNormalBoard()||isFullscreenBoard()))?'flex':'none';
+        objectPanel.style.display=(mode==='object'&&isNormalTavla())?'flex':'none';
         positionPanel();
       }
       if(sizePanel&&sizePanel.style.display!=='none'&&!findObject(selectedId))closeSizePanel();
@@ -45475,8 +45434,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function positionPanel(){
     if(!objectPanel || !objectButton || objectPanel.style.display==='none')return;
     try{
-      var anchor=(isFullscreenBoard()&&fsObjectButton)?fsObjectButton:objectButton;
-      var r=anchor.getBoundingClientRect();
+      var r=objectButton.getBoundingClientRect();
       var left=Math.min(window.innerWidth-150,Math.max(8,r.right+8));
       var top=Math.min(window.innerHeight-46,Math.max(8,r.top));
       objectPanel.style.left=left+'px';
@@ -45514,7 +45472,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function markButtonReady(b,row,ref){
     try{
-      var ok=!!(b && row && ref && b.parentNode===row && b.previousElementSibling===ref && validRitaRow(row) && isNormalBoard());
+      var ok=!!(b && row && ref && b.parentNode===row && b.previousElementSibling===ref && validRitaRow(row) && isNormalTavla());
       b.classList.toggle('tt751-object-ready',ok);
       b.classList.remove('tt749-object-ready');
       return ok;
@@ -45569,31 +45527,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }
     objectButton=b;
     placeObjectButtonInRitaRow(b);
-    syncPanel();
-  }
-
-  function ensureFullscreenButton(){
-    ensureStyle();ensurePanel();ensureSizePanel();
-    var b=document.getElementById('tt754-fs-object-btn');
-    if(!b){
-      b=document.createElement('button');
-      b.type='button';
-      b.id='tt754-fs-object-btn';
-      b.className='btn';
-      b.innerHTML='<span class="tt748-cone-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3L5 20h14L12 3z" fill="#f47b20" stroke="#fff3d0" stroke-width="1.7"/><rect x="7.4" y="13" width="9.2" height="2.8" rx="1" fill="#fff3d0"/><rect x="4.3" y="19" width="15.4" height="2.3" rx="1" fill="#ffdd44"/></svg></span>';
-      b.title='Objekt: kon/pinne';
-      b.setAttribute('aria-label','Objekt');
-      b.addEventListener('click',function(e){
-        e.preventDefault();e.stopPropagation();
-        closeSizePanel();
-        try{if(typeof setMode==='function')setMode(mode==='object'?'move':'object');}catch(_e){}
-        syncPanel();
-      });
-      document.body.appendChild(b);
-    }
-    var host=document.getElementById('fs-top-tools')||document.getElementById('fullscreen-tools')||document.body;
-    if(host && b.parentNode!==host)host.appendChild(b);
-    fsObjectButton=b;
     syncPanel();
   }
 
@@ -45718,7 +45651,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(!svg)return;
       var old=svg.querySelectorAll('.tt746-object-g,.tt747-object-g');
       for(var i=0;i<old.length;i++)old[i].remove();
-      if(!isBoardActive())return;
+      if(!isTavlaActive())return;
       var ns='http://www.w3.org/2000/svg';
       var list=arr();
       for(var j=0;j<list.length;j++)svg.appendChild(renderOneObject(ns,list[j]));
@@ -45738,7 +45671,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function placeObjectFromEvent(ev,clientX,clientY){
-    if(mode!=='object' || !isBoardActive())return false;
+    if(mode!=='object' || !isTavlaActive())return false;
     try{if(ev.target && ev.target.closest && ev.target.closest('.tt747-object-g,.tt746-object-g'))return false;}catch(e){}
     if(typeof tt634BlockIfActiveLayerLocked==='function' && tt634BlockIfActiveLayerLocked()){
       ev.preventDefault();ev.stopImmediatePropagation();
@@ -45823,7 +45756,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(b&&!b.dataset.tt747ObjectClear){
       b.dataset.tt747ObjectClear='1';
       b.addEventListener('click',function(){
-        if(!isBoardActive())return;
+        if(!isTavlaActive())return;
         replaceObjects([]);
         selectedId=null;
         closeSizePanel();
@@ -45833,26 +45766,22 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function refreshUi(){
-    var active=isBoardActive();
-    document.body.classList.toggle('tt754-object-active',!!active);
     ensureButton();
-    ensureFullscreenButton();
-    if(objectButton)objectButton.style.display=isNormalBoard()?'inline-flex':'none';
-    if(fsObjectButton)fsObjectButton.style.display=isFullscreenBoard()?'inline-flex':'none';
-    if(!(isNormalBoard()||isFullscreenBoard()) && mode==='object'){
+    if(objectButton)objectButton.style.display=isNormalTavla()?'inline-flex':'none';
+    if(!isNormalTavla() && mode==='object'){
       try{setMode('move');}catch(e){}
     }
-    if(!(isNormalBoard()||isFullscreenBoard()))closeSizePanel();
+    if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v754 objekt tavla snabb fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v755 objektknapp matcher lagerfix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='754 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='751 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v754 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v755 TEST';
     }catch(e){}
   }
 
@@ -45875,7 +45804,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v754 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v755 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45922,4 +45851,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v754 TEST === */
+/* === slut v755 TEST === */
