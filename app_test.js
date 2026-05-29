@@ -5,7 +5,7 @@
 */
 /* === v585-testmiljo-storage-scope ===
    Testapp: isolerar localStorage från produktionsappen på samma origin.
-   Detta gör att testinloggning, aktivt lag och lokala appval inte blandas med produktion.
+   Detta gör att testinlogggning, aktivt lag och lokala appval inte blandas med produktion.
 */
 (function(){
   'use strict';
