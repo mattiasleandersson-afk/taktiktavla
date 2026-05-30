@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v797 taktikfilm lager startposition</title>
+<title>Taktiktavla TEST v796 taktikfilm panel klickbar</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -4177,7 +4177,7 @@
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v797 taktikfilm lager startposition';}catch(e){}
+    try{document.title='Taktiktavla TEST v796 taktikfilm panel klickbar';}catch(e){}
     try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
@@ -4447,7 +4447,7 @@
     var on=isTavla();
     document.body.classList.toggle('tt733-tavla-active',on);
     if(on){setTop();normalizeRows();openLayer();}
-    try{document.title='Taktiktavla TEST v797 taktikfilm lager startposition';}catch(e){}
+    try{document.title='Taktiktavla TEST v796 taktikfilm panel klickbar';}catch(e){}
     try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v745 TEST';}catch(e){}
   }
   function schedule(){apply();setTimeout(apply,80);setTimeout(apply,250);}
@@ -4489,7 +4489,7 @@
   window.__tt739TavlaRitvalV708PrincipInstalled=true;
   function byId(id){return document.getElementById(id);}
   function setVersion(){
-    try{document.title='Taktiktavla TEST v797 taktikfilm lager startposition';}catch(e){}
+    try{document.title='Taktiktavla TEST v796 taktikfilm panel klickbar';}catch(e){}
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
@@ -4593,7 +4593,7 @@
     document.body.classList.toggle('tt742-mobile-tavla-active',!!(isMob && !fs && panel==='saves'));
     document.body.classList.toggle('tt742-mobile-board-fullscreen',!!(isMob && fs && !taktikfilm && isBoardPanel()));
     if(isMob)ensureButtonLabel();
-    try{document.title='Taktiktavla TEST v797 taktikfilm lager startposition';}catch(e){}
+    try{document.title='Taktiktavla TEST v796 taktikfilm panel klickbar';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4803,7 +4803,7 @@
       taktikLayerOpen=false;
       document.body.classList.remove('tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v797 taktikfilm lager startposition';}catch(e){}
+    try{document.title='Taktiktavla TEST v796 taktikfilm panel klickbar';}catch(e){}
   }
   function toggleFromButton(ev){
     if(!isTaktikfilmContext())return;
@@ -4849,95 +4849,6 @@
 })();
 </script>
 <!-- === slut v745 TEST === -->
-
-
-<!-- === v797 TEST: Taktikfilm mobil-lager startposition === -->
-<style id="tt797-taktikfilm-layer-startpos-css">
-@media (max-width:720px){
-  body.tt743-mobile-taktikfilm-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle,
-  body.tt797-taktikfilm-layer-pos:not(.fullscreen-portrait) #tt642-layer-mobile-toggle{
-    display:block!important;
-    visibility:visible!important;
-    pointer-events:auto!important;
-    left:auto!important;
-    right:calc(env(safe-area-inset-right,0px) + 10px)!important;
-    top:var(--tt743-mobile-taktik-layer-top, calc(env(safe-area-inset-top,0px) + 93px))!important;
-    bottom:auto!important;
-    transform:none!important;
-    z-index:100500!important;
-  }
-  body.fullscreen-portrait.v66-taktik-fs #tt642-layer-mobile-toggle,
-  body.fullscreen-portrait.tt743-mobile-taktikfilm-fullscreen #tt642-layer-mobile-toggle,
-  body.fullscreen-portrait.tt797-taktikfilm-layer-pos #tt642-layer-mobile-toggle{
-    display:block!important;
-    visibility:visible!important;
-    pointer-events:auto!important;
-    left:auto!important;
-    right:calc(env(safe-area-inset-right,0px) + 10px)!important;
-    top:calc(env(safe-area-inset-top,0px) + 52px)!important;
-    bottom:auto!important;
-    transform:none!important;
-    z-index:100500!important;
-  }
-}
-</style>
-<script id="tt797-taktikfilm-layer-startpos-js">
-(function(){
-  'use strict';
-  if(window.__tt797TaktikfilmLayerStartPos)return;
-  window.__tt797TaktikfilmLayerStartPos=true;
-  function byId(id){return document.getElementById(id);}
-  function mobile(){try{return !!(window.matchMedia&&window.matchMedia('(max-width:720px)').matches);}catch(e){return false;}}
-  function visible(el){try{if(!el)return false;var cs=getComputedStyle(el);var r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>8&&r.height>8;}catch(e){return false;}}
-  function isLibrary(){
-    try{
-      if(document.body.classList.contains('tt-v82-taktik-library'))return true;
-      var no=byId('no-rec-ui');
-      var tab=document.querySelector('.tab.on[data-panel="taktik"]');
-      return !!(tab && visible(no));
-    }catch(e){return false;}
-  }
-  function ctx(){
-    try{
-      if(!mobile()||isLibrary())return false;
-      if(document.body.classList.contains('v66-taktik-fs'))return true;
-      if(document.body.classList.contains('tt688-taktikfilm-editor-active'))return true;
-      if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)return true;
-      if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null)return true;
-      if(typeof playback!=='undefined'&&playback)return true;
-      return !!(document.querySelector('.tab.on[data-panel="taktik"]') && visible(byId('taktikbar')));
-    }catch(e){return false;}
-  }
-  function apply(){
-    var active=ctx();
-    var fs=!!(active && document.body.classList.contains('fullscreen-portrait'));
-    document.body.classList.toggle('tt797-taktikfilm-layer-pos',active);
-    if(active){
-      document.body.classList.toggle('tt743-mobile-taktikfilm-active',!fs);
-      document.body.classList.toggle('tt743-mobile-taktikfilm-fullscreen',fs);
-      if(!fs){
-        var top=93;
-        try{
-          var wrap=byId('pitch-wrapper');
-          var bar=byId('taktikbar');
-          if(wrap&&visible(wrap)){var r=wrap.getBoundingClientRect();top=Math.round(r.top+10);}
-          else if(bar&&visible(bar)){var br=bar.getBoundingClientRect();top=Math.round(br.bottom+8);}
-          top=Math.max(72,Math.min((innerHeight||600)-76,top));
-        }catch(e){}
-        document.documentElement.style.setProperty('--tt743-mobile-taktik-layer-top',top+'px');
-      }
-    }else{
-      document.body.classList.remove('tt797-taktikfilm-layer-pos');
-    }
-  }
-  function burst(){[0,40,120,260,520,900].forEach(function(ms){setTimeout(apply,ms);});}
-  ['click','touchend','resize','orientationchange','fullscreenchange','hashchange'].forEach(function(evt){window.addEventListener(evt,burst,true);});
-  try{new MutationObserver(burst).observe(document.body,{attributes:true,attributeFilter:['class']});}catch(e){}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',burst);
-  else burst();
-})();
-</script>
-<!-- === slut v797 TEST === -->
 
 
 
@@ -5006,7 +4917,7 @@
     if(on){
       try{document.body.classList.remove('tt642-layer-panel-mobile-open','tt741-board-fs-layer-toggle','tt741-fs-layers-collapsed');}catch(e){}
     }
-    try{document.title='Taktiktavla TEST v797 taktikfilm lager startposition';}catch(e){}
+    try{document.title='Taktiktavla TEST v796 taktikfilm panel klickbar';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5084,7 +4995,7 @@
     }else{
       document.body.classList.remove('tt745-snabb-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v797 taktikfilm lager startposition';}catch(e){}
+    try{document.title='Taktiktavla TEST v796 taktikfilm panel klickbar';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5286,7 +5197,7 @@
     var idx=currentStepIndex();
     markEditList(idx);
     markPlayList();
-    try{document.title='Taktiktavla TEST v797 taktikfilm lager startposition';}catch(e){}
+    try{document.title='Taktiktavla TEST v796 taktikfilm panel klickbar';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5455,7 +5366,7 @@
   }
   function apply(){
     patchControls();
-    try{document.title='Taktiktavla TEST v797 taktikfilm lager startposition';}catch(e){}
+    try{document.title='Taktiktavla TEST v796 taktikfilm panel klickbar';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5564,7 +5475,7 @@
         if(d)d.style.pointerEvents='auto';
       }
     }catch(e){}
-    try{document.title='Taktiktavla TEST v797 taktikfilm lager startposition';}catch(e){}
+    try{document.title='Taktiktavla TEST v796 taktikfilm panel klickbar';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
