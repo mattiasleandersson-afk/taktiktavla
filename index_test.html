@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v785 taktikfilm stang fix</title>
+<title>Taktiktavla TEST v786 tt743 apply fix</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2297,7 +2297,7 @@
 }
 #tt610-test-env-banner::after,
 #tt609-test-env-banner::after{
-  content:"⚠ TESTMILJÖ – v785 FIX"!important;
+  content:"⚠ TESTMILJÖ – v786 FIX"!important;
   font-size:0.72rem!important;
   color:#ffd84a!important;
 }
@@ -2305,7 +2305,7 @@
 /* Versionsspannet i topbar – förstärk befintlig mask till rätt version */
 #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
 span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-  content:"785 FIX"!important;
+  content:"786 FIX"!important;
 }
 
 @media (max-width:720px){
@@ -4313,7 +4313,7 @@ span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v785 taktikfilm stang fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v786 tt743 apply fix';}catch(e){}
     try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
@@ -4583,7 +4583,7 @@ span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
     var on=isTavla();
     document.body.classList.toggle('tt733-tavla-active',on);
     if(on){setTop();normalizeRows();openLayer();}
-    try{document.title='Taktiktavla TEST v785 taktikfilm stang fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v786 tt743 apply fix';}catch(e){}
     try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v745 TEST';}catch(e){}
   }
   function schedule(){apply();setTimeout(apply,80);setTimeout(apply,250);}
@@ -4625,7 +4625,7 @@ span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
   window.__tt739TavlaRitvalV708PrincipInstalled=true;
   function byId(id){return document.getElementById(id);}
   function setVersion(){
-    try{document.title='Taktiktavla TEST v785 taktikfilm stang fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v786 tt743 apply fix';}catch(e){}
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
@@ -4729,7 +4729,7 @@ span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
     document.body.classList.toggle('tt742-mobile-tavla-active',!!(isMob && !fs && panel==='saves'));
     document.body.classList.toggle('tt742-mobile-board-fullscreen',!!(isMob && fs && !taktikfilm && isBoardPanel()));
     if(isMob)ensureButtonLabel();
-    try{document.title='Taktiktavla TEST v785 taktikfilm stang fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v786 tt743 apply fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4873,11 +4873,19 @@ span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
     document.body.classList.toggle('tt743-mobile-taktikfilm-fullscreen',!!fs);
     if(ctx){
       updateButtonPosition();
-      setPanelOpen(taktikLayerOpen); // stängd från start, därefter styr v743-knappen läget
+      // v786 FIX: synka bara klassen mot taktikLayerOpen – anropa inte setPanelOpen()
+      // setPanelOpen() vid varje touchend återställde panelstate och blockade interaktion
+      document.body.classList.toggle('tt642-layer-panel-mobile-open', taktikLayerOpen);
+      var _btn=byId('tt642-layer-mobile-toggle');
+      if(_btn){
+        _btn.setAttribute('aria-expanded', taktikLayerOpen?'true':'false');
+        _btn.textContent=taktikLayerOpen?'Dölj lager':'Lager';
+        _btn.title=taktikLayerOpen?'Dölj lagerlista':'Visa lagerlista';
+      }
     }else{
       document.body.classList.remove('tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v785 taktikfilm stang fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v786 tt743 apply fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4975,7 +4983,7 @@ span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
     if(on){
       try{document.body.classList.remove('tt642-layer-panel-mobile-open','tt741-board-fs-layer-toggle','tt741-fs-layers-collapsed');}catch(e){}
     }
-    try{document.title='Taktiktavla TEST v785 taktikfilm stang fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v786 tt743 apply fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5053,7 +5061,7 @@ span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
     }else{
       document.body.classList.remove('tt745-snabb-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v785 taktikfilm stang fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v786 tt743 apply fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5239,7 +5247,7 @@ span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
     var idx=currentStepIndex();
     markEditList(idx);
     markPlayList();
-    try{document.title='Taktiktavla TEST v785 taktikfilm stang fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v786 tt743 apply fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5408,7 +5416,7 @@ span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
   }
   function apply(){
     patchControls();
-    try{document.title='Taktiktavla TEST v785 taktikfilm stang fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v786 tt743 apply fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5517,7 +5525,7 @@ span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
         if(d)d.style.pointerEvents='auto';
       }
     }catch(e){}
-    try{document.title='Taktiktavla TEST v785 taktikfilm stang fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v786 tt743 apply fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
