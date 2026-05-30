@@ -45196,7 +45196,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v783 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v773 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -45916,10 +45916,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='783 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='773 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v783 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v773 TEST';
     }catch(e){}
   }
 
@@ -45942,7 +45942,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v783 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v773 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45989,11 +45989,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v783 TEST === */
+/* === slut v773 TEST === */
 
 
 
-/* === v783 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v773 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46042,10 +46042,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v783 TEST === */
+/* === slut v773 TEST === */
 
 
-/* === v783 TEST: Taktiktavla formationsval applicerar även spelform ===
+/* === v773 TEST: Taktiktavla formationsval applicerar även spelform ===
    Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
 (function(){
   'use strict';
@@ -46087,4 +46087,188 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
-/* === slut v783 TEST === */
+/* === slut v773 TEST === */
+
+/* === v783 DIAG: iPhone-lagerknapp/panel utan funktionsfix ===
+   Bas: v773. Endast diagnos av befintlig lagerknapp och lagerpanel.
+   Skapar ingen ny knappägare för Lager, ändrar inte panelens öppna/stäng-logik och skriver inget till Supabase. */
+(function(){
+  'use strict';
+  if(window.__tt783LayerDiagInstalled)return;
+  window.__tt783LayerDiagInstalled=true;
+
+  var lastEvents=[];
+  var panelOpen=false;
+  var maxEvents=10;
+
+  function byId(id){return document.getElementById(id);}
+  function now(){try{return new Date().toLocaleTimeString('sv-SE');}catch(e){return String(Date.now());}}
+  function mobile(){try{return !!(window.matchMedia&&window.matchMedia('(max-width:720px)').matches);}catch(e){return false;}}
+  function shortClasses(){try{return (document.body.className||'').split(/\s+/).filter(Boolean).sort().join(' ');}catch(e){return '';}}
+  function activePanelName(){
+    try{var tab=document.querySelector('.tab.on[data-panel]'); if(tab)return String(tab.getAttribute('data-panel')||'');}catch(e){}
+    try{var p=document.querySelector('.panel.on'); if(p&&p.id)return String(p.id).replace(/^panel-/,'');}catch(e){}
+    return '';
+  }
+  function rectInfo(el){
+    if(!el)return 'saknas';
+    try{
+      var r=el.getBoundingClientRect();
+      return Math.round(r.left)+','+Math.round(r.top)+' '+Math.round(r.width)+'x'+Math.round(r.height);
+    }catch(e){return 'rect-fel';}
+  }
+  function csInfo(el){
+    if(!el)return {exists:false};
+    try{
+      var cs=getComputedStyle(el);
+      return {
+        exists:true,
+        display:cs.display,
+        visibility:cs.visibility,
+        opacity:cs.opacity,
+        pointerEvents:cs.pointerEvents,
+        zIndex:cs.zIndex,
+        position:cs.position,
+        left:cs.left,
+        right:cs.right,
+        top:cs.top,
+        bottom:cs.bottom
+      };
+    }catch(e){return {exists:true,error:String(e&&e.message||e)};}
+  }
+  function hiddenAncestors(el){
+    var out=[];
+    try{
+      var cur=el;
+      while(cur && cur.nodeType===1 && cur!==document.documentElement){
+        var cs=getComputedStyle(cur);
+        if(cs.display==='none'||cs.visibility==='hidden'||cs.opacity==='0'||cs.pointerEvents==='none'){
+          out.push((cur.id?'#'+cur.id:cur.tagName.toLowerCase())+': d='+cs.display+', v='+cs.visibility+', op='+cs.opacity+', pe='+cs.pointerEvents);
+        }
+        cur=cur.parentElement;
+      }
+    }catch(e){out.push('fel: '+String(e&&e.message||e));}
+    return out;
+  }
+  function addEventLine(label,ev){
+    try{
+      var t=ev&&ev.target;
+      var id=t&&t.id?('#'+t.id):(t&&t.className?('.'+String(t.className).replace(/\s+/g,'.')):(t&&t.tagName?t.tagName.toLowerCase():'?'));
+      lastEvents.unshift(now()+' '+label+' '+id);
+      if(lastEvents.length>maxEvents)lastEvents.length=maxEvents;
+      scheduleUpdate();
+    }catch(e){}
+  }
+  function ensureCss(){
+    if(byId('tt783-layer-diag-css'))return;
+    var st=document.createElement('style');
+    st.id='tt783-layer-diag-css';
+    st.textContent=[
+      '#tt783-layer-diag-toggle{position:fixed;left:calc(env(safe-area-inset-left,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 10px);z-index:200000;background:#111a14;color:#ffd84a;border:1px solid #ffd84a;border-radius:999px;padding:7px 10px;font:800 12px system-ui;box-shadow:0 4px 18px rgba(0,0,0,.45);}',
+      '#tt783-layer-diag{position:fixed;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:199999;max-height:56vh;overflow:auto;background:rgba(8,14,10,.97);color:#eaffef;border:1px solid #ffd84a;border-radius:12px;padding:9px;font:11px/1.35 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-shadow:0 10px 35px rgba(0,0,0,.55);display:none;white-space:pre-wrap;}',
+      '#tt783-layer-diag.tt783-open{display:block;}',
+      '#tt783-layer-diag .tt783-head{display:flex;gap:6px;align-items:center;margin-bottom:6px;font-family:system-ui;font-size:12px;font-weight:900;color:#ffd84a;}',
+      '#tt783-layer-diag button{border:1px solid #2d4a35;background:#132018;color:#bdf5c8;border-radius:7px;padding:4px 7px;font:800 11px system-ui;}',
+      '#tt783-layer-diag pre{margin:0;white-space:pre-wrap;}',
+      '@media (min-width:721px){#tt783-layer-diag-toggle{opacity:.55}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+  function ensurePanel(){
+    ensureCss();
+    var tog=byId('tt783-layer-diag-toggle');
+    if(!tog){
+      tog=document.createElement('button');
+      tog.id='tt783-layer-diag-toggle';
+      tog.type='button';
+      tog.textContent='DIAG lager';
+      tog.title='Visa diagnos för Lager-knappen/panelen';
+      tog.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();panelOpen=!panelOpen;var p=byId('tt783-layer-diag'); if(p)p.classList.toggle('tt783-open',panelOpen); update();},true);
+      document.body.appendChild(tog);
+    }
+    var box=byId('tt783-layer-diag');
+    if(!box){
+      box=document.createElement('div');
+      box.id='tt783-layer-diag';
+      box.innerHTML='<div class="tt783-head"><span>v783 DIAG Lager</span><button type="button" id="tt783-refresh">Uppdatera</button><button type="button" id="tt783-copy">Kopiera</button><button type="button" id="tt783-clear">Rensa logg</button></div><pre id="tt783-layer-diag-pre"></pre>';
+      document.body.appendChild(box);
+      byId('tt783-refresh').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();update();},true);
+      byId('tt783-clear').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();lastEvents=[];update();},true);
+      byId('tt783-copy').addEventListener('click',function(e){
+        e.preventDefault();e.stopPropagation();
+        var txt=(byId('tt783-layer-diag-pre')||{}).textContent||'';
+        try{navigator.clipboard.writeText(txt).then(function(){try{if(typeof showToast==='function')showToast('DIAG kopierad');}catch(_e){}});}catch(_e){}
+      },true);
+    }
+    return box;
+  }
+  function collect(){
+    var panel=byId('tt616-layer-panel');
+    var mobBtn=byId('tt642-layer-mobile-toggle');
+    var fsBtn=byId('tt741-fs-layer-toggle')||byId('tt742-mobile-layer-toggle')||byId('tt743-mobile-taktik-layer-toggle');
+    var details=document.querySelector('#tt616-layer-panel details');
+    var pcs=csInfo(panel), bcs=csInfo(mobBtn), fcs=csInfo(fsBtn);
+    var lines=[];
+    lines.push('Tid: '+now());
+    lines.push('Läge: mobile='+mobile()+', panel='+activePanelName()+', fullscreen='+document.body.classList.contains('fullscreen-portrait')+', v66-taktik-fs='+document.body.classList.contains('v66-taktik-fs'));
+    lines.push('Taktikfilm: isEditingTaktik='+(typeof isEditingTaktik!=='undefined'?isEditingTaktik:'?')+', editingTaktikIdx='+(typeof editingTaktikIdx!=='undefined'?editingTaktikIdx:'?')+', playback='+(typeof playback!=='undefined'&&!!playback));
+    lines.push('Body-klasser: '+shortClasses());
+    lines.push('');
+    lines.push('PANEL #tt616-layer-panel: '+(panel?'finns':'SAKNAS')+', rect='+rectInfo(panel)+', details.open='+(details?!!details.open:'saknas'));
+    lines.push('  computed: display='+pcs.display+', visibility='+pcs.visibility+', opacity='+pcs.opacity+', pointer-events='+pcs.pointerEvents+', z-index='+pcs.zIndex+', pos='+pcs.position+', top='+pcs.top+', bottom='+pcs.bottom+', left='+pcs.left+', right='+pcs.right);
+    lines.push('  inline: '+(panel?(panel.getAttribute('style')||'(ingen)'):'-'));
+    var ha=hiddenAncestors(panel);
+    lines.push('  hidden ancestors: '+(ha.length?ha.join(' | '):'inga'));
+    lines.push('');
+    lines.push('MOBILKNAPP #tt642-layer-mobile-toggle: '+(mobBtn?'finns':'SAKNAS')+', rect='+rectInfo(mobBtn)+', aria-expanded='+(mobBtn?mobBtn.getAttribute('aria-expanded'):'-')+', text='+(mobBtn?(mobBtn.textContent||'').trim():'-'));
+    lines.push('  computed: display='+bcs.display+', visibility='+bcs.visibility+', opacity='+bcs.opacity+', pointer-events='+bcs.pointerEvents+', z-index='+bcs.zIndex+', pos='+bcs.position+', top='+bcs.top+', bottom='+bcs.bottom+', left='+bcs.left+', right='+bcs.right);
+    lines.push('  inline: '+(mobBtn?(mobBtn.getAttribute('style')||'(ingen)'):'-'));
+    var bha=hiddenAncestors(mobBtn);
+    lines.push('  hidden ancestors: '+(bha.length?bha.join(' | '):'inga'));
+    lines.push('');
+    lines.push('FS/annan lagerknapp: '+(fsBtn?('#'+fsBtn.id):'saknas')+', rect='+rectInfo(fsBtn));
+    if(fsBtn)lines.push('  computed: display='+fcs.display+', visibility='+fcs.visibility+', pointer-events='+fcs.pointerEvents+', z-index='+fcs.zIndex);
+    lines.push('');
+    lines.push('Viktiga öppna/stäng-klasser:');
+    ['tt642-layer-panel-mobile-open','tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen','tt751-matcher-active','tt744-matcher-active','tt762-taktik-layer-restore','tt688-taktikfilm-editor-active','tt733-tavla-active','tt745-snabb-fullscreen'].forEach(function(c){lines.push('  '+c+' = '+document.body.classList.contains(c));});
+    lines.push('');
+    lines.push('Senaste klick/touch/pointer:');
+    lines.push(lastEvents.length?lastEvents.join('\n'):'  (inga registrerade ännu)');
+    lines.push('');
+    lines.push('Tolkning: Om knappen blir gul men PANEL visar display:none/visibility:hidden beror felet troligen på CSS/body-klass. Om klick/touch inte registreras alls är knappen troligen täckt eller stoppad av annan lyssnare.');
+    return lines.join('\n');
+  }
+  var updateTimer=null;
+  function update(){
+    var box=ensurePanel();
+    var pre=byId('tt783-layer-diag-pre');
+    if(pre)pre.textContent=collect();
+    if(box)box.classList.toggle('tt783-open',panelOpen);
+    try{document.title='Taktiktavla TEST v783 DIAG lager';}catch(e){}
+    try{
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST|\d+\s*DIAG|\d+ DIAG)$/i.test(t))el.textContent='783 DIAG';
+      });
+      var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – DIAG lager / inte produktion – v783 DIAG';
+    }catch(e){}
+  }
+  function scheduleUpdate(){if(updateTimer)clearTimeout(updateTimer);updateTimer=setTimeout(update,60);}
+
+  ['touchstart','touchend','pointerdown','pointerup','click'].forEach(function(evt){
+    window.addEventListener(evt,function(ev){
+      try{
+        var t=ev.target;
+        if(t && t.closest && (t.closest('#tt642-layer-mobile-toggle') || t.closest('#tt616-layer-panel') || t.closest('#tt741-fs-layer-toggle') || t.closest('#tt742-mobile-layer-toggle') || t.closest('#tt743-mobile-taktik-layer-toggle'))){
+          addEventLine(evt,ev);
+          setTimeout(update,0);setTimeout(update,120);setTimeout(update,400);
+        }
+      }catch(e){}
+    },true);
+  });
+  ['resize','orientationchange','fullscreenchange','hashchange'].forEach(function(evt){window.addEventListener(evt,function(){addEventLine(evt,{target:document.body});},true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(update,0);setTimeout(update,600);});
+  else{setTimeout(update,0);setTimeout(update,600);}
+})();
+/* === slut v783 DIAG === */
