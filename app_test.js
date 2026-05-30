@@ -1,3 +1,4 @@
+/* v795 TEST: app-js oförändrad från v786; Taktikfilm-lagerfixen ligger i index. */
 /* === v585 TESTMILJÖ FASTA FILNAMN ===
    Klistra denna fil i GitHub som: app_test.js
    Klistra indexfilen i GitHub som: index_test.html
@@ -45196,7 +45197,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v794 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v786 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -45919,7 +45920,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='773 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v794 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v786 TEST';
     }catch(e){}
   }
 
@@ -45942,7 +45943,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v794 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v786 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45991,11 +45992,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v794 TEST === */
+/* === slut v786 TEST === */
 
 
 
-/* === v794 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v786 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46044,10 +46045,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v794 TEST === */
+/* === slut v786 TEST === */
 
 
-/* === v794 TEST: Taktiktavla formationsval applicerar även spelform ===
+/* === v786 TEST: Taktiktavla formationsval applicerar även spelform ===
    Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
 (function(){
   'use strict';
@@ -46089,55 +46090,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
-/* === slut v794 TEST === */
-
-
-/* === v794 TEST: Taktikfilm mobil lager frikopplad från tt743 ===
-   Bas: v786. Taktiktavla lämnas till v786. I Taktikfilm styrs panelvisning av egen tt794-klass
-   så gamla tt743:s lokala taktikLayerOpen inte kan stänga panelen vid varje klick/touch.
-*/
-(function(){
-  'use strict';
-  if(window.__tt794TaktikfilmMobileLayerInstalled)return;
-  window.__tt794TaktikfilmMobileLayerInstalled=true;
-  var open=false;
-  function q(s){return document.querySelector(s);} function id(x){return document.getElementById(x);}
-  function mob(){try{return !!(window.matchMedia&&window.matchMedia('(max-width:720px)').matches);}catch(e){return false;}}
-  function isLibrary(){return document.body.classList.contains('tt-v82-taktik-library') || !!q('#panel-taktik.on #no-rec-ui:not([style*="display: none"])');}
-  function isTaktik(){try{return mob() && !isLibrary() && (document.body.classList.contains('tt688-taktikfilm-editor-active') || document.body.classList.contains('v66-taktik-fs') || document.body.classList.contains('tt743-mobile-taktikfilm-active') || document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen') || (typeof isEditingTaktik!=='undefined'&&isEditingTaktik) || (typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null) || (typeof playback!=='undefined'&&playback));}catch(e){return false;}}
-  function ensureCss(){
-    if(id('tt794-taktikfilm-mobile-layer-css'))return;
-    var st=document.createElement('style'); st.id='tt794-taktikfilm-mobile-layer-css';
-    st.textContent='@media(max-width:720px){'
-    +'body.tt794-taktikfilm-mobile-layer #tt642-layer-mobile-toggle{display:none!important;visibility:hidden!important;pointer-events:none!important}'
-    +'#tt794-taktik-layer-btn{display:none;position:fixed;right:calc(env(safe-area-inset-right,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 94px);z-index:100300;border:1px solid rgba(74,232,122,.72);background:rgba(8,24,14,.97);color:#ffd84a;border-radius:999px;padding:8px 12px;font-weight:900;font-size:.82rem;box-shadow:0 8px 22px rgba(0,0,0,.36);-webkit-tap-highlight-color:transparent;touch-action:manipulation}'
-    +'body.tt794-taktikfilm-mobile-layer #tt794-taktik-layer-btn{display:block!important}'
-    +'body.fullscreen-portrait.tt794-taktikfilm-mobile-layer #tt794-taktik-layer-btn{top:calc(env(safe-area-inset-top,0px) + 52px)!important;z-index:100300!important}'
-    +'body.tt794-taktik-layer-open #tt794-taktik-layer-btn{background:rgba(255,216,74,.20);border-color:rgba(255,216,74,.82);color:#fff3ad}'
-    +'body.tt794-taktikfilm-mobile-layer:not(.tt794-taktik-layer-open) #tt616-layer-panel{display:none!important;visibility:hidden!important;pointer-events:none!important}'
-    +'body.tt743-mobile-taktikfilm-active.tt794-taktik-layer-open #tt616-layer-panel,body.fullscreen-portrait.tt743-mobile-taktikfilm-fullscreen.tt794-taktik-layer-open #tt616-layer-panel,body.tt794-taktikfilm-mobile-layer.tt794-taktik-layer-open #tt616-layer-panel{display:block!important;visibility:visible!important;pointer-events:auto!important;position:fixed!important;left:10px!important;right:10px!important;top:calc(env(safe-area-inset-top,0px) + 56px)!important;bottom:auto!important;width:auto!important;max-height:52vh!important;overflow:auto!important;z-index:100220!important;padding:8px!important}'
-    +'body.fullscreen-portrait.tt794-taktikfilm-mobile-layer.tt794-taktik-layer-open #tt616-layer-panel{top:calc(env(safe-area-inset-top,0px) + 92px)!important;bottom:calc(env(safe-area-inset-bottom,0px) + 76px)!important;max-height:none!important}'
-    +'body.tt794-taktikfilm-mobile-layer #tt616-layer-panel summary{display:none!important;visibility:hidden!important;pointer-events:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}'
-    +'body.tt794-taktikfilm-mobile-layer #tt616-layer-panel details{display:block!important;pointer-events:auto!important}'
-    +'body.tt794-taktikfilm-mobile-layer #tt616-layer-panel,body.tt794-taktikfilm-mobile-layer #tt616-layer-panel *{pointer-events:auto!important}'
-    +'body.fullscreen-portrait.v66-taktik-fs:not(.tt523-fs-rotated-desktop) #fs-portrait-nav{top:auto!important;bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;left:50%!important;transform:translateX(-50%)!important;z-index:100090!important}'
-    +'}';
-    document.head.appendChild(st);
-  }
-  function ensureButton(){
-    var b=id('tt794-taktik-layer-btn');
-    if(!b){b=document.createElement('button');b.type='button';b.id='tt794-taktik-layer-btn';b.textContent='Lager';b.setAttribute('aria-controls','tt616-layer-panel');b.setAttribute('aria-expanded','false');document.body.appendChild(b);
-      ['touchstart','pointerdown','click'].forEach(function(evt){b.addEventListener(evt,function(ev){ev.preventDefault();ev.stopPropagation();if(ev.stopImmediatePropagation)ev.stopImmediatePropagation(); if(evt==='click')toggle();},{capture:true,passive:false});});
-      b.addEventListener('touchend',function(ev){ev.preventDefault();ev.stopPropagation();if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();toggle();},{capture:true,passive:false});
-    }
-    return b;
-  }
-  function keepDetailsOpen(){try{var d=q('#tt616-layer-panel details'); if(d)d.setAttribute('open','');}catch(e){}}
-  function setOpen(v){open=!!v; document.body.classList.toggle('tt794-taktik-layer-open',open); document.body.classList.toggle('tt642-layer-panel-mobile-open',open); var b=ensureButton(); b.textContent=open?'Dölj lager':'Lager'; b.setAttribute('aria-expanded',open?'true':'false'); keepDetailsOpen(); if(open&&window.tt631RefreshFreeLayerPanel){try{window.tt631RefreshFreeLayerPanel();}catch(e){}}}
-  function toggle(){ if(!isTaktik())return; setOpen(!open); setTimeout(function(){setOpen(open);},80); setTimeout(function(){setOpen(open);},240); }
-  function apply(){ensureCss(); var ctx=isTaktik(); document.body.classList.toggle('tt794-taktikfilm-mobile-layer',ctx); if(!ctx){open=false;document.body.classList.remove('tt794-taktik-layer-open');return;} ensureButton(); keepDetailsOpen(); setOpen(open); try{document.title='Taktiktavla TEST v794 taktikfilm lager frikopplad';}catch(e){} }
-  function later(){setTimeout(apply,0);setTimeout(apply,120);setTimeout(function(){setOpen(open);},260);}
-  ['click','touchend','pointerup','resize','orientationchange','fullscreenchange','hashchange'].forEach(function(e){window.addEventListener(e,later,true);});
-  document.addEventListener('click',function(ev){if(open && ev.target && ev.target.closest && ev.target.closest('#tt616-layer-panel')){ev.stopPropagation();}},true);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){apply();setTimeout(apply,700);}); else {apply();setTimeout(apply,700);} 
-})();
+/* === slut v786 TEST === */
