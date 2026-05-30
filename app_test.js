@@ -45196,7 +45196,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v786 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v783 FIX: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -45912,14 +45912,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v773 formationknappar_kompakt';}catch(e){}
+    try{document.title='Taktiktavla TEST v783 iphone lager fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='773 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='783 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v786 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v783 FIX';
     }catch(e){}
   }
 
@@ -45942,7 +45942,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v786 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v783 FIX: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45951,18 +45951,16 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function byId(id){return document.getElementById(id);}
   function matchActive(){
-    /* v786: smal rättning av v751-spärren.
-       Tidigare räckte det att lag-match/lag-trupp hade tom inline-style, vilket gjorde
-       att tt751-matcher-active låg kvar även i Taktiktavla/Taktikfilm och gömde Lager.
-       Nu utgår spärren bara från faktisk aktiv huvudflik/panel. */
     try{
-      var tab=document.querySelector('.tab.on[data-panel]');
-      var panel=tab ? String(tab.getAttribute('data-panel')||'') : '';
-      if(!panel){
-        var p=document.querySelector('.panel.on');
-        if(p&&p.id)panel=String(p.id).replace(/^panel-/,'');
-      }
-      if(panel==='lag'||panel==='match'||panel==='matcher')return true;
+      var tab=document.querySelector('.tab.on[data-panel="lag"],.tab.on[data-panel="match"],.tab.on[data-panel="matcher"]');
+      var lag=document.getElementById('panel-lag');
+      var lagMatch=document.getElementById('lag-match');
+      var lagTrupp=document.getElementById('lag-trupp');
+      var lagStat=document.getElementById('lag-statistik');
+      if(tab && /matcher|match|lag/i.test(tab.textContent||tab.dataset.panel||''))return true;
+      if(lag && lag.classList.contains('on'))return true;
+      if(lagMatch && lagMatch.style.display!=='none')return true;
+      if((lagTrupp&&lagTrupp.style.display!=='none') || (lagStat&&lagStat.style.display!=='none'))return true;
     }catch(e){}
     return false;
   }
@@ -45991,11 +45989,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v786 TEST === */
+/* === slut v783 FIX === */
 
 
 
-/* === v786 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v783 FIX: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46044,10 +46042,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v786 TEST === */
+/* === slut v783 FIX === */
 
 
-/* === v786 TEST: Taktiktavla formationsval applicerar även spelform ===
+/* === v783 FIX: Taktiktavla formationsval applicerar även spelform ===
    Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
 (function(){
   'use strict';
@@ -46084,9 +46082,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       box.dataset.tt771ButtonApply='1';
       box.addEventListener('click',function(ev){var btn=ev.target&&ev.target.closest?ev.target.closest('button.btn'):null; if(!btn||!box.contains(btn))return; ev.preventDefault();ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation(); var fmt=parseInt((byId('tt205-qf-format')||{}).value,10)||((typeof format!=='undefined'&&format)||11); applyFormationLocal(fmt,(btn.textContent||'').trim());},true);
     }
-    try{document.title='Taktiktavla TEST v773 formationknappar_kompakt';}catch(e){}
+    try{document.title='Taktiktavla TEST v783 iphone lager fix';}catch(e){}
   }
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
-/* === slut v786 TEST === */
+/* === slut v783 FIX === */
