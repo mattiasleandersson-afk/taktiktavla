@@ -1,4 +1,4 @@
-/* v795 TEST: app-js oförändrad från v786; Taktikfilm-lagerfixen ligger i index. */
+/* v796 TEST: app-js oförändrad från v786; Taktikfilm-lagerfixen ligger i index. */
 /* === v585 TESTMILJÖ FASTA FILNAMN ===
    Klistra denna fil i GitHub som: app_test.js
    Klistra indexfilen i GitHub som: index_test.html
