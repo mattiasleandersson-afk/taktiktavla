@@ -45196,7 +45196,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v786 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v788 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -45919,7 +45919,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='773 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v787 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v788 TEST';
     }catch(e){}
   }
 
@@ -45942,7 +45942,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v786 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v788 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -45991,11 +45991,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v786 TEST === */
+/* === slut v788 TEST === */
 
 
 
-/* === v786 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v788 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46044,10 +46044,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v786 TEST === */
+/* === slut v788 TEST === */
 
 
-/* === v786 TEST: Taktiktavla formationsval applicerar även spelform ===
+/* === v788 TEST: Taktiktavla formationsval applicerar även spelform ===
    Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
 (function(){
   'use strict';
@@ -46089,99 +46089,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
-/* === slut v786 TEST === */
-
-
-/* === v787 TEST: Taktikfilm iPhone lager - stängning utan ny knappägare ===
-   Bas: v786 från v773. Taktiktavla fungerar i v786 och lämnas orörd.
-   Problem som fixas: i Taktikfilm kunde befintlig Lager-knapp öppna panelen men inte stänga den,
-   eftersom äldre tt688-css kunde tvinga #tt616-layer-panel till display:block när editorn var aktiv.
-   Den här patchen skapar ingen ny knapp/panel och äger inte klicket. Den lägger bara en sen, mer specifik
-   visningsregel och rensar inline-display när Taktikfilm-lager är stängt på mobil. */
-(function(){
-  'use strict';
-  if(window.__tt787TaktikfilmLayerCloseFix)return;
-  window.__tt787TaktikfilmLayerCloseFix=true;
-
-  function byId(id){return document.getElementById(id);}
-  function mobile(){try{return !!(window.matchMedia&&window.matchMedia('(max-width:720px)').matches);}catch(e){return false;}}
-  function isTaktikfilmLayerContext(){
-    try{
-      return !!(
-        document.body.classList.contains('tt743-mobile-taktikfilm-active') ||
-        document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen') ||
-        document.body.classList.contains('tt688-taktikfilm-editor-active') ||
-        (typeof isEditingTaktik!=='undefined' && isEditingTaktik) ||
-        (typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null) ||
-        (typeof playback!=='undefined' && playback)
-      );
-    }catch(e){return false;}
-  }
-  function inLibrary(){
-    try{
-      if(document.body.classList.contains('tt-v82-taktik-library'))return true;
-      var tab=document.querySelector('.tab.on[data-panel]');
-      var p=tab?String(tab.getAttribute('data-panel')||''):'';
-      if(p==='taktik'){
-        if((typeof isEditingTaktik==='undefined'||!isEditingTaktik) &&
-           (typeof editingTaktikIdx==='undefined'||editingTaktikIdx===null) &&
-           (typeof playback==='undefined'||!playback) &&
-           !document.body.classList.contains('fullscreen-portrait'))return true;
-      }
-    }catch(e){}
-    return false;
-  }
-  function ensureCss(){
-    if(byId('tt787-taktikfilm-layer-close-css'))return;
-    var st=document.createElement('style');
-    st.id='tt787-taktikfilm-layer-close-css';
-    st.textContent=[
-      '@media (max-width:720px){',
-      '  body.tt743-mobile-taktikfilm-active:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel,',
-      '  body.tt743-mobile-taktikfilm-fullscreen:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel,',
-      '  body.tt688-taktikfilm-editor-active.tt743-mobile-taktikfilm-active:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel,',
-      '  body.tt688-taktikfilm-editor-active.tt743-mobile-taktikfilm-fullscreen:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel{',
-      '    display:none!important;',
-      '    visibility:hidden!important;',
-      '    pointer-events:none!important;',
-      '  }',
-      '  body.tt743-mobile-taktikfilm-active.tt642-layer-panel-mobile-open #tt616-layer-panel,',
-      '  body.tt743-mobile-taktikfilm-fullscreen.tt642-layer-panel-mobile-open #tt616-layer-panel{',
-      '    display:block!important;',
-      '    visibility:visible!important;',
-      '    pointer-events:auto!important;',
-      '  }',
-      '}'
-    ].join('\n');
-    document.head.appendChild(st);
-  }
-  function sync(){
-    ensureCss();
-    if(!mobile() || !isTaktikfilmLayerContext() || inLibrary())return;
-    var open=document.body.classList.contains('tt642-layer-panel-mobile-open');
-    var panel=byId('tt616-layer-panel');
-    var btn=byId('tt642-layer-mobile-toggle');
-    if(btn){
-      btn.setAttribute('aria-expanded',open?'true':'false');
-      if(btn.textContent!== (open?'Dölj lager':'Lager'))btn.textContent=open?'Dölj lager':'Lager';
-      btn.title=open?'Dölj lagerlista':'Visa lagerlista';
-    }
-    if(!panel)return;
-    if(open){
-      panel.style.visibility='visible';
-      panel.style.pointerEvents='auto';
-      panel.style.display='block';
-      try{var d=panel.querySelector('details'); if(d)d.open=true;}catch(e){}
-    }else{
-      panel.style.display='none';
-      panel.style.visibility='hidden';
-      panel.style.pointerEvents='none';
-    }
-  }
-  ['click','touchend','pointerup','resize','orientationchange','fullscreenchange','hashchange'].forEach(function(evt){
-    window.addEventListener(evt,function(){setTimeout(sync,0);setTimeout(sync,60);setTimeout(sync,180);},true);
-  });
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(sync,0);setTimeout(sync,400);});
-  else{setTimeout(sync,0);setTimeout(sync,400);}
-})();
-/* === slut v787 TEST === */
+/* === slut v788 TEST === */
