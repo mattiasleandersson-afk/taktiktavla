@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix</title>
+<title>Taktiktavla TEST v801 mobile lager ikonknapp</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2957,7 +2957,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=800-taktiktavla-fullscreen-toolbar-fix"></script>
+<script src="app_test.js?v=801-mobile-lager-ikonknapp"></script>
 
 <script>
 (function(){
@@ -4177,7 +4177,7 @@
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
     try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
@@ -4447,7 +4447,7 @@
     var on=isTavla();
     document.body.classList.toggle('tt733-tavla-active',on);
     if(on){setTop();normalizeRows();openLayer();}
-    try{document.title='Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
     try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v745 TEST';}catch(e){}
   }
   function schedule(){apply();setTimeout(apply,80);setTimeout(apply,250);}
@@ -4546,7 +4546,7 @@
   window.__tt739TavlaRitvalV708PrincipInstalled=true;
   function byId(id){return document.getElementById(id);}
   function setVersion(){
-    try{document.title='Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
@@ -4650,7 +4650,7 @@
     document.body.classList.toggle('tt742-mobile-tavla-active',!!(isMob && !fs && panel==='saves'));
     document.body.classList.toggle('tt742-mobile-board-fullscreen',!!(isMob && fs && !taktikfilm && isBoardPanel()));
     if(isMob)ensureButtonLabel();
-    try{document.title='Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -4860,7 +4860,7 @@
       taktikLayerOpen=false;
       document.body.classList.remove('tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
   }
   function toggleFromButton(ev){
     if(!isTaktikfilmContext())return;
@@ -4974,7 +4974,7 @@
     if(on){
       try{document.body.classList.remove('tt642-layer-panel-mobile-open','tt741-board-fs-layer-toggle','tt741-fs-layers-collapsed');}catch(e){}
     }
-    try{document.title='Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5052,7 +5052,7 @@
     }else{
       document.body.classList.remove('tt745-snabb-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5254,7 +5254,7 @@
     var idx=currentStepIndex();
     markEditList(idx);
     markPlayList();
-    try{document.title='Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5423,7 +5423,7 @@
   }
   function apply(){
     patchControls();
-    try{document.title='Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5532,7 +5532,7 @@
         if(d)d.style.pointerEvents='auto';
       }
     }catch(e){}
-    try{document.title='Taktiktavla TEST v800 taktiktavla fullscreen toolbar fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5549,6 +5549,51 @@
 })();
 </script>
 <!-- === slut v786 TEST === -->
+
+
+<!-- === v801 TEST: mobil Lager-knapp som ikon-only === -->
+<style id="tt801-mobile-layer-icon-button-css">
+@media (max-width:720px), (hover:none) and (pointer:coarse){
+  #tt642-layer-mobile-toggle{
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    padding:0!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    font-size:0!important;
+    line-height:1!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  #tt642-layer-mobile-toggle::before{
+    content:'▤';
+    font-size:22px!important;
+    line-height:1!important;
+    display:block!important;
+  }
+}
+</style>
+<script id="tt801-mobile-layer-icon-button-js">
+(function(){
+  if(window.__tt801MobileLayerIconButtonInstalled)return;
+  window.__tt801MobileLayerIconButtonInstalled=true;
+  function apply(){
+    var btn=document.getElementById('tt642-layer-mobile-toggle');
+    if(!btn)return;
+    btn.setAttribute('aria-label','Lager');
+    btn.setAttribute('title','Lager');
+  }
+  apply();
+  document.addEventListener('DOMContentLoaded',apply);
+  window.addEventListener('resize',apply,{passive:true});
+  window.addEventListener('orientationchange',function(){setTimeout(apply,80);},{passive:true});
+})();
+</script>
+<!-- === slut v801 TEST === -->
 
 </body>
 </html>
