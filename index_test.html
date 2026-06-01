@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v810 mobile lager icon hardfix</title>
+<title>Taktiktavla TEST v811 mobile lager sourcefix</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2290,14 +2290,49 @@
     }
   }
 </style>
+
+<style id="tt811-mobile-layer-sourcefix-css">
+@media (max-width:900px), (hover:none) and (pointer:coarse){
+  #tt642-layer-mobile-toggle{
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    max-height:38px!important;
+    padding:0!important;
+    font-size:22px!important;
+    line-height:1!important;
+    text-indent:0!important;
+    color:#edf5ee!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+  }
+  #tt616-layer-panel > details > summary{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    overflow:hidden!important;
+  }
+}
+</style>
+
 </head>
 <body>
 
-<button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">Lager</button>
+<button type="button" id="tt642-layer-mobile-toggle" aria-controls="tt616-layer-panel" aria-expanded="false">▤</button>
 
 <div id="tt616-layer-panel" aria-label="Lager testpanel v661">
   <details>
-    <summary><span>Lager</span><span>v661</span></summary>
     <div class="tt616-layer-sub">Kompakt rad: öga, lås, namn och meny. Samma lagerlogik som v661.</div>
     <div id="tt630-free-layer-list" aria-label="Fria lager testlista"></div>
     <button type="button" id="tt630-free-layer-add" class="tt630-layer-add" title="Skapa ett tillfälligt testlager i aktuell session">+ Nytt lager</button>
@@ -2957,7 +2992,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=810-mobile-lager-icon-hardfix"></script>
+<script src="app_test.js?v=811-mobile-lager-sourcefix"></script>
 
 <script>
 (function(){
@@ -4639,7 +4674,7 @@
   function ensureButtonLabel(){
     try{
       var btn=byId('tt642-layer-mobile-toggle');
-      if(btn){btn.textContent='Lager';btn.title='Visa/dölj lager';}
+      if(btn){btn.textContent='▤';btn.title='Lager';}
     }catch(e){}
   }
   function apply(){
@@ -4833,8 +4868,8 @@
     var btn=byId('tt642-layer-mobile-toggle');
     if(btn){
       btn.setAttribute('aria-expanded',taktikLayerOpen?'true':'false');
-      btn.textContent=taktikLayerOpen?'Dölj lager':'Lager';
-      btn.title=taktikLayerOpen?'Dölj lagerlista':'Visa lagerlista';
+      btn.textContent='▤';
+      btn.title='Lager';
     }
     keepDetailsOpen();
     if(taktikLayerOpen){try{if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();}catch(e){}}
