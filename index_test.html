@@ -6052,6 +6052,23 @@
 </script>
 <!-- === slut v834 TEST === -->
 
+
+
+<!-- === v835: dölj felsökningsruta för lokal nödkopia, utan att röra nödkopiefunktionen === -->
+<style id="tt835-hide-local-recovery-pill">
+  /*
+    v835: Den lokala nödkopiefunktionen från v587/v590 får fortsätta arbeta,
+    men den gamla felsökningsindikatorn ska inte synas i appen längre.
+    Viktigt: endast visuell döljning av pillen, ingen rensning av data och ingen ändring av restore-logik.
+  */
+  #tt587-recovery-pill{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+</style>
+
 </body>
 </html>
 
