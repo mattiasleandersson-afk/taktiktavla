@@ -47604,3 +47604,120 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   });
 })();
 /* === slut v859 TEST === */
+
+
+/* === v860 TEST: Taktikfilm delning - bind från faktisk DOM-rad ===
+   Bas: v859 fungerande kandidat.
+   Problem: äldre delningsbindning för Taktikfilm kan använda fel film när Mina-listan är grupperad i mappar.
+   Fix: fånga klick på 👥/🙈 i #taktik-list tidigt, lös filmen från den faktiska raden (namn + mapp + steg),
+   och öppna den nya delningsrutan för just den filmen. Rör inte själva delningssparningen. */
+(function(){
+  'use strict';
+  if(window.__tt860TaktikShareDomRowFix)return;
+  window.__tt860TaktikShareDomRowFix=true;
+
+  function norm(v){return String(v==null?'':v).trim();}
+  function low(v){return norm(v).toLowerCase();}
+  function isMine(tk){try{if(typeof isMineV10==='function')return !!isMineV10(tk);}catch(e){}return true;}
+  function meta(tk){try{if(typeof fileMetaV10==='function')return fileMetaV10(tk)||{};}catch(e){}return (tk&&tk._meta)||{};}
+  function rowName(row){var el=row&&row.querySelector&&row.querySelector('.row-name');return norm(el&&el.textContent);}
+  function rowSub(row){var el=row&&row.querySelector&&row.querySelector('.row-sub');return norm(el&&el.textContent);}
+  function rowFolder(row){
+    var s=rowSub(row);
+    if(!s)return '';
+    return norm(s.split('·')[0]||'');
+  }
+  function rowStepCount(row){
+    var s=rowSub(row),m=s.match(/(\d+)\s+steg/i);
+    return m?parseInt(m[1],10):null;
+  }
+  function visibleMineOrder(){
+    var arr=[];
+    try{
+      var q=low(typeof taktikSearch!=='undefined'?taktikSearch:'');
+      var fav=(typeof favorites!=='undefined'&&favorites)||{};
+      arr=(Array.isArray(taktikFilmer)?taktikFilmer:[]).filter(function(tk){
+        try{if(typeof isFileVisibleInScopeV10==='function'&&!isFileVisibleInScopeV10(tk,'mine'))return false;}catch(e){}
+        if(!isMine(tk))return false;
+        if(q&&low(tk&&tk.name).indexOf(q)<0)return false;
+        return true;
+      });
+      // Matcha v545/v579: först favorit-sort, sedan grupperas mappar alfabetiskt med Taktik/Träning först.
+      arr.sort(function(a,b){var af=a.dbId&&fav[a.dbId]?1:0,bf=b.dbId&&fav[b.dbId]?1:0;return bf-af;});
+      var groups={};
+      arr.forEach(function(tk){var f=norm(tk&&tk.folder)||'Taktik';(groups[f]=groups[f]||[]).push(tk);});
+      function folderSort(a,b){
+        if(a==='Taktik'&&b!=='Taktik')return -1;if(b==='Taktik'&&a!=='Taktik')return 1;
+        if(a==='Träning'&&b!=='Träning')return -1;if(b==='Träning'&&a!=='Träning')return 1;
+        return String(a).localeCompare(String(b),'sv');
+      }
+      var out=[];Object.keys(groups).sort(folderSort).forEach(function(f){groups[f].forEach(function(tk){out.push(tk);});});
+      return out;
+    }catch(e){return Array.isArray(taktikFilmer)?taktikFilmer:[];}
+  }
+  function resolveFromRow(row){
+    if(!row)return null;
+    var name=rowName(row), folder=rowFolder(row), steps=rowStepCount(row);
+    var list=Array.isArray(taktikFilmer)?taktikFilmer:[];
+    var candidates=list.filter(function(tk){
+      if(!tk||!isMine(tk))return false;
+      if(name&&norm(tk.name)!==name)return false;
+      if(folder&&norm(tk.folder||'Taktik')!==folder)return false;
+      if(steps!=null){try{if(((tk.steps||[]).length-1)!==steps)return false;}catch(e){}}
+      return true;
+    });
+    if(candidates.length===1)return candidates[0];
+    if(candidates.length>1){
+      // Vid dubblettnamn: använd radenummer i den faktiska DOM-listan mot samma grupperade ordning.
+      try{
+        var rows=Array.prototype.slice.call(document.querySelectorAll('#taktik-list .tt545-folder-body .row,#taktik-list > .row'));
+        var idx=rows.indexOf(row);
+        var ordered=visibleMineOrder();
+        var byIdx=ordered[idx];
+        if(byIdx&&candidates.indexOf(byIdx)>=0)return byIdx;
+      }catch(e){}
+      return candidates[0];
+    }
+    // Fallback: om titel/mapp inte räckte, använd faktisk radordning mot grupperad ordning.
+    try{
+      var rows2=Array.prototype.slice.call(document.querySelectorAll('#taktik-list .tt545-folder-body .row,#taktik-list > .row'));
+      var idx2=rows2.indexOf(row);
+      var ordered2=visibleMineOrder();
+      if(idx2>=0&&ordered2[idx2])return ordered2[idx2];
+    }catch(e){}
+    return null;
+  }
+  function isTeamShareButton(btn){
+    if(!btn||!btn.matches||!btn.matches('button'))return false;
+    var txt=norm(btn.textContent);
+    var title=low(btn.title||btn.getAttribute('aria-label')||'');
+    if(txt==='⤴')return false; // separat länkdelning ska inte fångas.
+    if(txt==='👥'||txt==='🙈')return true;
+    if(title.indexOf('dela länk')>=0)return false;
+    return title.indexOf('dela med laget')>=0||title.indexOf('sluta dela')>=0||title.indexOf('lagdelning')>=0;
+  }
+  function openShare(tk){
+    var f=window.tt371OpenTaktikfilmShareModal||window.tt370OpenTaktikfilmShareModal;
+    if(f){f(tk);return true;}
+    try{showToast('Delningsrutan kunde inte öppnas',false);}catch(e){}
+    return false;
+  }
+  function handler(e){
+    try{
+      var btn=e.target&&e.target.closest&&e.target.closest('button');
+      if(!btn||!isTeamShareButton(btn))return;
+      var list=document.getElementById('taktik-list');
+      if(!list||!list.contains(btn))return;
+      var row=btn.closest('.row');
+      if(!row)return;
+      var tk=resolveFromRow(row);
+      if(!tk)return;
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      openShare(tk);
+      return false;
+    }catch(_e){}
+  }
+  document.addEventListener('click',handler,true);
+  document.addEventListener('touchend',handler,{capture:true,passive:false});
+})();
+/* === slut v860 === */
