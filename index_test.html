@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v809 mobile layer owner guard</title>
+<title>Taktiktavla TEST v810 mobile lager icon hardfix</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2957,7 +2957,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=809-mobile-layer-owner-guard"></script>
+<script src="app_test.js?v=810-mobile-lager-icon-hardfix"></script>
 
 <script>
 (function(){
@@ -5858,3 +5858,67 @@
 }
 </style>
 <!-- === slut v809 TEST === -->
+
+
+<!-- === v810 TEST: tvinga mobilens Lager-knapp till ikon-only hela tiden === -->
+<style id="tt810-mobile-layer-icon-hardfix-css">
+@media (max-width:900px), (hover:none) and (pointer:coarse){
+  #tt642-layer-mobile-toggle{
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    max-height:38px!important;
+    padding:0!important;
+    font-size:0!important;
+    line-height:0!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    color:transparent!important;
+    text-indent:-9999px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  #tt642-layer-mobile-toggle::before{
+    content:'▤'!important;
+    display:block!important;
+    font-size:22px!important;
+    line-height:1!important;
+    color:#edf5ee!important;
+    text-indent:0!important;
+  }
+}
+</style>
+<script id="tt810-mobile-layer-icon-hardfix-js">
+(function(){
+  'use strict';
+  if(window.__tt810MobileLayerIconHardfixInstalled)return;
+  window.__tt810MobileLayerIconHardfixInstalled=true;
+  function mobile(){
+    try{return !!(window.matchMedia&&window.matchMedia('(max-width:900px)').matches) || !!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches);}
+    catch(e){return false;}
+  }
+  function apply(){
+    try{
+      if(!mobile())return;
+      var btn=document.getElementById('tt642-layer-mobile-toggle');
+      if(!btn)return;
+      btn.setAttribute('aria-label','Lager');
+      btn.setAttribute('title','Lager');
+      btn.style.fontSize='0';
+      btn.style.lineHeight='0';
+      btn.style.color='transparent';
+      btn.style.textIndent='-9999px';
+      btn.style.overflow='hidden';
+    }catch(e){}
+  }
+  apply();
+  setInterval(apply,500);
+  ['DOMContentLoaded','pageshow','resize','orientationchange','fullscreenchange','click','touchend'].forEach(function(evt){
+    (evt==='DOMContentLoaded'?document:window).addEventListener(evt,function(){setTimeout(apply,0);},true);
+  });
+})();
+</script>
+<!-- === slut v810 TEST === -->
