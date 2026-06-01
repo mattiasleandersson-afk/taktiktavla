@@ -1,4 +1,4 @@
-/* v801 TEST: app-js oförändrad från v800/v786; mobil Lager-ikon ligger i index. */
+/* v843 TEST: app-js från v842/v838 med smal kon-/pinne-context-reset. */
 /* === v585 TESTMILJÖ FASTA FILNAMN ===
    Klistra denna fil i GitHub som: app_test.js
    Klistra indexfilen i GitHub som: index_test.html
@@ -69,6 +69,14 @@ var playerColors={};
 var arrowColor="#ffdd44",arrowType="solid",arrowHeadType="arrow";
 var freehandColor="#ffdd44",freehandWidth=4;
 var zoneShapeType="rect",zoneColor="rgba(232,76,76,0.25)",zoneFillType="solid";
+
+// v843: koner/pinnar ligger i window.tacticObjects.
+// Denna hjälpare tömmer bara den arrayen + stänger dess storleksruta.
+// Den anropas enbart där befintlig kod redan tömmer vanliga ritningar/ny arbetsyta.
+function clearTacticObjectsV843(){
+  try{if(Array.isArray(window.tacticObjects))window.tacticObjects.length=0;}catch(e){}
+  try{var p=document.getElementById("tt747-size-panel");if(p)p.style.display="none";}catch(e){}
+}
 function getArrowHeadChoiceV529(){
   var el=document.getElementById("arrow-head-sel");
   return el&&el.value?el.value:(arrowHeadType||"arrow");
@@ -1102,6 +1110,7 @@ function clearCoachboardToFormation(){
   initPlayers(getCurrentFormationForReset());
   ball={x:W/2,y:H/2};
   arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];
+  clearTacticObjectsV843();
   selectedId=null;arrowStart=null;arrowCurrent=null;freehandCurrent=null;zoneStart=null;zonePreview=null;movementCurrent=null;
   if(typeof setMode==="function")setMode("move");
   render();
@@ -1119,7 +1128,7 @@ function resetCurrentWorkspaceToDefault(){
     var fmtSel=document.getElementById("fmt-sel");if(fmtSel)fmtSel.value=String(format);
     if(typeof buildFormationBtns==="function")buildFormationBtns();
     initPlayers(typeof _defaultFormation!=="undefined"?_defaultFormation:"4-4-2");
-    arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];selectedId=null;
+    arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];clearTacticObjectsV843();selectedId=null;
     render();
   }
   showToast("Återställt till standardformation");
@@ -1218,7 +1227,7 @@ function resetWorkspaceForKey(key){
   if(playback)stopPlayback();
   if(animFrame)cancelAnimationFrame(animFrame);
   playback=null;activeTaktik=null;editingTaktikIdx=null;editingStepIdx=0;isEditingTaktik=false;
-  arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];selectedId=null;undoStack=[];
+  arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];clearTacticObjectsV843();selectedId=null;undoStack=[];
   matchRoster=[];matchAssignments={};matchVariants=[];activeVariantIdx=0;matchGoals={home:0,away:0};window._editingMatchId=null;
   activeFormationId=null;activeFormationName=null;
   format=_defaultFormat||11;
@@ -1278,6 +1287,7 @@ function workspaceFromSavedFormation(saved){
       labels:cloneObj(st.labels||[]),
       freehandPaths:cloneObj(st.freehandPaths||[]),
       zones:cloneObj(st.zones||[]),
+      tacticObjects:cloneObj(st.tacticObjects||[]),
       movementPaths:[]
     },
     matchRoster:[],
@@ -3333,6 +3343,7 @@ function getCleanTaktikStartSnapV15(){
   }
   ball={x:W/2,y:H/2};
   arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];
+  clearTacticObjectsV843();
   selectedId=null;arrowStart=null;arrowCurrent=null;freehandCurrent=null;zoneStart=null;zonePreview=null;movementCurrent=null;
   setMode("move");
   render();
@@ -10073,6 +10084,7 @@ function clearFullscreenDrawingsOnlyV74(){
   labels=[];
   freehandPaths=[];
   zones=[];
+  clearTacticObjectsV843();
   movementPaths=[];
   selectedId=null;
   arrowStart=null;arrowCurrent=null;
@@ -11078,6 +11090,7 @@ function tt76ClearPresentationDrawings(){
   labels=[];
   freehandPaths=[];
   zones=[];
+  clearTacticObjectsV843();
   movementPaths=[];
   selectedId=null;
   arrowStart=null;arrowCurrent=null;
@@ -11636,7 +11649,7 @@ function tt82ReturnToTaktikMenu(){
   try{isEditingTaktik=false;}catch(e){}
   try{movementPaths=[];}catch(e){}
   try{selectedId=null;}catch(e){}
-  try{arrows=[];labels=[];freehandPaths=[];zones=[];}catch(e){}
+  try{arrows=[];labels=[];freehandPaths=[];zones=[];clearTacticObjectsV843();}catch(e){}
   try{tt76ForceClean();}catch(e){}
 
   var tb=document.getElementById("taktikbar");
@@ -11781,7 +11794,7 @@ function tt85CloseViaTopCross(){
   try{editingStepIdx=0;}catch(e){}
   try{isEditingTaktik=false;}catch(e){}
   try{selectedId=null;}catch(e){}
-  try{movementPaths=[];arrows=[];labels=[];freehandPaths=[];zones=[];}catch(e){}
+  try{movementPaths=[];arrows=[];labels=[];freehandPaths=[];zones=[];clearTacticObjectsV843();}catch(e){}
   try{tt76ForceClean();}catch(e){}
 
   var tb=document.getElementById("taktikbar");
@@ -28718,7 +28731,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){}
 
     try{ball={x:W/2,y:H/2};}catch(e){}
-    try{arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];}catch(e){}
+    try{arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];clearTacticObjectsV843();}catch(e){}
     try{selectedId=null;arrowStart=null;arrowCurrent=null;freehandCurrent=null;zoneStart=null;zonePreview=null;movementCurrent=null;}catch(e){}
     try{if(typeof setMode==='function')setMode('move');}catch(e){}
     try{if(typeof render==='function')render();}catch(e){}
@@ -35224,6 +35237,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{ labels=[]; }catch(e){}
     try{ freehandPaths=[]; }catch(e){}
     try{ zones=[]; }catch(e){}
+    try{ clearTacticObjectsV843(); }catch(e){}
     try{ movementPaths=[]; }catch(e){}
     try{ selectedId=null; arrowStart=null; arrowCurrent=null; freehandCurrent=null; freehandDrawing=false; zoneStart=null; zonePreview=null; movementCurrent=null; }catch(e){}
     try{ if(typeof setMode==='function')setMode('move'); }catch(e){}
