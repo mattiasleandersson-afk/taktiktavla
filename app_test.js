@@ -47337,3 +47337,89 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }catch(e){}
 })();
 /* === slut v856 TEST === */
+
+
+/* === v857 TEST: initiera mobil/iPad-stegpanelen efter ny film från Taktiktavla ===
+   Bas: v856 programgräns.
+   Problem: v856 städade Taktikfilm bättre, men när en film startades från sparad Taktiktavla
+   kunde den mobila/iPad-baserade Taktikfilm-stegmenyn längst ner inte alltid byggas/visas.
+   Desktop påverkades inte eftersom den har fast stegpanel.
+   Princip:
+   - Innan startPlayback körs markerar vi säkert att målvyn är Taktikfilm, så v856:s cleanup inte
+     hinner tolka startflödet som att man lämnar Taktikfilm.
+   - Efter startPlayback körs en liten, upprepad UI-synk som bara säkerställer rätt Taktikfilm-panel,
+     taktikbar och edit-steglista. Ingen filmdata, sparlogik eller steglogik ändras.
+*/
+(function(){
+  'use strict';
+  if(window.__tt857MobileStepbarInitFix)return;
+  window.__tt857MobileStepbarInitFix=true;
+
+  function byId(id){return document.getElementById(id);}
+  function isTouchNarrow(){
+    try{return window.matchMedia('(hover:none) and (pointer:coarse)').matches || window.innerWidth<=1024;}catch(e){return window.innerWidth<=1024;}
+  }
+  function selectTaktikPanel(){
+    try{activeWorkspacePanel='taktik';}catch(e){}
+    try{
+      document.querySelectorAll('.tab[data-panel]').forEach(function(t){
+        t.classList.toggle('on',t.getAttribute('data-panel')==='taktik');
+      });
+      document.querySelectorAll('.panel').forEach(function(p){
+        p.classList.toggle('on',p.id==='panel-taktik');
+      });
+    }catch(e){}
+  }
+  function markEnteringTaktik(){
+    selectTaktikPanel();
+    try{document.body.classList.remove('tt-v82-taktik-library');}catch(e){}
+    try{document.body.classList.add('tt688-taktikfilm-editor-active');}catch(e){}
+  }
+  function ensureStepbarVisible(){
+    try{
+      if(typeof editingTaktikIdx==='undefined' || editingTaktikIdx===null)return;
+    }catch(e){return;}
+    markEnteringTaktik();
+    try{
+      var bp=byId('bottompanel');
+      if(bp){
+        bp.classList.remove('hidden');
+        bp.style.display='';
+      }
+      var show=byId('panel-show-btn');
+      if(show)show.classList.remove('visible');
+      var panelBtn=byId('btn-panel');
+      if(panelBtn)panelBtn.textContent='▼';
+    }catch(e){}
+    try{var tb=byId('taktikbar');if(tb)tb.style.display='flex';}catch(e){}
+    try{var no=byId('no-rec-ui');if(no)no.style.display='none';}catch(e){}
+    try{var rec=byId('rec-ui');if(rec)rec.style.display='none';}catch(e){}
+    try{var edit=byId('edit-taktik-ui');if(edit)edit.style.display='block';}catch(e){}
+    try{if(typeof renderPlayStepList==='function')renderPlayStepList();}catch(e){}
+    try{if(typeof updatePlaybar==='function')updatePlaybar();}catch(e){}
+    try{
+      if(typeof updateEditStepUI_silent==='function')updateEditStepUI_silent();
+      else if(typeof updateEditStepUI==='function')updateEditStepUI();
+    }catch(e){}
+  }
+  function scheduleEnsure(){
+    // Flera korta ticks eftersom äldre render/list-/layoutkod ibland kör efter startPlayback på touch.
+    [0,60,180,420].forEach(function(ms){setTimeout(ensureStepbarVisible,ms);});
+  }
+
+  try{
+    if(typeof startPlayback==='function' && !startPlayback.__tt857Wrapped){
+      var oldStart=startPlayback;
+      startPlayback=function(){
+        markEnteringTaktik();
+        var r=oldStart.apply(this,arguments);
+        if(isTouchNarrow())scheduleEnsure();
+        else setTimeout(ensureStepbarVisible,0);
+        return r;
+      };
+      startPlayback.__tt857Wrapped=true;
+      try{window.startPlayback=startPlayback;}catch(e){}
+    }
+  }catch(e){}
+})();
+/* === slut v857 TEST === */
