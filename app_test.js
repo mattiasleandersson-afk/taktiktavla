@@ -1,4 +1,4 @@
-/* v845 TEST: robust Ny film från taktiktavla + v843 kon-/pinne-context-reset. */
+/* v846 TEST: Taktiktavla→Taktikfilm-modalfix + v845/v843 kon-/pinne-context-reset. */
 /* === v585 TESTMILJÖ FASTA FILNAMN ===
    Klistra denna fil i GitHub som: app_test.js
    Klistra indexfilen i GitHub som: index_test.html
@@ -46109,7 +46109,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v800 TEST === */
 
 
-/* === v845 TEST: robust Ny film från taktiktavla (en skapare för båda flödena) ===
+/* === v846 TEST: robust Ny film från taktiktavla + synlig modal från Taktiktavla-listan ===
    Bas: v843. Syfte:
    - Behåll v843:s kon-/pinne-context-reset.
    - Rätta att "Ny film från taktiktavla" inte skapar film.
@@ -46237,32 +46237,58 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function openNameModal845(saved){
     closePickers845();
-    var modal=document.createElement('div');
-    modal.id='modal-new-taktik-from-formation-v50';
-    modal.className='modal';
+    // v846: den här vägen används från Taktiktavla-listans "Till/Skicka till Taktikfilm".
+    // v845 skapade en lös .modal utan modal-bg/fixed-position, vilket kunde upplevas som att inget hände.
+    // Här används en egen fast overlay, utan att ändra själva skapandet av filmen.
+    var overlay=document.createElement('div');
+    overlay.id='modal-new-taktik-from-formation-v50';
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.56);z-index:99999;display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box';
     var box=document.createElement('div');
-    box.className='modal-box';
-    var h=document.createElement('h2'); h.textContent='Ny taktikfilm från taktiktavla';
+    box.style.cssText='width:min(420px,94vw);max-height:82vh;overflow:auto;background:#111a14;border:1px solid #2d4a35;border-radius:12px;padding:14px;box-shadow:0 18px 50px rgba(0,0,0,.45);box-sizing:border-box;color:#edf5ee';
+    var h=document.createElement('h2');
+    h.textContent='Ny taktikfilm från taktiktavla';
+    h.style.cssText='margin:0 0 8px;font-size:1rem;color:#edf5ee';
     var p=document.createElement('p');
     p.style.cssText='font-size:0.78rem;color:#7aaa88;line-height:1.35;margin:4px 0 10px';
     p.textContent='Taktiktavlan blir startsteget i en ny film. Du kommer direkt in i redigeringsläget.';
     var inp=document.createElement('input');
-    inp.type='text'; inp.placeholder='Namn på film'; inp.value=savedName845(saved)+' – taktik';
-    inp.style.cssText='width:100%;box-sizing:border-box;margin-bottom:8px';
-    var row=document.createElement('div'); row.style.cssText='display:flex;gap:6px;justify-content:flex-end';
-    var cancel=document.createElement('button'); cancel.className='btn'; cancel.type='button'; cancel.textContent='Avbryt';
-    cancel.addEventListener('click',function(e){e.preventDefault();closePickers845();},true);
-    var ok=document.createElement('button'); ok.className='btn on'; ok.type='button'; ok.textContent='Skapa film';
+    inp.type='text';
+    inp.placeholder='Namn på film';
+    inp.value=savedName845(saved)+' – taktik';
+    inp.style.cssText='width:100%;box-sizing:border-box;margin-bottom:10px;background:#0e1710;color:#edf5ee;border:1px solid #2d4a35;border-radius:7px;padding:8px;font-size:0.9rem';
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap';
+    var cancel=document.createElement('button');
+    cancel.className='btn';
+    cancel.type='button';
+    cancel.textContent='Avbryt';
+    var ok=document.createElement('button');
+    ok.className='btn on';
+    ok.type='button';
+    ok.textContent='Skapa film';
+    function close(e){
+      if(e){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();}
+      closePickers845();
+      return false;
+    }
     function doCreate(e){
       if(e){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();}
       createFilm845(saved,inp.value);
       return false;
     }
+    cancel.addEventListener('click',close,true);
+    cancel.addEventListener('touchend',close,{capture:true,passive:false});
     ok.addEventListener('click',doCreate,true);
     ok.addEventListener('touchend',doCreate,{capture:true,passive:false});
-    row.appendChild(cancel); row.appendChild(ok);
-    box.appendChild(h); box.appendChild(p); box.appendChild(inp); box.appendChild(row);
-    modal.appendChild(box); document.body.appendChild(modal);
+    overlay.addEventListener('click',function(e){if(e.target===overlay)close(e);},true);
+    row.appendChild(cancel);
+    row.appendChild(ok);
+    box.appendChild(h);
+    box.appendChild(p);
+    box.appendChild(inp);
+    box.appendChild(row);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
     setTimeout(function(){try{inp.focus();inp.select();}catch(e){}},80);
   }
 
@@ -46340,4 +46366,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     renderTaktikList.__tt845Wrapped=true;
   }
 })();
-/* === slut v845 TEST === */
+/* === slut v846 TEST === */
