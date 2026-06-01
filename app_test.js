@@ -47020,3 +47020,141 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v852: Taktikfilm Sammanfoga-knappen borttagen från listvyer ===
    Bas: v851. Funktionerna lämnas orörda men ingen synlig knapp/ingång renderas.
 */
+
+
+/* === v853: Automatisk lagväljare när inloggad användare saknar aktivt lag ===
+   Bas: v852. Read-only mot Supabase: läser bara team_member-rader.
+   Syfte: ny/inbjuden medlem ska få välja lag automatiskt om inloggad men inget aktivt lag är valt.
+*/
+(function(){
+  if(window.__tt853AutoTeamPicker)return;
+  window.__tt853AutoTeamPicker=true;
+
+  function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function normEmail(v){return String(v||'').trim().toLowerCase();}
+  function normTeam(v){return String(v||'').trim().toUpperCase().replace(/\s+/g,'-');}
+  function readProfile(){try{var raw=localStorage.getItem('tt_profile_v1');return raw?JSON.parse(raw):null;}catch(e){return null;}}
+  function activeTeam(){var p=readProfile()||{};return normTeam(p.teamCode||p.teamId||p.teamName||'');}
+  function email(){
+    try{var e=window.tt298GetAuthUserEmail&&window.tt298GetAuthUserEmail();if(e)return normEmail(e);}catch(e){}
+    try{var raw=localStorage.getItem('tt_auth_session_v1');var s=raw?JSON.parse(raw):null;var e2=s&&(s.user&&s.user.email || s.email);if(e2)return normEmail(e2);}catch(e){}
+    return '';
+  }
+  function headers(){try{if(typeof supaHeaders==='function')return supaHeaders();}catch(e){}return {'Content-Type':'application/json'};}
+  function memberData(row){
+    var d=(row&&row.data)||{};
+    return {
+      id:row&&row.id,
+      teamCode:normTeam(d.teamCode||d.teamId||d.teamName||''),
+      email:normEmail(d.email||row.name||''),
+      role:String(d.role||'member').toLowerCase()==='admin'?'admin':'member',
+      status:String(d.status||'active').toLowerCase()
+    };
+  }
+  function loadMyTeams(){
+    var mail=email();
+    if(!mail)return Promise.resolve([]);
+    if(typeof SUPA_URL==='undefined'||typeof SUPA_TABLE==='undefined')return Promise.resolve([]);
+    return fetch(SUPA_URL+'/rest/v1/'+SUPA_TABLE+'?type=eq.team_member&select=*&order=id.asc',{headers:headers()})
+      .then(function(r){return r.ok?r.json():[];})
+      .then(function(rows){
+        rows=Array.isArray(rows)?rows:[];
+        var by={};
+        rows.map(memberData).forEach(function(m){
+          if(!m.teamCode||m.email!==mail||m.status==='removed')return;
+          var cur=by[m.teamCode];
+          if(!cur || (cur.role!=='admin'&&m.role==='admin'))by[m.teamCode]={teamCode:m.teamCode,role:m.role};
+        });
+        return Object.keys(by).map(function(k){return by[k];}).sort(function(a,b){return a.teamCode.localeCompare(b.teamCode,'sv');});
+      });
+  }
+  function saveTeam(team){
+    team=normTeam(team);
+    if(!team)return;
+    var old=readProfile()||{};
+    var mail=email();
+    var name=String(old.ownerName||old.displayName||'').trim() || (mail?mail.split('@')[0]:'Tränare');
+    var p={
+      ownerId:old.ownerId||old.authUserId||('user_'+Math.random().toString(36).slice(2,10)),
+      ownerName:name,
+      teamId:team,
+      teamCode:team,
+      teamName:team,
+      authUserId:old.authUserId||'',
+      authEmail:mail||old.authEmail||''
+    };
+    try{localStorage.setItem('tt_profile_v1',JSON.stringify(p));}catch(e){}
+    try{showToast('Aktivt lag valt: '+team);}catch(e){}
+    setTimeout(function(){try{window.location.reload();}catch(e){location.reload();}},180);
+  }
+  function close(){var m=document.getElementById('tt853-team-picker-modal');if(m)m.remove();}
+  function openModal(teams){
+    close();
+    var modal=document.createElement('div');
+    modal.id='tt853-team-picker-modal';
+    var html='<div id="tt853-team-picker-card"><h2>Välj aktivt lag</h2>';
+    if(teams&&teams.length){
+      html+='<p>Du är inloggad men har inget aktivt lag valt. Välj vilket lag appen ska öppna.</p><div class="tt853-team-list">';
+      teams.forEach(function(t){html+='<button class="btn on tt853-use-team" type="button" data-team="'+esc(t.teamCode)+'"><span>'+esc(t.teamCode)+'</span><small>'+(t.role==='admin'?'Admin':'Medlem')+'</small></button>';});
+      html+='</div><p class="tt853-note">Du kan byta lag senare via <strong>Konto och lag</strong>.</p>';
+    }else{
+      html+='<p>Du är inloggad, men appen hittar inget lag som din e-post har tillgång till.</p>';
+      html+='<div class="tt853-help"><strong>Gör så här:</strong><br>Be lagets admin lägga till exakt din inloggade e-postadress i <strong>Konto och lag → Medlemmar</strong>, eller be admin skicka en ny inbjudningslänk. Om du nyss skapat konto kan du behöva bekräfta e-posten och logga in igen.</div>';
+    }
+    html+='<div class="tt853-actions"><button class="btn" id="tt853-open-account" type="button">Öppna Konto och lag</button><button class="btn" id="tt853-close" type="button">Stäng</button></div></div>';
+    modal.innerHTML=html;
+    document.body.appendChild(modal);
+    modal.addEventListener('click',function(e){if(e.target===modal)close();});
+    var c=document.getElementById('tt853-close');if(c)c.addEventListener('click',close);
+    var a=document.getElementById('tt853-open-account');if(a)a.addEventListener('click',function(){close();setTimeout(function(){try{window.tt298OpenAccountTeamModal&&window.tt298OpenAccountTeamModal();}catch(e){}},0);});
+    Array.prototype.slice.call(modal.querySelectorAll('.tt853-use-team')).forEach(function(b){
+      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();saveTeam(b.getAttribute('data-team')||'');});
+    });
+  }
+  function addCss(){
+    if(document.getElementById('tt853-css'))return;
+    var st=document.createElement('style');st.id='tt853-css';
+    st.textContent=[
+      '#tt853-team-picker-modal{position:fixed;inset:0;z-index:50950;background:rgba(0,0,0,.66);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Arial Narrow,Arial,sans-serif}',
+      '#tt853-team-picker-card{width:min(460px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;background:#111a14;color:#edf5ee;border:1px solid rgba(74,232,232,.35);border-radius:16px;box-shadow:0 18px 60px rgba(0,0,0,.55);padding:15px}',
+      '#tt853-team-picker-card h2{font-size:1.05rem;color:#4ae8e8;text-transform:uppercase;letter-spacing:.7px;margin:0 0 8px;font-weight:900}',
+      '#tt853-team-picker-card p{font-size:.82rem;line-height:1.4;color:#cfe9d4;margin:0 0 10px}',
+      '.tt853-team-list{display:flex;flex-direction:column;gap:7px;margin:10px 0}',
+      '.tt853-use-team{display:flex!important;justify-content:space-between;align-items:center;gap:12px;width:100%;font-size:.9rem;padding:10px 12px!important;text-align:left}',
+      '.tt853-use-team span{font-weight:900;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.tt853-use-team small{font-size:.7rem;opacity:.85}',
+      '.tt853-note{font-size:.74rem!important;color:#9dc8a7!important}',
+      '.tt853-help{font-size:.8rem;line-height:1.45;color:#ffdfb0;background:rgba(255,211,107,.08);border:1px solid rgba(255,211,107,.26);border-radius:11px;padding:10px;margin:10px 0}',
+      '.tt853-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:12px}',
+      '@media(max-width:520px){#tt853-team-picker-card{padding:13px}.tt853-actions{justify-content:stretch}.tt853-actions .btn{flex:1 1 auto}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+  var busy=false;
+  function shouldCheck(){
+    if(busy)return false;
+    if(document.getElementById('tt853-team-picker-modal'))return false;
+    if(!email())return false;
+    if(activeTeam())return false;
+    try{if(sessionStorage.getItem('tt853_team_picker_dismissed')==='1')return false;}catch(e){}
+    return true;
+  }
+  function check(){
+    if(!shouldCheck())return;
+    busy=true;addCss();
+    loadMyTeams().then(function(teams){
+      busy=false;
+      if(!email()||activeTeam())return;
+      openModal(teams||[]);
+    }).catch(function(){busy=false;});
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest&&e.target.closest('#tt853-close');
+    if(b){try{sessionStorage.setItem('tt853_team_picker_dismissed','1');}catch(_e){}}
+  },true);
+  function schedule(){setTimeout(check,900);setTimeout(check,2500);setTimeout(check,5500);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
+  window.addEventListener('pageshow',function(){setTimeout(check,600);});
+  window.addEventListener('focus',function(){setTimeout(check,600);});
+})();
+/* === slut v853-auto-team-picker-on-login === */
