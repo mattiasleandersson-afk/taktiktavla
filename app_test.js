@@ -46724,8 +46724,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v848 TEST === */
 
 
-/* === v849-lineup-local-draft-warning ===
-   Bas: v848.
+/* === v850-lineup-local-draft-restore-discard ===
+   Bas: v849.
    Syfte:
    - Lokal nödkopia för laguppställning/resultat under match.
    - Osparat-varning när man lämnar laguppställning utan att trycka Spara.
@@ -46733,11 +46733,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Behåller lokal draft om nät/sparning misslyckas.
 */
 (function(){
-  if(window.__tt849LineupLocalDraftWarning)return;
-  window.__tt849LineupLocalDraftWarning=true;
+  if(window.__tt850LineupLocalDraftWarning)return;
+  window.__tt850LineupLocalDraftWarning=true;
 
   var PREFIX='tt849_lineup_draft_';
   var BASE_PREFIX='tt849_lineup_base_';
+  // v850 behåller samma localStorage-nycklar som v849 så befintliga lokala kopior kan återställas.
   var lastSavedJson='';
   var lastActiveMatchId=null;
   var restoreAsked={};
@@ -46859,37 +46860,55 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function maybeRestore849(){
     var id=matchId849();
     if(!id || !lineupActive849())return;
-    if(restoreAsked[id])return;
-    restoreAsked[id]=true;
 
     var d=readDraft849(id);
     if(!d)return;
     var json=compact849(d);
 
-    // Sätt aktuell öppnad match som ren bas om ingen bas finns.
+    // Sätt aktuell öppnad match som ren bas om ingen bas finns, men skriv inte över
+    // en tidigare bas eftersom den behövs för att upptäcka lokala osparade ändringar.
     var cur=buildDraft849();
     var curJson=compact849(cur);
     var base=readBase849(id)||curJson;
-    writeBase849(id,base);
+    if(!readBase849(id))writeBase849(id,base);
 
     if(json===base)return;
 
+    // Fråga en gång per faktisk lokal ändring. I v849 låstes frågan per match-id,
+    // vilket gjorde att en ny lokal kopia inte erbjöds när samma match öppnades igen.
+    if(restoreAsked[id]===json)return;
+    restoreAsked[id]=json;
+
     setTimeout(function(){
       try{
-        var ok=confirm('Det finns en lokal nödkopia av laguppställningen/resultatet för den här matchen. Vill du återställa den?');
+        var ok=confirm('Det finns en lokal nödkopia av laguppställningen/resultatet för den här matchen.\n\nOK = återställ den lokala versionen.\nAvbryt = återställ inte just nu.');
         if(ok){
           applyDraft849(d);
           writeBase849(id,compact849(d));
+        }else{
+          var discard=confirm('Vill du kasta den lokala nödkopian för den här matchen?\n\nOK = kasta lokala ändringar.\nAvbryt = behåll nödkopian till senare.');
+          if(discard){
+            clearDraft849(id);
+            restoreAsked[id]=null;
+            try{if(typeof showToast==='function')showToast('Lokal laguppställningskopia kastad');}catch(e){}
+          }
         }
       }catch(e){}
     },120);
   }
   function warnIfUnsavedLineup849(){
     if(!lineupActive849())return true;
+    var id=matchId849();
     var changed=saveDraftNow849();
     if(!changed)return true;
     try{
-      return confirm('Laguppställningen/resultatet är inte sparat. En lokal nödkopia finns kvar, men vill du lämna utan att trycka Spara?');
+      var ok=confirm('Laguppställningen/resultatet är inte sparat.\n\nOK = lämna och behåll lokal nödkopia.\nAvbryt = stanna kvar och spara.');
+      if(ok && id){
+        // Se till att samma match kan erbjuda återställning nästa gång den öppnas
+        // i samma webbläsarsession.
+        restoreAsked[id]=null;
+      }
+      return ok;
     }catch(e){return true;}
   }
   function isLeavingClick849(e){
@@ -46990,5 +47009,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   window.tt849SaveLineupDraft=saveDraftNow849;
   window.tt849ClearLineupDraft=clearDraft849;
+  window.tt850SaveLineupDraft=saveDraftNow849;
+  window.tt850ClearLineupDraft=clearDraft849;
 })();
-/* === slut v849-lineup-local-draft-warning === */
+/* === slut v850-lineup-local-draft-restore-discard === */
