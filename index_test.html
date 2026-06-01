@@ -6474,3 +6474,222 @@
 })();
 </script>
 <!-- === slut v817 TEST === -->
+
+
+<!-- === v818 TEST: iPad Lager större träffytor + stabil inline-meny, byggd från v817 === -->
+<style id="tt818-ipad-layer-touch-menu-css">
+@media (hover:none) and (pointer:coarse) and (min-width:721px) and (max-width:1024px){
+  /* Större och mer förlåtande träffytor på iPad. */
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed:not(.tt816-ipad-layer-invalid) #tt642-layer-mobile-toggle{
+    width:44px!important;
+    min-width:44px!important;
+    max-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    border-radius:12px!important;
+    touch-action:manipulation!important;
+    -webkit-tap-highlight-color:transparent!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel{
+    width:min(312px, calc(100vw - 24px))!important;
+    max-width:min(312px, calc(100vw - 24px))!important;
+    padding:8px!important;
+    touch-action:manipulation!important;
+  }
+
+  /* v817 gjorde Taktiktavla-panelen lite för smal. Ge raden plats så ⋯ ligger kvar på samma rad. */
+  body.tt816-ipad-layer-mode.tt719-tavla-active:not(.fullscreen-portrait).tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel,
+  body.tt816-ipad-layer-mode.tt733-tavla-active:not(.fullscreen-portrait).tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel{
+    width:300px!important;
+    max-width:300px!important;
+    right:calc(env(safe-area-inset-right,0px) + 8px)!important;
+    top:calc(env(safe-area-inset-top,0px) + 92px)!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt616-layer-row{
+    display:grid!important;
+    grid-template-columns:44px 44px minmax(0,1fr) 44px!important;
+    align-items:center!important;
+    gap:5px!important;
+    padding:6px!important;
+    margin-top:7px!important;
+    border-radius:11px!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel button,
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-icon,
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu-button{
+    min-width:44px!important;
+    width:44px!important;
+    max-width:44px!important;
+    min-height:42px!important;
+    height:42px!important;
+    max-height:42px!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    touch-action:manipulation!important;
+    -webkit-tap-highlight-color:transparent!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-title{
+    min-width:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:42px!important;
+    padding:3px 5px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    overflow:hidden!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt616-layer-name{
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    line-height:1.08!important;
+  }
+
+  /* Ta bort den platskrävande statusraden med “öga per steg”. */
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt630-layer-meta{
+    display:none!important;
+    visibility:hidden!important;
+    height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt631-layer-count{
+    display:block!important;
+    margin-top:2px!important;
+    font-size:.58rem!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu{
+    position:relative!important;
+    min-width:44px!important;
+    width:44px!important;
+  }
+
+  /* Stoppa gamla tt720-skärmfixen från att först visa menyn under raden och sedan flytta den som fixed popup. */
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu-panel,
+  body.tt816-ipad-layer-mode.tt719-tavla-active:not(.fullscreen-portrait).tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu-panel,
+  body.tt816-ipad-layer-mode.tt733-tavla-active:not(.fullscreen-portrait).tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu-panel{
+    position:static!important;
+    left:auto!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:auto!important;
+    width:100%!important;
+    max-width:100%!important;
+    grid-column:1 / -1!important;
+    box-sizing:border-box!important;
+    transform:none!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-layer-menu-panel{
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
+    margin:7px 0 0 0!important;
+    padding:8px 0 0 0!important;
+    border-top:1px solid rgba(255,255,255,.12)!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    overflow:visible!important;
+    max-height:none!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-layer-menu-panel button{
+    width:auto!important;
+    max-width:none!important;
+    min-width:0!important;
+    min-height:38px!important;
+    height:auto!important;
+    padding:7px 8px!important;
+    font-size:.70rem!important;
+    line-height:1.1!important;
+    display:flex!important;
+    white-space:normal!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt665-menu-section,
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-wide{
+    grid-column:1 / -1!important;
+  }
+}
+</style>
+<script id="tt818-ipad-layer-touch-menu-js">
+(function(){
+  'use strict';
+  if(window.__tt818IpadLayerTouchMenuInstalled)return;
+  window.__tt818IpadLayerTouchMenuInstalled=true;
+
+  function mq(q){try{return !!(window.matchMedia&&window.matchMedia(q).matches);}catch(e){return false;}}
+  function ipad(){return mq('(hover:none) and (pointer:coarse) and (min-width:721px) and (max-width:1024px)');}
+
+  function cleanMeta(){
+    if(!ipad())return;
+    try{
+      document.querySelectorAll('#tt616-layer-panel .tt630-layer-meta').forEach(function(el){
+        var txt=String(el.textContent||'');
+        txt=txt.replace(/\s*·\s*öga per steg\s*/i,'').replace(/öga per steg/ig,'').trim();
+        if(txt && txt!==el.textContent)el.textContent=txt;
+      });
+    }catch(e){}
+  }
+
+  function normalizeMenus(){
+    if(!ipad())return;
+    try{
+      document.querySelectorAll('#tt616-layer-panel .tt661-layer-menu-panel').forEach(function(panel){
+        panel.style.position='';
+        panel.style.left='';
+        panel.style.right='';
+        panel.style.top='';
+        panel.style.bottom='';
+        panel.style.width='';
+        panel.style.maxWidth='';
+        panel.style.maxHeight='';
+        panel.style.visibility='';
+      });
+    }catch(e){}
+  }
+
+  function apply(){cleanMeta();normalizeMenus();}
+  function schedule(){setTimeout(apply,0);setTimeout(apply,60);setTimeout(apply,160);}
+
+  ['click','touchend','resize','orientationchange','fullscreenchange','pageshow'].forEach(function(evt){
+    window.addEventListener(evt,schedule,true);
+    document.addEventListener(evt,schedule,true);
+  });
+
+  try{
+    var mo=new MutationObserver(function(){schedule();});
+    if(document.body)mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style']});
+  }catch(e){}
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});
+  else schedule();
+})();
+</script>
+<!-- === slut v818 TEST === -->
+
+<script id="tt818-version-label-js">
+(function(){try{document.title='Taktiktavla TEST v818 ipad lager touch menu puts';}catch(e){}})();
+</script>
