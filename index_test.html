@@ -5632,10 +5632,10 @@
 
 
 
-<!-- === v819 TEST: iPad Lager touch-event fix och radputs, byggd från fungerande v817. v818 används inte som bas. === -->
-<style id="tt819-ipad-layer-touch-event-css">
+<!-- === v820 TEST: iPad Lager touchfix utan radlayout-ändring, byggd från fungerande v817. v818/v819 används inte som bas. === -->
+<style id="tt820-ipad-layer-touch-safe-css">
 @media (hover:none) and (pointer:coarse) and (min-width:721px) and (max-width:1024px){
-  /* v819: större träffytor utan att trycka ihop Taktikfilm-menyn som v818 gjorde. */
+  /* v820: behåll v817:s fungerande meny/radstruktur, men gör träffytorna större på iPad. */
   body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed:not(.tt816-ipad-layer-invalid) #tt642-layer-mobile-toggle{
     width:44px!important;
     min-width:44px!important;
@@ -5648,112 +5648,100 @@
     -webkit-tap-highlight-color:transparent!important;
   }
 
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel{
-    width:min(310px, calc(100vw - 24px))!important;
-    max-width:min(310px, calc(100vw - 24px))!important;
-    padding:8px!important;
-    touch-action:manipulation!important;
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed:not(.tt816-ipad-layer-invalid) #tt642-layer-mobile-toggle::before{
+    font-size:24px!important;
   }
 
   body.tt816-ipad-layer-mode.tt719-tavla-active:not(.fullscreen-portrait).tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel,
   body.tt816-ipad-layer-mode.tt733-tavla-active:not(.fullscreen-portrait).tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel{
     width:300px!important;
     max-width:300px!important;
-    right:calc(env(safe-area-inset-right,0px) + 8px)!important;
-    top:calc(env(safe-area-inset-top,0px) + 92px)!important;
+    padding:8px!important;
   }
 
+  /* Viktigt: bara grid-kolumner/träffyta. Ingen display:contents och ingen popup-ombyggnad som i v819. */
   body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt616-layer-row{
-    grid-template-columns:42px 42px minmax(0,1fr) 42px!important;
-    gap:6px!important;
-    padding:7px!important;
+    display:grid!important;
+    grid-template-columns:34px 34px minmax(0,1fr) 34px!important;
     align-items:center!important;
+    gap:5px!important;
+    min-height:42px!important;
+    padding:5px 4px!important;
+    box-sizing:border-box!important;
   }
 
   body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-icon,
   body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu-button{
-    width:42px!important;
-    min-width:42px!important;
-    max-width:42px!important;
-    height:40px!important;
-    min-height:40px!important;
-    max-height:40px!important;
+    width:34px!important;
+    min-width:34px!important;
+    max-width:34px!important;
+    height:34px!important;
+    min-height:34px!important;
+    max-height:34px!important;
     padding:0!important;
+    margin:0!important;
     display:flex!important;
     align-items:center!important;
     justify-content:center!important;
+    box-sizing:border-box!important;
+    font-size:.86rem!important;
+    line-height:1!important;
     touch-action:manipulation!important;
     -webkit-tap-highlight-color:transparent!important;
   }
 
   body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-title{
-    min-height:40px!important;
-    padding:3px 5px!important;
-    touch-action:manipulation!important;
-    -webkit-tap-highlight-color:transparent!important;
-  }
-
-  /* v819: menyn ska inte först renderas smalt under ⋯ och sedan hoppa som popup.
-     display:contents gör ⋯-knappen och själva menypanelen till grid-items i lagerraden.
-     Panelen kan då span:a hela raden utan att Taktikfilm-menyn trycks ihop. */
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu{
-    display:contents!important;
-  }
-
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu-button{
-    grid-column:4!important;
-    grid-row:1!important;
-  }
-
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu-panel{
-    position:static!important;
-    left:auto!important;
-    right:auto!important;
-    top:auto!important;
-    bottom:auto!important;
-    transform:none!important;
-    grid-column:1 / -1!important;
-    width:100%!important;
     min-width:0!important;
-    max-width:100%!important;
-    box-sizing:border-box!important;
+    overflow:hidden!important;
+    padding:0 3px!important;
   }
 
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-layer-menu-panel{
-    display:grid!important;
-    grid-template-columns:1fr 1fr!important;
-    gap:6px!important;
-    margin-top:7px!important;
-    padding-top:7px!important;
-    overflow:visible!important;
-    max-height:none!important;
-    background:transparent!important;
-    box-shadow:none!important;
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt616-layer-name{
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
   }
 
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-layer-menu-panel button{
-    min-height:36px!important;
-    padding:6px 7px!important;
-    font-size:.70rem!important;
-    line-height:1.12!important;
+  /* Ta bort extra text som gör raden trång, utan att gömma hela namnfältet. */
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-help,
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt616-layer-help{
+    display:none!important;
+  }
+
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel button,
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel [role="button"]{
     touch-action:manipulation!important;
     -webkit-tap-highlight-color:transparent!important;
   }
 }
 </style>
-<script id="tt819-ipad-layer-touch-event-js">
+<script id="tt820-ipad-layer-touch-safe-js">
 (function(){
   'use strict';
-  if(window.__tt819IpadLayerTouchEventInstalled)return;
-  window.__tt819IpadLayerTouchEventInstalled=true;
+  if(window.__tt820IpadLayerTouchSafeInstalled)return;
+  window.__tt820IpadLayerTouchSafeInstalled=true;
 
   function mq(q){try{return !!(window.matchMedia&&window.matchMedia(q).matches);}catch(e){return false;}}
   function ipad(){return mq('(hover:none) and (pointer:coarse) and (min-width:721px) and (max-width:1024px)');}
 
-  function cleanMeta(){
+  var lastEl=null,lastAt=0;
+  function bridgeTap(ev){
+    if(!ipad())return;
+    var t=ev.target;
+    if(!t || !t.closest)return;
+    var btn=t.closest('#tt642-layer-mobile-toggle, #tt616-layer-panel .tt661-layer-icon, #tt616-layer-panel .tt661-layer-menu-button, #tt616-layer-panel .tt661-layer-menu-panel button, #tt630-free-layer-add');
+    if(!btn || btn.disabled)return;
+    var now=Date.now();
+    if(btn===lastEl && now-lastAt<330)return;
+    lastEl=btn; lastAt=now;
+    try{ev.preventDefault();ev.stopPropagation();if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();}catch(e){}
+    setTimeout(function(){try{btn.click();}catch(e){}},0);
+  }
+
+  function cleanText(){
     if(!ipad())return;
     try{
-      document.querySelectorAll('#tt616-layer-panel .tt630-layer-meta').forEach(function(el){
+      document.querySelectorAll('#tt616-layer-panel .tt661-layer-meta, #tt616-layer-panel .tt616-layer-meta').forEach(function(el){
         var txt=String(el.textContent||'');
         var cleaned=txt.replace(/\s*·\s*öga per steg\s*/ig,'').replace(/öga per steg/ig,'').trim();
         if(cleaned!==txt)el.textContent=cleaned;
@@ -5761,43 +5749,25 @@
     }catch(e){}
   }
 
-  function tapBridge(ev){
-    if(!ipad())return;
-    var t=ev.target;
-    if(!t || !t.closest)return;
-    var btn=t.closest('#tt616-layer-panel button[data-tt630-action], #tt630-free-layer-add');
-    if(!btn || btn.disabled)return;
-    try{ev.preventDefault();ev.stopPropagation();if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();}catch(e){}
-    setTimeout(function(){try{btn.click();}catch(e){}},0);
-  }
-
-  function apply(){cleanMeta();}
-  function schedule(){setTimeout(apply,0);setTimeout(apply,80);}
-
-  document.addEventListener('touchend',tapBridge,true);
+  function schedule(){setTimeout(cleanText,0);setTimeout(cleanText,80);}
+  document.addEventListener('touchend',bridgeTap,true);
   document.addEventListener('pointerup',function(ev){
     try{if(ev.pointerType && ev.pointerType!=='touch')return;}catch(e){}
-    tapBridge(ev);
+    bridgeTap(ev);
   },true);
-
   ['click','touchend','pointerup','resize','orientationchange','fullscreenchange','pageshow'].forEach(function(evt){
     window.addEventListener(evt,schedule,true);
     document.addEventListener(evt,schedule,true);
   });
-
-  try{
-    var mo=new MutationObserver(function(){schedule();});
-    if(document.body)mo.observe(document.body,{childList:true,subtree:true,characterData:true});
-  }catch(e){}
-
+  try{var mo=new MutationObserver(schedule); if(document.body)mo.observe(document.body,{childList:true,subtree:true,characterData:true});}catch(e){}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});
   else schedule();
 })();
 </script>
-<script id="tt819-version-label-js">
-(function(){try{document.title='Taktiktavla TEST v819 ipad lager touch event fix';}catch(e){}})();
+<script id="tt820-version-label-js">
+(function(){try{document.title='Taktiktavla TEST v820 ipad lager touch utan radbrytning';}catch(e){}})();
 </script>
-<!-- === slut v819 TEST === -->
+<!-- === slut v820 TEST === -->
 
 </body>
 </html>
