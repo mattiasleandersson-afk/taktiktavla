@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v803 taktikfilm lager css startposition</title>
+<title>Taktiktavla TEST v805 taktikfilm lager pos summaryfix</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -5651,3 +5651,49 @@
 }
 </style>
 <!-- === slut v803 TEST === -->
+
+
+<!-- === v805 TEST: Taktikfilm mobil - symbol högre + dölj grå Lager-list === -->
+<style id="tt805-taktikfilm-layer-pos-summaryfix-css">
+@media (max-width:720px){
+  /* Taktikfilm redigeringsläge: symbolen högre, fullscreen lämnas till v803. */
+  body.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle,
+  body.tt743-mobile-taktikfilm-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle{
+    display:block!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    position:fixed!important;
+    left:auto!important;
+    right:calc(env(safe-area-inset-right,0px) + 10px)!important;
+    top:calc(env(safe-area-inset-top,0px) + 96px)!important;
+    bottom:auto!important;
+    transform:none!important;
+    z-index:100500!important;
+  }
+
+  /* Taktikfilm: summary-raden är bara gammal details-rubrik och ska aldrig synas som grå list. */
+  body.tt688-taktikfilm-editor-active #tt616-layer-panel summary,
+  body.tt743-mobile-taktikfilm-active #tt616-layer-panel summary,
+  body.fullscreen-portrait.v66-taktik-fs #tt616-layer-panel summary,
+  body.fullscreen-portrait.tt743-mobile-taktikfilm-fullscreen #tt616-layer-panel summary{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    overflow:hidden!important;
+  }
+
+  body.tt688-taktikfilm-editor-active #tt616-layer-panel details,
+  body.tt743-mobile-taktikfilm-active #tt616-layer-panel details,
+  body.fullscreen-portrait.v66-taktik-fs #tt616-layer-panel details,
+  body.fullscreen-portrait.tt743-mobile-taktikfilm-fullscreen #tt616-layer-panel details{
+    display:block!important;
+  }
+}
+</style>
+<!-- === slut v805 TEST === -->
