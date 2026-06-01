@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v802 taktikfilm lager startposition fix</title>
+<title>Taktiktavla TEST v803 taktikfilm lager css startposition</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -5616,99 +5616,38 @@
      Ingen SQL och ingen Supabase-ändring. -->
 
 
-<!-- === v802 TEST: försiktig initial placering av Taktikfilm-lagerknapp på mobil === -->
-<script id="tt802-taktikfilm-layer-startpos-bootstrap-js">
-(function(){
-  'use strict';
-  if(window.__tt802TaktikfilmLayerStartposBootstrapInstalled)return;
-  window.__tt802TaktikfilmLayerStartposBootstrapInstalled=true;
+<!-- === v803 TEST: CSS-only startposition för Taktikfilm-lagersymbol på mobil === -->
+<style id="tt803-taktikfilm-layer-startpos-css">
+@media (max-width:720px){
+  /* Normal Taktikfilm-redigering: placera lagersymbolen rätt direkt,
+     även innan tt743 hunnit sätta sin egen klass efter första tryck. */
+  body.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle{
+    display:block!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    position:fixed!important;
+    left:auto!important;
+    right:calc(env(safe-area-inset-right,0px) + 10px)!important;
+    top:calc(env(safe-area-inset-top,0px) + 132px)!important;
+    bottom:auto!important;
+    transform:none!important;
+    z-index:100500!important;
+  }
 
-  var warmTimer=null;
-  function byId(id){return document.getElementById(id);}
-  function mobile(){try{return !!(window.matchMedia&&window.matchMedia('(max-width:720px)').matches);}catch(e){return false;}}
-  function visible(el){try{if(!el)return false;var cs=getComputedStyle(el);var r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>8&&r.height>8;}catch(e){return false;}}
-  function isTaktikfilmContext(){
-    try{
-      if(!mobile())return false;
-      if(document.body.classList.contains('tt-v82-taktik-library'))return false;
-      if(document.body.classList.contains('tt743-mobile-taktikfilm-active'))return true;
-      if(document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen'))return true;
-      if(document.body.classList.contains('tt688-taktikfilm-editor-active'))return true;
-      if(document.body.classList.contains('v66-taktik-fs'))return true;
-      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
-      if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null)return true;
-      if(typeof playback!=='undefined' && playback)return true;
-      var tab=document.querySelector('.tab.on[data-panel="taktik"]');
-      var bar=byId('taktikbar');
-      return !!(tab && visible(bar));
-    }catch(e){return false;}
+  /* Taktikfilm fullscreen: samma direktplacering innan första tryck. */
+  body.fullscreen-portrait.v66-taktik-fs #tt642-layer-mobile-toggle,
+  body.fullscreen-portrait.tt743-mobile-taktikfilm-fullscreen #tt642-layer-mobile-toggle{
+    display:block!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    position:fixed!important;
+    left:auto!important;
+    right:calc(env(safe-area-inset-right,0px) + 10px)!important;
+    top:calc(env(safe-area-inset-top,0px) + 52px)!important;
+    bottom:auto!important;
+    transform:none!important;
+    z-index:100500!important;
   }
-  function isFullscreen(){
-    try{return !!(document.body.classList.contains('fullscreen-portrait') && isTaktikfilmContext());}catch(e){return false;}
-  }
-  function clearBtn(btn){
-    if(!btn)return;
-    btn.style.top='';
-    btn.style.right='';
-    btn.style.left='';
-    btn.style.bottom='';
-    btn.style.zIndex='';
-    btn.style.position='';
-  }
-  function placeBtn(){
-    var btn=byId('tt642-layer-mobile-toggle');
-    if(!btn)return;
-    if(!isTaktikfilmContext()){
-      clearBtn(btn);
-      return;
-    }
-    btn.style.position='fixed';
-    btn.style.left='auto';
-    btn.style.bottom='auto';
-    btn.style.right='calc(env(safe-area-inset-right,0px) + 10px)';
-    btn.style.zIndex='100500';
-    if(isFullscreen()){
-      btn.style.top='calc(env(safe-area-inset-top,0px) + 52px)';
-      return;
-    }
-    var top=132;
-    try{
-      var bar=byId('taktikbar');
-      if(visible(bar)){
-        var br=bar.getBoundingClientRect();
-        top=Math.round(Math.max(86, Math.min((window.innerHeight||700)-76, br.bottom + 8)));
-      }else{
-        var wrap=byId('pitch-wrapper');
-        if(visible(wrap)){
-          var wr=wrap.getBoundingClientRect();
-          top=Math.round(Math.max(86, Math.min((window.innerHeight||700)-76, wr.top + 10)));
-        }
-      }
-    }catch(e){}
-    btn.style.top=top+'px';
-  }
-  function warm(){
-    placeBtn();
-    var left=10;
-    clearInterval(warmTimer);
-    warmTimer=setInterval(function(){
-      placeBtn();
-      left--;
-      if(left<=0){clearInterval(warmTimer);warmTimer=null;}
-    },120);
-  }
-  ['resize','orientationchange','fullscreenchange','pageshow'].forEach(function(evt){window.addEventListener(evt,warm,true);});
-  document.addEventListener('click',function(ev){
-    try{
-      var t=ev.target;
-      if(!t||!t.closest)return;
-      if(t.closest('.tab[data-panel="taktik"], #taktikbar, #btn-fullscreen, #btn-stop-play, #btn-play-all, #tt642-layer-mobile-toggle')){
-        setTimeout(warm,0);
-      }
-    }catch(e){}
-  },true);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){warm();setTimeout(warm,250);setTimeout(warm,700);});
-  else{warm();setTimeout(warm,250);setTimeout(warm,700);}
-})();
-</script>
-<!-- === slut v802 TEST === -->
+}
+</style>
+<!-- === slut v803 TEST === -->
