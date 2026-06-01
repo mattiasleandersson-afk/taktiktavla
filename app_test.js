@@ -1,4 +1,4 @@
-/* v843 TEST: app-js från v842/v838 med smal kon-/pinne-context-reset. */
+/* v844 TEST: kon-/pinne-context-reset med bevarad Ny film från sparad taktiktavla. */
 /* === v585 TESTMILJÖ FASTA FILNAMN ===
    Klistra denna fil i GitHub som: app_test.js
    Klistra indexfilen i GitHub som: index_test.html
@@ -74,6 +74,10 @@ var zoneShapeType="rect",zoneColor="rgba(232,76,76,0.25)",zoneFillType="solid";
 // Denna hjälpare tömmer bara den arrayen + stänger dess storleksruta.
 // Den anropas enbart där befintlig kod redan tömmer vanliga ritningar/ny arbetsyta.
 function clearTacticObjectsV843(){
+  // v844: när en ny taktikfilm skapas från en sparad taktiktavla
+  // kan äldre start-/panelkod köra samma rensningsvägar som ny tom arbetsyta.
+  // Då ska överförd taktiktavle-state inte tömmas.
+  if(window.__tt844PreserveTacticObjects)return;
   try{if(Array.isArray(window.tacticObjects))window.tacticObjects.length=0;}catch(e){}
   try{var p=document.getElementById("tt747-size-panel");if(p)p.style.display="none";}catch(e){}
 }
@@ -1287,7 +1291,7 @@ function workspaceFromSavedFormation(saved){
       labels:cloneObj(st.labels||[]),
       freehandPaths:cloneObj(st.freehandPaths||[]),
       zones:cloneObj(st.zones||[]),
-      tacticObjects:cloneObj(st.tacticObjects||[]),
+      tacticObjects:cloneObj(st.tacticObjects || (st.snap&&st.snap.tacticObjects) || (st.state&&st.state.tacticObjects) || []),
       movementPaths:[]
     },
     matchRoster:[],
@@ -46107,3 +46111,99 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
 /* === slut v800 TEST === */
+
+
+/* === v844 TEST: bevara sparad taktiktavla när ny taktikfilm skapas ===
+   Bas: v843. v843 rensade koner/pinnar på rätt ställen för ny tom arbetsyta,
+   men kunde också slå till när Taktikfilm skapas från sparad Taktiktavla.
+   Den här patchen gör bara det flödet explicit bevarande. */
+(function(){
+  'use strict';
+  if(window.__tt844FormationToFilmObjectPreserve)return;
+  window.__tt844FormationToFilmObjectPreserve=true;
+
+  function cloneObj844(v){
+    try{return JSON.parse(JSON.stringify(v||[]));}catch(e){return [];}
+  }
+  function objectsFromSaved844(saved){
+    try{
+      var st=(saved&& (saved.state || saved.data || saved)) || {};
+      var list=st.tacticObjects || (st.snap&&st.snap.tacticObjects) || (st.state&&st.state.tacticObjects) || [];
+      return Array.isArray(list)?cloneObj844(list):[];
+    }catch(e){return [];}
+  }
+  function applyObjects844(list){
+    try{
+      if(!Array.isArray(list))list=[];
+      if(!Array.isArray(window.tacticObjects))window.tacticObjects=[];
+      window.tacticObjects.length=0;
+      list.forEach(function(o){
+        if(!o)return;
+        window.tacticObjects.push({
+          id:o.id || ('obj'+Date.now()+Math.floor(Math.random()*1000)),
+          type:o.type || 'cone',
+          x:typeof o.x==='number'?o.x:200,
+          y:typeof o.y==='number'?o.y:300,
+          size:typeof o.size==='number'?o.size:0.75,
+          layerId:o.layerId || 'layer-1'
+        });
+      });
+      try{var p=document.getElementById('tt747-size-panel'); if(p)p.style.display='none';}catch(e){}
+      try{if(typeof render==='function')render();}catch(e){}
+    }catch(e){}
+  }
+  function preserveWhile844(fn){
+    window.__tt844PreserveTacticObjects=true;
+    try{return fn();}
+    finally{
+      setTimeout(function(){window.__tt844PreserveTacticObjects=false;},350);
+    }
+  }
+
+  // v91-flödet: Taktikfilm-menyns "Ny film från taktiktavla".
+  try{
+    if(typeof tt91SnapFromSavedFormation==='function' && !tt91SnapFromSavedFormation.__tt844Wrapped){
+      var oldSnap=tt91SnapFromSavedFormation;
+      tt91SnapFromSavedFormation=function(s){
+        var snap=oldSnap.apply(this,arguments) || {};
+        snap.tacticObjects=objectsFromSaved844(s);
+        return snap;
+      };
+      tt91SnapFromSavedFormation.__tt844Wrapped=true;
+    }
+  }catch(e){}
+
+  try{
+    if(typeof tt91CreateFilmFromFormation==='function' && !tt91CreateFilmFromFormation.__tt844Wrapped){
+      var oldCreate91=tt91CreateFilmFromFormation;
+      tt91CreateFilmFromFormation=function(s){
+        var objs=objectsFromSaved844(s);
+        var r=preserveWhile844(function(){return oldCreate91.apply(this,arguments);}.bind(this));
+        if(objs.length){
+          setTimeout(function(){applyObjects844(objs);},0);
+          setTimeout(function(){applyObjects844(objs);},120);
+        }
+        return r;
+      };
+      tt91CreateFilmFromFormation.__tt844Wrapped=true;
+    }
+  }catch(e){}
+
+  // v50-flödet: Taktiktavla-listans "Ny film" direkt från sparad tavla.
+  try{
+    if(typeof createTaktikFilmFromSavedFormationV50==='function' && !createTaktikFilmFromSavedFormationV50.__tt844Wrapped){
+      var oldCreate50=createTaktikFilmFromSavedFormationV50;
+      createTaktikFilmFromSavedFormationV50=function(saved,name){
+        var objs=objectsFromSaved844(saved);
+        var r=preserveWhile844(function(){return oldCreate50.apply(this,arguments);}.bind(this));
+        if(objs.length){
+          setTimeout(function(){applyObjects844(objs);},0);
+          setTimeout(function(){applyObjects844(objs);},120);
+        }
+        return r;
+      };
+      createTaktikFilmFromSavedFormationV50.__tt844Wrapped=true;
+    }
+  }catch(e){}
+})();
+/* === slut v844 TEST === */
