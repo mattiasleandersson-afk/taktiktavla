@@ -5760,243 +5760,297 @@
 <!-- === slut v823 TEST === -->
 
 
-
-
-<!-- === v833 TEST: Ren separat ritvalsägare för Taktikfilm touch, byggd från stabil v826 === -->
-<style id="tt833-taktikfilm-ritval-single-owner-css">
-  @media (hover:none) and (pointer:coarse) and (max-width:1024px){
-    /* v827 fungerade: Taktikfilm fullscreen-stegpilar längst ner, inte över ritverktygen. */
-    body.fullscreen-portrait.v66-taktik-fs:not(.tt523-fs-rotated-desktop) #fs-portrait-nav{
-      position:fixed!important;
-      top:auto!important;
-      bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;
-      left:50%!important;
-      right:auto!important;
-      transform:translateX(-50%)!important;
-      z-index:100060!important;
-      width:auto!important;
-      max-width:calc(100vw - 16px)!important;
-      display:flex!important;
-      flex-direction:row!important;
-      flex-wrap:nowrap!important;
-      justify-content:center!important;
-      align-items:center!important;
-      gap:5px!important;
-      overflow-x:auto!important;
-      overflow-y:hidden!important;
-      padding:5px 7px!important;
-      border-radius:12px!important;
-    }
-
-    /* Endast när v833 säkert äger Taktikfilm: neutralisera gamla topp-/helbreddsplaceringar. */
-    body.tt833-taktikfilm-ritval-owner #arrow-options,
-    body.tt833-taktikfilm-ritval-owner #freehand-options,
-    body.tt833-taktikfilm-ritval-owner #zone-options{
-      box-sizing:border-box!important;
-      min-height:0!important;
-      align-items:center!important;
-      gap:5px!important;
-      padding:5px 6px!important;
-      overflow-x:auto!important;
-      overflow-y:hidden!important;
-      -webkit-overflow-scrolling:touch!important;
-      white-space:nowrap!important;
-      background:rgba(17,26,20,.97)!important;
-      border:1px solid rgba(74,232,122,.70)!important;
-      border-radius:10px!important;
-      box-shadow:0 4px 14px rgba(0,0,0,.35)!important;
-      pointer-events:auto!important;
-      touch-action:manipulation!important;
-    }
-    body.tt833-taktikfilm-ritval-owner #arrow-options:not(.tt833-active-option),
-    body.tt833-taktikfilm-ritval-owner #freehand-options:not(.tt833-active-option),
-    body.tt833-taktikfilm-ritval-owner #zone-options:not(.tt833-active-option){
-      display:none!important;
-      visibility:hidden!important;
-      opacity:0!important;
-      pointer-events:none!important;
-    }
-    body.tt833-taktikfilm-ritval-owner #arrow-options.tt833-active-option,
-    body.tt833-taktikfilm-ritval-owner #freehand-options.tt833-active-option,
-    body.tt833-taktikfilm-ritval-owner #zone-options.tt833-active-option{
-      display:flex!important;
-      visibility:visible!important;
-      opacity:1!important;
-      position:fixed!important;
-      left:var(--tt833-ritval-left,8px)!important;
-      top:var(--tt833-ritval-top,58px)!important;
-      right:auto!important;
-      bottom:auto!important;
-      transform:none!important;
-      z-index:100120!important;
-      width:auto!important;
-      max-width:min(360px, calc(100vw - 16px))!important;
-    }
-    body.tt833-taktikfilm-ritval-owner #arrow-options button,
-    body.tt833-taktikfilm-ritval-owner #freehand-options button,
-    body.tt833-taktikfilm-ritval-owner #zone-options button,
-    body.tt833-taktikfilm-ritval-owner #arrow-options select,
-    body.tt833-taktikfilm-ritval-owner #freehand-options select,
-    body.tt833-taktikfilm-ritval-owner #zone-options select{
-      min-height:30px!important;
-      height:30px!important;
-      font-size:.72rem!important;
-      flex:0 0 auto!important;
-      touch-action:manipulation!important;
-    }
+<!-- === v834 TEST: ren Taktikfilm-touchmeny för ritval + fullscreen-stegnav längst ner, byggd från stabil v826. === -->
+<style id="tt834-taktikfilm-touch-options-css">
+@media (hover:none) and (pointer:coarse) and (max-width:1024px){
+  /* Taktikfilm touch ska inte visa de gamla globala ritvalspanelerna.
+     De finns kvar som datakälla, men den visuella menyn nedan äger presentationen. */
+  body.tt834-tf-touch-owner #arrow-options,
+  body.tt834-tf-touch-owner #freehand-options,
+  body.tt834-tf-touch-owner #zone-options,
+  body:not(.fullscreen-portrait).tt688-taktikfilm-editor-active #arrow-options,
+  body:not(.fullscreen-portrait).tt688-taktikfilm-editor-active #freehand-options,
+  body:not(.fullscreen-portrait).tt688-taktikfilm-editor-active #zone-options,
+  body:not(.fullscreen-portrait).tt743-mobile-taktikfilm-active #arrow-options,
+  body:not(.fullscreen-portrait).tt743-mobile-taktikfilm-active #freehand-options,
+  body:not(.fullscreen-portrait).tt743-mobile-taktikfilm-active #zone-options,
+  body.fullscreen-portrait.v66-taktik-fs #arrow-options,
+  body.fullscreen-portrait.v66-taktik-fs #freehand-options,
+  body.fullscreen-portrait.v66-taktik-fs #zone-options{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    width:0!important;
+    height:0!important;
+    max-width:0!important;
+    max-height:0!important;
+    overflow:hidden!important;
   }
+
+  #tt834-tf-touch-options{
+    display:none;
+    position:fixed;
+    left:var(--tt834-left,8px);
+    top:var(--tt834-top,84px);
+    right:auto;
+    bottom:auto;
+    z-index:2147483200;
+    max-width:calc(100vw - 16px);
+    min-height:38px;
+    box-sizing:border-box;
+    padding:5px 6px;
+    gap:5px;
+    align-items:center;
+    white-space:nowrap;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    border:1px solid rgba(74,232,122,.7);
+    border-radius:11px;
+    background:rgba(17,26,20,.98);
+    box-shadow:0 5px 16px rgba(0,0,0,.45);
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  body.tt834-tf-touch-owner.tt834-tf-touch-options-open #tt834-tf-touch-options{
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+  #tt834-tf-touch-options select,
+  #tt834-tf-touch-options button{
+    flex:0 0 auto!important;
+    min-height:32px!important;
+    height:32px!important;
+    max-width:170px!important;
+    box-sizing:border-box!important;
+    border-radius:7px!important;
+    border:1px solid #2d4a35!important;
+    background:#1e2e22!important;
+    color:#edf5ee!important;
+    padding:3px 8px!important;
+    font-size:.74rem!important;
+    font-family:Arial Narrow,Arial,sans-serif!important;
+  }
+
+  /* Taktikfilm fullscreen: stegnavigeringen längst ner, ritverktygen i fs-top-tools längst upp. */
+  body.fullscreen-portrait.v66-taktik-fs:not(.tt523-fs-rotated-desktop) #fs-portrait-nav{
+    position:fixed!important;
+    top:auto!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;
+    left:50%!important;
+    right:auto!important;
+    transform:translateX(-50%)!important;
+    z-index:100060!important;
+    width:auto!important;
+    max-width:calc(100vw - 16px)!important;
+    display:flex!important;
+    flex-direction:row!important;
+    flex-wrap:nowrap!important;
+    justify-content:center!important;
+    align-items:center!important;
+    gap:5px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:5px 7px!important;
+    border-radius:12px!important;
+  }
+  body.fullscreen-portrait.v66-taktik-fs #fs-top-tools{
+    top:calc(env(safe-area-inset-top,0px) + 46px)!important;
+    bottom:auto!important;
+    z-index:100070!important;
+  }
+  body.fullscreen-portrait.v66-taktik-fs #fs-portrait-nav #fs-tb-arrow,
+  body.fullscreen-portrait.v66-taktik-fs #fs-portrait-nav #fs-tb-freehand,
+  body.fullscreen-portrait.v66-taktik-fs #fs-portrait-nav #fs-tb-zone,
+  body.fullscreen-portrait.v66-taktik-fs #fs-portrait-nav #fs-tb-text,
+  body.fullscreen-portrait.v66-taktik-fs #fs-portrait-nav #fs-tb-movement{
+    display:none!important;
+  }
+}
 </style>
-<script id="tt833-taktikfilm-ritval-single-owner-js">
+<script id="tt834-taktikfilm-touch-options-js">
 (function(){
   'use strict';
-  if(window.__tt833TaktikfilmRitvalSingleOwnerInstalled)return;
-  window.__tt833TaktikfilmRitvalSingleOwnerInstalled=true;
+  if(window.__tt834TaktikfilmTouchOptionsInstalled)return;
+  window.__tt834TaktikfilmTouchOptionsInstalled=true;
 
-  var OPT_IDS=['arrow-options','freehand-options','zone-options'];
-  var MODE_TO_OPT={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
-  var OPT_TO_BTN={
-    'arrow-options':['fs-tb-arrow','btn-tb-arrow'],
-    'freehand-options':['fs-tb-freehand','btn-tb-freehand'],
-    'zone-options':['fs-tb-zone','btn-tb-zone']
+  var OPTION_IDS={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
+  var TOOL_BTNS={
+    arrow:['btn-tb-arrow','fs-tb-arrow'],
+    freehand:['btn-tb-freehand','fs-tb-freehand'],
+    zone:['btn-tb-zone','fs-tb-zone']
   };
-  var lastTouchTs=0;
+  var lastHtmlMode='';
+  var menuLockedUntil=0;
 
+  function mq(q){try{return !!(window.matchMedia&&window.matchMedia(q).matches);}catch(e){return false;}}
+  function touch(){return mq('(hover:none) and (pointer:coarse) and (max-width:1024px)');}
   function byId(id){return document.getElementById(id);}
-  function touchDevice(){try{return !!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse) and (max-width:1024px)').matches);}catch(e){return false;}}
-  function visible(el){
-    try{if(!el)return false;var cs=getComputedStyle(el);var r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>3&&r.height>3;}catch(e){return !!el;}
-  }
-  function panelName(){
-    try{var tab=document.querySelector('.tab.on[data-panel]');if(tab)return String(tab.getAttribute('data-panel')||'');}catch(e){}
-    try{var p=document.querySelector('.panel.on');if(p&&p.id)return String(p.id).replace(/^panel-/,'');}catch(e){}
-    return '';
-  }
-  function modeName(){try{if(typeof mode!=='undefined'&&mode)return String(mode);}catch(e){} try{if(window.mode)return String(window.mode);}catch(e){} return '';}
-  function taktikfilmContext(){
+  function has(c){try{return document.body.classList.contains(c);}catch(e){return false;}}
+  function visible(el){try{if(!el)return false;var cs=getComputedStyle(el);var r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>4&&r.height>4;}catch(e){return false;}}
+  function activePanel(){try{var t=document.querySelector('.tab.on[data-panel]');return t?String(t.getAttribute('data-panel')||''):'';}catch(e){return '';}}
+  function modeNow(){try{return String((typeof mode!=='undefined'&&mode)||window.mode||'');}catch(e){return String(window.mode||'');}}
+  function drawMode(){var m=modeNow();return OPTION_IDS[m]?m:'';}
+
+  function isTaktikLibrary(){
     try{
-      if(!touchDevice())return false;
-      if(document.body.classList.contains('tt-v82-taktik-library'))return false;
-      if(document.body.classList.contains('fullscreen-portrait'))return document.body.classList.contains('v66-taktik-fs') || document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen');
-      if(panelName()!=='taktik' && !document.querySelector('.tab.on[data-panel="taktik"]'))return false;
-      var bar=byId('taktikbar');
-      var edit=byId('edit-taktik-ui');
-      if(document.body.classList.contains('tt688-taktikfilm-editor-active'))return true;
-      if(document.body.classList.contains('tt743-mobile-taktikfilm-active'))return true;
+      if(has('tt-v82-taktik-library'))return true;
+      if(activePanel()!=='taktik')return false;
+      if(visible(byId('no-rec-ui')) && !visible(byId('taktikbar')))return true;
+      if(!visible(byId('taktikbar')) && !has('fullscreen-portrait'))return true;
+    }catch(e){}
+    return false;
+  }
+  function isTaktikfilmTouch(){
+    try{
+      if(!touch())return false;
+      if(isTaktikLibrary())return false;
+      if(has('fullscreen-portrait'))return has('v66-taktik-fs') || has('tt743-mobile-taktikfilm-fullscreen');
+      if(activePanel()!=='taktik' && !document.querySelector('.tab.on[data-panel="taktik"]'))return false;
+      if(has('tt688-taktikfilm-editor-active') || has('tt743-mobile-taktikfilm-active'))return true;
       if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
       if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null)return true;
-      return !!(visible(bar)&&visible(edit));
+      return visible(byId('taktikbar'));
     }catch(e){return false;}
   }
-  function anchorFor(optId){
-    var arr=OPT_TO_BTN[optId]||[];
-    for(var i=0;i<arr.length;i++){var b=byId(arr[i]); if(visible(b))return b;}
-    return null;
+
+  function ensureMenu(){
+    var m=byId('tt834-tf-touch-options');
+    if(m)return m;
+    m=document.createElement('div');
+    m.id='tt834-tf-touch-options';
+    m.setAttribute('aria-label','Ritval Taktikfilm');
+    ['pointerdown','touchstart','mousedown','click','touchend'].forEach(function(type){
+      m.addEventListener(type,function(ev){try{ev.stopPropagation();}catch(e){}},{capture:true,passive:true});
+    });
+    document.body.appendChild(m);
+    return m;
   }
-  function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
-  function setImportant(el,prop,val){try{el.style.setProperty(prop,val,'important');}catch(e){try{el.style[prop]=val;}catch(_e){}}}
-  function clearOurStyles(el){
-    if(!el)return;
-    ['position','left','top','right','bottom','transform','z-index','width','max-width','display','visibility','opacity','pointer-events','box-sizing','min-height','align-items','gap','padding','overflow-x','overflow-y','white-space','background','border','border-radius','box-shadow','touch-action'].forEach(function(p){try{el.style.removeProperty(p);}catch(e){}});
-    el.classList.remove('tt833-active-option');
-  }
-  function clearWhenNotOwner(){
-    try{document.body.classList.remove('tt833-taktikfilm-ritval-owner','tt833-ritval-touchlock');}catch(e){}
-    OPT_IDS.forEach(function(id){clearOurStyles(byId(id));});
-  }
-  function positionActive(optId){
+  function cloneSelect(src){
+    var s=document.createElement('select');
+    s.setAttribute('data-tt834-source',src.id||'');
     try{
-      var el=byId(optId); if(!el)return;
-      var anchor=anchorFor(optId);
-      var width=Math.min(360,Math.max(260,window.innerWidth-16));
-      var left=8, top=58;
-      if(anchor){
-        var r=anchor.getBoundingClientRect();
-        if(document.body.classList.contains('fullscreen-portrait')){
-          left=clamp(Math.round(r.left),8,Math.max(8,window.innerWidth-width-8));
-          top=Math.round(r.bottom+6);
-        }else{
-          left=clamp(Math.round(r.left),8,Math.max(8,window.innerWidth-width-8));
-          top=Math.round(r.bottom+6);
-        }
-      }
-      if(top>window.innerHeight-70)top=Math.max(8,window.innerHeight-70);
-      document.documentElement.style.setProperty('--tt833-ritval-left',left+'px');
-      document.documentElement.style.setProperty('--tt833-ritval-top',top+'px');
-      setImportant(el,'position','fixed');
-      setImportant(el,'left',left+'px');
-      setImportant(el,'top',top+'px');
-      setImportant(el,'right','auto');
-      setImportant(el,'bottom','auto');
-      setImportant(el,'transform','none');
-      setImportant(el,'z-index','100120');
-      setImportant(el,'display','flex');
-      setImportant(el,'visibility','visible');
-      setImportant(el,'opacity','1');
-      setImportant(el,'pointer-events','auto');
-      setImportant(el,'width','auto');
-      setImportant(el,'max-width','min(360px, calc(100vw - 16px))');
-      setImportant(el,'overflow-x','auto');
-      setImportant(el,'overflow-y','hidden');
+      Array.prototype.slice.call(src.options||[]).forEach(function(o){
+        var no=document.createElement('option');
+        no.value=o.value;
+        no.text=o.text;
+        no.selected=o.selected;
+        s.appendChild(no);
+      });
+      s.value=src.value;
     }catch(e){}
+    s.addEventListener('change',function(){
+      try{
+        src.value=s.value;
+        src.dispatchEvent(new Event('input',{bubbles:true}));
+        src.dispatchEvent(new Event('change',{bubbles:true}));
+      }catch(e){}
+      schedule(0);schedule(80);
+    });
+    return s;
   }
-  function apply(){
+  function rebuildMenu(m,dm){
+    var src=byId(OPTION_IDS[dm]);
+    if(!m||!src)return;
+    var htmlKey=dm+'|'+Array.prototype.slice.call(src.querySelectorAll('select')).map(function(s){return s.id+':'+s.value+':'+s.options.length;}).join('|');
+    if(htmlKey===lastHtmlMode)return;
+    lastHtmlMode=htmlKey;
+    m.innerHTML='';
     try{
-      var owner=taktikfilmContext();
-      if(!owner){clearWhenNotOwner();return;}
-      document.body.classList.add('tt833-taktikfilm-ritval-owner');
-      var active=MODE_TO_OPT[modeName()]||'';
-      OPT_IDS.forEach(function(id){
-        var el=byId(id); if(!el)return;
-        if(id===active){
-          el.classList.add('tt833-active-option');
-          positionActive(id);
-        }else{
-          el.classList.remove('tt833-active-option');
-          setImportant(el,'display','none');
-          setImportant(el,'visibility','hidden');
-          setImportant(el,'opacity','0');
-          setImportant(el,'pointer-events','none');
-        }
+      Array.prototype.slice.call(src.children||[]).forEach(function(ch){
+        if(ch.tagName && ch.tagName.toLowerCase()==='select')m.appendChild(cloneSelect(ch));
       });
     }catch(e){}
   }
-  function schedule(){apply();setTimeout(apply,0);setTimeout(apply,60);}
-
-  var oldSetMode=typeof setMode==='function'?setMode:null;
-  if(oldSetMode && !oldSetMode.__tt833Wrapped){
-    var wrapped=function(){
-      var res=oldSetMode.apply(this,arguments);
-      schedule();
-      return res;
-    };
-    wrapped.__tt833Wrapped=true;
-    try{setMode=wrapped;window.setMode=wrapped;}catch(e){}
+  function anchorFor(dm){
+    var ids=TOOL_BTNS[dm]||[];
+    for(var i=0;i<ids.length;i++){
+      var el=byId(ids[i]);
+      if(visible(el))return el;
+    }
+    return byId('fs-top-tools') || byId('taktikbar') || byId('pitch-wrapper');
   }
-
-  function onOptionTouch(ev){
+  function positionMenu(dm){
     try{
-      if(!taktikfilmContext())return;
-      var t=ev.target && ev.target.closest ? ev.target.closest('#arrow-options,#freehand-options,#zone-options') : null;
-      if(!t)return;
-      lastTouchTs=Date.now();
-      document.body.classList.add('tt833-ritval-touchlock');
-      positionActive(t.id);
-      setTimeout(function(){positionActive(t.id);},0);
-      setTimeout(function(){positionActive(t.id);},40);
+      var a=anchorFor(dm); if(!a)return;
+      var r=a.getBoundingClientRect();
+      var w=Math.min(window.innerWidth-16, 460);
+      var left=Math.round(r.left);
+      if(left+w>window.innerWidth-8)left=Math.max(8,Math.round(window.innerWidth-w-8));
+      if(left<8)left=8;
+      var top=Math.round(r.bottom+6);
+      if(has('fullscreen-portrait')){
+        top=Math.round(r.bottom+8);
+      }
+      if(top>window.innerHeight-70)top=Math.max(8,Math.round(r.top-48));
+      document.documentElement.style.setProperty('--tt834-left',left+'px');
+      document.documentElement.style.setProperty('--tt834-top',top+'px');
     }catch(e){}
   }
-  function clearTouchLock(){setTimeout(function(){try{document.body.classList.remove('tt833-ritval-touchlock');apply();}catch(e){}},80);}
+  function hideOriginalInline(){
+    try{
+      Object.keys(OPTION_IDS).forEach(function(k){
+        var el=byId(OPTION_IDS[k]);
+        if(!el)return;
+        el.style.setProperty('display','none','important');
+        el.style.setProperty('visibility','hidden','important');
+        el.style.setProperty('pointer-events','none','important');
+      });
+    }catch(e){}
+  }
+  function apply(){
+    var owner=isTaktikfilmTouch();
+    try{document.body.classList.toggle('tt834-tf-touch-owner',owner);}catch(e){}
+    var dm=owner?drawMode():'';
+    var open=!!(owner&&dm);
+    try{document.body.classList.toggle('tt834-tf-touch-options-open',open);}catch(e){}
+    var m=ensureMenu();
+    if(!open){lastHtmlMode=''; if(m)m.innerHTML=''; return;}
+    hideOriginalInline();
+    rebuildMenu(m,dm);
+    positionMenu(dm);
+  }
+  function schedule(delay){setTimeout(apply,delay||0);}
 
-  document.addEventListener('pointerdown',onOptionTouch,true);
-  document.addEventListener('touchstart',onOptionTouch,true);
-  document.addEventListener('pointerup',clearTouchLock,true);
-  document.addEventListener('touchend',clearTouchLock,true);
-  ['click','touchend','pointerup','resize','orientationchange','fullscreenchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(apply,20);setTimeout(apply,120);},true);});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
-  try{document.title='Taktiktavla TEST v833 taktikfilm ritval single owner';}catch(e){}
+  function preToolTouch(ev){
+    try{
+      var t=ev.target&&ev.target.closest?ev.target.closest('#btn-tb-arrow,#btn-tb-freehand,#btn-tb-zone,#fs-tb-arrow,#fs-tb-freehand,#fs-tb-zone'):null;
+      if(!t||!isTaktikfilmTouch())return;
+      menuLockedUntil=Date.now()+550;
+      document.body.classList.add('tt834-tf-touch-owner');
+      hideOriginalInline();
+      schedule(0);schedule(40);schedule(160);
+    }catch(e){}
+  }
+  document.addEventListener('pointerdown',preToolTouch,true);
+  document.addEventListener('touchstart',preToolTouch,true);
+
+  /* Vira setMode lätt: inte för att ändra ritlogik, bara för att uppdatera den separata menyn efter lägesbyte. */
+  function wrapSetMode(){
+    try{
+      if(typeof setMode!=='function' || setMode.__tt834Wrapped)return;
+      var old=setMode;
+      var wrapped=function(){
+        var r=old.apply(this,arguments);
+        schedule(0);schedule(40);schedule(160);
+        return r;
+      };
+      wrapped.__tt834Wrapped=true;
+      setMode=wrapped; window.setMode=wrapped;
+    }catch(e){}
+  }
+
+  ['click','touchend','pointerup','resize','orientationchange','fullscreenchange'].forEach(function(evt){window.addEventListener(evt,function(){schedule(0);schedule(100);},true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){wrapSetMode();apply();});
+  else {wrapSetMode();apply();}
+  setTimeout(function(){wrapSetMode();apply();},400);
+  try{document.title='Taktiktavla TEST v834 taktikfilm ritval single touch menu';}catch(e){}
 })();
 </script>
-<!-- === slut v833 TEST === -->
+<!-- === slut v834 TEST === -->
 
 </body>
 </html>
@@ -7317,7 +7371,7 @@
   window.addEventListener('pointerup',suppress,true);
   window.addEventListener('touchend',suppress,true);
   window.addEventListener('click',suppress,true);
-  try{document.title='Taktiktavla TEST v833 taktikfilm ritval single owner';}catch(e){}
+  try{document.title='Taktiktavla TEST v834 taktikfilm ritval separat touchmeny';}catch(e){}
 })();
 </script>
 <!-- === slut v824 TEST === -->
@@ -7449,7 +7503,7 @@
   window.addEventListener('orientationchange',function(){setTimeout(sample,160);},{passive:true});
   window.addEventListener('fullscreenchange',function(){setTimeout(sample,120);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sample,{once:true});else sample();
-  try{document.title='Taktiktavla TEST v833 taktikfilm ritval single owner';}catch(e){}
+  try{document.title='Taktiktavla TEST v834 taktikfilm ritval separat touchmeny';}catch(e){}
 })();
 </script>
 <!-- === slut v826 TEST === -->
