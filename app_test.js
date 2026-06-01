@@ -47158,3 +47158,144 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.addEventListener('focus',function(){setTimeout(check,600);});
 })();
 /* === slut v853-auto-team-picker-on-login === */
+
+
+/* === v854 TEST: Taktikfilm delningsruta ska kopplas till rätt rad/fil ===
+   Bas: v853 fungerande release-testkandidat.
+   Problem: Taktikfilm -> Mina med mappar kan visa rader grupperade per mapp. Den äldre v371-bindningen
+   parade ihop rad och film via en separat synlig-lista i annan ordning, vilket kunde öppna delningsrutan
+   för fel Taktikfilm. Denna patch rör bara knappen för lagdelningsrutan (👥/🙈) i Taktikfilm-listan.
+*/
+(function(){
+  'use strict';
+  if(window.__tt854TaktikShareRowBindingFix)return;
+  window.__tt854TaktikShareRowBindingFix=true;
+
+  function norm854(v){return String(v||'').trim();}
+  function folder854(tk){return norm854(tk&&tk.folder)||'Taktik';}
+  function low854(v){return String(v||'').trim().toLowerCase();}
+  function fav854(){try{return (typeof favorites!=='undefined'&&favorites)||{};}catch(e){return {};}}
+  function scope854(){try{return (typeof taktikScope==='undefined')?'mine':taktikScope;}catch(e){return 'mine';}}
+  function q854(){try{return String((typeof taktikSearch==='undefined')?'':taktikSearch||'').toLowerCase();}catch(e){return '';}}
+  function isVisible854(tk,scope){
+    try{if(typeof isFileVisibleInScopeV10==='function')return !!isFileVisibleInScopeV10(tk,scope);}catch(e){}
+    try{if(scope==='team'&&typeof tt120IsTeamShared==='function')return !!tt120IsTeamShared(tk);}catch(e){}
+    try{if(typeof tt120IsMine==='function')return !!tt120IsMine(tk);}catch(e){}
+    try{if(typeof isMineV10==='function')return !!isMineV10(tk);}catch(e){}
+    return true;
+  }
+  function isMine854(tk){
+    try{if(typeof isMineV10==='function')return !!isMineV10(tk);}catch(e){}
+    try{if(typeof tt120IsMine==='function')return !!tt120IsMine(tk);}catch(e){}
+    return true;
+  }
+  function folderSort854(a,b){
+    a=norm854(a)||'Taktik';b=norm854(b)||'Taktik';
+    if(a==='Taktik'&&b!=='Taktik')return -1;
+    if(b==='Taktik'&&a!=='Taktik')return 1;
+    if(a==='Träning'&&b!=='Träning')return -1;
+    if(b==='Träning'&&a!=='Träning')return 1;
+    try{return a.localeCompare(b,'sv');}catch(e){return a<b?-1:a>b?1:0;}
+  }
+  function visibleInDomOrder854(){
+    var scope=scope854();
+    var q=q854();
+    var fav=fav854();
+    var arr=[];
+    try{arr=(taktikFilmer||[]).filter(function(tk){return isVisible854(tk,scope);});}catch(e){arr=[];}
+    arr.sort(function(a,b){
+      var af=a&&a.dbId&&fav[a.dbId]?1:0;
+      var bf=b&&b.dbId&&fav[b.dbId]?1:0;
+      return bf-af;
+    });
+    arr=arr.filter(function(tk){return !q||String(tk&&tk.name||'').toLowerCase().indexOf(q)>=0;});
+
+    // Mina-vyn från v545/v579 grupperar raderna per mapp. Replikera samma ordning så rad i DOM får rätt tk.
+    if(scope==='mine'){
+      var groups={};
+      arr.forEach(function(tk){var f=folder854(tk);if(!groups[f])groups[f]=[];groups[f].push(tk);});
+      var out=[];
+      Object.keys(groups).sort(folderSort854).forEach(function(f){out=out.concat(groups[f]);});
+      return out;
+    }
+    return arr;
+  }
+  function rows854(){
+    var list=document.getElementById('taktik-list');if(!list)return [];
+    var grouped=Array.prototype.slice.call(list.querySelectorAll('.tt545-folder-body .row'));
+    if(grouped.length)return grouped;
+    return Array.prototype.slice.call(list.querySelectorAll('.row'));
+  }
+  function isTeamShareButton854(btn){
+    if(!btn)return false;
+    var txt=String(btn.textContent||'').trim();
+    var title=String(btn.title||'').toLowerCase();
+    var aria=String(btn.getAttribute('aria-label')||'').toLowerCase();
+    if(txt==='👥'||txt==='🙈')return true;
+    if(title.indexOf('dela med laget')>=0||title.indexOf('sluta dela med laget')>=0)return true;
+    if(aria.indexOf('dela med laget')>=0||aria.indexOf('sluta dela med laget')>=0)return true;
+    if(btn.dataset && btn.dataset.tt371TaktikShareModal==='1')return true;
+    return false;
+  }
+  function shared854(tk){
+    try{if(typeof tt92Meta==='function')return !!(tt92Meta(tk)||{}).sharedWithTeam;}catch(e){}
+    try{if(typeof fileMetaV10==='function')return !!(fileMetaV10(tk)||{}).sharedWithTeam;}catch(e){}
+    try{return !!(tk&&tk._meta&&tk._meta.sharedWithTeam);}catch(e){return false;}
+  }
+  function open854(tk){
+    if(!tk)return;
+    try{if(typeof window.tt371OpenTaktikfilmShareModal==='function'){window.tt371OpenTaktikfilmShareModal(tk);return;}}catch(e){}
+    try{if(typeof patchTaktikShareV10==='function'){patchTaktikShareV10(tk,!shared854(tk));return;}}catch(e){}
+  }
+  function bind854(){
+    try{
+      if(scope854()!=='mine')return;
+      var rows=rows854();
+      if(!rows.length)return;
+      var items=visibleInDomOrder854();
+      rows.forEach(function(row,i){
+        var tk=items[i];
+        if(!tk||!isMine854(tk))return;
+        row.setAttribute('data-tt854-taktik-db-id',tk.dbId||'');
+        row.setAttribute('data-tt854-taktik-name',tk.name||'');
+        var buttons=Array.prototype.slice.call(row.querySelectorAll('button'));
+        var btn=buttons.find(isTeamShareButton854);
+        if(!btn)return;
+        if(btn.dataset && btn.dataset.tt854Bound==='1' && btn.dataset.tt854DbId===String(tk.dbId||''))return;
+        var clone=btn.cloneNode(true);
+        clone.dataset.tt854Bound='1';
+        clone.dataset.tt854DbId=String(tk.dbId||'');
+        clone.dataset.tt854Name=String(tk.name||'');
+        clone.textContent=shared854(tk)?'🙈':'👥';
+        clone.title='Visa lagdelning för Taktikfilm: '+(tk.name||'utan namn');
+        clone.setAttribute('aria-label',clone.title);
+        btn.parentNode.replaceChild(clone,btn);
+        clone.addEventListener('click',function(e){
+          e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+          open854(tk);
+          return false;
+        },true);
+      });
+    }catch(e){}
+  }
+  function schedule854(){
+    bind854();
+    setTimeout(bind854,0);
+    setTimeout(bind854,220);
+    setTimeout(bind854,520);
+  }
+  if(typeof renderTaktikList==='function' && !renderTaktikList.__tt854Wrapped){
+    var oldRender854=renderTaktikList;
+    renderTaktikList=function(){
+      var r=oldRender854.apply(this,arguments);
+      schedule854();
+      return r;
+    };
+    renderTaktikList.__tt854Wrapped=true;
+    try{window.renderTaktikList=renderTaktikList;}catch(e){}
+  }
+  window.tt854RebindTaktikShareButtons=bind854;
+  setTimeout(schedule854,300);
+  setTimeout(schedule854,1200);
+})();
+/* === slut v854 TEST === */
