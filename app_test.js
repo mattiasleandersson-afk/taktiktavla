@@ -45159,8 +45159,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function setLabel(btn,on){
     if(!btn)return;
-    if(!on){btn.textContent='Lager';btn.title='Lager';return;}
-    btn.textContent=collapsed?'Visa lager':'Dölj lager';
+    if(!on){btn.textContent='▤';btn.title='Lager';return;}
+    btn.textContent='▤';
     btn.title=collapsed?'Visa lagerpanelen':'Minimera lagerpanelen';
     btn.setAttribute('aria-pressed',collapsed?'true':'false');
   }
