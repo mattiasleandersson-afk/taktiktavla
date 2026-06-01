@@ -6069,6 +6069,113 @@
   }
 </style>
 
+
+
+<!-- === v836: kon-/pinne-storleksruta inom skärmen === -->
+<style id="tt836-object-size-panel-wrap-clamp-css">
+  /*
+    v836: Bara visuell/positionsmässig fix för storleksrutan till koner/pinnar.
+    Objektlogik, storleksvärden och sparning lämnas orörda i app.js.
+  */
+  #tt747-size-panel{
+    box-sizing:border-box!important;
+    max-width:min(440px, calc(100vw - 16px))!important;
+    width:max-content!important;
+    display:none;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:6px!important;
+    overflow:visible!important;
+    white-space:normal!important;
+  }
+  #tt747-size-panel .tt747-size-label{
+    flex:0 0 auto!important;
+  }
+  #tt747-size-panel .tt749-size-divider{
+    flex:0 0 1px!important;
+  }
+  #tt747-size-panel button{
+    flex:0 0 auto!important;
+    min-width:44px!important;
+    max-width:120px!important;
+    white-space:nowrap!important;
+  }
+  #tt747-size-panel button.tt749-scope-btn{
+    min-width:72px!important;
+  }
+  @media (max-width:720px), (hover:none) and (pointer:coarse){
+    #tt747-size-panel{
+      max-width:calc(100vw - 14px)!important;
+      padding:7px!important;
+      gap:6px!important;
+      border-radius:11px!important;
+    }
+    #tt747-size-panel button{
+      min-height:34px!important;
+      min-width:50px!important;
+      padding:5px 8px!important;
+    }
+    #tt747-size-panel button.tt749-scope-btn{
+      min-width:82px!important;
+    }
+  }
+</style>
+<script id="tt836-object-size-panel-wrap-clamp-js">
+(function(){
+  'use strict';
+  if(window.__tt836ObjectSizePanelWrapClampInstalled)return;
+  window.__tt836ObjectSizePanelWrapClampInstalled=true;
+
+  function visible(el){
+    if(!el)return false;
+    var cs=getComputedStyle(el);
+    return cs.display!=='none' && cs.visibility!=='hidden' && el.getBoundingClientRect().width>0 && el.getBoundingClientRect().height>0;
+  }
+  function clampPanel(){
+    try{
+      var p=document.getElementById('tt747-size-panel');
+      if(!visible(p))return;
+
+      p.style.setProperty('max-width','min(440px, calc(100vw - 16px))','important');
+      p.style.setProperty('flex-wrap','wrap','important');
+      p.style.setProperty('box-sizing','border-box','important');
+      p.style.setProperty('white-space','normal','important');
+
+      var margin=8;
+      var vw=Math.max(document.documentElement.clientWidth||0, window.innerWidth||0);
+      var vh=Math.max(document.documentElement.clientHeight||0, window.innerHeight||0);
+      var r=p.getBoundingClientRect();
+      var left=r.left;
+      var top=r.top;
+
+      if(r.right>vw-margin)left=Math.max(margin, left-(r.right-(vw-margin)));
+      if(left<margin)left=margin;
+
+      if(r.bottom>vh-margin)top=Math.max(margin, top-(r.bottom-(vh-margin)));
+      if(top<margin)top=margin;
+
+      if(Math.abs(left-r.left)>0.5)p.style.setProperty('left',Math.round(left)+'px','important');
+      if(Math.abs(top-r.top)>0.5)p.style.setProperty('top',Math.round(top)+'px','important');
+    }catch(e){}
+  }
+  function schedule(){
+    clampPanel();
+    setTimeout(clampPanel,0);
+    setTimeout(clampPanel,40);
+    setTimeout(clampPanel,140);
+  }
+
+  ['pointerdown','pointerup','mousedown','mouseup','touchstart','touchend','click','contextmenu','resize','orientationchange'].forEach(function(evt){
+    window.addEventListener(evt,function(){schedule();},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);
+  else schedule();
+  try{document.title='Taktiktavla TEST v836 object size panel clamp';}catch(e){}
+})();
+</script>
+<!-- === slut v836 === -->
+
 </body>
 </html>
 
