@@ -7078,39 +7078,27 @@
   window.addEventListener('pointerup',suppress,true);
   window.addEventListener('touchend',suppress,true);
   window.addEventListener('click',suppress,true);
-  try{document.title='Taktiktavla TEST v825 ipad layer transition reset';}catch(e){}
+  try{document.title='Taktiktavla TEST v826 ipad layer light transition reset';}catch(e){}
 })();
 </script>
 <!-- === slut v824 TEST === -->
 
 
-<!-- === v825 TEST: iPad Lager övergångs-reset mellan funktioner, byggd från stabil v824. === -->
-<style id="tt825-ipad-layer-transition-reset-css">
+<!-- === v826 TEST: lätt iPad Lager-reset vid tydligt funktionsbyte, byggd från stabil v824. Ingen MutationObserver och ingen global bevakning. === -->
+<style id="tt826-ipad-layer-light-transition-css">
 @media (hover:none) and (pointer:coarse) and (min-width:721px) and (max-width:1024px){
-  /* v825: efter byte mellan Taktikfilm/Taktiktavla/andra paneler ska inga gamla
-     touch-state eller öppna panel-lägen kunna störa nästa snabba tryck. */
-  body.tt825-ipad-layer-transition-reset #tt616-layer-panel,
-  body.tt825-ipad-layer-transition-reset #tt642-layer-mobile-toggle{
-    -webkit-tap-highlight-color:transparent!important;
-    touch-action:manipulation!important;
-  }
-
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed:not(.tt816-ipad-layer-invalid) #tt642-layer-mobile-toggle,
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel,
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel button,
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel [role="button"],
-  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt642-layer-panel-mobile-open:not(.tt816-ipad-layer-invalid) #tt616-layer-panel .tt661-layer-title{
-    pointer-events:auto!important;
+  body.tt826-ipad-layer-transition-cleaning #tt616-layer-panel,
+  body.tt826-ipad-layer-transition-cleaning #tt642-layer-mobile-toggle{
     -webkit-tap-highlight-color:transparent!important;
     touch-action:manipulation!important;
   }
 }
 </style>
-<script id="tt825-ipad-layer-transition-reset-js">
+<script id="tt826-ipad-layer-light-transition-js">
 (function(){
   'use strict';
-  if(window.__tt825IpadLayerTransitionResetInstalled)return;
-  window.__tt825IpadLayerTransitionResetInstalled=true;
+  if(window.__tt826IpadLayerLightTransitionInstalled)return;
+  window.__tt826IpadLayerLightTransitionInstalled=true;
 
   function mq(q){try{return !!(window.matchMedia&&window.matchMedia(q).matches);}catch(e){return false;}}
   function ipad(){return mq('(hover:none) and (pointer:coarse) and (min-width:721px) and (max-width:1024px)');}
@@ -7118,11 +7106,11 @@
   function has(c){try{return document.body.classList.contains(c);}catch(e){return false;}}
   function visible(el){try{if(!el)return false;var cs=getComputedStyle(el);var r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>8&&r.height>8;}catch(e){return false;}}
   function activePanel(){try{var t=document.querySelector('.tab.on[data-panel]');return t?t.getAttribute('data-panel'):'';}catch(e){return '';}}
-  function isTaktikLibrary(){
+
+  function isLibrary(){
     try{
       if(has('tt-v82-taktik-library'))return true;
-      var p=activePanel();
-      if(p!=='taktik')return false;
+      if(activePanel()!=='taktik')return false;
       if(visible(byId('no-rec-ui')) && !visible(byId('taktikbar')))return true;
       if(!has('tt688-taktikfilm-editor-active') && !(typeof isEditingTaktik!=='undefined' && isEditingTaktik) && !(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null) && !visible(byId('taktikbar')))return true;
     }catch(e){}
@@ -7130,9 +7118,9 @@
   }
   function isTaktikEdit(){
     try{
-      if(activePanel()!=='taktik' || isTaktikLibrary())return false;
+      if(activePanel()!=='taktik' || isLibrary())return false;
       if(has('fullscreen-portrait') && (has('v66-taktik-fs') || has('tt743-mobile-taktikfilm-fullscreen')))return true;
-      if(has('tt688-taktikfilm-editor-active') || has('tt743-mobile-taktikfilm-active'))return true;
+      if(has('tt688-taktikfilm-editor-active') || has('tt743-mobile-taktikfilm-active') || has('tt823-ipad-taktikfilm-edit-touch'))return true;
       if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
       if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null)return true;
       return visible(byId('taktikbar'));
@@ -7143,11 +7131,12 @@
     var p=activePanel();
     if(has('tt744-matcher-active') || p==='lag' || p==='matcher' || p==='match' || p==='matches')return 'matcher';
     if(has('tt745-snabb-active') || has('tt745-snabb-fullscreen') || p==='snabb' || p==='quick')return 'snabb';
-    if(isTaktikLibrary())return 'taktik-library';
+    if(isLibrary())return 'taktik-library';
     if(isTaktikEdit())return has('fullscreen-portrait')?'taktik-fullscreen':'taktik-edit';
     if(p==='saves' || has('tt718-tavla-active') || has('tt719-tavla-active') || has('tt733-tavla-active') || has('tt742-mobile-tavla-active') || has('tt742-mobile-board-fullscreen'))return has('fullscreen-portrait')?'tavla-fullscreen':'tavla';
     return 'other';
   }
+
   function closeMenus(){
     try{if(window.__tt630FreeLayerState)window.__tt630FreeLayerState.openMenuId=null;}catch(e){}
     try{document.querySelectorAll('#tt616-layer-panel .tt661-layer-menu.tt663-menu-open').forEach(function(m){m.classList.remove('tt663-menu-open');});}catch(e){}
@@ -7166,56 +7155,62 @@
     try{document.body.classList.remove('tt642-layer-panel-mobile-open');}catch(e){}
     try{var b=byId('tt642-layer-mobile-toggle');if(b)b.setAttribute('aria-expanded','false');}catch(e){}
   }
-  function refreshSoon(){
-    function one(){try{if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();}catch(e){}}
-    setTimeout(one,0);setTimeout(one,120);setTimeout(one,320);
-  }
-  function resetForContextChange(prev,next){
+  function cleanAfterTransition(prev,next){
+    if(!ipad() || prev===next)return;
     clearTransient();
     closeLayer();
-    try{document.body.classList.add('tt825-ipad-layer-transition-reset');}catch(e){}
-    setTimeout(function(){try{document.body.classList.remove('tt825-ipad-layer-transition-reset');}catch(e){}},520);
+    try{document.body.classList.add('tt826-ipad-layer-transition-cleaning');}catch(e){}
+    setTimeout(function(){try{document.body.classList.remove('tt826-ipad-layer-transition-cleaning');}catch(e){}},260);
 
-    /* Viktigt: Taktikfilm-specifika touchklasser får inte ligga kvar när man går till Taktiktavla,
-       och Taktiktavla ska inte ärva ett öppet/halvöppet Lager från Taktikfilm. */
+    /* Rensa bara Taktikfilm-specifika hjälpklasser när vi faktiskt lämnar Taktikfilm.
+       v825 tog i för brett och blev seg/låste sig. */
     if(next.indexOf('taktik')!==0){
       try{document.body.classList.remove('tt822-ipad-taktikfilm-layer-context','tt823-ipad-taktikfilm-edit-touch');}catch(e){}
-      try{document.body.classList.remove('tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen');}catch(e){}
     }
     if(next==='taktik-library' || next==='matcher' || next==='snabb' || next==='other'){
-      try{document.body.classList.remove('tt816-ipad-layer-allowed');document.body.classList.add('tt816-ipad-layer-invalid');}catch(e){}
+      try{document.body.classList.remove('tt642-layer-panel-mobile-open');}catch(e){}
     }
-    refreshSoon();
   }
 
-  var lastCtx=null, lastChange=0;
-  function apply(){
+  var lastCtx=null;
+  function sample(){
     if(!ipad()){lastCtx=null;return;}
-    var ctx=context();
-    try{document.body.setAttribute('data-tt825-ipad-layer-context',ctx);}catch(e){}
-    if(lastCtx===null){lastCtx=ctx;return;}
-    if(ctx!==lastCtx){
-      lastChange=Date.now();
-      resetForContextChange(lastCtx,ctx);
-      lastCtx=ctx;
-      return;
-    }
-    /* Om appens egna render/klassbyten precis efter navigation öppnar/behåller Lager i fel läge: stäng igen. */
-    if(Date.now()-lastChange<900){
-      if(ctx==='taktik-library' || ctx==='matcher' || ctx==='snabb' || ctx==='other'){
-        clearTransient();
-        closeLayer();
-      }
+    var c=context();
+    if(lastCtx===null){lastCtx=c;return;}
+    if(c!==lastCtx){
+      var prev=lastCtx;
+      lastCtx=c;
+      cleanAfterTransition(prev,c);
     }
   }
-  function schedule(){setTimeout(apply,0);setTimeout(apply,90);setTimeout(apply,240);setTimeout(apply,520);}
-  ['click','touchend','pointerup','change','input','resize','orientationchange','fullscreenchange','hashchange','pageshow'].forEach(function(evt){
-    window.addEventListener(evt,schedule,true);
-    document.addEventListener(evt,schedule,true);
-  });
-  try{var mo=new MutationObserver(schedule);if(document.body)mo.observe(document.body,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});}catch(e){}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
-  try{document.title='Taktiktavla TEST v825 ipad layer transition reset';}catch(e){}
+
+  function likelyNavigationTarget(t){
+    try{
+      if(!t||!t.closest)return false;
+      if(t.closest('#tt616-layer-panel,#tt642-layer-mobile-toggle,#tt741-fs-layer-toggle'))return false;
+      if(t.closest('.tab[data-panel], [data-panel], .nav-btn, .bottom-nav button, #tabs button'))return true;
+      var txt=(t.textContent||'').trim().toLowerCase();
+      if(txt==='taktiktavla'||txt==='taktikfilm'||txt==='matcher'||txt==='snabbtavla')return true;
+    }catch(e){}
+    return false;
+  }
+  function onNav(ev){
+    if(!ipad())return;
+    var t=ev.target;
+    if(!likelyNavigationTarget(t))return;
+    var before=context();
+    setTimeout(function(){var after=context(); if(after!==before){lastCtx=after; cleanAfterTransition(before,after);}},80);
+    setTimeout(function(){var after=context(); if(after!==before){lastCtx=after; cleanAfterTransition(before,after);}},260);
+  }
+
+  /* Lätt reset: bara vid sannolika funktionsbyten, inte på alla touch/click och ingen MutationObserver. */
+  document.addEventListener('click',onNav,true);
+  document.addEventListener('touchend',onNav,true);
+  window.addEventListener('pageshow',sample,{passive:true});
+  window.addEventListener('orientationchange',function(){setTimeout(sample,160);},{passive:true});
+  window.addEventListener('fullscreenchange',function(){setTimeout(sample,120);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sample,{once:true});else sample();
+  try{document.title='Taktiktavla TEST v826 ipad layer light transition reset';}catch(e){}
 })();
 </script>
-<!-- === slut v825 TEST === -->
+<!-- === slut v826 TEST === -->
