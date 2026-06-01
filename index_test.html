@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v838 iPhone lineup setup modal zfix</title>
+<title>Taktiktavla</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2371,7 +2371,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">745 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2992,7 +2992,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=812-hide-old-tt741-mobile-lager"></script>
+<script src="app.js?v=839-v2-release"></script>
 
 <script>
 (function(){
@@ -7867,3 +7867,58 @@
 })();
 </script>
 <!-- === slut v826 TEST === -->
+
+
+<!-- === v839 RELEASE V2: skarp index-städning utan testkopplingar === -->
+<style id="tt839-release-v2-cleanup-css">
+  /* Dölj eventuella gamla test-/miljöbanners om de finns kvar från testspåret. */
+  #tt610-test-env-banner,
+  #tt609-test-env-banner,
+  .test-env-banner,
+  .tt-test-env-banner {
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+  /* Neutralisera äldre testversions-pseudoetiketter från tidigare indexpatchar. */
+  span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
+    content:""!important;
+    display:none!important;
+  }
+</style>
+<script id="tt839-release-v2-cleanup-js">
+(function(){
+  'use strict';
+  if(window.__tt839ReleaseV2CleanupInstalled)return;
+  window.__tt839ReleaseV2CleanupInstalled=true;
+
+  function clean(){
+    try{document.title='Taktiktavla';}catch(e){}
+    try{
+      var meta=document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if(meta)meta.setAttribute('content','Taktiktavla');
+    }catch(e){}
+    try{
+      document.querySelectorAll('#tt610-test-env-banner,#tt609-test-env-banner,.test-env-banner,.tt-test-env-banner').forEach(function(el){
+        el.style.display='none';
+        el.style.visibility='hidden';
+        el.setAttribute('aria-hidden','true');
+      });
+    }catch(e){}
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST|745 TEST|786 TEST|.*TEST.*)$/i.test(t)){
+          el.textContent='Version 2';
+        }
+      });
+    }catch(e){}
+  }
+
+  clean();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',clean,{once:true});
+  else setTimeout(clean,0);
+  window.addEventListener('load',function(){setTimeout(clean,0);},{once:true});
+})();
+</script>
+<!-- === slut v839 RELEASE V2 === -->
