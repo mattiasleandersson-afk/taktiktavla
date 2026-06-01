@@ -46367,3 +46367,184 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 })();
 /* === slut v846 TEST === */
+
+
+/* === v847 TEST: återställ osparat-varning för Taktikfilm utan att röra nödkopia ===
+   Bas: v846 fungerande release-testkandidat.
+   Problem: senare Taktikfilm-editor/åtgärdsrad kunde lämna redigering utan tydlig osparat-varning,
+   även om lokal nödkopia fungerade. Den här vakten är read-only mot Supabase och ändrar inte recovery.
+   Strategi:
+   - Sätt egen baslinje när en Taktikfilm öppnas i redigering.
+   - Jämför aktuell film mot baslinjen när användaren försöker Avsluta/Stoppa/lämna Taktikfilm.
+   - Efter riktig sparning sätts ny baslinje.
+   - Låt befintlig lokal nödkopia fortsätta som extra skydd, men ersätt inte varningen.
+*/
+(function(){
+  'use strict';
+  if(window.__tt847UnsavedTaktikWarningFix)return;
+  window.__tt847UnsavedTaktikWarningFix=true;
+
+  var baseline=null;
+  var baselineUid=null;
+  var allowExitUntil=0;
+  var cleanAfterSaveUntil=0;
+
+  function now(){return Date.now?Date.now():(new Date()).getTime();}
+  function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return null;}}
+  function currentTk(){
+    try{
+      if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null && window.taktikFilmer && taktikFilmer[editingTaktikIdx])return taktikFilmer[editingTaktikIdx];
+    }catch(e){}
+    try{if(typeof playback!=='undefined' && playback && playback.tk)return playback.tk;}catch(e){}
+    return null;
+  }
+  function uid(tk){
+    if(!tk)return '';
+    return String(tk.dbId||tk.id||tk._draftUid||tk._sourceFormationId||tk.name||'')+'|'+String((tk.steps&&tk.steps.length)||0);
+  }
+  function stripVolatile(o){
+    if(!o||typeof o!=='object')return o;
+    if(Array.isArray(o)){for(var i=0;i<o.length;i++)stripVolatile(o[i]);return o;}
+    delete o._meta; delete o.meta; delete o.dbId; delete o.id;
+    delete o._readOnly; delete o._openedFromTeam; delete o._localRecoveryDraft;
+    delete o._lastSavedAt; delete o._lastLocalSaveAt; delete o._recoveryKey; delete o._storeKey;
+    Object.keys(o).forEach(function(k){
+      if(/^__/.test(k) || /^tt\d+/i.test(k))delete o[k];
+      else stripVolatile(o[k]);
+    });
+    return o;
+  }
+  function normalize(tk){
+    var c=clone(tk);
+    if(!c)return '';
+    stripVolatile(c);
+    try{return JSON.stringify(c);}catch(e){return '';}
+  }
+  function syncStep(){
+    try{
+      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik && typeof autoSaveCurrentStepLocalV16==='function'){
+        autoSaveCurrentStepLocalV16();
+      }
+    }catch(e){}
+  }
+  function captureClean(reason){
+    var tk=currentTk();
+    if(!tk)return;
+    syncStep();
+    baseline=normalize(tk);
+    baselineUid=uid(tk);
+    try{taktikDirtyV17=false;}catch(e){}
+    try{window.taktikDirtyV17=false;}catch(e){}
+  }
+  function hasUnsaved(){
+    if(now()<cleanAfterSaveUntil)return false;
+    var tk=currentTk();
+    if(!tk)return false;
+    try{
+      if(typeof tt76IsReadOnly==='function' && tt76IsReadOnly(tk))return false;
+    }catch(e){}
+    syncStep();
+    var u=uid(tk);
+    var cur=normalize(tk);
+    if(!baseline || baselineUid!==u){
+      baseline=cur;
+      baselineUid=u;
+      return false;
+    }
+    return cur!==baseline;
+  }
+  function confirmLeave(){
+    if(now()<allowExitUntil)return true;
+    if(!hasUnsaved())return true;
+    var ok=confirm('Du har osparade ändringar i taktiken. Vill du lämna utan att spara?');
+    if(ok){allowExitUntil=now()+1400;return true;}
+    return false;
+  }
+
+  // Gör den nya vakten till sista gemensamma confirm-källa.
+  try{hasUnsavedTaktikChangesV21=hasUnsaved;}catch(e){}
+  try{hasUnsavedTaktikChangesV23=hasUnsaved;}catch(e){}
+  try{confirmUnsavedV21=confirmLeave;}catch(e){}
+  try{confirmUnsavedV19=confirmLeave;}catch(e){}
+  try{confirmUnsavedTaktikV18=confirmLeave;}catch(e){}
+  try{confirmDiscardUnsavedV17=confirmLeave;}catch(e){}
+  try{confirmUnsavedUnifiedV23=confirmLeave;}catch(e){}
+
+  function wrapEnter(name){
+    try{
+      var fn=window[name] || (typeof eval==='function'?eval(name):null);
+      if(typeof fn!=='function' || fn.__tt847Wrapped)return;
+      var wrapped=function(){
+        var r=fn.apply(this,arguments);
+        [80,300,800].forEach(function(ms){setTimeout(function(){captureClean('enter-'+name);},ms);});
+        return r;
+      };
+      wrapped.__tt847Wrapped=true;
+      try{window[name]=wrapped;}catch(e){}
+      try{eval(name+'=wrapped');}catch(e){}
+    }catch(e){}
+  }
+  ['startPlayback','openEditTaktik','startPlaybackByObjectV22','tt688EnterTaktikfilmEditor','tt845CreateFilmFromFormation'].forEach(wrapEnter);
+
+  // När en riktig filmsparning sker ska varningen rensas först efter att steget synkats.
+  try{
+    if(typeof cloudSaveTaktik==='function' && !cloudSaveTaktik.__tt847Wrapped){
+      var oldCloud=cloudSaveTaktik;
+      cloudSaveTaktik=function(){
+        var r=oldCloud.apply(this,arguments);
+        cleanAfterSaveUntil=now()+2600;
+        [120,600,1400,2600].forEach(function(ms){setTimeout(function(){captureClean('cloud-save');},ms);});
+        return r;
+      };
+      cloudSaveTaktik.__tt847Wrapped=true;
+      try{window.cloudSaveTaktik=cloudSaveTaktik;}catch(e){}
+    }
+  }catch(e){}
+
+  // Fånga alla synliga/nya exit-vägar före äldre handlers.
+  document.addEventListener('click',function(e){
+    var target=e.target&&e.target.closest?e.target.closest('#btn-stop-play,#btn-edit-taktik-exit,#tt692-exit,.tt-v86-exit-btn'):null;
+    if(!target)return;
+    try{if(!(typeof isEditingTaktik!=='undefined' && isEditingTaktik) && !(typeof playback!=='undefined' && playback))return;}catch(_e){}
+    if(!confirmLeave()){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      return false;
+    }
+    allowExitUntil=now()+1400;
+  },true);
+
+  document.addEventListener('touchend',function(e){
+    var target=e.target&&e.target.closest?e.target.closest('#btn-stop-play,#btn-edit-taktik-exit,#tt692-exit,.tt-v86-exit-btn'):null;
+    if(!target)return;
+    try{if(!(typeof isEditingTaktik!=='undefined' && isEditingTaktik) && !(typeof playback!=='undefined' && playback))return;}catch(_e){}
+    if(!confirmLeave()){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      return false;
+    }
+    allowExitUntil=now()+1400;
+  },{capture:true,passive:false});
+
+  // Panelbyte bort från Taktikfilm ska också använda samma vakt.
+  document.addEventListener('click',function(e){
+    var tab=e.target&&e.target.closest?e.target.closest('.tab'):null;
+    if(!tab)return;
+    var panel=tab.getAttribute('data-panel');
+    if(panel==='taktik')return;
+    try{if(!(typeof isEditingTaktik!=='undefined' && isEditingTaktik) && !(typeof playback!=='undefined' && playback))return;}catch(_e){}
+    if(!confirmLeave()){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      return false;
+    }
+    allowExitUntil=now()+1400;
+  },true);
+
+  window.addEventListener('beforeunload',function(e){
+    if(!hasUnsaved())return;
+    e.preventDefault();
+    e.returnValue='';
+  });
+
+  // Sätt baslinje om användaren redan står i en öppen film när patchen laddats.
+  [250,900,1800].forEach(function(ms){setTimeout(function(){try{if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)captureClean('initial');}catch(e){}},ms);});
+})();
+/* === slut v847 TEST === */
