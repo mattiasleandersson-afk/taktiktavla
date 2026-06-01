@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v838 iPhone lineup setup modal zfix</title>
+<title>Taktiktavla</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2371,7 +2371,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">745 TEST</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2992,7 +2992,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=812-hide-old-tt741-mobile-lager"></script>
+<script src="app.js?v=839-v2-release"></script>
 
 <script>
 (function(){
@@ -7867,3 +7867,226 @@
 })();
 </script>
 <!-- === slut v826 TEST === -->
+
+
+<!-- === v839 RELEASE V2: skarp index-städning utan testkopplingar === -->
+<style id="tt839-release-v2-cleanup-css">
+  /* Dölj eventuella gamla test-/miljöbanners om de finns kvar från testspåret. */
+  #tt610-test-env-banner,
+  #tt609-test-env-banner,
+  .test-env-banner,
+  .tt-test-env-banner {
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+  /* Neutralisera äldre testversions-pseudoetiketter från tidigare indexpatchar. */
+  span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
+    content:""!important;
+    display:none!important;
+  }
+</style>
+<script id="tt839-release-v2-cleanup-js">
+(function(){
+  'use strict';
+  if(window.__tt839ReleaseV2CleanupInstalled)return;
+  window.__tt839ReleaseV2CleanupInstalled=true;
+
+  function clean(){
+    try{document.title='Taktiktavla';}catch(e){}
+    try{
+      var meta=document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if(meta)meta.setAttribute('content','Taktiktavla');
+    }catch(e){}
+    try{
+      document.querySelectorAll('#tt610-test-env-banner,#tt609-test-env-banner,.test-env-banner,.tt-test-env-banner').forEach(function(el){
+        el.style.display='none';
+        el.style.visibility='hidden';
+        el.setAttribute('aria-hidden','true');
+      });
+    }catch(e){}
+    try{
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=(el.textContent||'').trim();
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST|745 TEST|786 TEST|.*TEST.*)$/i.test(t)){
+          el.textContent='Version 2';
+        }
+      });
+    }catch(e){}
+  }
+
+  clean();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',clean,{once:true});
+  else setTimeout(clean,0);
+  window.addEventListener('load',function(){setTimeout(clean,0);},{once:true});
+})();
+</script>
+
+
+<!-- === v840 RELEASE FIX: koner/pinnar ska följa samma rena arbetsyta som övrig ritning === -->
+<script id="tt840-object-context-reset-releasefix-js">
+(function(){
+  'use strict';
+  if(window.__tt840ObjectContextResetInstalled)return;
+  window.__tt840ObjectContextResetInstalled=true;
+
+  function cloneObject840(o){
+    o=o||{};
+    return {
+      id:o.id,
+      type:o.type||'cone',
+      x:(typeof o.x==='number'&&isFinite(o.x))?o.x:200,
+      y:(typeof o.y==='number'&&isFinite(o.y))?o.y:300,
+      size:(typeof o.size==='number'&&isFinite(o.size))?o.size:0.75,
+      layerId:o.layerId||'layer-1'
+    };
+  }
+  function getObjects840(){
+    try{
+      if(!Array.isArray(window.tacticObjects))window.tacticObjects=[];
+      return window.tacticObjects;
+    }catch(e){
+      window.tacticObjects=[];
+      return window.tacticObjects;
+    }
+  }
+  function setObjects840(list){
+    var arr=getObjects840();
+    arr.length=0;
+    (Array.isArray(list)?list:[]).forEach(function(o){arr.push(cloneObject840(o));});
+    try{window.tacticObjects=arr;}catch(e){}
+  }
+  function clearObjects840(reason){
+    var arr=getObjects840();
+    if(!arr.length)return;
+    arr.length=0;
+    try{window.tacticObjects=arr;}catch(e){}
+    try{if(typeof window.tt631RefreshLayerPanelSoon==='function')window.tt631RefreshLayerPanelSoon();}catch(e){}
+    try{if(typeof window.render==='function')window.render();}catch(e){}
+    try{window.__tt840LastObjectClear={reason:reason||'',at:Date.now()};}catch(e){}
+  }
+  window.tt840ClearTacticObjects=clearObjects840;
+
+  function snapHasObjects840(s){
+    return !!(s && Array.isArray(s.tacticObjects) && s.tacticObjects.length);
+  }
+  function normalizeSnapObjects840(s){
+    if(!s || typeof s!=='object')return s;
+    if(!Array.isArray(s.tacticObjects))s.tacticObjects=[];
+    else s.tacticObjects=s.tacticObjects.map(cloneObject840);
+    return s;
+  }
+
+  function wrapCleanStart840(){
+    try{
+      if(typeof getCleanTaktikStartSnapV15==='function' && !getCleanTaktikStartSnapV15.__tt840Wrapped){
+        var oldClean=getCleanTaktikStartSnapV15;
+        var wrapped=function(){
+          // Ny film ska börja som ren arbetsyta. Gamla ritningar töms redan i v15;
+          // v840 tömmer bara de nyare kon-/pinneobjekten som tidigare låg kvar globalt.
+          clearObjects840('clean-start-before');
+          var snap=oldClean.apply(this,arguments);
+          normalizeSnapObjects840(snap);
+          clearObjects840('clean-start-after');
+          return snap;
+        };
+        wrapped.__tt840Wrapped=true;
+        getCleanTaktikStartSnapV15=wrapped;
+        try{window.getCleanTaktikStartSnapV15=wrapped;}catch(e){}
+      }
+    }catch(e){}
+  }
+
+  function wrapResetWorkspace840(){
+    try{
+      if(typeof resetWorkspaceForKey==='function' && !resetWorkspaceForKey.__tt840Wrapped){
+        var oldReset=resetWorkspaceForKey;
+        var wrapped=function(key){
+          var r=oldReset.apply(this,arguments);
+          // När en ny/ren arbetsyta skapas ska koner/pinnar inte följa med
+          // från Snabbtavla, Taktiktavla eller Taktikfilm.
+          clearObjects840('reset-workspace:'+String(key||''));
+          return r;
+        };
+        wrapped.__tt840Wrapped=true;
+        resetWorkspaceForKey=wrapped;
+        try{window.resetWorkspaceForKey=wrapped;}catch(e){}
+      }
+    }catch(e){}
+  }
+
+  function wrapRestoreWorkspace840(){
+    try{
+      if(typeof restoreWorkspaceState==='function' && !restoreWorkspaceState.__tt840Wrapped){
+        var oldRestore=restoreWorkspaceState;
+        var wrapped=function(state,key){
+          if(state && state.snap)normalizeSnapObjects840(state.snap);
+          var r=oldRestore.apply(this,arguments);
+          // Om arbetsytan saknar sparade kon-/pinneobjekt ska gamla globala objekt bort.
+          if(!snapHasObjects840(state && state.snap))clearObjects840('restore-empty-workspace:'+String(key||''));
+          return r;
+        };
+        wrapped.__tt840Wrapped=true;
+        restoreWorkspaceState=wrapped;
+        try{window.restoreWorkspaceState=wrapped;}catch(e){}
+      }
+    }catch(e){}
+  }
+
+  function wrapSavedFormationToTaktik840(){
+    try{
+      if(typeof workspaceFromSavedFormation==='function' && !workspaceFromSavedFormation.__tt840Wrapped){
+        var oldW=workspaceFromSavedFormation;
+        var wrapped=function(saved){
+          var r=oldW.apply(this,arguments);
+          try{
+            var st=(saved&&saved.state)||{};
+            if(r && r.snap)r.snap.tacticObjects=Array.isArray(st.tacticObjects)?st.tacticObjects.map(cloneObject840):[];
+          }catch(e){}
+          return r;
+        };
+        wrapped.__tt840Wrapped=true;
+        workspaceFromSavedFormation=wrapped;
+        try{window.workspaceFromSavedFormation=wrapped;}catch(e){}
+      }
+    }catch(e){}
+  }
+
+  function validNewTaktikOk840(){
+    try{
+      var name=document.getElementById('taktik-name-inp');
+      if(name && !(name.value||'').trim())return false;
+      var f=document.getElementById('tt294-taktik-formation');
+      if(f && !(f.value||'').trim())return false;
+    }catch(e){}
+    return true;
+  }
+  function bindNewTaktikOk840(){
+    var btn=document.getElementById('new-taktik-ok');
+    if(!btn || btn.__tt840Bound)return;
+    btn.__tt840Bound=true;
+    btn.addEventListener('click',function(){
+      if(validNewTaktikOk840())clearObjects840('new-taktik-ok-before-snapshot');
+    },true);
+  }
+
+  function install840(){
+    wrapCleanStart840();
+    wrapResetWorkspace840();
+    wrapRestoreWorkspace840();
+    wrapSavedFormationToTaktik840();
+    bindNewTaktikOk840();
+  }
+
+  install840();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install840,{once:true});
+  else setTimeout(install840,0);
+  window.addEventListener('load',function(){setTimeout(install840,0);},{once:true});
+  ['click','touchend','pointerup','hashchange','pageshow'].forEach(function(evt){
+    try{window.addEventListener(evt,function(){setTimeout(install840,0);},true);}catch(e){}
+  });
+})();
+</script>
+<!-- === slut v840 RELEASE FIX === -->
+
+<!-- === slut v839 RELEASE V2 === -->
