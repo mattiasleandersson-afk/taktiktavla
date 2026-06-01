@@ -47423,3 +47423,78 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }catch(e){}
 })();
 /* === slut v857 TEST === */
+
+
+/* === v858-lineup-local-draft-preserve-on-open ===
+   Bas: v857.
+   Fix: skydda befintlig lokal nödkopia när en sparad match öppnas till laguppställning.
+   Orsak: autosparningen kan hinna skriva över tt849_lineup_draft_<matchId> med den nyöppnade rena matchen
+   innan v851 hinner fråga om återställning.
+*/
+(function(){
+  if(window.__tt858LineupDraftPreserveOnOpen)return;
+  window.__tt858LineupDraftPreserveOnOpen=true;
+
+  var DRAFT_PREFIX='tt849_lineup_draft_';
+  var BASE_PREFIX='tt849_lineup_base_';
+
+  function isLineupOpenClick(e){
+    try{
+      var t=e.target;
+      if(!t || !t.closest)return false;
+      var btn=t.closest('button');
+      if(!btn)return false;
+      var id=String(btn.id||'').toLowerCase();
+      var txt=String(btn.textContent||'').trim().toLowerCase();
+      if(id==='btn-match-to-taktik')return true;
+      if(txt.indexOf('ladda uppst')>=0)return true;
+    }catch(err){}
+    return false;
+  }
+  function snapshotDrafts(){
+    var out={};
+    try{
+      for(var i=0;i<localStorage.length;i++){
+        var k=localStorage.key(i);
+        if(!k)continue;
+        if(k.indexOf(DRAFT_PREFIX)===0 || k.indexOf(BASE_PREFIX)===0){
+          out[k]=localStorage.getItem(k);
+        }
+      }
+    }catch(e){}
+    return out;
+  }
+  function currentMatchId(){
+    try{return window._editingMatchId?String(window._editingMatchId):'';}catch(e){return '';}
+  }
+  function restoreExistingDraftForOpen(snap){
+    try{
+      var id=currentMatchId();
+      if(!id)return;
+      var dKey=DRAFT_PREFIX+id;
+      if(!Object.prototype.hasOwnProperty.call(snap,dKey))return;
+      var oldDraft=snap[dKey];
+      if(!oldDraft)return;
+      // Lägg tillbaka den gamla nödkopian om öppnings-/autosave-logik råkat skriva över den.
+      var now=localStorage.getItem(dKey);
+      if(now!==oldDraft)localStorage.setItem(dKey,oldDraft);
+      // Behåll befintlig base om den fanns. Om den saknas får v851 skapa ren bas från nyöppnad match.
+      var bKey=BASE_PREFIX+id;
+      if(Object.prototype.hasOwnProperty.call(snap,bKey) && snap[bKey]!==null && snap[bKey]!==undefined){
+        try{localStorage.setItem(bKey,snap[bKey]);}catch(e){}
+      }
+    }catch(e){}
+  }
+
+  document.addEventListener('click',function(e){
+    if(!isLineupOpenClick(e))return;
+    var snap=snapshotDrafts();
+    // Kör före v851:s restore-fråga (450 ms) men efter att gamla öppningshandlern hunnit sätta _editingMatchId.
+    [40,140,280,390].forEach(function(ms){
+      setTimeout(function(){restoreExistingDraftForOpen(snap);},ms);
+    });
+  },true);
+
+  window.tt858PreserveLineupDraftOnOpen=true;
+})();
+/* === slut v858-lineup-local-draft-preserve-on-open === */
