@@ -47498,3 +47498,109 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt858PreserveLineupDraftOnOpen=true;
 })();
 /* === slut v858-lineup-local-draft-preserve-on-open === */
+
+
+/* === v859 TEST: Taktikfilm mobil/iPad bottenmeny synlig efter film från Taktiktavla ===
+   Bas: v858.
+   Problem: När en Taktikfilm skapas/öppnas från en sparad Taktiktavla på iPhone/iPad kan
+   själva bottenpanelen/stegmenyn hamna i minimerat eller dolt läge. Maximeralisten syns ibland,
+   men öppnar inte panelen eftersom äldre panelOpen/hidden/display-state kan vara osynkade.
+   Princip:
+   - Rör inte filmdata, stegdata eller sparlogik.
+   - När Taktikfilm-redigering faktiskt är aktiv på touch/narrow: tvinga bara UI-panelens öppna state.
+   - Sätt även panelOpen=true så gamla panelknappen och panel-show-knappen hamnar i synk igen.
+*/
+(function(){
+  'use strict';
+  if(window.__tt859TaktikfilmMobileBottompanelForceOpen)return;
+  window.__tt859TaktikfilmMobileBottompanelForceOpen=true;
+
+  function by(id){return document.getElementById(id);}
+  function touchOrTablet(){
+    try{return window.matchMedia('(hover:none) and (pointer:coarse)').matches || window.innerWidth<=1024;}catch(e){return window.innerWidth<=1024;}
+  }
+  function inTaktikEdit(){
+    try{if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null)return true;}catch(e){}
+    try{if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;}catch(e){}
+    try{if(typeof playback!=='undefined' && playback && playback.tk)return true;}catch(e){}
+    return false;
+  }
+  function setTaktikPanelActive(){
+    try{activeWorkspacePanel='taktik';}catch(e){}
+    try{
+      document.querySelectorAll('.tab[data-panel]').forEach(function(t){
+        t.classList.toggle('on',t.getAttribute('data-panel')==='taktik');
+      });
+      document.querySelectorAll('.panel').forEach(function(p){
+        p.classList.toggle('on',p.id==='panel-taktik');
+      });
+    }catch(e){}
+  }
+  function forceOpen(){
+    if(!touchOrTablet() || !inTaktikEdit()){
+      try{document.body.classList.remove('tt859-taktik-mobile-bottompanel-open');}catch(e){}
+      return;
+    }
+    try{document.body.classList.add('tt859-taktik-mobile-bottompanel-open');}catch(e){}
+    setTaktikPanelActive();
+    try{panelOpen=true;}catch(e){}
+
+    var bp=by('bottompanel');
+    if(bp){
+      bp.classList.remove('hidden');
+      bp.style.removeProperty('display');
+      bp.style.removeProperty('height');
+      bp.style.removeProperty('max-height');
+      bp.style.removeProperty('visibility');
+      bp.style.removeProperty('pointer-events');
+    }
+    var show=by('panel-show-btn');
+    if(show){
+      show.classList.remove('visible');
+      show.style.display='none';
+    }
+    var btn=by('btn-panel');
+    if(btn)btn.textContent='▼';
+    var panel=by('panel-taktik');
+    if(panel)panel.classList.add('on');
+    var no=by('no-rec-ui'); if(no)no.style.display='none';
+    var rec=by('rec-ui'); if(rec)rec.style.display='none';
+    var edit=by('edit-taktik-ui'); if(edit)edit.style.display='block';
+    var tb=by('taktikbar'); if(tb)tb.style.display='flex';
+    try{if(typeof renderPlayStepList==='function')renderPlayStepList();}catch(e){}
+    try{if(typeof updateEditStepUI_silent==='function')updateEditStepUI_silent();else if(typeof updateEditStepUI==='function')updateEditStepUI();}catch(e){}
+  }
+  function schedule(){[0,50,140,320,700].forEach(function(ms){setTimeout(forceOpen,ms);});}
+
+  if(typeof startPlayback==='function' && !startPlayback.__tt859Wrapped){
+    var oldStart=startPlayback;
+    startPlayback=function(){
+      var r=oldStart.apply(this,arguments);
+      schedule();
+      return r;
+    };
+    startPlayback.__tt859Wrapped=true;
+    try{window.startPlayback=startPlayback;}catch(e){}
+  }
+
+  // Om den gamla maximeralisten visas i detta läge ska ett tryck alltid öppna panelen igen.
+  ['click','touchend','pointerup'].forEach(function(evt){
+    document.addEventListener(evt,function(e){
+      var t=e.target;
+      if(!t || !t.closest)return;
+      if(t.closest('#panel-show-btn')){
+        if(touchOrTablet() && inTaktikEdit()){
+          try{e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();}catch(_){}
+          forceOpen();
+          schedule();
+          return false;
+        }
+      }
+    },true);
+  });
+
+  ['click','touchend','orientationchange','resize','pageshow'].forEach(function(evt){
+    window.addEventListener(evt,function(){setTimeout(forceOpen,30);},true);
+  });
+})();
+/* === slut v859 TEST === */
