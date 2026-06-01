@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v812 hide old tt741 mobile lager</title>
+<title>Taktiktavla TEST v813 mobile lager invalid context guard</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -5980,3 +5980,87 @@
 }
 </style>
 <!-- === slut v812 TEST === -->
+
+
+<!-- === v813 TEST: dölj/stäng mobil Lager i filvy, Matcher och Snabbtavla === -->
+<style id="tt813-mobile-layer-invalid-context-css">
+@media (max-width:900px), (hover:none) and (pointer:coarse){
+  body.tt813-mobile-layer-invalid #tt642-layer-mobile-toggle,
+  body.tt813-mobile-layer-invalid #tt616-layer-panel{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+}
+</style>
+<script id="tt813-mobile-layer-invalid-context-js">
+(function(){
+  'use strict';
+  if(window.__tt813MobileLayerInvalidContextInstalled)return;
+  window.__tt813MobileLayerInvalidContextInstalled=true;
+
+  function mobile(){
+    try{return !!(window.matchMedia&&window.matchMedia('(max-width:900px)').matches) || !!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches);}
+    catch(e){return false;}
+  }
+  function byId(id){return document.getElementById(id);}
+  function visible(el){
+    try{if(!el)return false;var cs=getComputedStyle(el);var r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>8&&r.height>8;}
+    catch(e){return false;}
+  }
+  function activePanel(){
+    try{var t=document.querySelector('.tab.on[data-panel]');return t?t.getAttribute('data-panel'):'';}catch(e){return '';}
+  }
+  function inTavla(){
+    try{return activePanel()==='saves' || document.body.classList.contains('tt742-mobile-tavla-active') || document.body.classList.contains('tt742-mobile-board-fullscreen');}
+    catch(e){return false;}
+  }
+  function inTaktikfilmEdit(){
+    try{
+      if(document.body.classList.contains('tt-v82-taktik-library'))return false;
+      if(document.body.classList.contains('tt688-taktikfilm-editor-active'))return true;
+      if(document.body.classList.contains('tt743-mobile-taktikfilm-active'))return true;
+      if(document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen'))return true;
+      if(document.body.classList.contains('fullscreen-portrait') && document.body.classList.contains('v66-taktik-fs'))return true;
+      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
+      if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null)return true;
+      return false;
+    }catch(e){return false;}
+  }
+  function invalid(){
+    if(!mobile())return false;
+    try{
+      var p=activePanel();
+      if(document.body.classList.contains('tt744-matcher-active'))return true;
+      if(document.body.classList.contains('tt745-snabb-active'))return true;
+      if(document.body.classList.contains('tt745-snabb-fullscreen'))return true;
+      if(document.body.classList.contains('tt-v82-taktik-library'))return true;
+      if(p==='matcher' || p==='match' || p==='matches' || p==='snabb' || p==='quick')return true;
+      if(p==='taktik' && !inTaktikfilmEdit())return true;
+      return !(inTavla() || inTaktikfilmEdit());
+    }catch(e){return true;}
+  }
+  function closeAndHideIfInvalid(){
+    var bad=invalid();
+    document.body.classList.toggle('tt813-mobile-layer-invalid',bad);
+    if(bad){
+      document.body.classList.remove('tt642-layer-panel-mobile-open');
+      var btn=byId('tt642-layer-mobile-toggle');
+      if(btn)btn.setAttribute('aria-expanded','false');
+    }
+  }
+  function schedule(){
+    closeAndHideIfInvalid();
+    setTimeout(closeAndHideIfInvalid,80);
+    setTimeout(closeAndHideIfInvalid,250);
+  }
+
+  ['click','touchend','change','input','resize','orientationchange','fullscreenchange','hashchange','pageshow'].forEach(function(evt){
+    window.addEventListener(evt,schedule,true);
+    document.addEventListener(evt,schedule,true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});
+  else schedule();
+})();
+</script>
+<!-- === slut v813 TEST === -->
