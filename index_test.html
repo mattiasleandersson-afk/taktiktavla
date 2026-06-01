@@ -3017,7 +3017,43 @@
   }
 </style>
 
-<script src="app_test.js?v=858-lineup-draft-restore-on-open-fix"></script>
+
+
+<!-- === v859 TEST: CSS-skydd för Taktikfilm mobil/iPad bottenmeny === -->
+<style id="tt859-taktikfilm-mobile-bottompanel-forceopen-css">
+@media (hover:none) and (pointer:coarse), (max-width:1024px){
+  body.tt859-taktik-mobile-bottompanel-open:not(.fullscreen-portrait) #bottompanel{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:38vh!important;
+    overflow-y:auto!important;
+  }
+  body.tt859-taktik-mobile-bottompanel-open:not(.fullscreen-portrait) #panel-show-btn{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+  body.tt859-taktik-mobile-bottompanel-open:not(.fullscreen-portrait) #panel-taktik{
+    display:flex!important;
+  }
+  body.tt859-taktik-mobile-bottompanel-open:not(.fullscreen-portrait) #edit-taktik-ui{
+    display:block!important;
+  }
+  body.tt859-taktik-mobile-bottompanel-open:not(.fullscreen-portrait) #no-rec-ui,
+  body.tt859-taktik-mobile-bottompanel-open:not(.fullscreen-portrait) #rec-ui{
+    display:none!important;
+  }
+  body.tt859-taktik-mobile-bottompanel-open:not(.fullscreen-portrait) #taktikbar{
+    display:flex!important;
+  }
+}
+</style>
+
+<script src="app_test.js?v=859-taktikfilm-mobile-bottompanel-forceopen"></script>
 
 <script>
 (function(){
