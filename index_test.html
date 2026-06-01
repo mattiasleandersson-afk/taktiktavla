@@ -6176,6 +6176,153 @@
 </script>
 <!-- === slut v836 === -->
 
+
+
+<!-- === v837: tydligare bekräftelse när laguppställning sparas === -->
+<style id="tt837-lineup-save-confirm-css">
+  /*
+    v837: Endast tydligare visuell bekräftelse efter lyckad laguppställnings-save.
+    Själva sparlogiken i app.js lämnas orörd.
+  */
+  #tt837-lineup-save-confirm{
+    position:fixed!important;
+    left:50%!important;
+    top:18px!important;
+    transform:translateX(-50%) translateY(-12px)!important;
+    z-index:120000!important;
+    min-width:min(360px, calc(100vw - 28px))!important;
+    max-width:calc(100vw - 28px)!important;
+    box-sizing:border-box!important;
+    background:rgba(14,31,18,0.98)!important;
+    color:#edf5ee!important;
+    border:2px solid #4ae87a!important;
+    border-radius:16px!important;
+    box-shadow:0 12px 34px rgba(0,0,0,0.42)!important;
+    padding:13px 16px 14px 16px!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:12px!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    transition:opacity .16s ease, transform .16s ease!important;
+    font-family:Arial Narrow, Arial, sans-serif!important;
+  }
+  #tt837-lineup-save-confirm.tt837-show{
+    opacity:1!important;
+    transform:translateX(-50%) translateY(0)!important;
+  }
+  #tt837-lineup-save-confirm .tt837-check{
+    width:34px!important;
+    height:34px!important;
+    min-width:34px!important;
+    border-radius:999px!important;
+    background:#4ae87a!important;
+    color:#0a1a0d!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-weight:900!important;
+    font-size:1.25rem!important;
+    line-height:1!important;
+  }
+  #tt837-lineup-save-confirm .tt837-title{
+    font-size:1.02rem!important;
+    font-weight:900!important;
+    letter-spacing:.02em!important;
+    line-height:1.15!important;
+  }
+  #tt837-lineup-save-confirm .tt837-sub{
+    margin-top:3px!important;
+    color:#a8cfb1!important;
+    font-size:.78rem!important;
+    font-weight:700!important;
+    line-height:1.2!important;
+  }
+  @media (max-width:720px), (hover:none) and (pointer:coarse){
+    #tt837-lineup-save-confirm{
+      top:12px!important;
+      min-width:calc(100vw - 22px)!important;
+      padding:12px 13px!important;
+      border-radius:14px!important;
+    }
+  }
+</style>
+<script id="tt837-lineup-save-confirm-js">
+(function(){
+  'use strict';
+  if(window.__tt837LineupSaveConfirmInstalled)return;
+  window.__tt837LineupSaveConfirmInstalled=true;
+
+  var benchSaveUntil=0;
+  var hideTimer=null;
+
+  function ensureBox(){
+    var box=document.getElementById('tt837-lineup-save-confirm');
+    if(box)return box;
+    box=document.createElement('div');
+    box.id='tt837-lineup-save-confirm';
+    box.setAttribute('role','status');
+    box.setAttribute('aria-live','polite');
+    box.innerHTML='<div class="tt837-check">✓</div><div><div class="tt837-title">Laguppställningen är sparad</div><div class="tt837-sub">Ändringarna finns kvar i den öppnade matchen.</div></div>';
+    document.body.appendChild(box);
+    return box;
+  }
+
+  function showConfirm(sub){
+    try{
+      var box=ensureBox();
+      var subEl=box.querySelector('.tt837-sub');
+      if(subEl && sub)subEl.textContent=sub;
+      box.classList.add('tt837-show');
+      if(hideTimer)clearTimeout(hideTimer);
+      hideTimer=setTimeout(function(){box.classList.remove('tt837-show');},2600);
+    }catch(e){}
+  }
+
+  function markBenchSave(){
+    benchSaveUntil=Date.now()+9000;
+  }
+
+  function isPositiveSaveMessage(msg){
+    msg=String(msg||'');
+    return /^(Match sparad|Match uppdaterad|Laguppställning sparad|Uppställning sparad)/i.test(msg);
+  }
+
+  function wrapToast(){
+    try{
+      if(typeof window.showToast!=='function' || window.showToast.__tt837Wrapped)return;
+      var old=window.showToast;
+      var wrapped=function(msg,ok){
+        var r=old.apply(this,arguments);
+        try{
+          if(ok!==false && Date.now()<benchSaveUntil && isPositiveSaveMessage(msg)){
+            showConfirm('Ändringarna finns kvar i den öppnade matchen.');
+            benchSaveUntil=0;
+          }
+        }catch(e){}
+        return r;
+      };
+      wrapped.__tt837Wrapped=true;
+      window.showToast=wrapped;
+      try{showToast=wrapped;}catch(e){}
+    }catch(e){}
+  }
+
+  document.addEventListener('click',function(e){
+    try{if(e.target&&e.target.closest&&e.target.closest('#bench-save-btn'))markBenchSave();}catch(err){}
+  },true);
+  document.addEventListener('touchend',function(e){
+    try{if(e.target&&e.target.closest&&e.target.closest('#bench-save-btn'))markBenchSave();}catch(err){}
+  },true);
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){wrapToast();ensureBox();});
+  else {wrapToast();ensureBox();}
+  setTimeout(wrapToast,300);
+  setTimeout(wrapToast,1000);
+  try{document.title='Taktiktavla TEST v837 lineup save confirmation';}catch(e){}
+})();
+</script>
+<!-- === slut v837 === -->
 </body>
 </html>
 
