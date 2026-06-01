@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v808 mobile lager summary remove</title>
+<title>Taktiktavla TEST v809 mobile layer owner guard</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2957,7 +2957,7 @@
   </div>
 
   </div>
-<script src="app_test.js?v=801-mobile-lager-ikonknapp"></script>
+<script src="app_test.js?v=809-mobile-layer-owner-guard"></script>
 
 <script>
 (function(){
@@ -5802,47 +5802,59 @@
 <!-- === slut v807 TEST === -->
 
 
-<!-- === v808 TEST: ta bort grå Lager-summary helt på mobil === -->
-<script id="tt808-layer-summary-remove-mobile-js">
-(function(){
-  'use strict';
-  if(window.__tt808LayerSummaryRemoveMobileInstalled)return;
-  window.__tt808LayerSummaryRemoveMobileInstalled=true;
-
-  function mobile(){
-    try{return !!(window.matchMedia && window.matchMedia('(max-width:720px)').matches);}
-    catch(e){return false;}
+<!-- === v809 TEST: mobil ägare vinner över gamla panelregler === -->
+<style id="tt809-mobile-layer-owner-guard-css">
+@media (max-width:720px){
+  /* Telefon: panelen får bara synas när mobilens egen öppna-klass är aktiv.
+     Detta stoppar gamla desktop-/tavla-/filmregler från att visa grå kollapsad Lager-list. */
+  body:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel,
+  body.tt688-taktikfilm-editor-active:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel,
+  body.tt719-tavla-active:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel,
+  body.tt733-tavla-active:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel,
+  body.tt742-mobile-tavla-active:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel,
+  body.tt743-mobile-taktikfilm-active:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel,
+  body.fullscreen-portrait:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    overflow:hidden!important;
+    box-shadow:none!important;
   }
 
-  function removeSummary(){
-    try{
-      if(!mobile())return;
-      var panel=document.getElementById('tt616-layer-panel');
-      if(!panel)return;
-      var details=panel.querySelector('details');
-      var summary=panel.querySelector('summary');
-      if(details)details.open=true;
-      if(summary && summary.parentNode){
-        summary.parentNode.removeChild(summary);
-      }
-    }catch(e){}
+  body:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel *,
+  body:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel details,
+  body:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel summary{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    overflow:hidden!important;
   }
 
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',removeSummary,{once:true});
-  }else{
-    removeSummary();
+  body.tt642-layer-panel-mobile-open #tt616-layer-panel summary{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    overflow:hidden!important;
   }
-
-  setTimeout(removeSummary,50);
-  setTimeout(removeSummary,250);
-  setTimeout(removeSummary,800);
-  window.addEventListener('pageshow',removeSummary,true);
-  window.addEventListener('resize',removeSummary,true);
-  window.addEventListener('orientationchange',removeSummary,true);
-  document.addEventListener('click',function(){
-    setTimeout(removeSummary,0);
-  },true);
-})();
-</script>
-<!-- === slut v808 TEST === -->
+}
+</style>
+<!-- === slut v809 TEST === -->
