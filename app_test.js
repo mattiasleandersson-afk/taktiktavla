@@ -1506,8 +1506,6 @@ function renderTaktikList(){
       var dup=iconBtn("⧉","Kopiera","#4ae8e8");
       dup.addEventListener("click",function(){duplicateTaktik(idx);});
 
-      var mg=iconBtn("⋓","Sammanfoga","#a78bfa");
-      mg.addEventListener("click",function(){openMergeTaktik(idx);});
 
       var sh=iconBtn("⤴","Dela","#7aaa88");
       sh.addEventListener("click",function(){openShareTaktik(tk);});
@@ -1524,7 +1522,6 @@ function renderTaktikList(){
       row.appendChild(fav);
       row.appendChild(pb);
       row.appendChild(dup);
-      row.appendChild(mg);
       row.appendChild(sh);
       row.appendChild(mvTk);
       row.appendChild(dl);
@@ -2933,11 +2930,10 @@ function renderTaktikListV545Original(){
       row.appendChild(nm);row.appendChild(fl);
       if(mine){
         var share=iconBtn(fileMetaV10(tk).sharedWithTeam?"🙈":"👥",fileMetaV10(tk).sharedWithTeam?"Sluta dela med laget":"Dela med laget","#4ae8e8");share.addEventListener("click",function(){patchTaktikShareV10(tk,!fileMetaV10(tk).sharedWithTeam);});
-        var mg=iconBtn("⋓","Sammanfoga","#a78bfa");mg.addEventListener("click",function(){openMergeTaktik(idx);});
         var sh=iconBtn("⤴","Dela länk","#7aaa88");sh.addEventListener("click",function(){openShareTaktik(tk);});
         var mvTk=iconBtn("⇆","Flytta till mapp","#e8c84a");mvTk.addEventListener("click",function(){openMoveTaktikFolder(tk);});
         var dl=iconBtn("×","Radera","#e84a4a");dl.className+=" del";dl.addEventListener("click",function(){if(!confirm("Radera taktikfilmen \""+(tk.name||"utan namn")+"\"?"))return;deleteTaktik(idx);});
-        row.appendChild(fav);row.appendChild(pb);row.appendChild(dup);row.appendChild(share);row.appendChild(mg);row.appendChild(sh);row.appendChild(mvTk);row.appendChild(dl);
+        row.appendChild(fav);row.appendChild(pb);row.appendChild(dup);row.appendChild(share);row.appendChild(sh);row.appendChild(mvTk);row.appendChild(dl);
       }else{
         row.appendChild(pb);row.appendChild(dup);
       }
@@ -3086,11 +3082,10 @@ function renderTaktikList(){
       row.appendChild(nm);row.appendChild(fl);
       if(mine){
         var share=iconBtn(fileMetaV10(tk).sharedWithTeam?"🙈":"👥",fileMetaV10(tk).sharedWithTeam?"Sluta dela med laget":"Dela med laget","#4ae8e8");share.addEventListener("click",function(){patchTaktikShareV10(tk,!fileMetaV10(tk).sharedWithTeam);});
-        var mg=iconBtn("⋓","Sammanfoga","#a78bfa");mg.addEventListener("click",function(){openMergeTaktik(idx);});
         var sh=iconBtn("⤴","Dela länk","#7aaa88");sh.addEventListener("click",function(){openShareTaktik(tk);});
         var mvTk=iconBtn("⇆","Flytta till mapp","#e8c84a");mvTk.addEventListener("click",function(){openMoveTaktikFolder(tk);});
         var dl=iconBtn("×","Radera","#e84a4a");dl.className+=" del";dl.addEventListener("click",function(){if(!confirm("Radera taktikfilmen \""+(tk.name||"utan namn")+"\"?"))return;deleteTaktik(idx);});
-        row.appendChild(fav);row.appendChild(pb);row.appendChild(dup);row.appendChild(share);row.appendChild(mg);row.appendChild(sh);row.appendChild(mvTk);row.appendChild(dl);
+        row.appendChild(fav);row.appendChild(pb);row.appendChild(dup);row.appendChild(share);row.appendChild(sh);row.appendChild(mvTk);row.appendChild(dl);
       }else{
         row.appendChild(pb);row.appendChild(dup);
       }
@@ -47020,3 +47015,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt851ClearLineupDraft=clearDraft849;
 })();
 /* === slut v851-lineup-local-draft-restore-only-on-open === */
+
+
+/* === v852: Taktikfilm Sammanfoga-knappen borttagen från listvyer ===
+   Bas: v851. Funktionerna lämnas orörda men ingen synlig knapp/ingång renderas.
+*/
