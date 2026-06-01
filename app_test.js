@@ -42535,7 +42535,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     st.textContent=[
       'body.tt-v82-taktik-library #tt616-layer-panel{display:none!important;visibility:hidden!important;pointer-events:none!important}',
       'body:not(.tt-v82-taktik-library) #tt616-layer-panel{visibility:visible}',
-      'body.tt688-taktikfilm-editor-active #tt616-layer-panel{display:block!important}',
+      '@media (min-width:721px){body.tt688-taktikfilm-editor-active #tt616-layer-panel{display:block!important}}',
       'body.tt688-taktikfilm-editor-active #taktikbar{display:flex!important}',
       'body.tt688-taktikfilm-editor-active #edit-taktik-ui{display:block!important}',
       'body.tt688-taktikfilm-editor-active #no-rec-ui{display:none!important}'
@@ -44450,6 +44450,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var st=document.createElement('style');
     st.id='tt719-tavla-layerpanel-css';
     st.textContent=[
+      '@media (min-width:721px){',
       'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel{',
       '  width:230px!important;',
       '  min-width:230px!important;',
@@ -44513,6 +44514,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-help,',
       'body.tt719-tavla-active:not(.fullscreen-portrait) #tt616-layer-panel .tt661-layer-meta{',
       '  display:none!important;',
+      '}',
       '}'
     ].join('\n');
     document.head.appendChild(st);
