@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v805 taktikfilm lager pos summaryfix</title>
+<title>Taktiktavla TEST v806 mobile lager högre och grålist fix</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -5697,3 +5697,52 @@
 }
 </style>
 <!-- === slut v805 TEST === -->
+
+
+<!-- === v806 TEST: mobil Lager - högre Taktikfilm-symbol + hård grålist-fix === -->
+<style id="tt806-mobile-layer-greybar-hardfix-css">
+@media (max-width:720px){
+  /* Taktikfilm redigeringsläge: ännu högre, direkt under menyraden. */
+  body.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle,
+  body.tt743-mobile-taktikfilm-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle{
+    top:calc(env(safe-area-inset-top,0px) + 68px)!important;
+    right:calc(env(safe-area-inset-right,0px) + 10px)!important;
+  }
+
+  /* När mobilpanelen är stängd ska INGET från gamla details/summary-listen synas. */
+  body:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel,
+  body:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel details,
+  body:not(.tt642-layer-panel-mobile-open) #tt616-layer-panel summary{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    overflow:hidden!important;
+    box-shadow:none!important;
+  }
+
+  /* När panelen är öppen på mobil ska bara innehållet synas, aldrig gamla rubriklisten. */
+  body.tt642-layer-panel-mobile-open #tt616-layer-panel summary{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    height:0!important;
+    min-height:0!important;
+    max-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    overflow:hidden!important;
+  }
+
+  body.tt642-layer-panel-mobile-open #tt616-layer-panel details{
+    display:block!important;
+  }
+}
+</style>
+<!-- === slut v806 TEST === -->
