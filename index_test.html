@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v813 mobile lager invalid context guard</title>
+<title>Taktiktavla TEST v814 iPad Lager diag</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -6064,3 +6064,197 @@
 })();
 </script>
 <!-- === slut v813 TEST === -->
+
+
+<!-- === v814 DIAG: iPad/touch-tablet Lager-kartläggning, read-only === -->
+<style id="tt814-ipad-layer-diag-css">
+  #tt814-layer-diag-btn{
+    position:fixed!important;
+    right:calc(env(safe-area-inset-right,0px) + 8px)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;
+    z-index:2147483000!important;
+    width:48px!important;
+    height:32px!important;
+    border-radius:999px!important;
+    border:1px solid #e8c84a!important;
+    background:rgba(17,26,20,.94)!important;
+    color:#e8c84a!important;
+    font:800 11px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+    letter-spacing:.2px!important;
+    box-shadow:0 3px 14px rgba(0,0,0,.35)!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    padding:0!important;
+    margin:0!important;
+    pointer-events:auto!important;
+  }
+  #tt814-layer-diag-box{
+    position:fixed!important;
+    left:10px!important;
+    right:10px!important;
+    top:calc(env(safe-area-inset-top,0px) + 10px)!important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 52px)!important;
+    z-index:2147483001!important;
+    background:#111a14!important;
+    color:#edf5ee!important;
+    border:1px solid #2d4a35!important;
+    border-radius:12px!important;
+    box-shadow:0 12px 45px rgba(0,0,0,.55)!important;
+    padding:10px!important;
+    box-sizing:border-box!important;
+    display:none!important;
+    flex-direction:column!important;
+    gap:8px!important;
+  }
+  #tt814-layer-diag-box.tt814-open{display:flex!important;}
+  #tt814-layer-diag-box textarea{
+    flex:1 1 auto!important;
+    min-height:160px!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    background:#07100b!important;
+    color:#edf5ee!important;
+    border:1px solid #2d4a35!important;
+    border-radius:8px!important;
+    padding:8px!important;
+    font:12px/1.35 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;
+    white-space:pre!important;
+  }
+  #tt814-layer-diag-box .tt814-row{
+    display:flex!important;
+    gap:6px!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    flex:0 0 auto!important;
+  }
+  #tt814-layer-diag-box .tt814-title{
+    font:800 13px/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+    color:#4ae87a!important;
+  }
+  #tt814-layer-diag-box button{
+    border:1px solid #2d4a35!important;
+    border-radius:8px!important;
+    background:#0b130e!important;
+    color:#edf5ee!important;
+    padding:6px 9px!important;
+    font:800 12px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  }
+</style>
+<script id="tt814-ipad-layer-diag-js">
+(function(){
+  'use strict';
+  if(window.__tt814IpadLayerDiagInstalled)return;
+  window.__tt814IpadLayerDiagInstalled=true;
+
+  var MQ=[
+    '(max-width:720px)',
+    '(max-width:900px)',
+    '(max-width:1024px)',
+    '(min-width:721px)',
+    '(min-width:900px)',
+    '(min-width:1024px)',
+    '(hover:none) and (pointer:coarse)',
+    '(hover:hover) and (pointer:fine)',
+    '(pointer:coarse)',
+    '(pointer:fine)',
+    '(orientation:portrait)',
+    '(orientation:landscape)'
+  ];
+  var ELS=['tt642-layer-mobile-toggle','tt616-layer-panel','tt741-fs-layer-toggle','pitch-wrapper','pitch-svg','bottompanel','taktikbar','fs-top-tools','fs-portrait-nav'];
+  var WATCH_CLASSES=['fullscreen-portrait','landscape','desktop','v66-taktik-fs','tt642-layer-panel-mobile-open','tt813-mobile-layer-invalid','tt742-mobile-tavla-active','tt742-mobile-board-fullscreen','tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen','tt688-taktikfilm-editor-active','tt719-tavla-active','tt733-tavla-active','tt744-matcher-active','tt745-snabb-active','tt745-snabb-fullscreen','tt-v82-taktik-library','tt762-taktik-layer-restore'];
+
+  function safe(v){try{return String(v);}catch(e){return ''+v;}}
+  function mm(q){try{return !!(window.matchMedia&&window.matchMedia(q).matches);}catch(e){return false;}}
+  function activePanel(){try{var t=document.querySelector('.tab.on[data-panel]');return t?t.getAttribute('data-panel'):'';}catch(e){return '';}}
+  function visible(el){try{if(!el)return false;var cs=getComputedStyle(el);var r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&cs.opacity!=='0'&&r.width>1&&r.height>1;}catch(e){return false;}}
+  function elementReport(id){
+    var el=document.getElementById(id);
+    if(!el)return id+': MISSING';
+    var cs=getComputedStyle(el), r=el.getBoundingClientRect();
+    return id+': visible='+visible(el)+
+      ' display='+cs.display+
+      ' visibility='+cs.visibility+
+      ' opacity='+cs.opacity+
+      ' pointerEvents='+cs.pointerEvents+
+      ' position='+cs.position+
+      ' zIndex='+cs.zIndex+
+      ' rect='+Math.round(r.left)+','+Math.round(r.top)+' '+Math.round(r.width)+'x'+Math.round(r.height)+
+      ' cssTRBL='+cs.top+'/'+cs.right+'/'+cs.bottom+'/'+cs.left+
+      (el.getAttribute('aria-expanded')!==null?' aria-expanded='+el.getAttribute('aria-expanded'):'')+
+      (el.className?' class='+safe(el.className).replace(/\s+/g,'.'):'');
+  }
+  function report(){
+    var lines=[];
+    var now=new Date();
+    lines.push('TT v814 iPad Lager-diagnos');
+    lines.push('Tid: '+now.toISOString());
+    lines.push('URL: '+location.href.split('#')[0]);
+    lines.push('Viewport: inner='+window.innerWidth+'x'+window.innerHeight+' outer='+(window.outerWidth||'?')+'x'+(window.outerHeight||'?')+' screen='+(screen&&screen.width)+'x'+(screen&&screen.height)+' DPR='+(window.devicePixelRatio||1));
+    lines.push('UA: '+navigator.userAgent);
+    lines.push('Touch: maxTouchPoints='+(navigator.maxTouchPoints||0)+' ontouchstart='+('ontouchstart' in window));
+    lines.push('Active panel: '+activePanel());
+    lines.push('Editing: isEditingTaktik='+(typeof isEditingTaktik!=='undefined'?safe(isEditingTaktik):'undef')+' editingTaktikIdx='+(typeof editingTaktikIdx!=='undefined'?safe(editingTaktikIdx):'undef'));
+    lines.push('Body classes: '+document.body.className);
+    lines.push('Watched classes: '+WATCH_CLASSES.map(function(c){return c+'='+(document.body.classList.contains(c)?'1':'0');}).join(' '));
+    lines.push('Media queries:');
+    MQ.forEach(function(q){lines.push('  '+q+' = '+mm(q));});
+    lines.push('Elements:');
+    ELS.forEach(function(id){lines.push('  '+elementReport(id));});
+    try{
+      var details=document.querySelector('#tt616-layer-panel details');
+      var summary=document.querySelector('#tt616-layer-panel summary');
+      lines.push('Layer details open: '+(details?details.open:'missing'));
+      lines.push('Layer summary text: '+(summary?summary.textContent.trim().replace(/\s+/g,' ').slice(0,80):'missing'));
+    }catch(e){}
+    lines.push('V814 ändrar inte Lagerlogik. Den här rapporten används för att välja rätt iPad-brytpunkt och stoppa gamla ägare från att tvinga fram panelen.');
+    return lines.join('\n');
+  }
+  function ensureBox(){
+    var box=document.getElementById('tt814-layer-diag-box');
+    if(box)return box;
+    box=document.createElement('div');
+    box.id='tt814-layer-diag-box';
+    box.innerHTML='<div class="tt814-row"><div class="tt814-title">v814 iPad Lager-diagnos</div><div><button type="button" id="tt814-copy">Kopiera</button> <button type="button" id="tt814-refresh">Uppdatera</button> <button type="button" id="tt814-close">Stäng</button></div></div><textarea id="tt814-report" readonly></textarea>';
+    document.body.appendChild(box);
+    box.querySelector('#tt814-close').addEventListener('click',function(){box.classList.remove('tt814-open');},true);
+    box.querySelector('#tt814-refresh').addEventListener('click',function(){fill();},true);
+    box.querySelector('#tt814-copy').addEventListener('click',function(){copyReport();},true);
+    return box;
+  }
+  function fill(){
+    var box=ensureBox();
+    var ta=box.querySelector('#tt814-report');
+    if(ta)ta.value=report();
+    return ta;
+  }
+  function copyReport(){
+    var ta=fill();
+    if(!ta)return;
+    try{ta.focus();ta.select();}catch(e){}
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value);}
+      else document.execCommand('copy');
+    }catch(e){}
+  }
+  function openDiag(){
+    var box=ensureBox();
+    fill();
+    box.classList.add('tt814-open');
+  }
+  function ensureButton(){
+    if(document.getElementById('tt814-layer-diag-btn'))return;
+    var b=document.createElement('button');
+    b.id='tt814-layer-diag-btn';
+    b.type='button';
+    b.textContent='DIAG';
+    b.title='Visa iPad Lager-diagnos';
+    b.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();openDiag();},true);
+    document.body.appendChild(b);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureButton,{once:true});
+  else ensureButton();
+  window.tt814LayerDiagReport=report;
+})();
+</script>
+<!-- === slut v814 DIAG === -->
