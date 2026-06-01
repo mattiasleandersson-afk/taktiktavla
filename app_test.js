@@ -46722,3 +46722,273 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   try{confirmUnsavedUnifiedV23=confirmLeave848;}catch(e){}
 })();
 /* === slut v848 TEST === */
+
+
+/* === v849-lineup-local-draft-warning ===
+   Bas: v848.
+   Syfte:
+   - Lokal nödkopia för laguppställning/resultat under match.
+   - Osparat-varning när man lämnar laguppställning utan att trycka Spara.
+   - Ändrar inte ordinarie Supabase-sparlogik.
+   - Behåller lokal draft om nät/sparning misslyckas.
+*/
+(function(){
+  if(window.__tt849LineupLocalDraftWarning)return;
+  window.__tt849LineupLocalDraftWarning=true;
+
+  var PREFIX='tt849_lineup_draft_';
+  var BASE_PREFIX='tt849_lineup_base_';
+  var lastSavedJson='';
+  var lastActiveMatchId=null;
+  var restoreAsked={};
+  var saveTimer=null;
+
+  function clone849(o){try{return JSON.parse(JSON.stringify(o||{}));}catch(e){return o;}}
+  function matchId849(){try{return window._editingMatchId?String(window._editingMatchId):'';}catch(e){return '';}}
+  function draftKey849(id){return PREFIX+id;}
+  function baseKey849(id){return BASE_PREFIX+id;}
+  function lineupActive849(){
+    try{
+      var bar=document.getElementById('bench-bar');
+      if(bar && bar.classList.contains('active'))return true;
+      return !!(window._editingMatchId && Array.isArray(matchRoster) && matchRoster.length>0);
+    }catch(e){return false;}
+  }
+  function currentMatch849(id){
+    try{
+      return (matcher||[]).find(function(m){return String(m.dbId)===String(id);})||null;
+    }catch(e){return null;}
+  }
+  function getActiveFormation849(){
+    try{return (document.querySelector('#formation-btns .btn.on')||{}).textContent||'';}catch(e){return '';}
+  }
+  function buildDraft849(){
+    var id=matchId849();
+    if(!id || !lineupActive849())return null;
+
+    try{if(typeof saveCurrentVariant==='function' && Array.isArray(matchVariants) && matchVariants.length>0)saveCurrentVariant();}catch(e){}
+
+    var existing=currentMatch849(id)||{};
+    var datum=existing.datum||'';
+    var motstand=(typeof existing.motstand!=='undefined')?existing.motstand:'';
+    try{var d=document.getElementById('match-datum'); if(!datum && d)datum=d.value||'';}catch(e){}
+    try{var m=document.getElementById('match-motstand'); if(!motstand && m)motstand=String(m.value||'').trim();}catch(e){}
+
+    return {
+      v:849,
+      ts:Date.now(),
+      matchId:id,
+      datum:datum,
+      motstand:motstand,
+      format:(typeof format!=='undefined'?format:null),
+      halfMode:(typeof halfMode!=='undefined'?halfMode:null),
+      activeVariantIdx:(typeof activeVariantIdx!=='undefined'?activeVariantIdx:0),
+      activeFormation:getActiveFormation849(),
+      matchRoster:clone849(matchRoster||[]),
+      matchAssignments:clone849(matchAssignments||{}),
+      matchGoals:clone849(matchGoals||{home:0,away:0}),
+      matchVariants:clone849(matchVariants||[]),
+      playerStates:clone849((players||[]).map(function(p){return {id:p.id,team:p.team,number:p.number,name:p.name,x:p.x,y:p.y};}))
+    };
+  }
+  function compact849(d){
+    if(!d)return '';
+    return JSON.stringify({
+      matchId:d.matchId,
+      format:d.format,
+      halfMode:d.halfMode,
+      activeVariantIdx:d.activeVariantIdx,
+      activeFormation:d.activeFormation,
+      matchRoster:d.matchRoster,
+      matchAssignments:d.matchAssignments,
+      matchGoals:d.matchGoals,
+      matchVariants:d.matchVariants,
+      playerStates:d.playerStates
+    });
+  }
+  function readDraft849(id){
+    try{var raw=localStorage.getItem(draftKey849(id));return raw?JSON.parse(raw):null;}catch(e){return null;}
+  }
+  function writeBase849(id,json){
+    lastActiveMatchId=id;
+    lastSavedJson=json||'';
+    try{localStorage.setItem(baseKey849(id),lastSavedJson);}catch(e){}
+  }
+  function readBase849(id){
+    if(lastActiveMatchId===id && lastSavedJson)return lastSavedJson;
+    try{return localStorage.getItem(baseKey849(id))||'';}catch(e){return '';}
+  }
+  function saveDraftNow849(){
+    var d=buildDraft849();
+    if(!d)return false;
+    var json=compact849(d);
+    try{localStorage.setItem(draftKey849(d.matchId),JSON.stringify(d));}catch(e){}
+    if(lastActiveMatchId!==d.matchId){
+      lastActiveMatchId=d.matchId;
+      if(!readBase849(d.matchId))writeBase849(d.matchId,json);
+      else lastSavedJson=readBase849(d.matchId);
+    }
+    return json!==readBase849(d.matchId);
+  }
+  function scheduleDraft849(){
+    if(saveTimer)clearTimeout(saveTimer);
+    saveTimer=setTimeout(saveDraftNow849,80);
+  }
+  function clearDraft849(id){
+    if(!id)return;
+    try{localStorage.removeItem(draftKey849(id));}catch(e){}
+    try{localStorage.removeItem(baseKey849(id));}catch(e){}
+    if(lastActiveMatchId===id){lastSavedJson='';lastActiveMatchId=null;}
+  }
+  function applyDraft849(d){
+    if(!d)return;
+    try{matchRoster=clone849(d.matchRoster||[]);}catch(e){}
+    try{matchAssignments=clone849(d.matchAssignments||{});}catch(e){}
+    try{matchGoals=clone849(d.matchGoals||{home:0,away:0});}catch(e){}
+    try{matchVariants=clone849(d.matchVariants||[]);}catch(e){}
+    try{activeVariantIdx=d.activeVariantIdx||0;}catch(e){}
+    try{if(typeof d.format==='number'){format=d.format;var fmt=document.getElementById('fmt-sel');if(fmt)fmt.value=String(format); if(typeof buildFormationBtns==='function')buildFormationBtns();}}catch(e){}
+    try{if(Array.isArray(d.playerStates)&&d.playerStates.length){players=d.playerStates.map(function(p){return {id:p.id,team:p.team||(String(p.id).indexOf('h')===0?'home':'away'),number:p.number,name:p.name||'',x:p.x,y:p.y};});}}catch(e){}
+    try{if(typeof d.halfMode==='number'){halfMode=d.halfMode;if(typeof updateViewBox==='function')updateViewBox();}}catch(e){}
+    try{if(typeof updateGoalDisplay==='function')updateGoalDisplay();}catch(e){}
+    try{if(typeof renderBench==='function')renderBench();}catch(e){}
+    try{if(typeof updateVariantUI==='function')updateVariantUI();}catch(e){}
+    try{if(typeof render==='function')render();}catch(e){}
+    try{showToast('Lokal laguppställning återställd');}catch(e){}
+  }
+  function maybeRestore849(){
+    var id=matchId849();
+    if(!id || !lineupActive849())return;
+    if(restoreAsked[id])return;
+    restoreAsked[id]=true;
+
+    var d=readDraft849(id);
+    if(!d)return;
+    var json=compact849(d);
+
+    // Sätt aktuell öppnad match som ren bas om ingen bas finns.
+    var cur=buildDraft849();
+    var curJson=compact849(cur);
+    var base=readBase849(id)||curJson;
+    writeBase849(id,base);
+
+    if(json===base)return;
+
+    setTimeout(function(){
+      try{
+        var ok=confirm('Det finns en lokal nödkopia av laguppställningen/resultatet för den här matchen. Vill du återställa den?');
+        if(ok){
+          applyDraft849(d);
+          writeBase849(id,compact849(d));
+        }
+      }catch(e){}
+    },120);
+  }
+  function warnIfUnsavedLineup849(){
+    if(!lineupActive849())return true;
+    var changed=saveDraftNow849();
+    if(!changed)return true;
+    try{
+      return confirm('Laguppställningen/resultatet är inte sparat. En lokal nödkopia finns kvar, men vill du lämna utan att trycka Spara?');
+    }catch(e){return true;}
+  }
+  function isLeavingClick849(e){
+    try{
+      var t=e.target;
+      if(!t || !t.closest)return false;
+      if(t.closest('#bench-save-btn'))return false;
+      if(t.closest('#bench-exit-btn'))return true;
+      var panel=t.closest('[data-panel]');
+      if(panel && panel.getAttribute('data-panel')!=='formations')return true;
+      var lag=t.closest('[data-lag]');
+      if(lag){
+        var target=lag.getAttribute('data-lag');
+        if(target && target!=='match')return true;
+      }
+    }catch(err){}
+    return false;
+  }
+
+  // Window-capture går före äldre document-capture handlers som stoppar eventet.
+  window.addEventListener('click',function(e){
+    if(!isLeavingClick849(e))return;
+    if(warnIfUnsavedLineup849())return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    return false;
+  },true);
+
+  // Spara draft efter vanliga ändringshändelser i laguppställningsläge.
+  ['click','touchend','pointerup','change','input','mouseup'].forEach(function(type){
+    document.addEventListener(type,function(e){
+      if(!lineupActive849())return;
+      scheduleDraft849();
+    },true);
+  });
+
+  setInterval(function(){
+    try{
+      if(lineupActive849()){
+        maybeRestore849();
+        saveDraftNow849();
+      }
+    }catch(e){}
+  },1800);
+
+  // När en match öppnas till laguppställning: skapa ren bas och fråga om lokal draft finns.
+  document.addEventListener('click',function(e){
+    try{
+      var btn=e.target && e.target.closest ? e.target.closest('button') : null;
+      if(!btn)return;
+      var txt=String(btn.textContent||'').toLowerCase();
+      if(txt.indexOf('ladda uppst')>=0 || btn.id==='btn-match-to-taktik'){
+        setTimeout(function(){
+          var id=matchId849();
+          if(id){
+            var d=buildDraft849();
+            if(d)writeBase849(id,compact849(d));
+            maybeRestore849();
+          }
+        },450);
+      }
+    }catch(err){}
+  },true);
+
+  // Efter lyckad PATCH av öppnad match i laguppställning: markera lokal draft som ren.
+  var oldFetch=window.fetch;
+  if(oldFetch && !oldFetch.__tt849Wrapped){
+    var wrapped=function(input,init){
+      var idBefore=matchId849();
+      var activeBefore=lineupActive849();
+      var method=init&&init.method?String(init.method).toUpperCase():'';
+      var url=String(input&&input.url?input.url:input||'');
+      var isMatchPatch=activeBefore && idBefore && method==='PATCH' && url.indexOf('/rest/v1/')>=0 && url.indexOf('id=eq.'+idBefore)>=0;
+      var p=oldFetch.apply(this,arguments);
+      if(isMatchPatch){
+        p.then(function(res){
+          try{
+            if(res && res.ok){
+              setTimeout(function(){
+                var d=buildDraft849();
+                if(d){
+                  var json=compact849(d);
+                  try{localStorage.setItem(draftKey849(d.matchId),JSON.stringify(d));}catch(e){}
+                  writeBase849(d.matchId,json);
+                }
+              },250);
+            }
+          }catch(e){}
+          return res;
+        }).catch(function(){});
+      }
+      return p;
+    };
+    wrapped.__tt849Wrapped=true;
+    window.fetch=wrapped;
+  }
+
+  window.tt849SaveLineupDraft=saveDraftNow849;
+  window.tt849ClearLineupDraft=clearDraft849;
+})();
+/* === slut v849-lineup-local-draft-warning === */
