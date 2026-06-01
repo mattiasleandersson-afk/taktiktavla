@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v807 mobile lager summaryhide posup</title>
+<title>Taktiktavla TEST v808 mobile lager summary remove</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -5800,3 +5800,49 @@
 })();
 </script>
 <!-- === slut v807 TEST === -->
+
+
+<!-- === v808 TEST: ta bort grå Lager-summary helt på mobil === -->
+<script id="tt808-layer-summary-remove-mobile-js">
+(function(){
+  'use strict';
+  if(window.__tt808LayerSummaryRemoveMobileInstalled)return;
+  window.__tt808LayerSummaryRemoveMobileInstalled=true;
+
+  function mobile(){
+    try{return !!(window.matchMedia && window.matchMedia('(max-width:720px)').matches);}
+    catch(e){return false;}
+  }
+
+  function removeSummary(){
+    try{
+      if(!mobile())return;
+      var panel=document.getElementById('tt616-layer-panel');
+      if(!panel)return;
+      var details=panel.querySelector('details');
+      var summary=panel.querySelector('summary');
+      if(details)details.open=true;
+      if(summary && summary.parentNode){
+        summary.parentNode.removeChild(summary);
+      }
+    }catch(e){}
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',removeSummary,{once:true});
+  }else{
+    removeSummary();
+  }
+
+  setTimeout(removeSummary,50);
+  setTimeout(removeSummary,250);
+  setTimeout(removeSummary,800);
+  window.addEventListener('pageshow',removeSummary,true);
+  window.addEventListener('resize',removeSummary,true);
+  window.addEventListener('orientationchange',removeSummary,true);
+  document.addEventListener('click',function(){
+    setTimeout(removeSummary,0);
+  },true);
+})();
+</script>
+<!-- === slut v808 TEST === -->
