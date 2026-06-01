@@ -46724,8 +46724,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v848 TEST === */
 
 
-/* === v850-lineup-local-draft-restore-discard ===
-   Bas: v849.
+/* === v851-lineup-local-draft-restore-only-on-open ===
+   Bas: v850.
+   Fix: återställningsfråga ska bara komma när match/laguppställning öppnas, inte efter varje ändring.
+
+   Tidigare v850 byggde på v849.
    Syfte:
    - Lokal nödkopia för laguppställning/resultat under match.
    - Osparat-varning när man lämnar laguppställning utan att trycka Spara.
@@ -46733,8 +46736,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - Behåller lokal draft om nät/sparning misslyckas.
 */
 (function(){
-  if(window.__tt850LineupLocalDraftWarning)return;
-  window.__tt850LineupLocalDraftWarning=true;
+  if(window.__tt851LineupLocalDraftWarning)return;
+  window.__tt851LineupLocalDraftWarning=true;
 
   var PREFIX='tt849_lineup_draft_';
   var BASE_PREFIX='tt849_lineup_base_';
@@ -46949,7 +46952,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   setInterval(function(){
     try{
       if(lineupActive849()){
-        maybeRestore849();
+        // v851: autospara lokal draft medan man arbetar, men fråga INTE om
+        // återställning mitt under pågående redigering. Återställningsfrågan
+        // hör hemma när matchen/laguppställningen öppnas.
         saveDraftNow849();
       }
     }catch(e){}
@@ -47011,5 +47016,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt849ClearLineupDraft=clearDraft849;
   window.tt850SaveLineupDraft=saveDraftNow849;
   window.tt850ClearLineupDraft=clearDraft849;
+  window.tt851SaveLineupDraft=saveDraftNow849;
+  window.tt851ClearLineupDraft=clearDraft849;
 })();
-/* === slut v850-lineup-local-draft-restore-discard === */
+/* === slut v851-lineup-local-draft-restore-only-on-open === */
