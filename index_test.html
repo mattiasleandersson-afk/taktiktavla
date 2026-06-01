@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v806 mobile lager högre och grålist fix</title>
+<title>Taktiktavla TEST v807 mobile lager summaryhide posup</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -5746,3 +5746,57 @@
 }
 </style>
 <!-- === slut v806 TEST === -->
+
+
+<!-- === v807 TEST: hård JS-hide av summary + knappen lite högre i Taktikfilm === -->
+<style id="tt807-mobile-layer-posup-css">
+@media (max-width:720px){
+  body.tt688-taktikfilm-editor-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle,
+  body.tt743-mobile-taktikfilm-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle{
+    top:calc(env(safe-area-inset-top,0px) + 56px)!important;
+    right:calc(env(safe-area-inset-right,0px) + 10px)!important;
+  }
+}
+</style>
+<script id="tt807-layer-summary-hardhide-js">
+(function(){
+  'use strict';
+  if(window.__tt807LayerSummaryHardhideInstalled)return;
+  window.__tt807LayerSummaryHardhideInstalled=true;
+  function hideSummary(){
+    try{
+      var panel=document.getElementById('tt616-layer-panel');
+      if(!panel)return;
+      var details=panel.querySelector('details');
+      var summary=panel.querySelector('summary');
+      if(details) details.open=true;
+      if(summary){
+        summary.setAttribute('hidden','hidden');
+        summary.setAttribute('aria-hidden','true');
+        summary.style.display='none';
+        summary.style.visibility='hidden';
+        summary.style.pointerEvents='none';
+        summary.style.height='0';
+        summary.style.minHeight='0';
+        summary.style.maxHeight='0';
+        summary.style.padding='0';
+        summary.style.margin='0';
+        summary.style.border='0';
+        summary.style.overflow='hidden';
+      }
+    }catch(e){}
+  }
+  ['DOMContentLoaded','pageshow','resize','orientationchange','fullscreenchange'].forEach(function(evt){
+    if(evt==='DOMContentLoaded'){
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hideSummary,{once:true});
+      else hideSummary();
+    } else {
+      window.addEventListener(evt,hideSummary,true);
+    }
+  });
+  hideSummary();
+  setTimeout(hideSummary,120);
+  setTimeout(hideSummary,500);
+})();
+</script>
+<!-- === slut v807 TEST === -->
