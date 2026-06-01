@@ -46548,3 +46548,177 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [250,900,1800].forEach(function(ms){setTimeout(function(){try{if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)captureClean('initial');}catch(e){}},ms);});
 })();
 /* === slut v847 TEST === */
+
+
+/* === v848 TEST: osparat-varning direkt efter faktisk ändring i Taktikfilm ===
+   Bas: v847. Problem: v847 kunde missa varningen om användaren ändrade direkt efter öppning,
+   eftersom fördröjda baslinjetimers kunde fånga den redan ändrade filmen som "ren".
+   Strategi:
+   - egen baslinje vid öppnad film
+   - jämför även aktuellt osparat steg via currentSnap(), utan att först behöva bläddra i steglistan
+   - markera bara möjlig ändring vid tydliga Taktikfilm-redigeringsinteraktioner
+   - om användaren godkänner lämna utan att spara, undvik dubbel confirm från äldre vakter
+*/
+(function(){
+  'use strict';
+  if(window.__tt848UnsavedDirectDirtyFix)return;
+  window.__tt848UnsavedDirectDirtyFix=true;
+
+  var baseNorm=null;
+  var baseUid=null;
+  var maybeDirty=false;
+  var allowUntil=0;
+  var suppressConfirmUntil=0;
+  var originalConfirm=window.confirm;
+
+  window.confirm=function(msg){
+    try{
+      if(Date.now()<suppressConfirmUntil && String(msg||'').indexOf('osparade ändringar')>=0){
+        return true;
+      }
+    }catch(e){}
+    return originalConfirm.apply(window,arguments);
+  };
+
+  function now(){return Date.now?Date.now():(new Date()).getTime();}
+  function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return null;}}
+  function isEditing(){try{return (typeof isEditingTaktik!=='undefined'&&isEditingTaktik) || (typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null);}catch(e){return false;}}
+  function currentTk(){
+    try{if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null&&window.taktikFilmer&&taktikFilmer[editingTaktikIdx])return taktikFilmer[editingTaktikIdx];}catch(e){}
+    try{if(typeof playback!=='undefined'&&playback&&playback.tk)return playback.tk;}catch(e){}
+    return null;
+  }
+  function uid(tk){return tk?String(tk.dbId||tk.id||tk._draftUid||tk.name||'')+'|'+String((tk.steps&&tk.steps.length)||0):'';}
+  function strip(o){
+    if(!o||typeof o!=='object')return o;
+    if(Array.isArray(o)){for(var i=0;i<o.length;i++)strip(o[i]);return o;}
+    delete o.dbId;delete o.id;delete o._meta;delete o.meta;delete o._readOnly;delete o._localRecoveryDraft;
+    delete o._lastSavedAt;delete o._lastLocalSaveAt;delete o._recoveryKey;delete o._storeKey;delete o.updatedAt;delete o.createdAt;
+    Object.keys(o).forEach(function(k){if(/^__/.test(k))delete o[k];else strip(o[k]);});
+    return o;
+  }
+  function normalizedFilmWithCurrentStep(){
+    var tk=currentTk();
+    if(!tk)return '';
+    var c=clone(tk);if(!c)return '';
+    try{
+      if(isEditing() && typeof editingStepIdx!=='undefined' && c.steps && c.steps[editingStepIdx] && typeof currentSnap==='function'){
+        var snap=currentSnap();
+        var inp=document.getElementById('edit-step-name-inp');
+        var lbl=inp?inp.value.trim():'';
+        if(lbl)snap.label=lbl;
+        c.steps[editingStepIdx]=snap;
+      }
+    }catch(e){}
+    strip(c);
+    try{return JSON.stringify(c);}catch(e){return '';}
+  }
+  function captureBase(reason){
+    var tk=currentTk();
+    if(!tk)return;
+    baseUid=uid(tk);
+    baseNorm=normalizedFilmWithCurrentStep();
+    maybeDirty=false;
+  }
+  function hasUnsaved(){
+    var tk=currentTk();
+    if(!tk)return false;
+    var u=uid(tk);
+    var cur=normalizedFilmWithCurrentStep();
+    if(!baseNorm || baseUid!==u){
+      baseUid=u;baseNorm=cur;maybeDirty=false;return false;
+    }
+    return cur!==baseNorm;
+  }
+  function confirmLeave848(){
+    if(now()<allowUntil)return true;
+    if(!hasUnsaved())return true;
+    var ok=originalConfirm.call(window,'Du har osparade ändringar i taktiken. Vill du lämna utan att spara?');
+    if(ok){allowUntil=now()+1800;suppressConfirmUntil=now()+1800;maybeDirty=false;return true;}
+    return false;
+  }
+
+  function wrapEnter(name){
+    try{
+      var fn=window[name] || (typeof eval==='function'?eval(name):null);
+      if(typeof fn!=='function'||fn.__tt848Wrapped)return;
+      var wrapped=function(){
+        var r=fn.apply(this,arguments);
+        // Fånga ren baslinje tidigt. Sena v847-timers får inte vara vår sanning.
+        setTimeout(function(){captureBase('enter-'+name);},30);
+        setTimeout(function(){if(!maybeDirty)captureBase('enter-late-'+name);},180);
+        return r;
+      };
+      wrapped.__tt848Wrapped=true;
+      try{window[name]=wrapped;}catch(e){}
+      try{eval(name+'=wrapped');}catch(e){}
+    }catch(e){}
+  }
+  ['startPlayback','openEditTaktik','tt845CreateFilmFromFormation','tt91CreateFilmFromFormation'].forEach(wrapEnter);
+
+  // Initial baslinje om patchen laddas medan film redan är öppen.
+  setTimeout(function(){if(isEditing())captureBase('initial');},120);
+
+  function markPossibleChange(e){
+    if(!isEditing())return;
+    var t=e&&e.target;
+    if(!t)return;
+    // Själva planen och Taktikfilm-editor UI. Fullscreen-ritning kan vara presentation, men ändringsjämförelsen avgör ändå.
+    if(t.closest && (t.closest('#pitch-svg') || t.closest('#edit-taktik-ui') || t.closest('#taktikbar') || t.closest('#tt834-taktikfilm-touch-options'))){
+      maybeDirty=true;
+    }
+  }
+  ['pointerdown','touchstart','mousedown','input','change'].forEach(function(evt){
+    document.addEventListener(evt,markPossibleChange,{capture:true,passive:true});
+  });
+  ['click','touchend','mouseup'].forEach(function(evt){
+    document.addEventListener(evt,function(e){markPossibleChange(e);},true);
+  });
+
+  // Efter riktig sparning: uppdatera vår baslinje, men först efter att intern autosave hunnit klart.
+  try{
+    if(typeof cloudSaveTaktik==='function' && !cloudSaveTaktik.__tt848Wrapped){
+      var oldCloud=cloudSaveTaktik;
+      cloudSaveTaktik=function(){
+        var r=oldCloud.apply(this,arguments);
+        [120,500,1200].forEach(function(ms){setTimeout(function(){captureBase('save');},ms);});
+        return r;
+      };
+      cloudSaveTaktik.__tt848Wrapped=true;
+      try{window.cloudSaveTaktik=cloudSaveTaktik;}catch(e){}
+    }
+  }catch(e){}
+
+  function isExitTarget(e){
+    var t=e&&e.target&&e.target.closest?e.target.closest('#btn-stop-play,#btn-edit-taktik-exit,#tt692-exit,.tt-v86-exit-btn'):null;
+    return t;
+  }
+  function isLeavingTab(e){
+    var tab=e&&e.target&&e.target.closest?e.target.closest('.tab'):null;
+    if(!tab)return false;
+    return tab.getAttribute('data-panel')!=='taktik';
+  }
+  function guardEvent(e){
+    if(!isEditing() && !(typeof playback!=='undefined'&&playback))return;
+    if(!(isExitTarget(e)||isLeavingTab(e)))return;
+    if(!confirmLeave848()){
+      e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      return false;
+    }
+    // användaren har godkänt. Låt äldre handlers gå vidare men utan dubbel confirm.
+    suppressConfirmUntil=now()+1800;
+  }
+  window.addEventListener('click',guardEvent,true);
+  window.addEventListener('touchend',guardEvent,{capture:true,passive:false});
+
+  window.addEventListener('beforeunload',function(e){
+    if(!hasUnsaved())return;
+    e.preventDefault();e.returnValue='';
+  });
+
+  try{hasUnsavedTaktikChangesV21=hasUnsaved;}catch(e){}
+  try{hasUnsavedTaktikChangesV23=hasUnsaved;}catch(e){}
+  try{confirmUnsavedV21=confirmLeave848;}catch(e){}
+  try{confirmUnsavedUnifiedV23=confirmLeave848;}catch(e){}
+})();
+/* === slut v848 TEST === */
