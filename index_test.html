@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v845 kon/pinne + nyfilm fix</title>
+<title>Taktiktavla TEST v846 kon/pinne + väg 2 fix</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2371,7 +2371,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v845</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v846</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -2992,7 +2992,32 @@
   </div>
 
   </div>
-<script src="app_test.js?v=845-object-reset-newfilm-fix"></script>
+<!-- === v846 TEST: Taktiktavla desktop-filmeny knappbredd === -->
+<style id="tt846-saves-toolbar-desktop-fit-css">
+  /* Smal och avgränsad puts: bara Taktiktavla-filmenyns topprad på dator.
+     Syfte: undvik att Exportera/Importera knappar klipps utan att ändra filrader, mappar eller mobil. */
+  @media (hover:hover) and (pointer:fine) and (min-width:900px){
+    #panel-saves > div > div:first-child{
+      display:flex!important;
+      flex-wrap:wrap!important;
+      align-items:center!important;
+      gap:5px!important;
+      overflow:visible!important;
+      min-width:0!important;
+    }
+    #panel-saves > div > div:first-child .btn{
+      flex:0 0 auto!important;
+      max-width:100%!important;
+      white-space:nowrap!important;
+    }
+    #panel-saves #btn-export,
+    #panel-saves #btn-import-btn{
+      min-width:max-content!important;
+    }
+  }
+</style>
+
+<script src="app_test.js?v=846-object-reset-newfilm-path2-fix"></script>
 
 <script>
 (function(){
