@@ -48013,3 +48013,125 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   try{setTimeout(sendObjectsBehindPlayers865,0);}catch(e){}
 })();
 /* === slut v865 === */
+
+
+/* === v866 TEST: Taktikfilm fullscreen - stora tryckzoner för steg på touch ===
+   Bas: v865. Rör endast Taktikfilm i appens fullscreen-portrait-läge på touch/pen.
+   Syfte: snabb tryckning på vänster/höger del av visningsytan går steg bak/fram,
+   så man inte behöver träffa de små pilarna när man visar film på iPad/iPhone.
+   Viktigt: inaktivt i ritlägen/text/rörelse och ignorerar alla UI-ytor. */
+(function(){
+  if(window.__tt866FullscreenTapZones)return;
+  window.__tt866FullscreenTapZones=true;
+
+  var downInfo=null;
+  var suppressUntil=0;
+
+  function coarse866(){
+    try{return window.matchMedia && window.matchMedia('(hover:none),(pointer:coarse)').matches;}catch(e){return false;}
+  }
+  function isFullscreenTaktik866(){
+    try{
+      return !!(
+        coarse866() &&
+        document.body && document.body.classList && document.body.classList.contains('fullscreen-portrait') &&
+        typeof playback!=='undefined' && playback &&
+        (!playback.animating)
+      );
+    }catch(e){return false;}
+  }
+  function drawingModeActive866(){
+    try{return ['arrow','freehand','zone','text','movement'].indexOf(String(mode||''))>=0;}catch(e){return true;}
+  }
+  function inUi866(t){
+    try{
+      if(!t || !t.closest)return false;
+      return !!t.closest(
+        '#topbar,#bottompanel,#panel-toggle-strip,#taktikbar,#edit-taktik-ui,#rec-ui,#no-rec-ui,'+
+        '#fs-top-tools,#fs-portrait-nav,#fs-restore-btn,#tt616-layer-panel,#tt642-layer-mobile-toggle,'+
+        '.modal-bg,.modal,#tt834-taktik-touch-menu,.tt834-taktik-touch-menu,button,input,select,textarea,label,a'
+      );
+    }catch(e){return false;}
+  }
+  function pointFromEvent866(ev){
+    try{
+      if(ev.touches && ev.touches[0])return {x:ev.touches[0].clientX,y:ev.touches[0].clientY};
+      if(ev.changedTouches && ev.changedTouches[0])return {x:ev.changedTouches[0].clientX,y:ev.changedTouches[0].clientY};
+      return {x:ev.clientX,y:ev.clientY};
+    }catch(e){return null;}
+  }
+  function zoneArea866(){
+    try{
+      var wrap=document.getElementById('pitch-wrapper');
+      var r=(wrap||document.documentElement).getBoundingClientRect();
+      return {left:r.left,top:r.top,width:r.width,height:r.height};
+    }catch(e){return {left:0,top:0,width:window.innerWidth||1,height:window.innerHeight||1};}
+  }
+  function step866(dir){
+    try{
+      if(!isFullscreenTaktik866())return false;
+      var id=dir<0?'btn-prev':'btn-next';
+      var b=document.getElementById(id);
+      if(!b || b.disabled)return false;
+      b.click();
+      setTimeout(function(){try{if(typeof updateFsPortraitNav==='function')updateFsPortraitNav();}catch(e){}},80);
+      try{
+        var txt=dir<0?'Föregående steg':'Nästa steg';
+        if(typeof showToast==='function')showToast(txt);
+      }catch(e){}
+      return true;
+    }catch(e){return false;}
+  }
+  function shouldStart866(ev){
+    try{
+      if(!isFullscreenTaktik866())return false;
+      if(drawingModeActive866())return false;
+      if(inUi866(ev.target))return false;
+      if(ev.type==='pointerdown' && ev.pointerType && ev.pointerType!=='touch' && ev.pointerType!=='pen')return false;
+      return true;
+    }catch(e){return false;}
+  }
+  function onDown866(ev){
+    if(!shouldStart866(ev)){downInfo=null;return;}
+    var p=pointFromEvent866(ev); if(!p){downInfo=null;return;}
+    downInfo={x:p.x,y:p.y,t:Date.now(),target:ev.target};
+  }
+  function onUp866(ev){
+    try{
+      if(Date.now()<suppressUntil){ev.preventDefault();ev.stopPropagation();return;}
+      if(!downInfo)return;
+      if(!isFullscreenTaktik866() || drawingModeActive866() || inUi866(ev.target)){downInfo=null;return;}
+      var p=pointFromEvent866(ev); if(!p){downInfo=null;return;}
+      var dx=p.x-downInfo.x, dy=p.y-downInfo.y, dt=Date.now()-downInfo.t;
+      var startTarget=downInfo.target;
+      downInfo=null;
+      if(dt>330)return;
+      if(Math.sqrt(dx*dx+dy*dy)>18)return;
+      if(inUi866(startTarget))return;
+      var a=zoneArea866();
+      var mid=a.left+a.width/2;
+      var dir=p.x<mid?-1:1;
+      if(step866(dir)){
+        suppressUntil=Date.now()+450;
+        ev.preventDefault();
+        ev.stopPropagation();
+      }
+    }catch(e){downInfo=null;}
+  }
+  function onCancel866(){downInfo=null;}
+
+  document.addEventListener('pointerdown',onDown866,true);
+  document.addEventListener('pointerup',onUp866,true);
+  document.addEventListener('pointercancel',onCancel866,true);
+  document.addEventListener('touchstart',onDown866,true);
+  document.addEventListener('touchend',onUp866,true);
+  document.addEventListener('touchcancel',onCancel866,true);
+
+  try{
+    var st=document.createElement('style');
+    st.id='tt866-fullscreen-tap-zones-css';
+    st.textContent='body.fullscreen-portrait #pitch-wrapper{touch-action:manipulation;}';
+    document.head.appendChild(st);
+  }catch(e){}
+})();
+/* === slut v866 === */
