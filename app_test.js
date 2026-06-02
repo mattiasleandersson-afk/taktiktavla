@@ -48529,3 +48529,150 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tick,0);setTimeout(tick,700);setTimeout(tick,1600);});else{setTimeout(tick,0);setTimeout(tick,700);setTimeout(tick,1600);} 
 })();
 /* === slut v873 === */
+
+/* === v875 TEST: Taktikfilm rörelsepilar - behåll efter ritning ===
+   Bas: v873 fungerande releasekandidat.
+   Syfte: rörelsebanor som ritas i Taktikfilm kunde visuellt försvinna när äldre
+   steg-/autosparlogik körde efter touchend/mouseup. Denna säkerhetsvakt lyssnar
+   bara i mode="movement" och Taktikfilm-redigering, sparar en observerad bana,
+   och lägger tillbaka den i aktuellt steg om den har tappats. Rör inte formation,
+   Lager, Supabase eller vanlig ritlogik. */
+(function(){
+  if(window.__tt875MovementArrowRescue)return;
+  window.__tt875MovementArrowRescue=true;
+
+  var active=null;
+  var lastTouchAt=0;
+
+  function isMovementEdit(){
+    try{
+      return String(mode||'')==='movement' &&
+             typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null &&
+             typeof taktikFilmer!=='undefined' && taktikFilmer && taktikFilmer[editingTaktikIdx];
+    }catch(e){return false;}
+  }
+  function currentTk(){
+    try{return taktikFilmer[editingTaktikIdx]||null;}catch(e){return null;}
+  }
+  function currentStep(){
+    try{
+      var tk=currentTk();
+      if(!tk||!Array.isArray(tk.steps))return null;
+      return tk.steps[editingStepIdx]||null;
+    }catch(e){return null;}
+  }
+  function ptFromEvent(ev){
+    try{
+      var e=(ev.touches&&ev.touches[0])||(ev.changedTouches&&ev.changedTouches[0])||ev;
+      return svgPt(e.clientX,e.clientY);
+    }catch(e){return null;}
+  }
+  function dist2(a,b){var dx=(a.x||0)-(b.x||0),dy=(a.y||0)-(b.y||0);return dx*dx+dy*dy;}
+  function nearestToken(pt){
+    if(!pt)return null;
+    var best=null,bestD=999999;
+    try{
+      if(typeof players!=='undefined' && Array.isArray(players)){
+        players.forEach(function(p){
+          if(!p)return;
+          var d=dist2(pt,p);
+          if(d<bestD){bestD=d;best={id:p.id,x:p.x,y:p.y};}
+        });
+      }
+      if(typeof ball!=='undefined' && ball){
+        var bd=dist2(pt,ball);
+        if(bd<bestD){bestD=bd;best={id:'ball',x:ball.x,y:ball.y};}
+      }
+    }catch(e){}
+    return bestD<=3600?best:null;
+  }
+  function normPath(mp){
+    if(!mp||!Array.isArray(mp.pts))return null;
+    var pts=mp.pts.filter(function(p){return p&&isFinite(p.x)&&isFinite(p.y);}).map(function(p){return{x:p.x,y:p.y};});
+    if(pts.length<2)return null;
+    return {id:mp.id||('mv'+(typeof idCounter!=='undefined'?idCounter++:Date.now())),playerId:mp.playerId,pts:pts};
+  }
+  function samePath(a,b){
+    a=normPath(a);b=normPath(b);
+    if(!a||!b)return false;
+    if(String(a.playerId)!==String(b.playerId))return false;
+    var a0=a.pts[0],a1=a.pts[a.pts.length-1],b0=b.pts[0],b1=b.pts[b.pts.length-1];
+    return dist2(a0,b0)<25 && dist2(a1,b1)<100;
+  }
+  function listHas(list,mp){
+    try{return Array.isArray(list)&&list.some(function(x){return samePath(x,mp);});}catch(e){return false;}
+  }
+  function cloneMovement(mp){
+    mp=normPath(mp);
+    if(!mp)return null;
+    return {id:mp.id,playerId:mp.playerId,pts:mp.pts.map(function(p){return{x:p.x,y:p.y};})};
+  }
+  function rescue(raw){
+    var mp=cloneMovement(raw);
+    if(!mp||!isMovementEdit())return;
+    try{
+      if(typeof resamplePath==='function' && mp.pts.length>3)mp.pts=resamplePath(mp.pts,30);
+    }catch(e){}
+    mp=cloneMovement(mp);
+    if(!mp)return;
+
+    try{
+      if(!Array.isArray(movementPaths))movementPaths=[];
+      if(!listHas(movementPaths,mp))movementPaths.push(cloneMovement(mp));
+    }catch(e){}
+
+    try{
+      var step=currentStep();
+      if(step){
+        if(!Array.isArray(step.movementPaths))step.movementPaths=[];
+        if(!listHas(step.movementPaths,mp))step.movementPaths.push(cloneMovement(mp));
+      }
+    }catch(e){}
+
+    try{
+      if(typeof tt145SaveCurrentStep==='function')tt145SaveCurrentStep({allowAutoCreate:false});
+      else if(typeof tt76SaveCurrentStep==='function')tt76SaveCurrentStep({allowAutoCreate:false});
+    }catch(e){}
+
+    try{render();}catch(e){}
+  }
+  function isBlockedTarget(t){
+    try{
+      if(!t||!t.closest)return false;
+      return !!t.closest('.mv-path-g,.del-g,.del-circ,.del-txt,button,input,select,textarea,#tt616-layer-panel,.modal,.modal-bg');
+    }catch(e){return false;}
+  }
+  function start(ev){
+    try{
+      if(ev.type==='mousedown' && Date.now()-lastTouchAt<700)return;
+      if(ev.type==='touchstart')lastTouchAt=Date.now();
+      if(!isMovementEdit())return;
+      if(isBlockedTarget(ev.target))return;
+      var s=document.getElementById('pitch-svg');
+      if(!s || !s.contains(ev.target))return;
+      var pt=ptFromEvent(ev); if(!pt)return;
+      var tok=nearestToken(pt); if(!tok)return;
+      active={id:'mv'+(typeof idCounter!=='undefined'?idCounter++:Date.now()),playerId:tok.id,pts:[{x:tok.x,y:tok.y}],started:Date.now()};
+    }catch(e){active=null;}
+  }
+  function move(ev){
+    try{
+      if(!active||!isMovementEdit())return;
+      var pt=ptFromEvent(ev); if(pt)active.pts.push({x:pt.x,y:pt.y});
+    }catch(e){}
+  }
+  function end(){
+    try{
+      if(!active)return;
+      var raw=cloneMovement(active);
+      active=null;
+      if(!raw||raw.pts.length<4)return;
+      setTimeout(function(){rescue(raw);},140);
+      setTimeout(function(){rescue(raw);},420);
+    }catch(e){active=null;}
+  }
+  ['touchstart','mousedown'].forEach(function(ev){try{document.addEventListener(ev,start,true);}catch(e){}});
+  ['touchmove','mousemove'].forEach(function(ev){try{document.addEventListener(ev,move,true);}catch(e){}});
+  ['touchend','mouseup','touchcancel'].forEach(function(ev){try{document.addEventListener(ev,end,true);}catch(e){}});
+})();
+/* === slut v875 === */
