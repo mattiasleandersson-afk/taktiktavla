@@ -48753,3 +48753,148 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   });
 })();
 /* === slut v876 === */
+
+
+/* === v877 TEST: batteri/render-diagnos (read-only) ===
+   Bas: fungerande v876.
+   Syfte: mäta om appen fortsätter arbeta i stillaläge på iPad/iPhone innan V2-release.
+   Denna patch ska inte optimera eller ändra funktion. Den lägger bara till en liten diagnospanel
+   och räknar render-anrop, requestAnimationFrame-callbacks, DOM-mutationsbursts och långsamma
+   main-thread-händelser. Ingen Supabase, ingen sparlogik, ingen Taktikfilm-/Lager-logik ändras. */
+(function(){
+  'use strict';
+  if(window.__tt877BatteryDiagnostics)return;
+  window.__tt877BatteryDiagnostics=true;
+
+  var started=Date.now();
+  var counters={render:0,raf:0,mutations:0,mutationRecords:0,longtasks:0,events:0};
+  var last={time:Date.now(),render:0,raf:0,mutations:0,mutationRecords:0,longtasks:0,events:0};
+  var perMin={render:0,raf:0,mutations:0,mutationRecords:0,longtasks:0,events:0};
+  var mo=null,po=null,panel=null,bodyEl=null,minimized=false;
+
+  function now(){return Date.now();}
+  function safeText(v){try{return String(v==null?'':v);}catch(e){return '';}}
+  function activeMode(){
+    try{
+      var bits=[];
+      if(typeof currentView!=='undefined')bits.push('view:'+currentView);
+      if(typeof mode!=='undefined')bits.push('mode:'+mode);
+      if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)bits.push('taktik-redigering');
+      if(typeof playback!=='undefined'&&playback)bits.push('playback'+(playback.animating?':anim':'')+(playback.stepIndex!=null?':steg'+playback.stepIndex:''));
+      if(document.fullscreenElement)bits.push('fullscreen');
+      if(document.body&&document.body.classList.contains('tt642-layer-panel-mobile-open'))bits.push('lager-öppen');
+      return bits.join(' | ')||'okänt';
+    }catch(e){return 'okänt';}
+  }
+
+  function calcRates(){
+    var t=now();
+    var dt=Math.max(1,t-last.time)/60000;
+    ['render','raf','mutations','mutationRecords','longtasks','events'].forEach(function(k){
+      perMin[k]=Math.round((counters[k]-last[k])/dt);
+      last[k]=counters[k];
+    });
+    last.time=t;
+  }
+
+  function makePanel(){
+    if(panel||!document.body)return;
+    panel=document.createElement('div');
+    panel.id='tt877-battery-diagnostics';
+    panel.style.cssText='position:fixed;right:8px;bottom:8px;z-index:999999;background:rgba(5,18,10,.94);color:#dfffe8;border:1px solid #4ae87a;border-radius:10px;padding:8px 10px;font:12px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:min(360px,calc(100vw - 16px));box-shadow:0 4px 18px rgba(0,0,0,.35);pointer-events:auto;';
+    document.body.appendChild(panel);
+    renderPanel();
+  }
+
+  function statusLabel(){
+    var hot=[];
+    if(perMin.render>60)hot.push('render högt');
+    if(perMin.raf>120)hot.push('RAF högt');
+    if(perMin.mutations>120)hot.push('DOM ändras ofta');
+    if(perMin.longtasks>5)hot.push('långa tasks');
+    return hot.length?hot.join(', '):'lugnt just nu';
+  }
+
+  function renderPanel(){
+    if(!panel)return;
+    if(minimized){
+      panel.innerHTML='<button id="tt877-open" style="all:unset;cursor:pointer;color:#4ae87a;font-weight:800">Batteridiagnos: '+statusLabel()+'</button>';
+      var ob=document.getElementById('tt877-open'); if(ob)ob.onclick=function(){minimized=false;renderPanel();};
+      return;
+    }
+    var mins=Math.round((now()-started)/60000);
+    panel.innerHTML=''
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><b style="color:#4ae87a">v877 batteridiagnos</b><button id="tt877-min" style="margin-left:auto;background:#14351d;color:#dfffe8;border:1px solid #2d6b3b;border-radius:6px;padding:2px 6px">minimera</button></div>'
+      +'<div><b>Status:</b> '+statusLabel()+'</div>'
+      +'<div><b>Läge:</b> '+safeText(activeMode())+'</div>'
+      +'<div><b>Sedan start:</b> '+mins+' min</div>'
+      +'<hr style="border:0;border-top:1px solid #24472b;margin:6px 0">'
+      +'<div>render/min: <b>'+perMin.render+'</b> <span style="color:#84b892">(tot '+counters.render+')</span></div>'
+      +'<div>RAF/min: <b>'+perMin.raf+'</b> <span style="color:#84b892">(tot '+counters.raf+')</span></div>'
+      +'<div>DOM-bursts/min: <b>'+perMin.mutations+'</b> <span style="color:#84b892">poster/min '+perMin.mutationRecords+'</span></div>'
+      +'<div>longtasks/min: <b>'+perMin.longtasks+'</b></div>'
+      +'<div>input-events/min: <b>'+perMin.events+'</b></div>'
+      +'<div style="color:#9fcaa8;margin-top:6px">Stå stilla 1–2 minuter i samma vy. Om siffrorna är höga utan att du gör något finns en aktiv loop/timer.</div>'
+      +'<button id="tt877-reset" style="margin-top:7px;background:#14351d;color:#dfffe8;border:1px solid #2d6b3b;border-radius:6px;padding:4px 8px">nollställ mätning</button>';
+    var mb=document.getElementById('tt877-min'); if(mb)mb.onclick=function(){minimized=true;renderPanel();};
+    var rb=document.getElementById('tt877-reset'); if(rb)rb.onclick=function(){started=now();counters={render:0,raf:0,mutations:0,mutationRecords:0,longtasks:0,events:0};last={time:now(),render:0,raf:0,mutations:0,mutationRecords:0,longtasks:0,events:0};calcRates();renderPanel();};
+  }
+
+  // Räkna render-anrop utan att ändra funktionen.
+  try{
+    if(typeof render==='function'&&!render.__tt877DiagWrapped){
+      var oldRender=render;
+      render=function(){counters.render++;return oldRender.apply(this,arguments);};
+      render.__tt877DiagWrapped=true;
+      try{window.render=render;}catch(e){}
+    }
+  }catch(e){}
+
+  // Räkna requestAnimationFrame-callbacks. Detta ändrar inte callbacks, räknar bara när de körs.
+  try{
+    if(!window.__tt877RafDiagWrapped){
+      var oldRAF=window.requestAnimationFrame;
+      window.requestAnimationFrame=function(cb){
+        return oldRAF.call(window,function(ts){counters.raf++;return cb(ts);});
+      };
+      window.__tt877RafDiagWrapped=true;
+    }
+  }catch(e){}
+
+  // Räkna grova DOM-förändringsbursts. Diagnosversion endast.
+  try{
+    if(window.MutationObserver&&document.body){
+      mo=new MutationObserver(function(records){
+        counters.mutations++;
+        counters.mutationRecords+=records?records.length:0;
+      });
+      mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class','hidden']});
+    }
+  }catch(e){}
+
+  // Long Task API om Safari/iPad stöder den.
+  try{
+    if(window.PerformanceObserver){
+      po=new PerformanceObserver(function(list){
+        try{counters.longtasks+=(list.getEntries()||[]).length;}catch(e){}
+      });
+      po.observe({entryTypes:['longtask']});
+    }
+  }catch(e){}
+
+  ['click','touchstart','touchmove','touchend','pointerdown','pointermove','pointerup','input','change'].forEach(function(ev){
+    try{document.addEventListener(ev,function(){counters.events++;},true);}catch(e){}
+  });
+
+  function tick(){calcRates();makePanel();renderPanel();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){makePanel();tick();});else{makePanel();tick();}
+  setInterval(tick,1000);
+
+  window.tt877BatteryDiagnostics={
+    counters:counters,
+    perMin:perMin,
+    reset:function(){started=now();counters.render=counters.raf=counters.mutations=counters.mutationRecords=counters.longtasks=counters.events=0;last={time:now(),render:0,raf:0,mutations:0,mutationRecords:0,longtasks:0,events:0};},
+    stop:function(){try{if(mo)mo.disconnect();}catch(e){}try{if(po)po.disconnect();}catch(e){}try{if(panel)panel.remove();}catch(e){}}
+  };
+})();
+/* === slut v877 === */
