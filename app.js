@@ -1,5 +1,5 @@
-/* v886 / Version 2.0 release: byggd från bekräftad v876, utan batterispår och utan formationsjusterare. */
-/* === v886 / Version 2.0 RELEASE FASTA FILNAMN ===
+/* v887 / Version 2.0 release SUPABASEFIX: byggd från v886, med produktions-Supabase från tidigare fungerande originalapp. */
+/* === v887 / Version 2.0 RELEASE SUPABASEFIX FASTA FILNAMN ===
    Klistra denna fil i GitHub som: app.js.
    Klistra indexfilen i GitHub som: index.html.
    Index laddar app.js?v=2.0.
@@ -198,8 +198,8 @@ var FORMATIONS={
   5:["2-2","1-2-1","2-1-1"]
 };
 
-var SUPA_URL="https://zlynggtimbbnsatjejdx.supabase.co";
-var SUPA_KEY="sb_publishable_NMrZYtUlckOcCOwe6w-A5A_3G_Z8g92";
+var SUPA_URL="https://hpwpsmjswvpuzykxjvhd.supabase.co";
+var SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhwd3BzbWpzd3ZwdXp5a3hqdmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MDMzODAsImV4cCI6MjA5MzA3OTM4MH0.RKkWz-KzWxn7F3_ShnW7DVUMy4Unt7T52wP1EmgmCp0";
 var SUPA_TABLE="saves";
 
 function tt302AuthAccessToken(){
