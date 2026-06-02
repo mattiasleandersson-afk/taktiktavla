@@ -48530,226 +48530,90 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v873 === */
 
-/* === v875 TEST: Taktikfilm rörelsepilar - behåll efter ritning ===
-   Bas: v873 fungerande releasekandidat.
-   Syfte: rörelsebanor som ritas i Taktikfilm kunde visuellt försvinna när äldre
-   steg-/autosparlogik körde efter touchend/mouseup. Denna säkerhetsvakt lyssnar
-   bara i mode="movement" och Taktikfilm-redigering, sparar en observerad bana,
-   och lägger tillbaka den i aktuellt steg om den har tappats. Rör inte formation,
-   Lager, Supabase eller vanlig ritlogik. */
+
+/* === v874 TEST: försiktig formationsmall-justerare ===
+   Bas: v873. Lägger endast lokal malljustering för nya startpositioner/formationsbyten.
+   Sparade tavlor/filmer ska fortsatt öppnas från sparade koordinater. */
 (function(){
-  if(window.__tt875MovementArrowRescue)return;
-  window.__tt875MovementArrowRescue=true;
+  if(window.__tt874FormationAdjuster)return;window.__tt874FormationAdjuster=true;
+  var STORE='tt874_formation_template_adjustments_v1';
+  function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return o;}}
+  function readAll(){try{var o=JSON.parse(localStorage.getItem(STORE)||'{}');return o&&typeof o==='object'?o:{};}catch(e){return {};}}
+  function writeAll(o){try{localStorage.setItem(STORE,JSON.stringify(o||{}));}catch(e){}}
+  function key(fmt,f){return String(parseInt(fmt,10)||format||11)+'|'+String(f||'').trim();}
+  function getAdj(fmt,f){var all=readAll();return all[key(fmt,f)]||null;}
+  function setAdj(fmt,f,adj){var all=readAll();all[key(fmt,f)]=adj;writeAll(all);}
+  function clearAdj(fmt,f){var all=readAll();delete all[key(fmt,f)];writeAll(all);}
+  function activeFormation(){try{var b=document.querySelector('#formation-btns .btn.on:not(#btn-set-default)');if(b)return (b.textContent||'').trim();}catch(e){}try{return (typeof getCurrentFormationForReset==='function'?getCurrentFormationForReset():'')||_defaultFormation||'4-4-2';}catch(e){return '4-4-2';}}
+  function rowsFor(f){return String(f||'4-4-2').split('-').map(function(x){return parseInt(x,10)||0;}).filter(function(n){return n>0;});}
+  function rowName(i,len){if(i===0)return 'Backlinje';if(i===len-1)return 'Anfall';return len===3?'Mittfält':'Mittfält '+i;}
+  function defaultAdjFor(f){var rows=rowsFor(f);return {version:1,rows:rows.map(function(){return {depth:0,width:100};})};}
+  function mergedAdj(fmt,f){var d=defaultAdjFor(f),s=getAdj(fmt,f);if(s&&Array.isArray(s.rows)){for(var i=0;i<d.rows.length;i++){if(s.rows[i]){d.rows[i].depth=parseInt(s.rows[i].depth,10)||0;d.rows[i].width=parseInt(s.rows[i].width,10)||100;}}}return d;}
+  function clamp(n,a,b){n=parseFloat(n);if(isNaN(n))n=0;return Math.max(a,Math.min(b,n));}
 
-  var active=null;
-  var lastTouchAt=0;
-
-  function isMovementEdit(){
-    try{
-      return String(mode||'')==='movement' &&
-             typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null &&
-             typeof taktikFilmer!=='undefined' && taktikFilmer && taktikFilmer[editingTaktikIdx];
-    }catch(e){return false;}
-  }
-  function currentTk(){
-    try{return taktikFilmer[editingTaktikIdx]||null;}catch(e){return null;}
-  }
-  function currentStep(){
-    try{
-      var tk=currentTk();
-      if(!tk||!Array.isArray(tk.steps))return null;
-      return tk.steps[editingStepIdx]||null;
-    }catch(e){return null;}
-  }
-  function ptFromEvent(ev){
-    try{
-      var e=(ev.touches&&ev.touches[0])||(ev.changedTouches&&ev.changedTouches[0])||ev;
-      return svgPt(e.clientX,e.clientY);
-    }catch(e){return null;}
-  }
-  function dist2(a,b){var dx=(a.x||0)-(b.x||0),dy=(a.y||0)-(b.y||0);return dx*dx+dy*dy;}
-  function nearestToken(pt){
-    if(!pt)return null;
-    var best=null,bestD=999999;
-    try{
-      if(typeof players!=='undefined' && Array.isArray(players)){
-        players.forEach(function(p){
-          if(!p)return;
-          var d=dist2(pt,p);
-          if(d<bestD){bestD=d;best={id:p.id,x:p.x,y:p.y};}
-        });
-      }
-      if(typeof ball!=='undefined' && ball){
-        var bd=dist2(pt,ball);
-        if(bd<bestD){bestD=bd;best={id:'ball',x:ball.x,y:ball.y};}
-      }
-    }catch(e){}
-    return bestD<=3600?best:null;
-  }
-  function normPath(mp){
-    if(!mp||!Array.isArray(mp.pts))return null;
-    var pts=mp.pts.filter(function(p){return p&&isFinite(p.x)&&isFinite(p.y);}).map(function(p){return{x:p.x,y:p.y};});
-    if(pts.length<2)return null;
-    return {id:mp.id||('mv'+(typeof idCounter!=='undefined'?idCounter++:Date.now())),playerId:mp.playerId,pts:pts};
-  }
-  function samePath(a,b){
-    a=normPath(a);b=normPath(b);
-    if(!a||!b)return false;
-    if(String(a.playerId)!==String(b.playerId))return false;
-    var a0=a.pts[0],a1=a.pts[a.pts.length-1],b0=b.pts[0],b1=b.pts[b.pts.length-1];
-    return dist2(a0,b0)<25 && dist2(a1,b1)<100;
-  }
-  function listHas(list,mp){
-    try{return Array.isArray(list)&&list.some(function(x){return samePath(x,mp);});}catch(e){return false;}
-  }
-  function cloneMovement(mp){
-    mp=normPath(mp);
-    if(!mp)return null;
-    return {id:mp.id,playerId:mp.playerId,pts:mp.pts.map(function(p){return{x:p.x,y:p.y};})};
-  }
-  function rescue(raw){
-    var mp=cloneMovement(raw);
-    if(!mp||!isMovementEdit())return;
-    try{
-      if(typeof resamplePath==='function' && mp.pts.length>3)mp.pts=resamplePath(mp.pts,30);
-    }catch(e){}
-    mp=cloneMovement(mp);
-    if(!mp)return;
-
-    try{
-      if(!Array.isArray(movementPaths))movementPaths=[];
-      if(!listHas(movementPaths,mp))movementPaths.push(cloneMovement(mp));
-    }catch(e){}
-
-    try{
-      var step=currentStep();
-      if(step){
-        if(!Array.isArray(step.movementPaths))step.movementPaths=[];
-        if(!listHas(step.movementPaths,mp))step.movementPaths.push(cloneMovement(mp));
-      }
-    }catch(e){}
-
-    try{
-      if(typeof tt145SaveCurrentStep==='function')tt145SaveCurrentStep({allowAutoCreate:false});
-      else if(typeof tt76SaveCurrentStep==='function')tt76SaveCurrentStep({allowAutoCreate:false});
-    }catch(e){}
-
-    try{render();}catch(e){}
-  }
-  function isBlockedTarget(t){
-    try{
-      if(!t||!t.closest)return false;
-      return !!t.closest('.mv-path-g,.del-g,.del-circ,.del-txt,button,input,select,textarea,#tt616-layer-panel,.modal,.modal-bg');
-    }catch(e){return false;}
-  }
-  function start(ev){
-    try{
-      if(ev.type==='mousedown' && Date.now()-lastTouchAt<700)return;
-      if(ev.type==='touchstart')lastTouchAt=Date.now();
-      if(!isMovementEdit())return;
-      if(isBlockedTarget(ev.target))return;
-      var s=document.getElementById('pitch-svg');
-      if(!s || !s.contains(ev.target))return;
-      var pt=ptFromEvent(ev); if(!pt)return;
-      var tok=nearestToken(pt); if(!tok)return;
-      active={id:'mv'+(typeof idCounter!=='undefined'?idCounter++:Date.now()),playerId:tok.id,pts:[{x:tok.x,y:tok.y}],started:Date.now()};
-    }catch(e){active=null;}
-  }
-  function move(ev){
-    try{
-      if(!active||!isMovementEdit())return;
-      var pt=ptFromEvent(ev); if(pt)active.pts.push({x:pt.x,y:pt.y});
-    }catch(e){}
-  }
-  function end(){
-    try{
-      if(!active)return;
-      var raw=cloneMovement(active);
-      active=null;
-      if(!raw||raw.pts.length<4)return;
-      setTimeout(function(){rescue(raw);},140);
-      setTimeout(function(){rescue(raw);},420);
-    }catch(e){active=null;}
-  }
-  ['touchstart','mousedown'].forEach(function(ev){try{document.addEventListener(ev,start,true);}catch(e){}});
-  ['touchmove','mousemove'].forEach(function(ev){try{document.addEventListener(ev,move,true);}catch(e){}});
-  ['touchend','mouseup','touchcancel'].forEach(function(ev){try{document.addEventListener(ev,end,true);}catch(e){}});
-})();
-/* === slut v875 === */
-
-/* === v876 TEST: Taktikfilm rörelsepil - visa ny position direkt ===
-   Bas: v875.
-   Syfte: v875 räddade rörelsepilen, men spelarens/bollens nya slutposition
-   syntes först efter steg fram/tillbaka. Denna lilla efterkorrigering kör bara
-   i Taktikfilm-redigering med verktyget rörelsepil och speglar aktuellt stegs
-   movementPaths-slutpunkter till den synliga spelare-/boll-listan direkt efter
-   att steget sparats. Rör inte formationsjusterare, Supabase, Lager eller övrig
-   Taktikfilm-logik. */
-(function(){
-  if(window.__tt876MovementArrowLivePosition)return;
-  window.__tt876MovementArrowLivePosition=true;
-
-  function isMovementEdit876(){
-    try{
-      return String(mode||'')==='movement' &&
-             typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null &&
-             typeof editingStepIdx!=='undefined' && editingStepIdx!==null &&
-             typeof taktikFilmer!=='undefined' && taktikFilmer && taktikFilmer[editingTaktikIdx];
-    }catch(e){return false;}
-  }
-  function currentStep876(){
-    try{
-      var tk=taktikFilmer[editingTaktikIdx];
-      if(!tk||!Array.isArray(tk.steps))return null;
-      return tk.steps[editingStepIdx]||null;
-    }catch(e){return null;}
-  }
-  function applyMovementEndpointsToVisible876(){
-    try{
-      if(!isMovementEdit876())return;
-      var step=currentStep876();
-      if(!step||!Array.isArray(step.movementPaths)||!step.movementPaths.length)return;
-      var changed=false;
-      step.movementPaths.forEach(function(mp){
-        if(!mp||!Array.isArray(mp.pts)||mp.pts.length<2)return;
-        var end=mp.pts[mp.pts.length-1];
-        if(!end||!isFinite(end.x)||!isFinite(end.y))return;
-        if(String(mp.playerId)==='ball'){
-          if(typeof ball!=='undefined'&&ball){
-            if(Math.abs((ball.x||0)-end.x)>0.5||Math.abs((ball.y||0)-end.y)>0.5){ball.x=end.x;ball.y=end.y;changed=true;}
-          }
-          return;
-        }
-        if(typeof players!=='undefined'&&Array.isArray(players)){
-          var p=players.find(function(x){return x&&String(x.id)===String(mp.playerId);});
-          if(p&&(Math.abs((p.x||0)-end.x)>0.5||Math.abs((p.y||0)-end.y)>0.5)){
-            p.x=end.x;p.y=end.y;changed=true;
+  if(typeof getPositions==='function'&&!getPositions.__tt874Wrapped){
+    var oldGetPositions=getPositions;
+    getPositions=function(f,team){
+      var pos=oldGetPositions.apply(this,arguments)||[];
+      try{
+        var fmt=(typeof format!=='undefined'?format:11), adj=getAdj(fmt,f);
+        if(!adj||!Array.isArray(adj.rows)||!pos.length)return pos;
+        var rows=rowsFor(f), isHome=team==='home', idx=1;
+        for(var ri=0;ri<rows.length;ri++){
+          var count=rows[ri], ra=adj.rows[ri]||{};
+          var depth=clamp(ra.depth||0,-80,80), width=clamp(ra.width||100,55,150)/100;
+          for(var ci=0;ci<count && pos[idx];ci++,idx++){
+            // depth är lagrelativt: plus = längre fram i anfallsriktningen.
+            pos[idx].y += isHome ? -depth : depth;
+            // width är radbredd runt mittlinjen, så linjeringen behålls.
+            pos[idx].x = (W/2) + (pos[idx].x-(W/2))*width;
+            pos[idx].x = clamp(pos[idx].x,25,W-25);
+            pos[idx].y = clamp(pos[idx].y,25,H-25);
           }
         }
-      });
-      if(changed){try{render();}catch(e){}}
-    }catch(e){}
-  }
-
-  function schedule876(){
-    [0,80,220,520].forEach(function(ms){setTimeout(applyMovementEndpointsToVisible876,ms);});
-  }
-
-  if(typeof tt145SaveCurrentStep==='function' && !tt145SaveCurrentStep.__tt876LivePosWrapped){
-    var old145=tt145SaveCurrentStep;
-    tt145SaveCurrentStep=function(){
-      var r=old145.apply(this,arguments);
-      schedule876();
-      return r;
+      }catch(e){}
+      return pos;
     };
-    tt145SaveCurrentStep.__tt876LivePosWrapped=true;
-    try{tt76SaveCurrentStep=tt145SaveCurrentStep;}catch(e){}
-    try{saveCurrentStepV75=tt145SaveCurrentStep;}catch(e){}
-    try{autoSaveCurrentStepLocalV16=tt145SaveCurrentStep;}catch(e){}
+    getPositions.__tt874Wrapped=true;try{window.getPositions=getPositions;}catch(e){}
   }
 
-  ['touchend','mouseup'].forEach(function(evt){
-    try{document.addEventListener(evt,function(){if(isMovementEdit876())schedule876();},true);}catch(e){}
-  });
+  function ensureStyle(){if(document.getElementById('tt874-formation-adjust-style'))return;var st=document.createElement('style');st.id='tt874-formation-adjust-style';st.textContent='\
+#tt874-formation-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99999;display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box}\
+#tt874-formation-modal.hidden{display:none!important}\
+#tt874-formation-box{width:min(560px,96vw);max-height:88vh;overflow:auto;background:#101914;border:1px solid #2d4a35;border-radius:14px;padding:14px;color:#edf5ee;box-shadow:0 18px 50px rgba(0,0,0,.45)}\
+#tt874-formation-box h3{margin:0 0 6px;font-size:1.05rem;color:#4ae87a}\
+#tt874-formation-box .tt874-help{font-size:.82rem;color:#9db8a5;line-height:1.35;margin-bottom:10px}\
+#tt874-formation-box .tt874-row{border:1px solid #24382b;border-radius:10px;padding:9px;margin:8px 0;background:#0b120e}\
+#tt874-formation-box .tt874-row-title{font-weight:800;margin-bottom:6px;color:#ffdd44}\
+#tt874-formation-box label{display:grid;grid-template-columns:92px 1fr 42px;gap:8px;align-items:center;font-size:.86rem;margin:6px 0}\
+#tt874-formation-box input[type=range]{width:100%}\
+#tt874-formation-box .tt874-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}\
+#tt874-formation-box .tt874-actions .btn{flex:1 1 auto}\
+#tt874-adjust-formation-btn.tt874-has-adjust{border-color:#ffdd44;color:#ffdd44}\
+';document.head.appendChild(st);}
+
+  function ensureModal(){ensureStyle();var old=document.getElementById('tt874-formation-modal');if(old)return old;var m=document.createElement('div');m.id='tt874-formation-modal';m.className='hidden';m.innerHTML='<div id="tt874-formation-box" role="dialog" aria-modal="true"></div>';document.body.appendChild(m);m.addEventListener('click',function(e){if(e.target===m)m.classList.add('hidden');},true);return m;}
+  function renderModal(){
+    var m=ensureModal(),box=document.getElementById('tt874-formation-box');var f=activeFormation();var fmt=(typeof format!=='undefined'?format:11);var rows=rowsFor(f);var adj=mergedAdj(fmt,f);
+    var html='<h3>Justera formation: '+f+' ('+fmt+'v'+fmt+')</h3>'+
+      '<div class="tt874-help">Testfunktion. Justeringen sparas lokalt i denna webbläsare och används när formationen skapas/återställs/byts. Redan sparade filer öppnas fortfarande från sina sparade positioner.</div>';
+    rows.forEach(function(n,i){var r=adj.rows[i]||{depth:0,width:100};html+='<div class="tt874-row" data-row="'+i+'"><div class="tt874-row-title">'+rowName(i,rows.length)+' ('+n+' spelare)</div>'+
+      '<label><span>Djup</span><input type="range" min="-60" max="60" step="5" data-kind="depth" value="'+(parseInt(r.depth,10)||0)+'"><b data-val="depth">'+(parseInt(r.depth,10)||0)+'</b></label>'+
+      '<label><span>Bredd</span><input type="range" min="70" max="130" step="5" data-kind="width" value="'+(parseInt(r.width,10)||100)+'"><b data-val="width">'+(parseInt(r.width,10)||100)+'%</b></label></div>';});
+    html+='<div class="tt874-actions"><button class="btn" id="tt874-save">Spara mall</button><button class="btn" id="tt874-apply">Använd på planen nu</button><button class="btn" id="tt874-reset">Återställ denna formation</button><button class="btn" id="tt874-close">Stäng</button></div>';
+    box.innerHTML=html;
+    function collect(){var a=defaultAdjFor(f);box.querySelectorAll('.tt874-row').forEach(function(row){var i=parseInt(row.getAttribute('data-row'),10)||0;var d=row.querySelector('input[data-kind="depth"]');var w=row.querySelector('input[data-kind="width"]');a.rows[i]={depth:parseInt(d.value,10)||0,width:parseInt(w.value,10)||100};});return a;}
+    box.querySelectorAll('input[type=range]').forEach(function(inp){inp.addEventListener('input',function(){var row=inp.closest('.tt874-row');var val=row&&row.querySelector('[data-val="'+inp.getAttribute('data-kind')+'"]');if(val)val.textContent=inp.getAttribute('data-kind')==='width'?inp.value+'%':inp.value;},true);});
+    document.getElementById('tt874-save').onclick=function(e){e.preventDefault();setAdj(fmt,f,collect());markButton();showToast('Formationsmall sparad lokalt',true);};
+    document.getElementById('tt874-apply').onclick=function(e){e.preventDefault();setAdj(fmt,f,collect());markButton();try{if(typeof saveUndo==='function')saveUndo();initPlayers(f);render();}catch(err){}showToast('Justering använd på planen',true);};
+    document.getElementById('tt874-reset').onclick=function(e){e.preventDefault();if(!confirm('Återställa justeringen för '+f+'?'))return;clearAdj(fmt,f);try{if(typeof saveUndo==='function')saveUndo();initPlayers(f);render();}catch(err){}m.classList.add('hidden');markButton();showToast('Formationen återställd till standard',true);};
+    document.getElementById('tt874-close').onclick=function(e){e.preventDefault();m.classList.add('hidden');};
+    m.classList.remove('hidden');
+  }
+  function markButton(){try{var b=document.getElementById('tt874-adjust-formation-btn');if(!b)return;var f=activeFormation(),fmt=(typeof format!=='undefined'?format:11);b.classList.toggle('tt874-has-adjust',!!getAdj(fmt,f));}catch(e){}}
+  function injectButton(){try{var c=document.getElementById('formation-btns');if(!c||document.getElementById('tt874-adjust-formation-btn')){markButton();return;}var b=document.createElement('button');b.id='tt874-adjust-formation-btn';b.className='btn';b.type='button';b.textContent='Justera';b.title='Justera grundpositioner för vald formation';b.style.flexShrink='0';b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();renderModal();},true);c.appendChild(b);markButton();}catch(e){}}
+  if(typeof buildFormationBtns==='function'&&!buildFormationBtns.__tt874Wrapped){var oldBuild=buildFormationBtns;buildFormationBtns=function(){var r=oldBuild.apply(this,arguments);setTimeout(injectButton,0);return r;};buildFormationBtns.__tt874Wrapped=true;try{window.buildFormationBtns=buildFormationBtns;}catch(e){}}
+  document.addEventListener('click',function(e){try{var t=e.target;if(t&&t.closest&&t.closest('#formation-btns .btn'))setTimeout(markButton,0);}catch(err){}},true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(injectButton,300);setTimeout(injectButton,1200);});else{setTimeout(injectButton,300);setTimeout(injectButton,1200);}
 })();
-/* === slut v876 === */
+/* === slut v874 === */
