@@ -18091,33 +18091,34 @@ setTimeout(tt146BindControls,1500);
    Hastighetsväljaren ska vara global uppspelningshastighet för hela taktikfilmen.
    Den ska inte bli en egenskap som "fastnar" i det steg man skapar/ritar.
 */
-var tt304PlaybackSpeedMs = 1200; // v305: standardläge 5 Normal = gamla v304 Sakta
+var tt304PlaybackSpeedMs = 1800; // v891: standardläge 5 Normal = den hastighet som i v890 motsvarade cirka 3.
 function tt304NormalizeSpeed(v){
   v=parseInt(v,10);
   if(isNaN(v))v=5;
-  // v305: hastighetsskala 1-10.
-  // 5 ska motsvara gamla "Sakta" i v304, alltså 1200 ms per ca 150px.
-  // 10 motsvarar ungefär gamla "Normal". Lägre tal blir långsammare.
+  // v891: hastighetsskala 1-10 återkalibrerad efter V2-hotfix.
+  // Användartest: i v890 kändes 3 som "normal" medan 5 var för snabb.
+  // Därför flyttas normalpunkten: 5 = 1800 ms per ca 150px.
+  // Rörelse/render-loop lämnas orörd för att behålla v890:s mjukhet.
   if(v>=1 && v<=10){
-    if(v<5)return 1200 + (5-v)*300;     // 1=2400, 5=1200
-    return 1200 - (v-5)*120;           // 5=1200, 10=600
+    if(v<5)return 1800 + (5-v)*300;     // 1=3000, 3=2400, 5=1800
+    return 1800 - (v-5)*240;           // 5=1800, 7=1320, 10=600
   }
   // Bakåtkompatibilitet om något gammalt ms-värde fortfarande skickas in.
-  return Math.max(300,Math.min(3000,v));
+  return Math.max(300,Math.min(3600,v));
 }
 function tt304ScaleFromValue(v){
   v=parseInt(v,10);
   if(v>=1 && v<=10)return v;
   // Om äldre ms-värden dyker upp: mappa dem till närmaste nya nivå.
-  if(v>=2100)return 1;
-  if(v>=1800)return 2;
-  if(v>=1500)return 3;
-  if(v>=1350)return 4;
-  if(v>=1050)return 5;
-  if(v>=930)return 6;
-  if(v>=810)return 7;
-  if(v>=700)return 8;
-  if(v>=620)return 9;
+  if(v>=2850)return 1;
+  if(v>=2550)return 2;
+  if(v>=2250)return 3;
+  if(v>=1950)return 4;
+  if(v>=1650)return 5;
+  if(v>=1450)return 6;
+  if(v>=1180)return 7;
+  if(v>=940)return 8;
+  if(v>=720)return 9;
   return 10;
 }
 var tt304PlaybackSpeedScale = 5;
@@ -48747,19 +48748,18 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v888 === */
 
 
-/* === v890 / Version 2.0.4: Taktikfilm hastighet mjuk hotfix ===
-   Bas: v888 skarp V2.0.2. v889 gav hackigare rörelser och används inte som bas.
-   Fixen är därför smalare:
-   - Behåller befintlig mjuk RAF-animation/render-loop helt orörd.
-   - Stoppar bara gamla hastighetsvägar från att tolka skalan 1-10 som millisekunder.
-   - 5 Normal behåller v304/v305-mappningen: ca 1200 ms per 150 px.
+/* === v891 / Version 2.0.5: Taktikfilm hastighetskurva hotfix ===
+   Bas: v890, men endast hastighetskurvan ändras.
+   v890 gjorde rörelsen mjukare än v889, men hastigheten var fortfarande för snabb.
+   Användartest: v890-läge 3 kändes som normal. Därför blir ny 5 Normal ungefär samma fart.
+   - Behåller befintlig mjuk RAF-animation/render-loop orörd.
    - Ingen ändring av stegdata, rörelsepilar, sparning, Supabase, lager eller fullscreen-cirkelfix.
 */
 (function(){
   'use strict';
-  if(window.__tt890SmoothSpeedHotfix)return;
-  window.__tt890SmoothSpeedHotfix=true;
-  var VERSION='Version 2.0.4';
+  if(window.__tt891SpeedCurveHotfix)return;
+  window.__tt891SpeedCurveHotfix=true;
+  var VERSION='Version 2.0.5';
   function byId(id){return document.getElementById(id);}
   function setVersion(){try{
     window.TAKTIKTAVLA_VERSION=VERSION;
@@ -48784,4 +48784,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
   [0,120,500,1500,3000].forEach(function(ms){setTimeout(apply,ms);});
 })();
-/* === slut v890 === */
+/* === slut v891 === */
