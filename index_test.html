@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v858 mobil stegpanel</title>
+<title>Taktiktavla TEST v892 hastighetskurva</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2371,7 +2371,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v866</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v898</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -3053,7 +3053,7 @@
 }
 </style>
 
-<script src="app_test.js?v=874-formation-template-adjuster"></script>
+<script src="app_test.js?v=898-taktikfilm-list-source-fix"></script>
 
 <script>
 (function(){
@@ -7928,3 +7928,14 @@
 })();
 </script>
 <!-- === slut v826 TEST === -->
+
+
+<!-- === v898 TEST: versionslabel för ren Taktikfilm-listfix + V2-hotfixar === -->
+<script>
+(function(){
+  function setTitle(){try{document.title='Taktiktavla TEST v898 list source fix';}catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setTitle,{once:true});else setTitle();
+  setTimeout(setTitle,500);
+})();
+</script>
+<!-- === slut v898 TEST === -->
