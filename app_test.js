@@ -48898,3 +48898,108 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   };
 })();
 /* === slut v877 === */
+
+/* === v879 TEST: batteridiagnos - hitta RAF-/DOM-källor ===
+   Bas: v876 + v877 diagnostik. v878-bromsen gav ingen tydlig effekt och används inte som bas.
+   Syfte: visa vilka kodrader som begär requestAnimationFrame och vilka DOM-noder som ändras i stillaläge.
+   Ingen optimering eller funktionsändring görs här. */
+(function(){
+  'use strict';
+  if(window.__tt879BatterySourceDiagnostics)return;
+  window.__tt879BatterySourceDiagnostics=true;
+
+  var rafStats=Object.create(null);
+  var domStats=Object.create(null);
+  var start=Date.now();
+  var panel=null;
+
+  function cleanStack(stack){
+    try{
+      var lines=String(stack||'').split('\n').slice(1);
+      for(var i=0;i<lines.length;i++){
+        var s=lines[i].trim();
+        if(!s)continue;
+        if(s.indexOf('__tt879')>=0)continue;
+        if(s.indexOf('tt879')>=0)continue;
+        if(s.indexOf('requestAnimationFrame')>=0 && s.indexOf('app_js_v879')>=0)continue;
+        // korta ner sandbox-/url-prefix men behåll rad/kolumn
+        s=s.replace(/^at\s+/, '');
+        s=s.replace(/^.*\/(app(?:_test)?\.js[^)]*)/, '$1');
+        s=s.replace(/^.*\/(app_js_v\d+[^)]*)/, '$1');
+        return s;
+      }
+    }catch(e){}
+    return 'okänd RAF-källa';
+  }
+  function keyForNode(n,attr){
+    try{
+      if(!n)return 'okänd DOM';
+      var el=(n.nodeType===1)?n:(n.parentElement||n.parentNode);
+      if(!el||!el.tagName)return 'okänd DOM';
+      var id=el.id?('#'+el.id):'';
+      var cls='';
+      try{cls=String(el.className||'').replace(/\s+/g,'.'); if(cls)cls='.'+cls.slice(0,80);}catch(e){}
+      return el.tagName.toLowerCase()+id+cls+(attr?' ['+attr+']':'');
+    }catch(e){return 'okänd DOM';}
+  }
+  function add(map,key,field,n){
+    var o=map[key]||(map[key]={calls:0,callbacks:0,records:0});
+    o[field]=(o[field]||0)+(n||1);
+  }
+  function top(map,field,n){
+    return Object.keys(map).map(function(k){return {k:k,v:map[k]&&map[k][field]||0,o:map[k]};}).sort(function(a,b){return b.v-a.v;}).slice(0,n||5);
+  }
+  function esc(s){return String(s||'').replace(/[&<>]/g,function(c){return c==='&'?'&amp;':c==='<'?'&lt;':'&gt;';});}
+
+  try{
+    var prevRAF=window.requestAnimationFrame;
+    window.requestAnimationFrame=function(cb){
+      var src=cleanStack((new Error()).stack);
+      add(rafStats,src,'calls',1);
+      return prevRAF.call(window,function(ts){
+        add(rafStats,src,'callbacks',1);
+        return cb(ts);
+      });
+    };
+  }catch(e){}
+
+  try{
+    if(window.MutationObserver && document.body){
+      var mo=new MutationObserver(function(records){
+        try{
+          (records||[]).forEach(function(r){
+            add(domStats,keyForNode(r.target,r.attributeName),'records',1);
+          });
+        }catch(e){}
+      });
+      mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class','hidden','transform','x','y','cx','cy','d']});
+    }
+  }catch(e){}
+
+  function ensurePanel(){
+    if(panel&&panel.parentNode)return panel;
+    if(!document.body)return null;
+    panel=document.createElement('div');
+    panel.id='tt879-source-diagnostics';
+    panel.style.cssText='position:fixed;left:8px;bottom:8px;z-index:1000000;background:rgba(6,10,18,.95);color:#e8f2ff;border:1px solid #63a8ff;border-radius:10px;padding:8px 10px;font:11px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:min(560px,calc(100vw - 16px));max-height:48vh;overflow:auto;box-shadow:0 4px 18px rgba(0,0,0,.35);pointer-events:auto;';
+    document.body.appendChild(panel);
+    return panel;
+  }
+  function render(){
+    var p=ensurePanel(); if(!p)return;
+    var mins=Math.max(1,Math.round((Date.now()-start)/60000));
+    var rafTop=top(rafStats,'callbacks',6);
+    var domTop=top(domStats,'records',6);
+    p.innerHTML='<div style="display:flex;gap:8px;align-items:center"><b style="color:#63a8ff">v879 källdiagnos</b><button id="tt879-reset" style="margin-left:auto;background:#11233d;color:#e8f2ff;border:1px solid #345d93;border-radius:6px;padding:2px 6px">nollställ</button></div>'+
+      '<div style="opacity:.8;margin:3px 0 6px">Stå stilla 60–90 sek. Skicka bild på denna ruta. v878-bromsen används inte här.</div>'+
+      '<b>RAF-källor, callbacks sedan start:</b><ol style="margin:4px 0 8px 18px;padding:0">'+(rafTop.length?rafTop.map(function(x){return '<li><b>'+x.v+'</b> <span style="color:#b9d8ff">'+esc(x.k)+'</span></li>';}).join(''):'<li>inga</li>')+'</ol>'+
+      '<b>DOM-källor, poster sedan start:</b><ol style="margin:4px 0 0 18px;padding:0">'+(domTop.length?domTop.map(function(x){return '<li><b>'+x.v+'</b> <span style="color:#b9d8ff">'+esc(x.k)+'</span></li>';}).join(''):'<li>inga</li>')+'</ol>';
+    var rb=document.getElementById('tt879-reset');
+    if(rb)rb.onclick=function(){rafStats=Object.create(null);domStats=Object.create(null);start=Date.now();render();};
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){render();setInterval(render,1500);});
+  else{render();setInterval(render,1500);}
+
+  window.tt879BatterySourceDiagnostics={rafStats:rafStats,domStats:domStats};
+})();
+/* === slut v879 === */
