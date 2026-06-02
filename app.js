@@ -1,3 +1,4 @@
+/* v896 / Version 2.0.9: recovery confirm-capture fix, byggd från v895. */
 /* v887 / Version 2.0 release SUPABASEFIX: byggd från v886, med produktions-Supabase från tidigare fungerande originalapp. */
 /* === v887 / Version 2.0 RELEASE SUPABASEFIX FASTA FILNAMN ===
    Klistra denna fil i GitHub som: app.js.
@@ -49150,3 +49151,136 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{[0,500,1500,3000].forEach(function(ms){setTimeout(tick,ms);});}
 })();
 /* === slut v895 === */
+
+
+/* === v896 / Version 2.0.9: V2 Taktikfilm nödkopia via faktisk osparat-bekräftelse ===
+   Bas: v895 / Version 2.0.8.
+   v895 träffade inte alltid rätt Avsluta-väg. I praktiken kunde varningen komma från äldre
+   globala v847/v848-vakter och då hann ingen recovery sparas/flagga sättas.
+   Denna fix fångar därför själva OK-svaret i osparat-varningen, oavsett vilken knapp eller
+   handler som öppnade varningen. Bara om användaren trycker OK på just osparat-varningen
+   sparas lokal nödkopia och pending-flagga. */
+(function(){
+  'use strict';
+  if(window.__tt896V2RecoveryConfirmCaptureFix)return;
+  window.__tt896V2RecoveryConfirmCaptureFix=true;
+
+  var VERSION='Version 2.0.9';
+  var STORE='tt_taktikfilm_recovery_v2';
+  var PENDING='tt873_taktikfilm_pending_recovery_key';
+  var BASE_PREFIX='tt896_taktikfilm_saved_base_';
+  var baseByKey={};
+  var rawConfirm=window.confirm;
+
+  function byId(id){return document.getElementById(id);}
+  function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return null;}}
+  function clean(o){try{
+    if(o===null||typeof o!=='object')return o;
+    if(Array.isArray(o))return o.map(clean);
+    var out={};
+    Object.keys(o).sort().forEach(function(k){
+      if(!k||k.charAt(0)==='_')return;
+      if(k==='meta'||k==='createdAt'||k==='updatedAt'||k==='savedAt'||k==='ts'||k==='_lastSavedAt'||k==='_lastLocalSaveAt'||k==='_recoveryKey'||k==='_storeKey')return;
+      var v=o[k];
+      if(typeof v==='function'||typeof v==='undefined')return;
+      out[k]=clean(v);
+    });
+    return out;
+  }catch(e){return o;}}
+  function norm(o){try{return JSON.stringify(clean(clone(o)||{}));}catch(e){return'';}}
+  function filmKey(tk){try{if(!tk)return'';if(tk.dbId)return'db:'+tk.dbId;if(tk.id)return'id:'+tk.id;var n=String(tk.name||'').trim().toLowerCase();return n?'name:'+n:'';}catch(e){return'';}}
+  function currentIdx(){try{return (typeof editingTaktikIdx==='number'&&editingTaktikIdx!==null)?editingTaktikIdx:null;}catch(e){return null;}}
+  function currentTk(){try{var i=currentIdx();if(i!==null&&Array.isArray(taktikFilmer)&&taktikFilmer[i])return taktikFilmer[i];if(typeof playback!=='undefined'&&playback&&playback.tk)return playback.tk;}catch(e){}return null;}
+  function readStore(){try{var raw=localStorage.getItem(STORE);var o=raw?JSON.parse(raw):{};return o&&typeof o==='object'?o:{};}catch(e){return{};}}
+  function writeStore(o){try{localStorage.setItem(STORE,JSON.stringify(o||{}));}catch(e){}}
+  function setPending(key){try{if(key)localStorage.setItem(PENDING,key);}catch(e){}}
+  function saveBase(key,tk){try{if(!key||!tk)return;var c=clone(tk);baseByKey[key]=c;localStorage.setItem(BASE_PREFIX+key,JSON.stringify(c));}catch(e){}}
+  function readBase(key){try{if(baseByKey[key])return clone(baseByKey[key]);var raw=localStorage.getItem(BASE_PREFIX+key);return raw?JSON.parse(raw):null;}catch(e){return null;}}
+  function syncStepIntoFilm(){try{
+    if(typeof autoSaveCurrentStepLocalV16==='function')autoSaveCurrentStepLocalV16();
+  }catch(e){}
+    try{if(typeof propagateCurrentBall583==='function')propagateCurrentBall583();}catch(e){}
+    try{
+      var tk=currentTk();
+      var idx=(typeof editingStepIdx==='number')?editingStepIdx:0;
+      if(tk&&Array.isArray(tk.steps)&&tk.steps[idx]&&typeof currentSnap==='function'){
+        var snap=currentSnap();
+        var inp=byId('edit-step-name-inp');
+        if(inp&&String(inp.value||'').trim())snap.label=String(inp.value||'').trim();
+        tk.steps[idx]=snap;
+      }
+    }catch(e){}
+  }
+  function rememberClean(idx,reason){try{
+    if(idx===null||typeof idx==='undefined'||!Array.isArray(taktikFilmer)||!taktikFilmer[idx])return;
+    var tk=taktikFilmer[idx], key=filmKey(tk); if(!key)return;
+    saveBase(key,tk);
+  }catch(e){} }
+  function saveRecoveryFromConfirm(){try{
+    var tk=currentTk(); var key=filmKey(tk); if(!tk||!key||!Array.isArray(tk.steps)||!tk.steps.length)return false;
+    syncStepIntoFilm(); tk=currentTk();
+    var base=readBase(key);
+    // Om bas saknas ska vi ändå spara nödkopia när användaren redan fått osparat-varningen.
+    if(base && norm(tk)===norm(base))return false;
+    var s=readStore();
+    s[key]={
+      key:key,
+      reason:'confirm-ok-unsaved-v896',
+      savedAt:new Date().toISOString(),
+      ts:Date.now(),
+      name:tk.name||'Taktikfilm',
+      dbId:tk.dbId||null,
+      id:tk.id||null,
+      editingStepIdx:(typeof editingStepIdx==='number'?editingStepIdx:0),
+      tk:clean(clone(tk))
+    };
+    writeStore(s);
+    setPending(key);
+    // Lägg tillbaka sparad bas i minnet så filmen inte öppnas automatiskt med osparad version i samma session.
+    if(base){
+      var idx=currentIdx();
+      if(idx!==null&&Array.isArray(taktikFilmer))taktikFilmer[idx]=clone(base);
+      if(typeof playback!=='undefined'&&playback)playback.tk=clone(base);
+    }
+    return true;
+  }catch(e){return false;}}
+  function isUnsavedMsg(msg){return String(msg||'').toLowerCase().indexOf('osparade ändringar')>=0 && String(msg||'').toLowerCase().indexOf('lämna utan att spara')>=0;}
+
+  window.confirm=function(msg){
+    var res=rawConfirm.apply(window,arguments);
+    try{
+      if(res && isUnsavedMsg(msg)){
+        saveRecoveryFromConfirm();
+      }
+    }catch(e){}
+    return res;
+  };
+
+  function setVersion(){try{
+    document.title='Taktiktavla';
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=byId(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|\d+\s*TEST|\d+ TEST|Version\s+2\.0(\.\d+)?)$/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+    });
+  }catch(e){} }
+
+  if(typeof startPlayback==='function'&&!startPlayback.__tt896Wrapped){
+    var oldStart=startPlayback;
+    startPlayback=function(idx){var r=oldStart.apply(this,arguments);[80,350,900,1600].forEach(function(ms){setTimeout(function(){rememberClean(idx,'start');setVersion();},ms);});return r;};
+    startPlayback.__tt896Wrapped=true;try{window.startPlayback=startPlayback;}catch(e){}
+  }
+  if(typeof openEditTaktik==='function'&&!openEditTaktik.__tt896Wrapped){
+    var oldOpen=openEditTaktik;
+    openEditTaktik=function(idx){var r=oldOpen.apply(this,arguments);[80,350,900,1600].forEach(function(ms){setTimeout(function(){rememberClean(idx,'open');setVersion();},ms);});return r;};
+    openEditTaktik.__tt896Wrapped=true;try{window.openEditTaktik=openEditTaktik;}catch(e){}
+  }
+  if(typeof cloudSaveTaktik==='function'&&!cloudSaveTaktik.__tt896Wrapped){
+    var oldCloud=cloudSaveTaktik;
+    cloudSaveTaktik=function(tk){var r=oldCloud.apply(this,arguments);[600,1600,3000].forEach(function(ms){setTimeout(function(){try{var cur=tk||currentTk();var key=filmKey(cur);saveBase(key,cur);}catch(e){}},ms);});return r;};
+    cloudSaveTaktik.__tt896Wrapped=true;try{window.cloudSaveTaktik=cloudSaveTaktik;}catch(e){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){[0,500,1500,3000].forEach(function(ms){setTimeout(setVersion,ms);});});
+  else{[0,500,1500,3000].forEach(function(ms){setTimeout(setVersion,ms);});}
+})();
+/* === slut v896 === */
