@@ -47941,3 +47941,75 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }catch(e){}
 })();
 /* === slut v864-layer-panel-only-direct-tap === */
+
+
+/* === v865 TEST: Taktikfilm animation - koner/pinnar under spelare ===
+   Bas: v864. Rör endast visuell SVG-lagerordning för fria objekt.
+   Problem: under Taktikfilm-animation kunde koner/pinnar hamna ovanpå spelare.
+   Lösning: efter render/animationsframe flyttas objektgrupperna före spelare/boll i SVG,
+   så spelare och boll alltid ritas ovanpå koner/pinnar. Data, sparning och objektlogik ändras inte. */
+(function(){
+  if(window.__tt865ObjectsBelowPlayers)return;
+  window.__tt865ObjectsBelowPlayers=true;
+
+  function isTaktikContext865(){
+    try{
+      return !!(
+        (typeof isEditingTaktik!=='undefined' && isEditingTaktik) ||
+        (typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null) ||
+        (typeof playback!=='undefined' && playback) ||
+        (document.body && document.body.classList && (
+          document.body.classList.contains('tt688-taktikfilm-editor-active') ||
+          document.body.classList.contains('tt763-taktik-object-active') ||
+          document.body.classList.contains('tt764-taktik-object-fullscreen') ||
+          document.body.classList.contains('v66-taktik-fs')
+        ))
+      );
+    }catch(e){return false;}
+  }
+
+  function sendObjectsBehindPlayers865(){
+    try{
+      if(!isTaktikContext865())return;
+      if(typeof svg==='undefined' || !svg)return;
+      var objs=svg.querySelectorAll('.tt746-object-g,.tt747-object-g');
+      if(!objs || !objs.length)return;
+      var firstPlayerOrBall=svg.querySelector('.player-token,.ball-token');
+      if(!firstPlayerOrBall)return;
+      for(var i=0;i<objs.length;i++){
+        if(objs[i] && objs[i].parentNode===svg){
+          svg.insertBefore(objs[i],firstPlayerOrBall);
+        }
+      }
+    }catch(e){}
+  }
+
+  if(typeof render==='function' && !render.__tt865Wrapped){
+    var oldRender865=render;
+    render=function(){
+      var out=oldRender865.apply(this,arguments);
+      sendObjectsBehindPlayers865();
+      return out;
+    };
+    render.__tt865Wrapped=true;
+  }
+
+  if(!window.__tt865RafWrapped){
+    var oldRAF865=window.requestAnimationFrame;
+    window.requestAnimationFrame=function(cb){
+      return oldRAF865.call(window,function(ts){
+        var out=cb(ts);
+        try{sendObjectsBehindPlayers865();}catch(e){}
+        return out;
+      });
+    };
+    window.__tt865RafWrapped=true;
+  }
+
+  ['click','touchend','pointerup','transitionend'].forEach(function(ev){
+    try{document.addEventListener(ev,function(){sendObjectsBehindPlayers865();},true);}catch(e){}
+  });
+
+  try{setTimeout(sendObjectsBehindPlayers865,0);}catch(e){}
+})();
+/* === slut v865 === */
