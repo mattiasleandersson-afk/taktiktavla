@@ -48136,27 +48136,27 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v866 === */
 
-/* === v869 TEST: Taktikfilm nödkopia vid Lämna utan att spara – egen återställningsfråga ===
-   Bas: v866. v867/v868 löste inte flödet och ska inte användas som bas.
-   Problem:
-   - Efter OK på osparat-varningen kunde filmen lämnas, men lokal Taktikfilm-nödkopia erbjöds inte vid nästa öppning.
-   - Äldre v587-recovery kan rensa/inte fråga i samma session, eftersom den har egen asked/clear-logik.
-   Lösning:
-   - Använd en separat liten recovery-store för just "lämna sparad film utan att spara".
-   - Skriv nödkopia efter att v848-varningen redan godkänts, men före exit.
-   - Återställ den öppna filmen i minnet till sparad bas, så filen inte ser osparad ut automatiskt.
-   - Vid nästa öppning av samma sparade film får användaren välja: OK = återställ lokal osparad version, Avbryt = kasta den lokala kopian.
-   - Ingen Supabase-skrivning och ingen ändring i ordinarie filmsparning.
+
+/* === v870 TEST: Taktikfilm nödkopia/varning för BEFINTLIG sparad film ===
+   Bas: v866. v867/v868/v869 ska inte användas som bas.
+   Problem: Lokal nödkopia/val fungerade främst för ny film. Befintlig sparad film kunde sakna
+   varning och öppnades inte med val om lokal kopia.
+   Strategi:
+   - egen baslinje när en Taktikfilm öppnas
+   - egen recovery-store per dbId/id/name
+   - exit-knappar stoppas i capture-fas: Avbryt = stanna, OK = spara lokal kopia + återställ minnet till sparad bas + lämna direkt
+   - vid nästa öppning: fråga om lokal kopia innan användaren börjar redigera igen
+   - rensar lokal kopia först efter riktig filmsparning eller när användaren aktivt väljer bort den
 */
 (function(){
   'use strict';
-  if(window.__tt869TaktikfilmRecoveryChoiceReal)return;
-  window.__tt869TaktikfilmRecoveryChoiceReal=true;
+  if(window.__tt870ExistingTaktikfilmRecoveryFix)return;
+  window.__tt870ExistingTaktikfilmRecoveryFix=true;
 
-  var STORE='tt_taktikfilm_leave_recovery_v869';
+  var STORE='tt870_taktikfilm_recovery_v1';
   var baselineByKey={};
-  var asked={};
-  var busyUntil=0;
+  var askedOpen={};
+  var exitBusyUntil=0;
   var suppressConfirmUntil=0;
   var nativeConfirm=window.confirm;
 
@@ -48164,20 +48164,22 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return null;}}
   function readStore(){try{var raw=localStorage.getItem(STORE);var o=raw?JSON.parse(raw):{};return o&&typeof o==='object'?o:{};}catch(e){return {};}}
   function writeStore(o){try{localStorage.setItem(STORE,JSON.stringify(o||{}));}catch(e){}}
+  function putRec(rec){try{if(!rec||!rec.key||!rec.tk)return;var s=readStore();s[rec.key]=rec;writeStore(s);}catch(e){}}
+  function removeRec(key){try{var s=readStore();if(s&&s[key]){delete s[key];writeStore(s);}}catch(e){}}
   function keyFor(tk){try{
     if(!tk)return '';
-    if(tk.dbId)return 'db:'+tk.dbId;
-    if(tk.id)return 'id:'+tk.id;
+    if(tk.dbId)return 'db:'+String(tk.dbId);
+    if(tk.id)return 'id:'+String(tk.id);
     var n=String(tk.name||'').trim().toLowerCase();
     return n?'name:'+n:'';
   }catch(e){return '';}}
   function strip(o){try{
-    if(!o||typeof o!=='object')return o;
+    if(o===null||typeof o!=='object')return o;
     if(Array.isArray(o))return o.map(strip);
     var out={};
     Object.keys(o).sort().forEach(function(k){
       if(!k||k.charAt(0)==='_')return;
-      if(k==='createdAt'||k==='updatedAt'||k==='savedAt'||k==='ts'||k==='lastSavedAt')return;
+      if(k==='createdAt'||k==='updatedAt'||k==='savedAt'||k==='ts'||k==='lastSavedAt'||k==='lastModified')return;
       var v=o[k];
       if(typeof v==='function'||typeof v==='undefined')return;
       out[k]=strip(v);
@@ -48186,44 +48188,44 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }catch(e){return o;}}
   function fp(o){try{return JSON.stringify(strip(clone(o)));}catch(e){return '';}}
   function currentIndex(){try{if(typeof editingTaktikIdx==='number'&&editingTaktikIdx!==null)return editingTaktikIdx;}catch(e){}return null;}
-  function currentTk(){try{var i=currentIndex();if(i!==null&&window.taktikFilmer&&taktikFilmer[i])return taktikFilmer[i];}catch(e){}
+  function currentTk(){try{
+    var idx=currentIndex();
+    if(idx!==null&&typeof taktikFilmer!=='undefined'&&taktikFilmer&&taktikFilmer[idx])return taktikFilmer[idx];
+  }catch(e){}
     try{if(typeof playback!=='undefined'&&playback&&playback.tk)return playback.tk;}catch(e){}
     return null;
   }
-  function currentWithStep(tk){
+  function currentFilmWithLiveStep(tk){
     var c=clone(tk);if(!c)return null;
     try{
-      var i=(typeof editingStepIdx==='number'?editingStepIdx:0);
-      if(c.steps&&c.steps[i]&&typeof currentSnap==='function'){
+      if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik&&typeof editingStepIdx==='number'&&c.steps&&c.steps[editingStepIdx]&&typeof currentSnap==='function'){
         var snap=currentSnap();
         var inp=document.getElementById('edit-step-name-inp');
         var lbl=inp?String(inp.value||'').trim():'';
         if(lbl)snap.label=lbl;
-        c.steps[i]=snap;
+        c.steps[editingStepIdx]=snap;
       }
     }catch(e){}
     return c;
   }
-  function captureBaseline(reason){try{
-    var tk=currentTk();var k=keyFor(tk);if(!tk||!k)return;
-    var c=clone(tk);if(!c)return;
-    // Om bas redan finns för samma öppning behåller vi den sparade basen.
-    if(!baselineByKey[k] || reason==='save'){
-      baselineByKey[k]={key:k,tk:c,fp:fp(c),step:(typeof editingStepIdx==='number'?editingStepIdx:0),ts:now(),reason:reason||''};
-    }
+  function captureBaselineForIndex(idx,reason){try{
+    if(typeof taktikFilmer==='undefined'||!taktikFilmer||!taktikFilmer[idx])return;
+    var tk=taktikFilmer[idx];var k=keyFor(tk);if(!k)return;
+    var base=clone(tk);if(!base)return;
+    baselineByKey[k]={key:k,tk:base,fp:fp(base),idx:idx,step:(typeof editingStepIdx==='number'?editingStepIdx:0),reason:reason||'',ts:now()};
   }catch(e){} }
-  function baselineFor(tk){var k=keyFor(tk);return k?baselineByKey[k]:null;}
-  function hasRealUnsaved(){try{
+  function captureCurrentBaseline(reason){try{var idx=currentIndex();if(idx!==null)captureBaselineForIndex(idx,reason||'current');}catch(e){} }
+  function baselineFor(tk){try{var k=keyFor(tk);return k?baselineByKey[k]:null;}catch(e){return null;}}
+  function hasUnsaved(){try{
     var tk=currentTk();if(!tk)return false;
-    var b=baselineFor(tk);if(!b)return false;
-    var cur=currentWithStep(tk);if(!cur)return false;
+    var b=baselineFor(tk);if(!b||!b.fp)return false;
+    var cur=currentFilmWithLiveStep(tk);if(!cur)return false;
     return fp(cur)!==b.fp;
   }catch(e){return false;}}
   function makeRec(){try{
     var tk=currentTk();if(!tk)return null;
-    var k=keyFor(tk);if(!k)return null;
-    var b=baselineFor(tk);if(!b)return null;
-    var cur=currentWithStep(tk);if(!cur)return null;
+    var k=keyFor(tk);var b=baselineFor(tk);if(!k||!b)return null;
+    var cur=currentFilmWithLiveStep(tk);if(!cur)return null;
     if(fp(cur)===b.fp)return null;
     return {
       key:k,
@@ -48231,17 +48233,16 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       ts:now(),
       name:cur.name||tk.name||'Taktikfilm',
       dbId:cur.dbId||tk.dbId||null,
+      id:cur.id||tk.id||null,
       editingStepIdx:(typeof editingStepIdx==='number'?editingStepIdx:0),
       tk:strip(cur)
     };
   }catch(e){return null;}}
-  function putRec(rec){try{if(!rec||!rec.key||!rec.tk)return;var s=readStore();s[rec.key]=rec;writeStore(s);}catch(e){}}
-  function removeRec(key){try{var s=readStore();if(s&&s[key]){delete s[key];writeStore(s);}}catch(e){}}
-  function keepRecAlive(rec){try{putRec(rec);[80,240,600,1200,2200].forEach(function(ms){setTimeout(function(){putRec(rec);},ms);});}catch(e){}}
   function restoreBaselineInMemory(){try{
-    var idx=currentIndex();var tk=currentTk();var b=baselineFor(tk);if(idx===null||!b||!b.tk)return;
+    var idx=currentIndex();var tk=currentTk();var b=baselineFor(tk);
+    if(idx===null||!b||!b.tk||typeof taktikFilmer==='undefined'||!taktikFilmer[idx])return;
     var base=clone(b.tk);if(!base)return;
-    if(window.taktikFilmer&&taktikFilmer[idx])taktikFilmer[idx]=base;
+    taktikFilmer[idx]=base;
     try{if(typeof playback!=='undefined'&&playback)playback.tk=base;}catch(e){}
     try{editingStepIdx=Math.max(0,Math.min(Number(b.step)||0,(base.steps||[]).length-1));}catch(e){}
     try{if(base.steps&&base.steps[editingStepIdx]&&typeof restoreSnap==='function')restoreSnap(base.steps[editingStepIdx]);}catch(e){}
@@ -48249,36 +48250,52 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{if(typeof render==='function')render();}catch(e){}
   }catch(e){} }
   function directExit(){try{
-    suppressConfirmUntil=now()+1800;
+    suppressConfirmUntil=now()+2200;
     if(typeof tt688ExitTaktikfilmEditorToList==='function'){
-      try{tt688ExitTaktikfilmEditorToList({skipConfirm:true,tt869SkipConfirm:true});return;}catch(e){}
+      try{tt688ExitTaktikfilmEditorToList({skipConfirm:true,tt870SkipConfirm:true});return;}catch(e){}
+    }
+    if(typeof stopPlayback==='function'){
+      try{stopPlayback({skipConfirm:true,tt870SkipConfirm:true});return;}catch(e){}
     }
     if(typeof exitEditTaktik==='function'){
-      try{exitEditTaktik({skipConfirm:true,tt869SkipConfirm:true});return;}catch(e){}
+      try{exitEditTaktik({skipConfirm:true,tt870SkipConfirm:true});return;}catch(e){}
     }
-    if(typeof stopPlayback==='function')stopPlayback();
   }catch(e){} }
   function isExitTarget(e){try{
     var t=e&&e.target&&e.target.closest?e.target.closest('#btn-stop-play,#btn-edit-taktik-exit,#tt692-exit,.tt-v86-exit-btn,[data-tt-exit-taktikfilm]'):null;
     return !!t;
   }catch(e){return false;}}
-  function onExitAfterOldConfirm(e){try{
-    if(!isExitTarget(e))return;
-    if(now()<busyUntil)return;
-    if(!hasRealUnsaved())return;
-    // Om vi kommer hit har v848 redan frågat. Vid Avbryt stoppar v848 eventet innan denna handler.
-    busyUntil=now()+1200;
-    var rec=makeRec();
-    if(rec)keepRecAlive(rec);
-    restoreBaselineInMemory();
-    if(rec)keepRecAlive(rec);
+  function isLeavingTaktikTab(e){try{
+    var tab=e&&e.target&&e.target.closest?e.target.closest('.tab'):null;
+    if(!tab)return false;
+    return tab.getAttribute('data-panel')!=='taktik';
+  }catch(e){return false;}}
+  function handleLeave(e){try{
+    if(!(isExitTarget(e)||isLeavingTaktikTab(e)))return;
+    if(now()<exitBusyUntil)return;
+    var active=false;
+    try{active=(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)||(typeof playback!=='undefined'&&!!playback);}catch(_e){}
+    if(!active)return;
+    if(!hasUnsaved())return;
+
     e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-    setTimeout(function(){if(rec)keepRecAlive(rec);directExit();},0);
+    exitBusyUntil=now()+1200;
+    var ok=nativeConfirm.call(window,'Du har osparade ändringar i taktiken. Vill du lämna utan att spara?');
+    if(!ok){exitBusyUntil=0;return false;}
+
+    var rec=makeRec();
+    if(rec){
+      putRec(rec);
+      [80,250,700,1400,2400].forEach(function(ms){setTimeout(function(){putRec(rec);},ms);});
+    }
+    restoreBaselineInMemory();
+    if(rec)putRec(rec);
+    setTimeout(function(){if(rec)putRec(rec);directExit();},0);
     return false;
   }catch(err){} }
 
   function applyRec(idx,rec){try{
-    if(!rec||!rec.tk||!window.taktikFilmer||!taktikFilmer[idx])return;
+    if(!rec||!rec.tk||typeof taktikFilmer==='undefined'||!taktikFilmer||!taktikFilmer[idx])return;
     var r=clone(rec.tk);if(!r)return;
     if(!r.dbId&&taktikFilmer[idx].dbId)r.dbId=taktikFilmer[idx].dbId;
     if(!r.id&&taktikFilmer[idx].id)r.id=taktikFilmer[idx].id;
@@ -48289,68 +48306,76 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{if(r.steps&&r.steps[editingStepIdx]&&typeof restoreSnap==='function')restoreSnap(r.steps[editingStepIdx]);}catch(e){}
     try{if(typeof updateEditStepUI_silent==='function')updateEditStepUI_silent();else if(typeof updateEditStepUI==='function')updateEditStepUI();}catch(e){}
     try{if(typeof render==='function')render();}catch(e){}
+    captureBaselineForIndex(idx,'recovery-applied');
     try{if(typeof showToast==='function')showToast('Lokal nödkopia återställd');}catch(e){}
-    captureBaseline('recovery-applied');
   }catch(e){} }
-  function offerRecForIndex(idx){try{
-    if(!window.taktikFilmer||!taktikFilmer[idx])return;
-    var tk=taktikFilmer[idx];var k=keyFor(tk);if(!k||asked[k])return;
+  function offerForIndex(idx){try{
+    if(typeof taktikFilmer==='undefined'||!taktikFilmer||!taktikFilmer[idx])return;
+    var tk=taktikFilmer[idx];var k=keyFor(tk);if(!k||askedOpen[k])return;
     var rec=readStore()[k];if(!rec||!rec.tk)return;
     if(fp(tk)===fp(rec.tk)){removeRec(k);return;}
-    asked[k]=true;
+    askedOpen[k]=true;
     var when='';try{when=new Date(rec.ts||rec.savedAt).toLocaleString('sv-SE');}catch(e){}
     var ok=nativeConfirm.call(window,'Det finns en lokal nödkopia av taktikfilmen "'+(rec.name||tk.name||'Taktikfilm')+'"'+(when?' från '+when:'')+'.\n\nVill du återställa den lokala versionen?\n\nOK = återställ osparade ändringar\nAvbryt = kasta den lokala kopian och öppna sparad version');
     if(ok)applyRec(idx,rec);
     else removeRec(k);
   }catch(e){} }
-  function currentIdxFromArg(args){try{
-    if(args&&typeof args[0]==='number')return args[0];
-    var ci=currentIndex();if(ci!==null)return ci;
-  }catch(e){}return null;}
-  function wrapEnter(name){try{
+  function idxFromArgs(args){try{if(args&&typeof args[0]==='number')return args[0];}catch(e){}return null;}
+  function wrapOpen(name){try{
     var fn=window[name]||(typeof eval==='function'?eval(name):null);
-    if(typeof fn!=='function'||fn.__tt869Wrapped)return;
+    if(typeof fn!=='function'||fn.__tt870Wrapped)return;
     var wrapped=function(){
+      var idx=idxFromArgs(arguments);
       var r=fn.apply(this,arguments);
-      var idx=currentIdxFromArg(arguments);
-      [30,160,420].forEach(function(ms){setTimeout(function(){try{if(idx===null)idx=currentIndex();captureBaseline('enter:'+name);if(idx!==null)offerRecForIndex(idx);}catch(e){}},ms);});
+      if(idx===null){try{idx=currentIndex();}catch(e){}}
+      var fixedIdx=idx;
+      setTimeout(function(){try{if(fixedIdx===null)fixedIdx=currentIndex();if(fixedIdx!==null){captureBaselineForIndex(fixedIdx,'open:'+name);offerForIndex(fixedIdx);}}catch(e){}},20);
+      setTimeout(function(){try{if(fixedIdx===null)fixedIdx=currentIndex();if(fixedIdx!==null&&!askedOpen[keyFor(taktikFilmer[fixedIdx])]){captureBaselineForIndex(fixedIdx,'open-late:'+name);offerForIndex(fixedIdx);}}catch(e){}},180);
       return r;
     };
-    wrapped.__tt869Wrapped=true;
+    wrapped.__tt870Wrapped=true;
     try{window[name]=wrapped;}catch(e){}
     try{eval(name+'=wrapped');}catch(e){}
   }catch(e){} }
-  ['startPlayback','openEditTaktik','startPlaybackByObjectV22','tt845CreateFilmFromFormation','tt91CreateFilmFromFormation'].forEach(wrapEnter);
+  ['startPlayback','openEditTaktik','startPlaybackByObjectV22','tt845CreateFilmFromFormation','tt91CreateFilmFromFormation'].forEach(wrapOpen);
 
   function wrapSave(name){try{
     var fn=window[name]||(typeof eval==='function'?eval(name):null);
-    if(typeof fn!=='function'||fn.__tt869SaveWrapped)return;
+    if(typeof fn!=='function'||fn.__tt870SaveWrapped)return;
     var wrapped=function(){
       var tk=currentTk();var k=keyFor(tk);
       var r=fn.apply(this,arguments);
-      setTimeout(function(){try{if(k)removeRec(k);captureBaseline('save');}catch(e){}},700);
-      setTimeout(function(){try{if(k)removeRec(k);captureBaseline('save-late');}catch(e){}},1800);
+      [250,900,1800].forEach(function(ms){setTimeout(function(){try{if(k)removeRec(k);captureCurrentBaseline('save:'+name);}catch(e){}},ms);});
       return r;
     };
-    wrapped.__tt869SaveWrapped=true;
+    wrapped.__tt870SaveWrapped=true;
     try{window[name]=wrapped;}catch(e){}
     try{eval(name+'=wrapped');}catch(e){}
   }catch(e){} }
   ['cloudSaveTaktik','saveTaktikFilm','saveCurrentTaktikFilm'].forEach(wrapSave);
 
-  // Registreras efter v848. Om v848 användaren avbryter stoppas eventet före denna handler.
-  // Om v848 användaren väljer OK når eventet hit och vi sparar vår separata nödkopia.
-  document.addEventListener('click',onExitAfterOldConfirm,true);
-  document.addEventListener('touchend',onExitAfterOldConfirm,{capture:true,passive:false});
-  document.addEventListener('pointerup',onExitAfterOldConfirm,true);
+  // Spara lokal kopia löpande när en befintlig/sparad film faktiskt ändrats.
+  function scheduleMaybeSave(){try{
+    if(!hasUnsaved())return;
+    var rec=makeRec();
+    if(rec)setTimeout(function(){putRec(rec);},120);
+  }catch(e){} }
+  ['pointerup','touchend','mouseup','input','change'].forEach(function(evt){
+    document.addEventListener(evt,function(){try{if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)scheduleMaybeSave();}catch(e){}},true);
+  });
+  window.addEventListener('beforeunload',function(){try{if(hasUnsaved()){var rec=makeRec();if(rec)putRec(rec);}}catch(e){} });
 
-  // Stoppa äldre dubbelvarningar när vår direkta exit körs.
+  document.addEventListener('click',handleLeave,true);
+  document.addEventListener('touchend',handleLeave,{capture:true,passive:false});
+  document.addEventListener('pointerup',handleLeave,true);
+
+  // Undvik dubbelvarning från äldre vakter när vår direkta exit körs.
   window.confirm=function(msg){try{
     if(now()<suppressConfirmUntil && String(msg||'').toLowerCase().indexOf('osparade')>=0)return true;
   }catch(e){}
     return nativeConfirm.apply(window,arguments);
   };
 
-  setTimeout(function(){try{if(currentTk())captureBaseline('initial');}catch(e){}},300);
+  setTimeout(function(){try{captureCurrentBaseline('initial');}catch(e){}},250);
 })();
-/* === slut v869 TEST === */
+/* === slut v870 TEST === */
