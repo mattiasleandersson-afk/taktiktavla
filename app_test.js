@@ -48676,3 +48676,80 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   ['touchend','mouseup','touchcancel'].forEach(function(ev){try{document.addEventListener(ev,end,true);}catch(e){}});
 })();
 /* === slut v875 === */
+
+/* === v876 TEST: Taktikfilm rörelsepil - visa ny position direkt ===
+   Bas: v875.
+   Syfte: v875 räddade rörelsepilen, men spelarens/bollens nya slutposition
+   syntes först efter steg fram/tillbaka. Denna lilla efterkorrigering kör bara
+   i Taktikfilm-redigering med verktyget rörelsepil och speglar aktuellt stegs
+   movementPaths-slutpunkter till den synliga spelare-/boll-listan direkt efter
+   att steget sparats. Rör inte formationsjusterare, Supabase, Lager eller övrig
+   Taktikfilm-logik. */
+(function(){
+  if(window.__tt876MovementArrowLivePosition)return;
+  window.__tt876MovementArrowLivePosition=true;
+
+  function isMovementEdit876(){
+    try{
+      return String(mode||'')==='movement' &&
+             typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null &&
+             typeof editingStepIdx!=='undefined' && editingStepIdx!==null &&
+             typeof taktikFilmer!=='undefined' && taktikFilmer && taktikFilmer[editingTaktikIdx];
+    }catch(e){return false;}
+  }
+  function currentStep876(){
+    try{
+      var tk=taktikFilmer[editingTaktikIdx];
+      if(!tk||!Array.isArray(tk.steps))return null;
+      return tk.steps[editingStepIdx]||null;
+    }catch(e){return null;}
+  }
+  function applyMovementEndpointsToVisible876(){
+    try{
+      if(!isMovementEdit876())return;
+      var step=currentStep876();
+      if(!step||!Array.isArray(step.movementPaths)||!step.movementPaths.length)return;
+      var changed=false;
+      step.movementPaths.forEach(function(mp){
+        if(!mp||!Array.isArray(mp.pts)||mp.pts.length<2)return;
+        var end=mp.pts[mp.pts.length-1];
+        if(!end||!isFinite(end.x)||!isFinite(end.y))return;
+        if(String(mp.playerId)==='ball'){
+          if(typeof ball!=='undefined'&&ball){
+            if(Math.abs((ball.x||0)-end.x)>0.5||Math.abs((ball.y||0)-end.y)>0.5){ball.x=end.x;ball.y=end.y;changed=true;}
+          }
+          return;
+        }
+        if(typeof players!=='undefined'&&Array.isArray(players)){
+          var p=players.find(function(x){return x&&String(x.id)===String(mp.playerId);});
+          if(p&&(Math.abs((p.x||0)-end.x)>0.5||Math.abs((p.y||0)-end.y)>0.5)){
+            p.x=end.x;p.y=end.y;changed=true;
+          }
+        }
+      });
+      if(changed){try{render();}catch(e){}}
+    }catch(e){}
+  }
+
+  function schedule876(){
+    [0,80,220,520].forEach(function(ms){setTimeout(applyMovementEndpointsToVisible876,ms);});
+  }
+
+  if(typeof tt145SaveCurrentStep==='function' && !tt145SaveCurrentStep.__tt876LivePosWrapped){
+    var old145=tt145SaveCurrentStep;
+    tt145SaveCurrentStep=function(){
+      var r=old145.apply(this,arguments);
+      schedule876();
+      return r;
+    };
+    tt145SaveCurrentStep.__tt876LivePosWrapped=true;
+    try{tt76SaveCurrentStep=tt145SaveCurrentStep;}catch(e){}
+    try{saveCurrentStepV75=tt145SaveCurrentStep;}catch(e){}
+    try{autoSaveCurrentStepLocalV16=tt145SaveCurrentStep;}catch(e){}
+  }
+
+  ['touchend','mouseup'].forEach(function(evt){
+    try{document.addEventListener(evt,function(){if(isMovementEdit876())schedule876();},true);}catch(e){}
+  });
+})();
+/* === slut v876 === */
