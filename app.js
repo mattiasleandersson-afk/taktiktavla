@@ -48785,3 +48785,174 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [0,120,500,1500,3000].forEach(function(ms){setTimeout(apply,ms);});
 })();
 /* === slut v891 === */
+
+
+/* === v893 / Version 2.0.6: V2 småbuggar Taktikfilm + iPad lager-meny ===
+   Bas: v891 / Version 2.0.5.
+   Fixar smalt:
+   1) Taktikfilm-listans filrader visar inte mappnamnet på raden, så filnamnet får mer plats.
+   2) Inaktuell lokal nödkopia rensas före öppning om den redan motsvarar sparad/ren version.
+   3) Stegrader i Taktikfilm-redigering kan åter öppnas med direkttryck, även när man trycker på namnfältet.
+   4) Taktiktavla fullscreen på iPad placerar Lager-menyns trepunkts-panel inom skärmen.
+   Ingen Supabase, SQL, hastighetskurva, rörelsepil-, lagerdata- eller formationslogik ändras. */
+(function(){
+  'use strict';
+  if(window.__tt893V2Bugfixes)return;
+  window.__tt893V2Bugfixes=true;
+  var VERSION='Version 2.0.6';
+  var STORE='tt_taktikfilm_recovery_v2';
+  var PENDING='tt873_taktikfilm_pending_recovery_key';
+  var BASE_PREFIX='tt873_taktikfilm_saved_base_';
+
+  function byId(id){return document.getElementById(id);}
+  function clone(o){try{return JSON.parse(JSON.stringify(o));}catch(e){return null;}}
+  function clean(o){try{
+    if(o===null||typeof o!=='object')return o;
+    if(Array.isArray(o))return o.map(clean);
+    var out={};
+    Object.keys(o).sort().forEach(function(k){
+      if(!k||k.charAt(0)==='_')return;
+      if(k==='id'||k==='dbId'||k==='meta'||k==='createdAt'||k==='updatedAt'||k==='savedAt'||k==='ts'||k==='_lastSavedAt'||k==='_lastLocalSaveAt'||k==='_recoveryKey'||k==='_storeKey')return;
+      var v=o[k];
+      if(typeof v==='function'||typeof v==='undefined')return;
+      out[k]=clean(v);
+    });
+    return out;
+  }catch(e){return o;}}
+  function norm(o){try{return JSON.stringify(clean(clone(o)||{}));}catch(e){return'';}}
+  function filmKey(tk){try{if(!tk)return'';if(tk.dbId)return'db:'+tk.dbId;if(tk.id)return'id:'+tk.id;var n=String(tk.name||'').trim().toLowerCase();return n?'name:'+n:'';}catch(e){return'';}}
+  function readStore(){try{var raw=localStorage.getItem(STORE);var o=raw?JSON.parse(raw):{};return o&&typeof o==='object'?o:{};}catch(e){return{};}}
+  function writeStore(o){try{localStorage.setItem(STORE,JSON.stringify(o||{}));}catch(e){}}
+  function clearPending(key){try{var p=localStorage.getItem(PENDING)||'';if(!key||p===key)localStorage.removeItem(PENDING);}catch(e){}}
+  function removeRecovery(key){try{if(!key)return;var s=readStore();if(s&&s[key]){delete s[key];writeStore(s);}clearPending(key);}catch(e){}}
+  function readBase(key){try{var raw=localStorage.getItem(BASE_PREFIX+key);return raw?JSON.parse(raw):null;}catch(e){return null;}}
+
+  function cleanupStaleRecoveryBeforeOpen(idx){try{
+    if(idx===null||typeof idx==='undefined'||!Array.isArray(taktikFilmer)||!taktikFilmer[idx])return;
+    var tk=taktikFilmer[idx];
+    var key=filmKey(tk); if(!key)return;
+    var rec=readStore()[key]; if(!rec||!rec.tk)return;
+    var recNorm=norm(rec.tk);
+    if(!recNorm)return;
+    // Om nödkopian redan är samma som filen vi öppnar eller samma som sparad bas finns inget att återställa.
+    if(recNorm===norm(tk)){removeRecovery(key);return;}
+    var base=readBase(key);
+    if(base && recNorm===norm(base)){removeRecovery(key);return;}
+  }catch(e){} }
+
+  function setVersion(){try{
+    document.title='Taktiktavla';
+    ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=byId(id);if(el)el.textContent=VERSION;});
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=String(el.textContent||'').trim();
+      if(/^(v?\d+|\d+\s*TEST|\d+ TEST|Version\s+2\.0(\.\d+)?)$/i.test(t))el.textContent=VERSION;
+    });
+  }catch(e){} }
+
+  function ensureCss(){
+    if(byId('tt893-v2-bugfix-css'))return;
+    var st=document.createElement('style');
+    st.id='tt893-v2-bugfix-css';
+    st.textContent=[
+      '#taktik-list .row{min-width:0!important;}',
+      '#taktik-list .row-name{flex:1 1 auto!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}',
+      '#taktik-list .row-sub{flex:0 0 auto!important;white-space:nowrap!important;max-width:72px!important;overflow:hidden!important;text-overflow:ellipsis!important;}',
+      '#taktik-list .row-sub.tt893-empty{display:none!important;}',
+      'body.fullscreen-portrait.tt719-tavla-active:not(.v66-taktik-fs) #tt616-layer-panel .tt661-layer-menu{position:relative!important;}',
+      'body.fullscreen-portrait.tt719-tavla-active:not(.v66-taktik-fs) #tt616-layer-panel .tt661-layer-menu-panel{position:fixed!important;margin:0!important;padding:8px!important;border:1px solid rgba(74,232,122,.28)!important;border-radius:10px!important;background:rgba(5,18,10,.98)!important;box-shadow:0 16px 34px rgba(0,0,0,.52)!important;z-index:12080!important;width:260px!important;max-width:calc(100vw - 16px)!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;box-sizing:border-box!important;display:none!important;grid-template-columns:1fr 1fr!important;gap:6px!important;}',
+      'body.fullscreen-portrait.tt719-tavla-active:not(.v66-taktik-fs) #tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-layer-menu-panel{display:grid!important;}',
+      'body.fullscreen-portrait.tt719-tavla-active:not(.v66-taktik-fs) #tt616-layer-panel .tt661-layer-menu-panel button{min-height:28px!important;padding:4px 6px!important;font-size:.69rem!important;line-height:1.1!important;white-space:normal!important;}',
+      'body.fullscreen-portrait.tt719-tavla-active:not(.v66-taktik-fs) #tt616-layer-panel .tt661-layer-menu-panel .tt661-wide{grid-column:1 / -1!important;}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function trimTaktikRowMeta(){try{
+    var list=byId('taktik-list'); if(!list)return;
+    list.querySelectorAll('.row .row-sub').forEach(function(fl){
+      if(!fl||fl.dataset.tt893Trimmed==='1')return;
+      var txt=String(fl.textContent||'').replace(/\s+/g,' ').trim();
+      var out='';
+      var m=txt.match(/(?:^|·)\s*(\d+\s+steg(?:\s*·.*)?)/i);
+      if(m)out=m[1].trim();
+      else if(/skrivskyddad/i.test(txt))out='skrivskyddad';
+      fl.textContent=out;
+      fl.dataset.tt893Trimmed='1';
+      fl.classList.toggle('tt893-empty',!out);
+      fl.title=out||'';
+    });
+  }catch(e){} }
+
+  function gotoStep893(idx){try{
+    idx=parseInt(idx,10); if(!isFinite(idx))return;
+    if(typeof tt76LoadStep==='function')tt76LoadStep(idx,{animate:false});
+    else{editingStepIdx=idx;var tk=(typeof tt76Current==='function')?tt76Current():(taktikFilmer&&taktikFilmer[editingTaktikIdx]);if(tk&&tk.steps&&tk.steps[idx]&&typeof restoreSnap==='function'){restoreSnap(tk.steps[idx]);if(typeof render==='function')render();}}
+    setTimeout(function(){try{if(typeof renderEditSteps==='function')renderEditSteps((typeof tt76Current==='function')?tt76Current():null);}catch(e){}},0);
+  }catch(e){} }
+  function stepIndexFromTarget(t){try{
+    while(t&&t!==document){if(t.dataset&&t.dataset.ttStepIndex!=null)return t.dataset.ttStepIndex;if(t.dataset&&t.dataset.idx!=null)return t.dataset.idx;t=t.parentNode;}
+  }catch(e){} return null;}
+  function bindStepDirectTap(){try{
+    var list=byId('edit-taktik-steps'); if(!list||list.dataset.tt893StepTap==='1')return;
+    list.dataset.tt893StepTap='1';
+    function handler(e){
+      var t=e.target;
+      if(t&&t.closest&&t.closest('button,.tt-step-drag-handle'))return;
+      var idx=stepIndexFromTarget(t);
+      if(idx==null)return;
+      gotoStep893(idx);
+    }
+    list.addEventListener('click',handler,true);
+    list.addEventListener('touchend',handler,{capture:true,passive:true});
+  }catch(e){} }
+
+  function fullscreenTavlaActive(){try{return document.body.classList.contains('fullscreen-portrait')&&document.body.classList.contains('tt719-tavla-active')&&!document.body.classList.contains('v66-taktik-fs');}catch(e){return false;}}
+  function placeLayerMenuPanel(panel,btn){try{
+    if(!panel||!btn)return;
+    var vw=Math.max(320,window.innerWidth||document.documentElement.clientWidth||1024);
+    var vh=Math.max(320,window.innerHeight||document.documentElement.clientHeight||768);
+    var gap=8, rect=btn.getBoundingClientRect(), w=Math.min(260,vw-gap*2);
+    panel.style.width=w+'px'; panel.style.maxWidth=(vw-gap*2)+'px'; panel.style.visibility='hidden'; panel.style.display='grid'; panel.style.left='0px'; panel.style.top='0px'; panel.style.maxHeight=(vh-gap*2)+'px';
+    var desiredH=Math.min(panel.scrollHeight||360,vh-gap*2), below=vh-rect.bottom-gap*2, above=rect.top-gap*2;
+    var top,maxH;
+    if(below>=Math.min(desiredH,220)||below>=above){top=Math.min(vh-gap-80,rect.bottom+6);maxH=Math.max(120,vh-top-gap);}else{maxH=Math.max(120,Math.min(desiredH,above));top=Math.max(gap,rect.top-6-maxH);}
+    var left=rect.right-w; if(left<gap)left=gap; if(left+w>vw-gap)left=vw-gap-w;
+    panel.style.left=Math.round(left)+'px'; panel.style.top=Math.round(top)+'px'; panel.style.maxHeight=Math.round(maxH)+'px'; panel.style.visibility='visible';
+  }catch(e){} }
+  function placeOpenLayerMenus(){try{
+    if(!fullscreenTavlaActive())return;
+    document.querySelectorAll('#tt616-layer-panel .tt661-layer-menu.tt663-menu-open').forEach(function(menu){placeLayerMenuPanel(menu.querySelector('.tt661-layer-menu-panel'),menu.querySelector('.tt661-layer-menu-button'));});
+  }catch(e){} }
+
+  if(typeof startPlayback==='function'&&!startPlayback.__tt893Wrapped){
+    var oldStart=startPlayback;
+    startPlayback=function(idx){cleanupStaleRecoveryBeforeOpen(idx);var r=oldStart.apply(this,arguments);setTimeout(trimTaktikRowMeta,0);return r;};
+    startPlayback.__tt893Wrapped=true;try{window.startPlayback=startPlayback;}catch(e){}
+  }
+  if(typeof openEditTaktik==='function'&&!openEditTaktik.__tt893Wrapped){
+    var oldOpen=openEditTaktik;
+    openEditTaktik=function(idx){cleanupStaleRecoveryBeforeOpen(idx);var r=oldOpen.apply(this,arguments);setTimeout(function(){bindStepDirectTap();},0);return r;};
+    openEditTaktik.__tt893Wrapped=true;try{window.openEditTaktik=openEditTaktik;}catch(e){}
+  }
+  if(typeof renderTaktikList==='function'&&!renderTaktikList.__tt893Wrapped){
+    var oldRender=renderTaktikList;
+    renderTaktikList=function(){var r=oldRender.apply(this,arguments);setTimeout(trimTaktikRowMeta,0);setTimeout(trimTaktikRowMeta,90);return r;};
+    renderTaktikList.__tt893Wrapped=true;try{window.renderTaktikList=renderTaktikList;}catch(e){}
+  }
+  if(typeof renderEditSteps==='function'&&!renderEditSteps.__tt893Wrapped){
+    var oldSteps=renderEditSteps;
+    renderEditSteps=function(){var r=oldSteps.apply(this,arguments);setTimeout(bindStepDirectTap,0);return r;};
+    renderEditSteps.__tt893Wrapped=true;try{window.renderEditSteps=renderEditSteps;}catch(e){}
+  }
+  if(typeof cloudSaveTaktik==='function'&&!cloudSaveTaktik.__tt893Wrapped){
+    var oldSave=cloudSaveTaktik;
+    cloudSaveTaktik=function(tk){var r=oldSave.apply(this,arguments);[500,1500,3000].forEach(function(ms){setTimeout(function(){try{removeRecovery(filmKey(tk||((typeof editingTaktikIdx==='number'&&taktikFilmer)?taktikFilmer[editingTaktikIdx]:null)));}catch(e){}},ms);});return r;};
+    cloudSaveTaktik.__tt893Wrapped=true;try{window.cloudSaveTaktik=cloudSaveTaktik;}catch(e){}
+  }
+
+  function tick(){ensureCss();setVersion();trimTaktikRowMeta();bindStepDirectTap();placeOpenLayerMenus();}
+  ['click','touchend','resize','orientationchange','scroll'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(tick,0);setTimeout(placeOpenLayerMenus,90);},true);});
+  try{var mo=new MutationObserver(function(){setTimeout(function(){trimTaktikRowMeta();bindStepDirectTap();placeOpenLayerMenus();},0);});var startMo=function(){try{mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','aria-expanded']});}catch(e){}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startMo);else startMo();}catch(e){}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tick,0);setTimeout(tick,500);setTimeout(tick,1500);});else{setTimeout(tick,0);setTimeout(tick,500);setTimeout(tick,1500);}
+})();
+/* === slut v893 === */
