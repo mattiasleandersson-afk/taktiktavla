@@ -48755,7 +48755,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v876 === */
 
 
-/* === v877 TEST: batteri/render-diagnos (read-only) ===
+/* === v877/v880 TEST: batteri/render-diagnos med kopiera värden (read-only) ===
    Bas: fungerande v876.
    Syfte: mäta om appen fortsätter arbeta i stillaläge på iPad/iPhone innan V2-release.
    Denna patch ska inte optimera eller ändra funktion. Den lägger bara till en liten diagnospanel
@@ -48815,6 +48815,55 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return hot.length?hot.join(', '):'lugnt just nu';
   }
 
+  function copyText(){
+    var mins=Math.round((now()-started)/60000);
+    var lines=[
+      'Taktiktavla v878 batteridiagnos',
+      'Status: '+statusLabel(),
+      'Läge: '+safeText(activeMode()),
+      'Sedan start: '+mins+' min',
+      'render/min: '+perMin.render+' (tot '+counters.render+')',
+      'RAF/min: '+perMin.raf+' (tot '+counters.raf+')',
+      'DOM-bursts/min: '+perMin.mutations+' poster/min '+perMin.mutationRecords,
+      'longtasks/min: '+perMin.longtasks,
+      'input-events/min: '+perMin.events,
+      'User agent: '+safeText(navigator.userAgent)
+    ];
+    return lines.join('\n');
+  }
+
+  function copyDiagnostics(){
+    var text=copyText();
+    function ok(){
+      try{
+        var b=document.getElementById('tt877-copy');
+        if(b){b.textContent='kopierat'; setTimeout(function(){try{b.textContent='kopiera värden';}catch(e){}},1200);}
+      }catch(e){}
+    }
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(ok,function(){fallbackCopy(text);});
+      }else fallbackCopy(text);
+    }catch(e){fallbackCopy(text);}
+  }
+
+  function fallbackCopy(text){
+    try{
+      var ta=document.createElement('textarea');
+      ta.value=text;
+      ta.setAttribute('readonly','readonly');
+      ta.style.cssText='position:fixed;left:-9999px;top:-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      var b=document.getElementById('tt877-copy');
+      if(b){b.textContent='kopierat'; setTimeout(function(){try{b.textContent='kopiera värden';}catch(e){}},1200);}
+    }catch(e){
+      try{prompt('Kopiera värdena:',text);}catch(_e){}
+    }
+  }
+
   function renderPanel(){
     if(!panel)return;
     if(minimized){
@@ -48824,7 +48873,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }
     var mins=Math.round((now()-started)/60000);
     panel.innerHTML=''
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><b style="color:#4ae87a">v877 batteridiagnos</b><button id="tt877-min" style="margin-left:auto;background:#14351d;color:#dfffe8;border:1px solid #2d6b3b;border-radius:6px;padding:2px 6px">minimera</button></div>'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><b style="color:#4ae87a">v878 batteridiagnos</b><button id="tt877-min" style="margin-left:auto;background:#14351d;color:#dfffe8;border:1px solid #2d6b3b;border-radius:6px;padding:2px 6px">minimera</button></div>'
       +'<div><b>Status:</b> '+statusLabel()+'</div>'
       +'<div><b>Läge:</b> '+safeText(activeMode())+'</div>'
       +'<div><b>Sedan start:</b> '+mins+' min</div>'
@@ -48835,9 +48884,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       +'<div>longtasks/min: <b>'+perMin.longtasks+'</b></div>'
       +'<div>input-events/min: <b>'+perMin.events+'</b></div>'
       +'<div style="color:#9fcaa8;margin-top:6px">Stå stilla 1–2 minuter i samma vy. Om siffrorna är höga utan att du gör något finns en aktiv loop/timer.</div>'
-      +'<button id="tt877-reset" style="margin-top:7px;background:#14351d;color:#dfffe8;border:1px solid #2d6b3b;border-radius:6px;padding:4px 8px">nollställ mätning</button>';
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px"><button id="tt877-reset" style="background:#14351d;color:#dfffe8;border:1px solid #2d6b3b;border-radius:6px;padding:4px 8px">nollställ mätning</button><button id="tt877-copy" style="background:#14351d;color:#dfffe8;border:1px solid #2d6b3b;border-radius:6px;padding:4px 8px">kopiera värden</button></div>';
     var mb=document.getElementById('tt877-min'); if(mb)mb.onclick=function(){minimized=true;renderPanel();};
     var rb=document.getElementById('tt877-reset'); if(rb)rb.onclick=function(){started=now();counters={render:0,raf:0,mutations:0,mutationRecords:0,longtasks:0,events:0};last={time:now(),render:0,raf:0,mutations:0,mutationRecords:0,longtasks:0,events:0};calcRates();renderPanel();};
+    var cb=document.getElementById('tt877-copy'); if(cb)cb.onclick=copyDiagnostics;
   }
 
   // Räkna render-anrop utan att ändra funktionen.
@@ -48899,107 +48949,115 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v877 === */
 
-/* === v879 TEST: batteridiagnos - hitta RAF-/DOM-källor ===
-   Bas: v876 + v877 diagnostik. v878-bromsen gav ingen tydlig effekt och används inte som bas.
-   Syfte: visa vilka kodrader som begär requestAnimationFrame och vilka DOM-noder som ändras i stillaläge.
-   Ingen optimering eller funktionsändring görs här. */
+
+/* === v878/v880 TEST: batterifix - pausa idle requestAnimationFrame-loop ===
+   Bas: v877 diagnostik från fungerande v876.
+   Diagnosen visade render/min 0 men RAF/min upp till ca 3600 och mycket DOM-mutationer i stillaläge.
+   Detta tyder på att någon äldre RAF-/DOM-sync-loop fortsätter arbeta även när appen är stilla.
+   Denna patch byter till en ren native requestAnimationFrame via iframe och släpper bara igenom RAF-callbacks
+   under tydlig aktivitet/animation eller direkt efter input/lägesbyte. I stillaläge släpps inte en fortsatt RAF-loop
+   igenom, så den stannar. Appens funktioner, sparning, Supabase, Taktikfilm-data och Lager-data ändras inte. */
 (function(){
   'use strict';
-  if(window.__tt879BatterySourceDiagnostics)return;
-  window.__tt879BatterySourceDiagnostics=true;
+  if(window.__tt878BatteryIdleRafBrake)return;
+  window.__tt878BatteryIdleRafBrake=true;
 
-  var rafStats=Object.create(null);
-  var domStats=Object.create(null);
-  var start=Date.now();
-  var panel=null;
+  var nativeWin=null,nativeRAF=null,nativeCAF=null;
+  try{
+    var iframe=document.createElement('iframe');
+    iframe.setAttribute('aria-hidden','true');
+    iframe.tabIndex=-1;
+    iframe.style.cssText='position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none;left:-9999px;top:-9999px;';
+    (document.documentElement||document.body).appendChild(iframe);
+    nativeWin=iframe.contentWindow;
+    nativeRAF=nativeWin&&nativeWin.requestAnimationFrame;
+    nativeCAF=nativeWin&&nativeWin.cancelAnimationFrame;
+  }catch(e){}
+  if(typeof nativeRAF!=='function'){
+    // Om native RAF inte kan hämtas gör vi inget hellre än att riskera funktioner.
+    try{console.warn('tt878: kunde inte hämta native RAF; batteribroms inaktiv');}catch(e){}
+    return;
+  }
 
-  function cleanStack(stack){
+  var allowUntil=Date.now()+3500;
+  var suppressed=0, passed=0;
+
+  function now(){return Date.now();}
+  function markActive(ms){allowUntil=Math.max(allowUntil,now()+(ms||900));}
+  function isBusy(){
+    try{if(typeof playback!=='undefined'&&playback&&playback.animating)return true;}catch(e){}
+    try{if(typeof tt146Animating!=='undefined'&&tt146Animating)return true;}catch(e){}
+    try{if(typeof tt145Animating!=='undefined'&&tt145Animating)return true;}catch(e){}
+    try{if(typeof dragging!=='undefined'&&dragging)return true;}catch(e){}
+    try{if(typeof drawing!=='undefined'&&drawing)return true;}catch(e){}
+    return false;
+  }
+  function allowFrame(){
+    if(isBusy())return true;
+    if(now()<allowUntil)return true;
+    return false;
+  }
+  function countRaf877(){
     try{
-      var lines=String(stack||'').split('\n').slice(1);
-      for(var i=0;i<lines.length;i++){
-        var s=lines[i].trim();
-        if(!s)continue;
-        if(s.indexOf('__tt879')>=0)continue;
-        if(s.indexOf('tt879')>=0)continue;
-        if(s.indexOf('requestAnimationFrame')>=0 && s.indexOf('app_js_v879')>=0)continue;
-        // korta ner sandbox-/url-prefix men behåll rad/kolumn
-        s=s.replace(/^at\s+/, '');
-        s=s.replace(/^.*\/(app(?:_test)?\.js[^)]*)/, '$1');
-        s=s.replace(/^.*\/(app_js_v\d+[^)]*)/, '$1');
-        return s;
+      if(window.tt877BatteryDiagnostics&&window.tt877BatteryDiagnostics.counters){
+        window.tt877BatteryDiagnostics.counters.raf++;
       }
     }catch(e){}
-    return 'okänd RAF-källa';
   }
-  function keyForNode(n,attr){
+  function lightPostFrameSync(){
+    // De äldre RAF-wrapperna gjorde mycket DOM-arbete varje frame. Här körs bara nödvändig visuell sync under riktig animation.
+    if(!isBusy())return;
+    try{if(typeof window.tt425SyncTaktikfilmVisuals==='function')window.tt425SyncTaktikfilmVisuals();}catch(e){}
+    try{if(typeof window.tt428SyncTaktikfilmTextSizes==='function')window.tt428SyncTaktikfilmTextSizes();}catch(e){}
+    try{if(typeof window.tt429PolishTaktikfilmNumbers==='function')window.tt429PolishTaktikfilmNumbers();}catch(e){}
+    try{if(typeof window.tt424SyncTaktikfilmNames==='function')window.tt424SyncTaktikfilmNames();}catch(e){}
+  }
+
+  window.requestAnimationFrame=function(cb){
+    var id=nativeRAF.call(nativeWin,function(ts){
+      if(!allowFrame()){
+        suppressed++;
+        try{window.__tt878SuppressedRaf=suppressed;}catch(e){}
+        return;
+      }
+      passed++;
+      try{window.__tt878PassedRaf=passed;}catch(e){}
+      countRaf877();
+      var out;
+      try{out=cb(ts);}finally{lightPostFrameSync();}
+      return out;
+    });
+    return id;
+  };
+  window.cancelAnimationFrame=function(id){
+    try{return nativeCAF.call(nativeWin,id);}catch(e){}
+  };
+
+  ['pointerdown','pointermove','pointerup','touchstart','touchmove','touchend','mousedown','mousemove','mouseup','click','keydown','keyup','wheel','input','change'].forEach(function(ev){
+    try{document.addEventListener(ev,function(){markActive(ev.indexOf('move')>=0?450:1200);},true);}catch(e){}
+  });
+  ['resize','orientationchange','fullscreenchange','pageshow','focus'].forEach(function(ev){
+    try{window.addEventListener(ev,function(){markActive(1600);},true);}catch(e){}
+  });
+
+  // När appfunktioner som render/restore/stepbyte körs tillåts kort RAF-fönster efteråt.
+  function wrap(name,ms){
     try{
-      if(!n)return 'okänd DOM';
-      var el=(n.nodeType===1)?n:(n.parentElement||n.parentNode);
-      if(!el||!el.tagName)return 'okänd DOM';
-      var id=el.id?('#'+el.id):'';
-      var cls='';
-      try{cls=String(el.className||'').replace(/\s+/g,'.'); if(cls)cls='.'+cls.slice(0,80);}catch(e){}
-      return el.tagName.toLowerCase()+id+cls+(attr?' ['+attr+']':'');
-    }catch(e){return 'okänd DOM';}
+      var fn=window[name]||(typeof globalThis!=='undefined'?globalThis[name]:null);
+      if(typeof fn!=='function'||fn.__tt878ActivityWrapped)return;
+      var nw=function(){markActive(ms||900);var r=fn.apply(this,arguments);markActive(ms||900);return r;};
+      nw.__tt878ActivityWrapped=true;
+      window[name]=nw;
+      try{eval(name+' = nw;');}catch(e){}
+    }catch(e){}
   }
-  function add(map,key,field,n){
-    var o=map[key]||(map[key]={calls:0,callbacks:0,records:0});
-    o[field]=(o[field]||0)+(n||1);
-  }
-  function top(map,field,n){
-    return Object.keys(map).map(function(k){return {k:k,v:map[k]&&map[k][field]||0,o:map[k]};}).sort(function(a,b){return b.v-a.v;}).slice(0,n||5);
-  }
-  function esc(s){return String(s||'').replace(/[&<>]/g,function(c){return c==='&'?'&amp;':c==='<'?'&lt;':'&gt;';});}
+  ['render','restoreSnap','updatePlaybar','updateEditStepUI','updateEditStepUI_silent','renderEditSteps','renderPlayStepList','enterFullscreenPortrait','exitFullscreenPortrait','animateToStep'].forEach(function(n){wrap(n,1400);});
 
-  try{
-    var prevRAF=window.requestAnimationFrame;
-    window.requestAnimationFrame=function(cb){
-      var src=cleanStack((new Error()).stack);
-      add(rafStats,src,'calls',1);
-      return prevRAF.call(window,function(ts){
-        add(rafStats,src,'callbacks',1);
-        return cb(ts);
-      });
-    };
-  }catch(e){}
-
-  try{
-    if(window.MutationObserver && document.body){
-      var mo=new MutationObserver(function(records){
-        try{
-          (records||[]).forEach(function(r){
-            add(domStats,keyForNode(r.target,r.attributeName),'records',1);
-          });
-        }catch(e){}
-      });
-      mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class','hidden','transform','x','y','cx','cy','d']});
-    }
-  }catch(e){}
-
-  function ensurePanel(){
-    if(panel&&panel.parentNode)return panel;
-    if(!document.body)return null;
-    panel=document.createElement('div');
-    panel.id='tt879-source-diagnostics';
-    panel.style.cssText='position:fixed;left:8px;bottom:8px;z-index:1000000;background:rgba(6,10,18,.95);color:#e8f2ff;border:1px solid #63a8ff;border-radius:10px;padding:8px 10px;font:11px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:min(560px,calc(100vw - 16px));max-height:48vh;overflow:auto;box-shadow:0 4px 18px rgba(0,0,0,.35);pointer-events:auto;';
-    document.body.appendChild(panel);
-    return panel;
-  }
-  function render(){
-    var p=ensurePanel(); if(!p)return;
-    var mins=Math.max(1,Math.round((Date.now()-start)/60000));
-    var rafTop=top(rafStats,'callbacks',6);
-    var domTop=top(domStats,'records',6);
-    p.innerHTML='<div style="display:flex;gap:8px;align-items:center"><b style="color:#63a8ff">v879 källdiagnos</b><button id="tt879-reset" style="margin-left:auto;background:#11233d;color:#e8f2ff;border:1px solid #345d93;border-radius:6px;padding:2px 6px">nollställ</button></div>'+
-      '<div style="opacity:.8;margin:3px 0 6px">Stå stilla 60–90 sek. Skicka bild på denna ruta. v878-bromsen används inte här.</div>'+
-      '<b>RAF-källor, callbacks sedan start:</b><ol style="margin:4px 0 8px 18px;padding:0">'+(rafTop.length?rafTop.map(function(x){return '<li><b>'+x.v+'</b> <span style="color:#b9d8ff">'+esc(x.k)+'</span></li>';}).join(''):'<li>inga</li>')+'</ol>'+
-      '<b>DOM-källor, poster sedan start:</b><ol style="margin:4px 0 0 18px;padding:0">'+(domTop.length?domTop.map(function(x){return '<li><b>'+x.v+'</b> <span style="color:#b9d8ff">'+esc(x.k)+'</span></li>';}).join(''):'<li>inga</li>')+'</ol>';
-    var rb=document.getElementById('tt879-reset');
-    if(rb)rb.onclick=function(){rafStats=Object.create(null);domStats=Object.create(null);start=Date.now();render();};
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){render();setInterval(render,1500);});
-  else{render();setInterval(render,1500);}
-
-  window.tt879BatterySourceDiagnostics={rafStats:rafStats,domStats:domStats};
+  window.tt878BatteryIdleRafBrake={
+    markActive:markActive,
+    suppressed:function(){return suppressed;},
+    passed:function(){return passed;},
+    isBusy:isBusy
+  };
 })();
-/* === slut v879 === */
+/* === slut v878 === */
