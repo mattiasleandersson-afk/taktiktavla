@@ -48655,3 +48655,93 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   });
 })();
 /* === slut v876 === */
+
+
+/* === v888 / Version 2.0.2: Taktikfilm fullscreen cirkelfix ===
+   Bas: v887 skarp V2.0.1.
+   Smal visuell hotfix: om Taktikfilm är i cirkelläge och man går till fullscreen
+   kan äldre tt415/tt425-tröjklasser lämna cirkeln med opacity .01. Siffran syns då
+   men själva spelarcirkeln försvinner. Denna fix kör bara i Taktikfilm/fullscreen
+   eller Taktikfilm-context och bara när valt Taktikfilm-symbol-läge är cirkel.
+   Rör inte stegdata, rörelsepilar, sparning, Supabase, lager eller batterispår. */
+(function(){
+  if(window.__tt888TaktikfilmFullscreenCircleFix)return;
+  window.__tt888TaktikfilmFullscreenCircleFix=true;
+  var VERSION='Version 2.0.2';
+  var LS_SYMBOL='tt425_taktikfilm_symbol';
+
+  function setVersion888(){
+    try{
+      window.TAKTIKTAVLA_VERSION=VERSION;
+      if(document.body)document.body.setAttribute('data-app-version',VERSION);
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=document.getElementById(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+      document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v\d+\.\d+|Version\s*\d+)/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+    }catch(e){}
+  }
+  function symbol888(){try{return localStorage.getItem(LS_SYMBOL)||'circle';}catch(e){return 'circle';}}
+  function isTaktikContext888(){
+    try{if(document.body&&(document.body.classList.contains('v66-taktik-fs')||document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen')||document.body.classList.contains('tt688-taktikfilm-editor-active')||document.body.classList.contains('tt743-mobile-taktikfilm-active')))return true;}catch(e){}
+    try{if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null&&typeof isEditingTaktik!=='undefined'&&isEditingTaktik)return true;}catch(e){}
+    try{if(typeof playback!=='undefined'&&playback&&playback.tk)return true;}catch(e){}
+    return false;
+  }
+  function ensureCss888(){
+    if(document.getElementById('tt888-taktikfilm-fullscreen-circle-css'))return;
+    var st=document.createElement('style');
+    st.id='tt888-taktikfilm-fullscreen-circle-css';
+    st.textContent=[
+      'body.tt888-taktikfilm-circle-fs .player-token circle{opacity:1!important;visibility:visible!important;display:inline!important}',
+      'body.tt888-taktikfilm-circle-fs .player-token path.tt415-jersey{display:none!important;visibility:hidden!important;opacity:0!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+  function apply888(){
+    setVersion888();
+    ensureCss888();
+    if(!document.body)return;
+    var active=isTaktikContext888();
+    var circle=symbol888()!=='jersey';
+    document.body.classList.toggle('tt888-taktikfilm-circle-fs',active&&circle);
+    if(!active||!circle)return;
+    try{
+      document.body.classList.remove('tt415-taktik-jersey','tt425-taktik-jersey');
+      document.body.classList.add('tt415-taktik-circle','tt425-taktik-circle');
+    }catch(e){}
+    try{
+      document.querySelectorAll('.player-token').forEach(function(g){
+        var c=g.querySelector('circle');
+        if(c){
+          c.style.opacity='1';
+          c.style.visibility='visible';
+          c.style.display='inline';
+          c.setAttribute('pointer-events','all');
+        }
+        g.querySelectorAll('path.tt415-jersey').forEach(function(j){j.remove();});
+        var t=g.querySelector('text.token-text');
+        if(t&&t.style.display==='none')t.style.display='';
+      });
+    }catch(e){}
+  }
+  if(typeof render==='function'&&!render.__tt888CircleFix){
+    var oldRender888=render;
+    render=function(){
+      var r=oldRender888.apply(this,arguments);
+      try{apply888();setTimeout(apply888,0);}catch(e){}
+      return r;
+    };
+    render.__tt888CircleFix=true;
+    window.render=render;
+  }
+  ['click','touchend','pointerup','fullscreenchange','webkitfullscreenchange','resize','orientationchange'].forEach(function(ev){
+    window.addEventListener(ev,function(){setTimeout(apply888,0);setTimeout(apply888,80);setTimeout(apply888,220);},true);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){apply888();setTimeout(apply888,300);});
+  else{apply888();setTimeout(apply888,300);}
+  [800,1600,3000].forEach(function(ms){setTimeout(apply888,ms);});
+})();
+/* === slut v888 === */
