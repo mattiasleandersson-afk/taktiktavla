@@ -48787,19 +48787,20 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v891 === */
 
 
-/* === v893 / Version 2.0.6: V2 småbuggar Taktikfilm + iPad lager-meny ===
-   Bas: v891 / Version 2.0.5.
-   Fixar smalt:
+/* === v894 / Version 2.0.7: V2 nödkopia återställd efter v893 ===
+   Bas: v893 / Version 2.0.6.
+   Behåller v893:s godkända fixar:
    1) Taktikfilm-listans filrader visar inte mappnamnet på raden, så filnamnet får mer plats.
-   2) Inaktuell lokal nödkopia rensas före öppning om den redan motsvarar sparad/ren version.
    3) Stegrader i Taktikfilm-redigering kan åter öppnas med direkttryck, även när man trycker på namnfältet.
    4) Taktiktavla fullscreen på iPad placerar Lager-menyns trepunkts-panel inom skärmen.
+   Justerar bara punkt 2: riktig nödkopia efter manuell Avsluta får inte rensas före öppning.
+   Inaktuell recovery rensas fortfarande bara när det inte finns pending-manual-exit.
    Ingen Supabase, SQL, hastighetskurva, rörelsepil-, lagerdata- eller formationslogik ändras. */
 (function(){
   'use strict';
-  if(window.__tt893V2Bugfixes)return;
-  window.__tt893V2Bugfixes=true;
-  var VERSION='Version 2.0.6';
+  if(window.__tt894V2Bugfixes)return;
+  window.__tt894V2Bugfixes=true;
+  var VERSION='Version 2.0.7';
   var STORE='tt_taktikfilm_recovery_v2';
   var PENDING='tt873_taktikfilm_pending_recovery_key';
   var BASE_PREFIX='tt873_taktikfilm_saved_base_';
@@ -48832,9 +48833,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var tk=taktikFilmer[idx];
     var key=filmKey(tk); if(!key)return;
     var rec=readStore()[key]; if(!rec||!rec.tk)return;
+    var pending='';try{pending=localStorage.getItem(PENDING)||'';}catch(_e){}
+    // v894: om v873 precis har sparat en riktig nödkopia efter manuell Avsluta
+    // måste den få passera vidare till v873:s preOpenChoice. v893 rensade här för tidigt.
+    if(pending===key)return;
     var recNorm=norm(rec.tk);
     if(!recNorm)return;
     // Om nödkopian redan är samma som filen vi öppnar eller samma som sparad bas finns inget att återställa.
+    // Detta gäller bara gamla/inaktuella recovery-poster utan pending-manual-exit.
     if(recNorm===norm(tk)){removeRecovery(key);return;}
     var base=readBase(key);
     if(base && recNorm===norm(base)){removeRecovery(key);return;}
@@ -48955,4 +48961,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   try{var mo=new MutationObserver(function(){setTimeout(function(){trimTaktikRowMeta();bindStepDirectTap();placeOpenLayerMenus();},0);});var startMo=function(){try{mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','aria-expanded']});}catch(e){}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startMo);else startMo();}catch(e){}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tick,0);setTimeout(tick,500);setTimeout(tick,1500);});else{setTimeout(tick,0);setTimeout(tick,500);setTimeout(tick,1500);}
 })();
-/* === slut v893 === */
+/* === slut v894 === */
