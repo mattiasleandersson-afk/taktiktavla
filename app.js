@@ -1,4 +1,4 @@
-/* v896 / Version 2.0.9: recovery confirm-capture fix, byggd från v895. */
+/* v899 / Version 2.0.10: ren Taktikfilm-listfix vid källan, byggd från v896. */
 /* v887 / Version 2.0 release SUPABASEFIX: byggd från v886, med produktions-Supabase från tidigare fungerande originalapp. */
 /* === v887 / Version 2.0 RELEASE SUPABASEFIX FASTA FILNAMN ===
    Klistra denna fil i GitHub som: app.js.
@@ -1451,6 +1451,7 @@ function renderTaktikList(){
       var row=document.createElement("div");
       row.className="row";
       row.style.gap="3px";
+      row.setAttribute("data-taktik-folder",tk.folder||"Taktik");
 
       var nm=document.createElement("span");
       nm.className="row-name";
@@ -1458,7 +1459,7 @@ function renderTaktikList(){
 
       var fl=document.createElement("span");
       fl.className="row-sub";
-      fl.textContent=(tk.folder||"Allmänt")+" · "+(tk.steps.length-1)+" steg";
+      fl.textContent=(tk.steps.length-1)+" steg";
 
       function iconBtn(txt,title,color){
         var b=document.createElement("button");
@@ -2897,9 +2898,9 @@ function renderTaktikListV545Original(){
     (function(tk){
       var idx=taktikFilmer.indexOf(tk), mine=isMineV10(tk), readOnly=isReadOnlyFileV10(tk);
       tk._readOnly=readOnly;
-      var row=document.createElement("div");row.className="row";row.style.gap="3px";
+      var row=document.createElement("div");row.className="row";row.style.gap="3px";row.setAttribute("data-taktik-folder",tk.folder||"Taktik");
       var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;
-      var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.folder||"Allmänt")+" · "+(tk.steps.length-1)+" steg"+(mine?"":" · "+ownerNameV10(tk)+" · skrivskyddad");
+      var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.steps.length-1)+" steg"+(mine?"":" · "+ownerNameV10(tk)+" · skrivskyddad");
       function iconBtn(txt,title,color){var b=document.createElement("button");b.className="sa";b.textContent=txt;b.title=title;b.setAttribute("aria-label",title);b.style.cssText="min-width:24px;padding:2px 5px;font-size:0.72rem;line-height:1.1"+(color?";color:"+color+";border-color:"+color:"");return b;}
       var fav=document.createElement("button");fav.className="star-btn "+(tk.dbId&&favorites_[tk.dbId]?"on":"off");fav.innerHTML="&#9733;";fav.title="Favorit";fav.addEventListener("click",function(e){e.stopPropagation();if(tk.dbId&&mine)toggleFavorite(tk.dbId);});
       var pb=iconBtn(readOnly?"👁":"✎",readOnly?"Öppna skrivskyddat":"Redigera","#4ae87a");pb.className+=" play";pb.addEventListener("click",function(){startPlayback(idx);if(readOnly)showToast("Skrivskyddad – kopiera för att redigera");});
@@ -3049,9 +3050,9 @@ function renderTaktikList(){
       var idx=taktikFilmer.indexOf(tk), mine=isMineV10(tk), readOnly=isReadOnlyFileV10(tk);
       tk._readOnly=readOnly;
       var folder=tk.folder||"Taktik";
-      var row=document.createElement("div");row.className="row";row.style.gap="3px";
+      var row=document.createElement("div");row.className="row";row.style.gap="3px";row.setAttribute("data-taktik-folder",tk.folder||"Taktik");
       var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;
-      var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.folder||"Allmänt")+" · "+(tk.steps.length-1)+" steg"+(mine?"":" · "+ownerNameV10(tk)+" · skrivskyddad");
+      var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.steps.length-1)+" steg"+(mine?"":" · "+ownerNameV10(tk)+" · skrivskyddad");
       function iconBtn(txt,title,color){var b=document.createElement("button");b.className="sa";b.textContent=txt;b.title=title;b.setAttribute("aria-label",title);b.style.cssText="min-width:24px;padding:2px 5px;font-size:0.72rem;line-height:1.1"+(color?";color:"+color+";border-color:"+color:"");return b;}
       var fav=document.createElement("button");fav.className="star-btn "+(tk.dbId&&favorites_[tk.dbId]?"on":"off");fav.innerHTML="&#9733;";fav.title="Favorit";fav.addEventListener("click",function(e){e.stopPropagation();if(tk.dbId&&mine)toggleFavorite(tk.dbId);});
       var pb=iconBtn(readOnly?"👁":"✎",readOnly?"Öppna skrivskyddat":"Redigera","#4ae87a");pb.className+=" play";pb.addEventListener("click",function(){startPlayback(idx);if(readOnly)showToast("Skrivskyddad – kopiera för att redigera");});
@@ -33708,11 +33709,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(!items.length){var e=document.createElement('span');e.style.cssText='color:#7aaa88;font-size:0.8rem';e.textContent='Inga delade lagfilmer';list.appendChild(e);return true;}
       items.forEach(function(tk){
         var isMine=mine(tk);
-        var row=document.createElement('div');row.className='row tt374-row';row.dataset.taktikfilmId=String(tk.dbId||tk.id||'');
+        var row=document.createElement('div');row.className='row tt374-row';row.dataset.taktikfilmId=String(tk.dbId||tk.id||'');row.setAttribute('data-taktik-folder',tk.folder||'Taktik');
         var info=document.createElement('div');info.className='tt374-info';
         var nm=document.createElement('span');nm.className='row-name';nm.textContent=tk.name||'Taktikfilm';
         var steps=Array.isArray(tk.steps)?Math.max(0,tk.steps.length-1):0;
-        var fl=document.createElement('span');fl.className='row-sub';fl.textContent=(tk.folder||'Taktik')+' · '+steps+' steg'+(isMine?'':' · '+ownerLabel(tk)+' · skrivskyddad');
+        var fl=document.createElement('span');fl.className='row-sub';fl.textContent=steps+' steg'+(isMine?'':' · '+ownerLabel(tk)+' · skrivskyddad');
         info.appendChild(nm);info.appendChild(fl);row.appendChild(info);
         var actions=document.createElement('div');actions.className='tt374-actions';
         actions.appendChild(makeBtn(isMine?'✎':'👁',isMine?'Redigera':'Öppna skrivskyddat',function(){openTaktik(tk);},'#4ae87a'));
@@ -39725,6 +39726,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function folderFromRow547(row){
     try{
+      var ds=row&&(row.getAttribute('data-taktik-folder')||(row.dataset&&row.dataset.taktikFolder));
+      if(ds)return String(ds).trim()||'Taktik';
       var sub=row.querySelector('.row-sub');
       var raw=String(sub&&sub.textContent||'Taktik').replace(/\s+/g,' ').trim();
       var f=raw.split('·')[0].trim();
@@ -39907,6 +39910,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function folderFromRow557(row){
     try{
+      var ds=row&&(row.getAttribute('data-taktik-folder')||(row.dataset&&row.dataset.taktikFolder));
+      if(ds)return String(ds).trim()||'Taktik';
       var sub=row.querySelector('.row-sub');
       var raw=String(sub&&sub.textContent||'Taktik').replace(/\s+/g,' ').trim();
       var f=raw.split('·')[0].trim();
@@ -49153,7 +49158,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v895 === */
 
 
-/* === v896 / Version 2.0.9: V2 Taktikfilm nödkopia via faktisk osparat-bekräftelse ===
+/* === v899 / Version 2.0.10: V2 Taktikfilm nödkopia via faktisk osparat-bekräftelse + ren listfix ===
    Bas: v895 / Version 2.0.8.
    v895 träffade inte alltid rätt Avsluta-väg. I praktiken kunde varningen komma från äldre
    globala v847/v848-vakter och då hann ingen recovery sparas/flagga sättas.
@@ -49165,7 +49170,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt896V2RecoveryConfirmCaptureFix)return;
   window.__tt896V2RecoveryConfirmCaptureFix=true;
 
-  var VERSION='Version 2.0.9';
+  var VERSION='Version 2.0.10';
   var STORE='tt_taktikfilm_recovery_v2';
   var PENDING='tt873_taktikfilm_pending_recovery_key';
   var BASE_PREFIX='tt896_taktikfilm_saved_base_';
@@ -49284,3 +49289,5 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   else{[0,500,1500,3000].forEach(function(ms){setTimeout(setVersion,ms);});}
 })();
 /* === slut v896 === */
+
+/* === v898/v899 Taktikfilm-lista källfix: row-sub genererar inte längre mappnamn i Taktikfilm-rader. Mapp finns kvar som data-taktik-folder för gruppering. === */
