@@ -48818,7 +48818,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function copyText(){
     var mins=Math.round((now()-started)/60000);
     var lines=[
-      'Taktiktavla v878 batteridiagnos',
+      'Taktiktavla v884 batteridiagnos',
       'Status: '+statusLabel(),
       'Läge: '+safeText(activeMode()),
       'Sedan start: '+mins+' min',
@@ -48873,7 +48873,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }
     var mins=Math.round((now()-started)/60000);
     panel.innerHTML=''
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><b style="color:#4ae87a">v878 batteridiagnos</b><button id="tt877-min" style="margin-left:auto;background:#14351d;color:#dfffe8;border:1px solid #2d6b3b;border-radius:6px;padding:2px 6px">minimera</button></div>'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><b style="color:#4ae87a">v884 batteridiagnos</b><button id="tt877-min" style="margin-left:auto;background:#14351d;color:#dfffe8;border:1px solid #2d6b3b;border-radius:6px;padding:2px 6px">minimera</button></div>'
       +'<div><b>Status:</b> '+statusLabel()+'</div>'
       +'<div><b>Läge:</b> '+safeText(activeMode())+'</div>'
       +'<div><b>Sedan start:</b> '+mins+' min</div>'
@@ -48950,6 +48950,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v877 === */
 
 
+/* === v884 TEST: batterifix - RAF-tidsstämpel för animation ===
+   Bas: v883/v880. Korrigerar v878/v880-bromsen så animationer får huvudsidans performance.now() som tidsstämpel, inte iframe-RAF:ens tidsstämpel.
+   Detta ska bevara idle-batteribromsen men stoppa konstig Taktikfilm-animation/långa tomma steg. */
+
 /* === v878/v880 TEST: batterifix - pausa idle requestAnimationFrame-loop ===
    Bas: v877 diagnostik från fungerande v876.
    Diagnosen visade render/min 0 men RAF/min upp till ca 3600 och mycket DOM-mutationer i stillaläge.
@@ -49024,7 +49028,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       try{window.__tt878PassedRaf=passed;}catch(e){}
       countRaf877();
       var out;
-      try{out=cb(ts);}finally{lightPostFrameSync();}
+      var mainTs;
+      try{mainTs=(window.performance&&typeof window.performance.now==='function')?window.performance.now():ts;}catch(e){mainTs=ts;}
+      try{out=cb(mainTs);}finally{lightPostFrameSync();}
       return out;
     });
     return id;
