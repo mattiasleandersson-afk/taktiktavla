@@ -49062,7 +49062,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v878 === */
 
-/* === v881 TEST: DOM-källdiagnos ovanpå v880/v878 RAF-broms ===
+/* === v881/v882 TEST: DOM-källdiagnos ovanpå v880/v878 RAF-broms ===
    Bas: v880 från v878/v876-spåret.
    Syfte: hitta vilka DOM-noder/attribut som ändras i stillaläge efter att RAF-bromsen
    sänkt RAF/min till nära 0. Ingen optimering, ingen appfunktion ändras.
@@ -49139,7 +49139,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var topS=topLines(sourceCounts,8);
       var topA=topLines(attrCounts,8);
       var html='';
-      html+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px"><b style="color:#79c7ff">v881 DOM-källdiagnos</b><button id="tt881-copy" style="margin-left:auto;background:#0c355c;color:#e8f3ff;border:1px solid #3d8ed7;border-radius:6px;padding:2px 6px">kopiera</button><button id="tt881-reset" style="background:#0c355c;color:#e8f3ff;border:1px solid #3d8ed7;border-radius:6px;padding:2px 6px">nollställ</button></div>';
+      html+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px"><b style="color:#79c7ff">v882 DOM-källdiagnos</b><button id="tt881-copy" style="margin-left:auto;background:#0c355c;color:#e8f3ff;border:1px solid #3d8ed7;border-radius:6px;padding:2px 6px">kopiera</button><button id="tt881-reset" style="background:#0c355c;color:#e8f3ff;border:1px solid #3d8ed7;border-radius:6px;padding:2px 6px">nollställ</button></div>';
       html+='<div>sedan start: '+elapsed+' min | bursts: '+totalBursts+' | records: '+totalRecords+'</div>';
       html+='<div>senaste minut: bursts '+minuteBursts+' | records '+minuteRecords+'</div>';
       html+='<div style="margin-top:6px;color:#b9dcff"><b>Topp DOM-källor senaste mätperiod</b></div>';
@@ -49162,7 +49162,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var topS=topLines(sourceCounts,12).map(function(x,i){return (i+1)+'. '+x[0]+' – '+x[1];}).join('\n');
     var topA=topLines(attrCounts,12).map(function(x,i){return (i+1)+'. '+x[0]+' – '+x[1];}).join('\n');
     return [
-      'Taktiktavla v881 DOM-källdiagnos',
+      'Taktiktavla v882 DOM-källdiagnos',
       'sedan start min: '+Math.max(1,Math.round((Date.now()-started)/60000)),
       'total bursts: '+totalBursts,
       'total records: '+totalRecords,
@@ -49231,3 +49231,97 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   try{setTimeout(renderPanel,800);}catch(e){}
 })();
 /* === slut v881 === */
+
+
+/* === v882 TEST: batterifix - idempotenta DOM-attribut ovanpå v881/v880 ===
+   Bas: v882 DOM-källdiagnos + v880/v878 RAF-broms från fungerande v876-spåret.
+   v881 visade att RAF nu är nere på 0 i stillaläge, men att gamla UI-putsar fortfarande
+   ändrar samma DOM-attribut om och om igen, främst button.sa/title/aria-label/class samt
+   versions-/testbanner-attribut. Denna patch gör upprepade identiska DOM-skrivningar till no-op.
+   Den ändrar inte appdata, sparning, Supabase, Taktikfilm-steg eller Lagerlogik. */
+(function(){
+  'use strict';
+  if(window.__tt882DomIdempotentWrites)return;
+  window.__tt882DomIdempotentWrites=true;
+
+  function same(a,b){ return String(a)===String(b); }
+
+  try{
+    var oldSet=Element.prototype.setAttribute;
+    if(oldSet && !oldSet.__tt882Wrapped){
+      Element.prototype.setAttribute=function(name,value){
+        try{
+          if(name!=null){
+            var n=String(name);
+            var v=String(value);
+            // De här attributen var dominerande i v881-diagnosen och sätts ofta om till samma värde.
+            if(n==='class'||n==='title'||n==='aria-label'||n==='style'||n==='data-app-version'||n==='data-version'||n==='data-env'||n==='aria-expanded'||n.indexOf('data-tt')===0){
+              var cur=this.getAttribute(n);
+              if(cur!==null && same(cur,v))return;
+            }
+          }
+        }catch(e){}
+        return oldSet.call(this,name,value);
+      };
+      Element.prototype.setAttribute.__tt882Wrapped=true;
+    }
+  }catch(e){}
+
+  try{
+    var oldRemove=Element.prototype.removeAttribute;
+    if(oldRemove && !oldRemove.__tt882Wrapped){
+      Element.prototype.removeAttribute=function(name){
+        try{ if(name!=null && !this.hasAttribute(String(name)))return; }catch(e){}
+        return oldRemove.call(this,name);
+      };
+      Element.prototype.removeAttribute.__tt882Wrapped=true;
+    }
+  }catch(e){}
+
+  function patchProp(proto,prop,attrName){
+    try{
+      if(!proto)return false;
+      var d=Object.getOwnPropertyDescriptor(proto,prop);
+      if(!d || typeof d.set!=='function' || d.set.__tt882Wrapped)return false;
+      Object.defineProperty(proto,prop,{
+        configurable:true,
+        enumerable:d.enumerable,
+        get:d.get,
+        set:function(v){
+          try{
+            var cur=attrName?this.getAttribute(attrName):(d.get?d.get.call(this):undefined);
+            if(cur!=null && same(cur,v))return;
+          }catch(e){}
+          return d.set.call(this,v);
+        }
+      });
+      try{Object.getOwnPropertyDescriptor(proto,prop).set.__tt882Wrapped=true;}catch(e){}
+      return true;
+    }catch(e){return false;}
+  }
+
+  // Direkt property-skrivning, t.ex. b.title='Visa' eller el.className='sa', syns inte via setAttribute-wrappern.
+  patchProp(HTMLElement.prototype,'title','title');
+  patchProp(Element.prototype,'className','class');
+  patchProp(HTMLElement.prototype,'className','class');
+
+  // textContent skrivs ibland om med samma text i status-/versionsytor. Gör bara no-op vid exakt samma text.
+  try{
+    var td=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');
+    if(td && typeof td.set==='function' && !td.set.__tt882Wrapped){
+      Object.defineProperty(Node.prototype,'textContent',{
+        configurable:true,
+        enumerable:td.enumerable,
+        get:td.get,
+        set:function(v){
+          try{ if(this.nodeType===1 || this.nodeType===3){ var cur=td.get.call(this); if(same(cur,v))return; } }catch(e){}
+          return td.set.call(this,v);
+        }
+      });
+      try{Object.getOwnPropertyDescriptor(Node.prototype,'textContent').set.__tt882Wrapped=true;}catch(e){}
+    }
+  }catch(e){}
+
+  window.tt882DomIdempotentWrites={active:true};
+})();
+/* === slut v882 === */
