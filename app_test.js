@@ -47848,31 +47848,29 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v861-tavla-drawing-performance === */
 
 
-/* === v863-tavla-smooth-layer-direct-tap ===
-   Bas: v861 (ritningen i Taktiktavla blev mjukare där).
-   Syfte: behåll v861:s lätta pilpreview, men återställ direkt/snabb Lager-touch
-   på iPhone/iPad/Apple Pencil så lagerlistan inte kräver långt tryck.
-   Rör inte Taktikfilm, sparlogik, delning, matchnödkopia eller Supabase.
+/* === v864-layer-panel-only-direct-tap ===
+   Bas: v861 (mjukare Taktiktavla-ritning).
+   Syfte: förbättra Lagertryck på iPad/iPhone utan globala document-capture-lyssnare.
+   Till skillnad från v863 binds direkt-tap bara på #tt616-layer-panel och påverkar inte ritning på planen.
 */
 (function(){
-  if(window.__tt863LayerDirectTapInstalled)return;
-  window.__tt863LayerDirectTapInstalled=true;
+  if(window.__tt864LayerPanelOnlyTapInstalled)return;
+  window.__tt864LayerPanelOnlyTapInstalled=true;
 
   function coarse(){
     try{return !!(window.matchMedia && window.matchMedia('(hover:none), (pointer:coarse)').matches);}catch(e){return false;}
   }
-  function inLayerPanel(el){
-    try{return !!(el && el.closest && el.closest('#tt616-layer-panel'));}catch(e){return false;}
-  }
-  function actionableFromEvent(ev){
+  function panel(){return document.getElementById('tt616-layer-panel');}
+  function isInsidePanel(el){try{return !!(el && el.closest && el.closest('#tt616-layer-panel'));}catch(e){return false;}}
+  function actionTarget(ev){
     try{
       var t=ev.target;
-      if(!inLayerPanel(t))return null;
-      var btn=t.closest('button[data-tt630-action],button.tt661-layer-icon,button.tt661-layer-menu-button,#tt630-free-layer-add,.tt630-layer-add button,button');
-      if(btn && btn.closest('#tt616-layer-panel'))return btn;
+      if(!isInsidePanel(t))return null;
+      var btn=t.closest('button[data-tt630-action],button.tt661-layer-icon,button.tt661-layer-menu-button,#tt630-free-layer-add,.tt630-layer-add button,button,[data-tt630-action]');
+      if(btn && isInsidePanel(btn))return btn;
       var row=t.closest('.tt616-layer-row');
       if(row){
-        var active=row.querySelector('button[data-tt630-action="active"],.tt661-layer-title[data-tt630-action="active"]');
+        var active=row.querySelector('button[data-tt630-action="active"],[data-tt630-action="active"],.tt661-layer-title');
         if(active)return active;
       }
     }catch(e){}
@@ -47885,33 +47883,29 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
     }catch(e){}
   }
-  var blockUntil=0, blockEl=null, lastAt=0, lastEl=null;
-  function syntheticClick(el){
-    try{
-      window.__tt863SyntheticLayerClick=true;
-      el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
-    }catch(e){try{el.click();}catch(_e){}}
-    finally{setTimeout(function(){window.__tt863SyntheticLayerClick=false;},0);}
-  }
   function keepOpen(){
     try{
       document.body.classList.add('tt642-layer-panel-mobile-open');
       var b=document.getElementById('tt642-layer-mobile-toggle');
       if(b)b.setAttribute('aria-expanded','true');
-      var d=document.querySelector('#tt616-layer-panel details');
-      if(d)d.open=true;
     }catch(e){}
   }
-  function instant(ev){
-    if(!coarse())return;
+  var lastEl=null,lastAt=0,blockUntil=0,blockEl=null;
+  function syntheticClick(el){
     try{
-      if(ev.type==='pointerdown' && ev.pointerType && ev.pointerType!=='touch' && ev.pointerType!=='pen')return;
-    }catch(e){}
-    var el=actionableFromEvent(ev);
+      window.__tt864SyntheticLayerClick=true;
+      el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+    }catch(e){try{el.click();}catch(_e){}}
+    finally{setTimeout(function(){window.__tt864SyntheticLayerClick=false;},0);}
+  }
+  function down(ev){
+    if(!coarse())return;
+    try{ if(ev.type==='pointerdown' && ev.pointerType && ev.pointerType!=='touch' && ev.pointerType!=='pen')return; }catch(e){}
+    var el=actionTarget(ev);
     if(!el || el.disabled)return;
     var now=Date.now();
-    if(el===lastEl && now-lastAt<170){stop(ev);return;}
-    lastEl=el;lastAt=now;blockEl=el;blockUntil=now+700;
+    if(el===lastEl && now-lastAt<160){stop(ev);return;}
+    lastEl=el; lastAt=now; blockEl=el; blockUntil=now+550;
     stop(ev);
     keepOpen();
     syntheticClick(el);
@@ -47919,24 +47913,31 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     setTimeout(keepOpen,80);
   }
   function suppress(ev){
-    if(window.__tt863SyntheticLayerClick)return;
+    if(window.__tt864SyntheticLayerClick)return;
     if(Date.now()>blockUntil)return;
-    var el=actionableFromEvent(ev);
+    var el=actionTarget(ev);
     if(!el)return;
     stop(ev);
   }
-
-  document.addEventListener('pointerdown',instant,true);
-  document.addEventListener('touchstart',instant,true);
-  window.addEventListener('pointerup',suppress,true);
-  window.addEventListener('touchend',suppress,true);
-  window.addEventListener('click',suppress,true);
-
+  function install(){
+    var p=panel();
+    if(!p || p.__tt864PanelTapInstalled)return;
+    p.__tt864PanelTapInstalled=true;
+    p.addEventListener('pointerdown',down,true);
+    p.addEventListener('touchstart',down,true);
+    p.addEventListener('pointerup',suppress,true);
+    p.addEventListener('touchend',suppress,true);
+    p.addEventListener('click',suppress,true);
+  }
+  install();
+  document.addEventListener('DOMContentLoaded',install,{once:true});
+  window.addEventListener('pageshow',install);
+  window.addEventListener('resize',install);
   try{
     var st=document.createElement('style');
-    st.id='tt863-layer-direct-tap-css';
+    st.id='tt864-layer-panel-only-tap-css';
     st.textContent='@media (hover:none),(pointer:coarse){#tt616-layer-panel,#tt616-layer-panel *{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}#tt616-layer-panel button,#tt616-layer-panel [data-tt630-action]{-webkit-touch-callout:none;user-select:none;}}';
     document.head.appendChild(st);
   }catch(e){}
 })();
-/* === slut v863-tavla-smooth-layer-direct-tap === */
+/* === slut v864-layer-panel-only-direct-tap === */
