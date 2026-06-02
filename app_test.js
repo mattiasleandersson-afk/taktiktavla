@@ -47721,3 +47721,128 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   document.addEventListener('touchend',handler,{capture:true,passive:false});
 })();
 /* === slut v860 === */
+
+/* === v861-tavla-drawing-performance ===
+   Bas: v860 fungerande releasekandidat.
+   Smal prestandafix för Taktiktavla/Snabbtavla-ritning:
+   - Taktikfilm lämnas med befintlig ritlogik.
+   - Pilförhandsvisning i Tavla uppdateras direkt i SVG i stället för full render på varje move.
+   - Frihand/Zon lämnas i befintligt lättare previewflöde.
+   - Full render görs först vid släpp som tidigare.
+   Rör inte sparlogik, lager, Taktikfilm, matcher eller Supabase.
+*/
+(function(){
+  if(window.__tt861TavlaDrawingPerformance)return;
+  window.__tt861TavlaDrawingPerformance=true;
+
+  function isTaktikfilmEditing861(){
+    try{
+      return !!(window.isEditingTaktik || (typeof isEditingTaktik!=='undefined' && isEditingTaktik) ||
+        (typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null) ||
+        document.body.classList.contains('tt688-taktikfilm-editor-active') ||
+        document.body.classList.contains('tt743-mobile-taktikfilm-active') ||
+        document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen'));
+    }catch(e){return false;}
+  }
+
+  function getSvg861(){
+    try{return window.svg || (typeof svg!=='undefined'?svg:null) || document.getElementById('pitch-svg');}catch(e){return document.getElementById('pitch-svg');}
+  }
+
+  function ensureArrowPreview861(){
+    var s=getSvg861(); if(!s)return null;
+    var line=s.querySelector('#tt861-arrow-preview');
+    if(!line){
+      line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.id='tt861-arrow-preview';
+      line.setAttribute('class','preview-arrow');
+      line.setAttribute('stroke-width','3');
+      line.setAttribute('stroke-dasharray','6 4');
+      line.setAttribute('stroke-linecap','round');
+      line.setAttribute('fill','none');
+      line.style.pointerEvents='none';
+      s.appendChild(line);
+    }
+    return line;
+  }
+
+  function removeArrowPreview861(){
+    try{var n=document.getElementById('tt861-arrow-preview'); if(n)n.remove();}catch(e){}
+  }
+
+  function updateArrowPreview861(pt){
+    try{
+      if(!pt || typeof arrowStart==='undefined' || !arrowStart)return;
+      var line=ensureArrowPreview861(); if(!line)return;
+      line.setAttribute('x1',arrowStart.x); line.setAttribute('y1',arrowStart.y);
+      line.setAttribute('x2',pt.x); line.setAttribute('y2',pt.y);
+      line.setAttribute('stroke', (typeof arrowColor!=='undefined' && arrowColor) ? arrowColor : '#ffdd44');
+      var head=(typeof getArrowHeadChoiceV529==='function') ? getArrowHeadChoiceV529() : 'arrow';
+      if(head!=='line'){
+        var col=((typeof arrowColor!=='undefined' && arrowColor) ? arrowColor : '#ffdd44').replace('#','');
+        line.setAttribute('marker-end','url(#arrowhead-'+col+')');
+      }else{
+        line.removeAttribute('marker-end');
+      }
+    }catch(e){}
+  }
+
+  if(typeof onTM==='function' && !onTM.__tt861Wrapped){
+    var oldOnTM861=onTM;
+    onTM=function(ev){
+      try{
+        if(isTaktikfilmEditing861())return oldOnTM861.apply(this,arguments);
+        if(ev && ev.preventDefault)ev.preventDefault();
+        if(!ev || !ev.touches || !ev.touches[0])return oldOnTM861.apply(this,arguments);
+        var pt=svgPt(ev.touches[0].clientX,ev.touches[0].clientY);
+        if(typeof dragging!=='undefined' && dragging)moveDrag(pt.x+(dragging.ox||0),pt.y+(dragging.oy||0));
+        if(typeof mode!=='undefined' && mode==='arrow' && typeof arrowStart!=='undefined' && arrowStart){
+          arrowCurrent=pt;
+          updateArrowPreview861(pt);
+          return;
+        }
+        if(typeof mode!=='undefined' && mode==='freehand' && typeof freehandDrawing!=='undefined' && freehandDrawing && typeof freehandCurrent!=='undefined' && freehandCurrent){freehandCurrent.pts.push(pt);renderFreehandPreview();return;}
+        if(typeof mode!=='undefined' && mode==='zone' && typeof zoneStart!=='undefined' && zoneStart){zonePreview=pt;renderZonePreview();return;}
+        return;
+      }catch(e){return oldOnTM861.apply(this,arguments);}
+    };
+    onTM.__tt861Wrapped=true;
+    window.onTM=onTM;
+  }
+
+  if(typeof onMM==='function' && !onMM.__tt861Wrapped){
+    var oldOnMM861=onMM;
+    onMM=function(ev){
+      try{
+        if(isTaktikfilmEditing861())return oldOnMM861.apply(this,arguments);
+        if(!ev)return oldOnMM861.apply(this,arguments);
+        var pt=svgPt(ev.clientX,ev.clientY);
+        if(typeof dragging!=='undefined' && dragging)moveDrag(pt.x+(dragging.ox||0),pt.y+(dragging.oy||0));
+        if(typeof mode!=='undefined' && mode==='arrow' && typeof arrowStart!=='undefined' && arrowStart){
+          arrowCurrent=pt;
+          updateArrowPreview861(pt);
+          return;
+        }
+        if(typeof mode!=='undefined' && mode==='freehand' && typeof freehandDrawing!=='undefined' && freehandDrawing && typeof freehandCurrent!=='undefined' && freehandCurrent){freehandCurrent.pts.push(pt);renderFreehandPreview();return;}
+        if(typeof mode!=='undefined' && mode==='zone' && typeof zoneStart!=='undefined' && zoneStart){zonePreview=pt;renderZonePreview();return;}
+        return;
+      }catch(e){return oldOnMM861.apply(this,arguments);}
+    };
+    onMM.__tt861Wrapped=true;
+    window.onMM=onMM;
+  }
+
+  if(typeof onTE==='function' && !onTE.__tt861Wrapped){
+    var oldOnTE861=onTE;
+    onTE=function(){removeArrowPreview861();return oldOnTE861.apply(this,arguments);};
+    onTE.__tt861Wrapped=true;
+    window.onTE=onTE;
+  }
+  if(typeof onMU==='function' && !onMU.__tt861Wrapped){
+    var oldOnMU861=onMU;
+    onMU=function(){removeArrowPreview861();return oldOnMU861.apply(this,arguments);};
+    onMU.__tt861Wrapped=true;
+    window.onMU=onMU;
+  }
+})();
+/* === slut v861-tavla-drawing-performance === */
