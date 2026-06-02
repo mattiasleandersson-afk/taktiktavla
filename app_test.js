@@ -48753,9 +48753,3 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   });
 })();
 /* === slut v876 === */
-
-
-/* === v885 TEST: rollback till fungerande v876 före batteridiagnos/RAF-broms ===
-   Ingen funktionsändring jämfört med v876. Syfte: verifiera att kon-/ritverktygsordning,
-   Taktikfilm-animation och rörelsepilar är tillbaka innan batterispåret fortsätter.
-   v878-v884 ska inte användas som bas om de ger UI-/animationsbiverkningar. */
