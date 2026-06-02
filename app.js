@@ -48745,3 +48745,156 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   [800,1600,3000].forEach(function(ms){setTimeout(apply888,ms);});
 })();
 /* === slut v888 === */
+
+
+/* === v889 / Version 2.0.3: Taktikfilm hastighetsskala hotfix ===
+   Bas: v888 skarp V2.0.2.
+   Problem i skarp V2: hastighetsväljaren är 1-10, men äldre Taktikfilm-kod kan fortfarande
+   hinna sätta animSpeed till råvärdet 1-10. Då blir t.ex. 5 Normal extremt snabbt.
+   Fix:
+   - En enda sen skyddssynk mappar alltid 1-10 till millisekunder innan animation.
+   - 5 Normal = 1200 ms per ca 150 px, som v305/v876-tanken.
+   - Äldre animSpeed-baserad fallback skyddas genom att animSpeed också får ms-värdet.
+   - Rör inte stegdata, rörelsepilar, sparning, Supabase, lager, fullscreen-cirkelfix eller batterispår.
+*/
+(function(){
+  'use strict';
+  if(window.__tt889TaktikfilmSpeedScaleHotfix)return;
+  window.__tt889TaktikfilmSpeedScaleHotfix=true;
+
+  var VERSION='Version 2.0.3';
+
+  function byId(id){return document.getElementById(id);}
+
+  function scaleFromValue(v){
+    v=parseInt(v,10);
+    if(v>=1 && v<=10)return v;
+    // Bakåtkompatibilitet om ett gammalt ms-värde dyker upp.
+    if(v>=2100)return 1;
+    if(v>=1800)return 2;
+    if(v>=1500)return 3;
+    if(v>=1350)return 4;
+    if(v>=1050)return 5;
+    if(v>=930)return 6;
+    if(v>=810)return 7;
+    if(v>=700)return 8;
+    if(v>=620)return 9;
+    return 10;
+  }
+
+  function msFromScale(v){
+    var s=scaleFromValue(v);
+    if(s<5)return 1200 + (5-s)*300; // 1=2400, 5=1200
+    return 1200 - (s-5)*120;        // 5=1200, 10=600
+  }
+
+  function setVersion(){
+    try{
+      window.TAKTIKTAVLA_VERSION=VERSION;
+      if(document.body)document.body.setAttribute('data-app-version',VERSION);
+      ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
+        var el=byId(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+      document.querySelectorAll('[data-version],version,app-version,version-label,app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+        var t=String(el.textContent||'').trim();
+        if(/^(v?\d+|v\d+\.\d+|Version\s*\d+)/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+      });
+    }catch(e){}
+  }
+
+  function currentScale(){
+    var p=byId('play-speed');
+    var l=byId('ls-speed-sel');
+    var v=(p&&p.value)||(l&&l.value)||5;
+    return scaleFromValue(v);
+  }
+
+  function applySpeed(v){
+    var scale=scaleFromValue(v);
+    var ms=msFromScale(scale);
+    try{window.tt304PlaybackSpeedScale=scale;}catch(e){}
+    try{tt304PlaybackSpeedScale=scale;}catch(e){}
+    try{window.tt304PlaybackSpeedMs=ms;}catch(e){}
+    try{tt304PlaybackSpeedMs=ms;}catch(e){}
+    try{animSpeed=ms;}catch(e){}
+    var p=byId('play-speed');
+    var l=byId('ls-speed-sel');
+    if(p && String(p.value)!==String(scale))p.value=String(scale);
+    if(l && String(l.value)!==String(scale))l.value=String(scale);
+    return ms;
+  }
+
+  function syncSpeed(){
+    return applySpeed(currentScale());
+  }
+
+  // Ersätt v304-hjälparna med en stabil variant, så både nya och äldre anrop får samma skala.
+  try{tt304NormalizeSpeed=function(v){return msFromScale(v);};}catch(e){}
+  try{window.tt304NormalizeSpeed=tt304NormalizeSpeed;}catch(e){}
+  try{tt304ScaleFromValue=function(v){return scaleFromValue(v);};}catch(e){}
+  try{window.tt304ScaleFromValue=tt304ScaleFromValue;}catch(e){}
+  try{tt304SetPlaybackSpeed=function(v){applySpeed(v);};}catch(e){}
+  try{window.tt304SetPlaybackSpeed=tt304SetPlaybackSpeed;}catch(e){}
+  try{tt304PlaybackDuration=function(distance){
+    distance=parseFloat(distance)||0;
+    var base=syncSpeed();
+    return Math.max(180,Math.min(6000,Math.round((Math.max(distance,20)/150)*base)));
+  };}catch(e){}
+  try{window.tt304PlaybackDuration=tt304PlaybackDuration;}catch(e){}
+
+  function bindSpeed(id){
+    var el=byId(id);
+    if(!el || el.dataset.tt889SpeedBound)return;
+    el.dataset.tt889SpeedBound='1';
+    el.addEventListener('change',function(e){
+      applySpeed(this.value);
+      // Stoppa äldre handlers som annars kan sätta animSpeed till råvärdet 1-10.
+      try{e.stopPropagation();}catch(_e){}
+      try{if(e.stopImmediatePropagation)e.stopImmediatePropagation();}catch(_e2){}
+      return false;
+    },true);
+  }
+
+  function bindAll(){
+    bindSpeed('play-speed');
+    bindSpeed('ls-speed-sel');
+    syncSpeed();
+    setVersion();
+  }
+
+  // Skydda animationsstarter även om någon äldre knappväg missar change-skyddet.
+  if(typeof tt147AnimateForward==='function' && !tt147AnimateForward._tt889Wrapped){
+    var _tt889_tt147AnimateForward=tt147AnimateForward;
+    tt147AnimateForward=function(){
+      syncSpeed();
+      return _tt889_tt147AnimateForward.apply(this,arguments);
+    };
+    tt147AnimateForward._tt889Wrapped=true;
+    try{window.tt147AnimateForward=tt147AnimateForward;}catch(e){}
+  }
+
+  if(typeof animateToStep==='function' && !animateToStep._tt889Wrapped){
+    var _tt889_animateToStep=animateToStep;
+    animateToStep=function(){
+      syncSpeed();
+      return _tt889_animateToStep.apply(this,arguments);
+    };
+    animateToStep._tt889Wrapped=true;
+    try{window.animateToStep=animateToStep;}catch(e){}
+  }
+
+  if(typeof tt304InitSpeedControls==='function' && !tt304InitSpeedControls._tt889Wrapped){
+    var _tt889_initSpeed=tt304InitSpeedControls;
+    tt304InitSpeedControls=function(){
+      var r=_tt889_initSpeed.apply(this,arguments);
+      bindAll();
+      return r;
+    };
+    tt304InitSpeedControls._tt889Wrapped=true;
+    try{window.tt304InitSpeedControls=tt304InitSpeedControls;}catch(e){}
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindAll);else bindAll();
+  [0,80,250,700,1500,3000].forEach(function(ms){setTimeout(bindAll,ms);});
+})();
+/* === slut v889-taktikfilm-speed-scale-hotfix === */
