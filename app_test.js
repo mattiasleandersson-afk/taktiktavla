@@ -49061,3 +49061,173 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   };
 })();
 /* === slut v878 === */
+
+/* === v881 TEST: DOM-källdiagnos ovanpå v880/v878 RAF-broms ===
+   Bas: v880 från v878/v876-spåret.
+   Syfte: hitta vilka DOM-noder/attribut som ändras i stillaläge efter att RAF-bromsen
+   sänkt RAF/min till nära 0. Ingen optimering, ingen appfunktion ändras.
+*/
+(function(){
+  if(window.__tt881DomSourceDiag)return;
+  window.__tt881DomSourceDiag=true;
+
+  var started=Date.now();
+  var minuteStart=Date.now();
+  var totalRecords=0;
+  var totalBursts=0;
+  var minuteRecords=0;
+  var minuteBursts=0;
+  var sourceCounts=Object.create(null);
+  var attrCounts=Object.create(null);
+  var panel=null;
+  var updateTimer=null;
+
+  function isDiagNode(node){
+    try{
+      if(!node)return false;
+      var el=node.nodeType===1?node:node.parentElement;
+      while(el){
+        if(el.id==='tt877-battery-diagnostics'||el.id==='tt881-dom-source-diagnostics')return true;
+        el=el.parentElement;
+      }
+    }catch(e){}
+    return false;
+  }
+
+  function desc(node){
+    try{
+      var el=node&&node.nodeType===1?node:null;
+      if(!el&&node&&node.parentElement)el=node.parentElement;
+      if(!el)return String(node&&node.nodeName||'unknown');
+      var out=(el.tagName||'el').toLowerCase();
+      if(el.id)out+='#'+el.id;
+      var cls=(el.className&&typeof el.className==='string')?el.className.trim().split(/\s+/).slice(0,3).join('.') : '';
+      if(cls)out+='.'+cls;
+      if(!el.id && !cls){
+        var role=el.getAttribute&&el.getAttribute('role');
+        if(role)out+='[role='+role+']';
+      }
+      return out.slice(0,120);
+    }catch(e){return 'unknown';}
+  }
+
+  function inc(map,key,n){
+    key=key||'unknown';
+    map[key]=(map[key]||0)+(n||1);
+  }
+
+  function topLines(map,limit){
+    var arr=[];
+    for(var k in map){if(Object.prototype.hasOwnProperty.call(map,k))arr.push([k,map[k]]);}
+    arr.sort(function(a,b){return b[1]-a[1];});
+    return arr.slice(0,limit||8);
+  }
+
+  function ensurePanel(){
+    if(panel&&document.body&&document.body.contains(panel))return panel;
+    panel=document.createElement('div');
+    panel.id='tt881-dom-source-diagnostics';
+    panel.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:999999;background:#071b33;color:#e8f3ff;border:2px solid #3d8ed7;border-radius:10px;padding:8px 10px;font:12px/1.35 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.35);max-height:42vh;overflow:auto;';
+    document.body.appendChild(panel);
+    return panel;
+  }
+
+  function renderPanel(){
+    try{
+      ensurePanel();
+      var elapsed=Math.max(1,Math.round((Date.now()-started)/60000));
+      var topS=topLines(sourceCounts,8);
+      var topA=topLines(attrCounts,8);
+      var html='';
+      html+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px"><b style="color:#79c7ff">v881 DOM-källdiagnos</b><button id="tt881-copy" style="margin-left:auto;background:#0c355c;color:#e8f3ff;border:1px solid #3d8ed7;border-radius:6px;padding:2px 6px">kopiera</button><button id="tt881-reset" style="background:#0c355c;color:#e8f3ff;border:1px solid #3d8ed7;border-radius:6px;padding:2px 6px">nollställ</button></div>';
+      html+='<div>sedan start: '+elapsed+' min | bursts: '+totalBursts+' | records: '+totalRecords+'</div>';
+      html+='<div>senaste minut: bursts '+minuteBursts+' | records '+minuteRecords+'</div>';
+      html+='<div style="margin-top:6px;color:#b9dcff"><b>Topp DOM-källor senaste mätperiod</b></div>';
+      html+='<ol style="margin:3px 0 0 18px;padding:0">'+(topS.length?topS.map(function(x){return '<li><code>'+escapeHtml(x[0])+'</code> – '+x[1]+'</li>';}).join(''):'<li>inga externa DOM-ändringar fångade</li>')+'</ol>';
+      html+='<div style="margin-top:6px;color:#b9dcff"><b>Topp attribut/typer</b></div>';
+      html+='<ol style="margin:3px 0 0 18px;padding:0">'+(topA.length?topA.map(function(x){return '<li><code>'+escapeHtml(x[0])+'</code> – '+x[1]+'</li>';}).join(''):'<li>inga attribut/typer fångade</li>')+'</ol>';
+      panel.innerHTML=html;
+      var copy=document.getElementById('tt881-copy');
+      if(copy)copy.onclick=function(){copyText();};
+      var reset=document.getElementById('tt881-reset');
+      if(reset)reset.onclick=function(){resetCounts();};
+    }catch(e){}
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
+  }
+
+  function textReport(){
+    var topS=topLines(sourceCounts,12).map(function(x,i){return (i+1)+'. '+x[0]+' – '+x[1];}).join('\n');
+    var topA=topLines(attrCounts,12).map(function(x,i){return (i+1)+'. '+x[0]+' – '+x[1];}).join('\n');
+    return [
+      'Taktiktavla v881 DOM-källdiagnos',
+      'sedan start min: '+Math.max(1,Math.round((Date.now()-started)/60000)),
+      'total bursts: '+totalBursts,
+      'total records: '+totalRecords,
+      'senaste minut bursts: '+minuteBursts,
+      'senaste minut records: '+minuteRecords,
+      '',
+      'Topp DOM-källor:',
+      topS||'(inga)',
+      '',
+      'Topp attribut/typer:',
+      topA||'(inga)',
+      '',
+      'User agent: '+navigator.userAgent
+    ].join('\n');
+  }
+
+  function copyText(){
+    var txt=textReport();
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt);return;}
+    }catch(e){}
+    try{
+      var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+    }catch(e){}
+  }
+
+  function resetCounts(){
+    started=Date.now();minuteStart=Date.now();totalRecords=0;totalBursts=0;minuteRecords=0;minuteBursts=0;sourceCounts=Object.create(null);attrCounts=Object.create(null);renderPanel();
+  }
+
+  function scheduleUpdate(){
+    if(updateTimer)return;
+    updateTimer=setTimeout(function(){updateTimer=null;renderPanel();},1000);
+  }
+
+  try{
+    if(window.MutationObserver&&document.body){
+      var mo=new MutationObserver(function(records){
+        try{
+          var now=Date.now();
+          if(now-minuteStart>60000){minuteStart=now;minuteRecords=0;minuteBursts=0;sourceCounts=Object.create(null);attrCounts=Object.create(null);}
+          var external=[];
+          for(var i=0;i<records.length;i++){
+            var r=records[i];
+            if(isDiagNode(r.target))continue;
+            external.push(r);
+          }
+          if(!external.length)return;
+          totalBursts++;minuteBursts++;
+          totalRecords+=external.length;minuteRecords+=external.length;
+          for(var j=0;j<external.length;j++){
+            var rr=external[j];
+            var d=desc(rr.target);
+            inc(sourceCounts,d,1);
+            if(rr.type==='attributes')inc(attrCounts,'attr:'+rr.attributeName,1);
+            else if(rr.type==='childList')inc(attrCounts,'childList',1);
+            else inc(attrCounts,rr.type,1);
+          }
+          scheduleUpdate();
+        }catch(e){}
+      });
+      mo.observe(document.body,{subtree:true,childList:true,attributes:true,characterData:false});
+    }
+  }catch(e){}
+
+  try{setTimeout(renderPanel,800);}catch(e){}
+})();
+/* === slut v881 === */
