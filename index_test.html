@@ -2371,7 +2371,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v911 matcher-only utan animationstapp</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v912 Taktikfilm sidework-counter</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -3053,7 +3053,7 @@
 }
 </style>
 
-<script src="app_test.js?v=911-matcher-only-animation-ok"></script>
+<script src="app_test.js?v=912-taktikfilm-sidework-counter"></script>
 
 <script>
 (function(){
@@ -4428,6 +4428,7 @@
     }catch(e){}
   }
   function apply(){
+    try{window.__tt912Count&&window.__tt912Count('index.tt681.apply');}catch(e){}
     ensureCss();
     setVersion();
     ownOptions();
@@ -4467,7 +4468,8 @@
     }catch(e){}
   }
   function schedule(){
-    // v911 TEST: ren indexguard från animationsbasen.
+    try{window.__tt912Count&&window.__tt912Count('index.tt681.schedule');}catch(e){}
+    // v912 TEST: ren indexguard från animationsbasen.
     // Inget RAF-/placeringsarbete utanför aktiv Taktikfilm-redigering.
     if(!active()){applyInactiveV911();return;}
     try{if(window.requestAnimationFrame)requestAnimationFrame(apply);else apply();}catch(e){apply();}
@@ -6505,6 +6507,80 @@
 })();
 </script>
 
+
+<script id="tt912-sidework-counter-panel">
+(function(){
+  if(window.__tt912PanelInstalled)return;
+  window.__tt912PanelInstalled=true;
+  function diag(){
+    if(!window.__tt912SideworkDiag){
+      var started=Date.now();
+      window.__tt912SideworkDiag={started:started,counters:{},reset:function(){this.started=Date.now();this.counters={};},mark:function(name){this.counters[name]=(this.counters[name]||0)+1;},report:function(){return makeReport();}};
+      window.__tt912Count=function(name){try{window.__tt912SideworkDiag.mark(name);}catch(e){}};
+    }
+    return window.__tt912SideworkDiag;
+  }
+  function mode(){
+    try{
+      if(document.body&&document.body.classList.contains('fullscreen-portrait'))return 'Taktikfilm fullscreen';
+      if(document.body&&(document.body.classList.contains('tt248-taktik-active')||document.body.classList.contains('tt291-taktik-active')))return 'Taktikfilm redigering';
+      if(document.querySelector('.tab.on[data-panel="matches"]'))return 'Matcher';
+      if(document.querySelector('.tab.on[data-panel="saves"]'))return 'Taktiktavla';
+      if(document.querySelector('.tab.on[data-panel="formations"]'))return 'Snabbtavla/formations';
+    }catch(e){}
+    return 'okänt';
+  }
+  function makeReport(){
+    var d=diag(), secs=Math.max(0.1,(Date.now()-d.started)/1000), arr=[];
+    Object.keys(d.counters||{}).forEach(function(k){arr.push([k,d.counters[k],Math.round(d.counters[k]*60/secs)]);});
+    arr.sort(function(a,b){return b[1]-a[1];});
+    var lines=[];
+    lines.push('Taktiktavla sidework-counter v912');
+    lines.push('Bas: v911 TEST');
+    lines.push('Tid: '+new Date().toISOString());
+    lines.push('Läge: '+mode());
+    lines.push('Mättid: '+secs.toFixed(1)+' s');
+    lines.push('');
+    lines.push('Anrop sedan nollställning:');
+    if(!arr.length)lines.push('  inga fångade');
+    arr.slice(0,24).forEach(function(r){lines.push('  '+r[1]+' × '+r[0]+'  (~'+r[2]+'/min)');});
+    lines.push('');
+    lines.push('Obs: v912 räknar endast utvalda funktionsanrop. Ingen MutationObserver, ingen RAF-wrapper och ingen DOM-räkning.');
+    return lines.join('\n');
+  }
+  function ensurePanel(){
+    if(document.getElementById('tt912-sidework-panel'))return;
+    var box=document.createElement('div');
+    box.id='tt912-sidework-panel';
+    box.style.cssText='position:fixed;left:8px;bottom:8px;z-index:2147483647;background:rgba(7,18,11,.94);color:#dff6e6;border:1px solid #2d4a35;border-radius:10px;padding:8px;font:12px system-ui,sans-serif;max-width:min(420px,calc(100vw - 16px));box-shadow:0 6px 20px rgba(0,0,0,.35)';
+    box.innerHTML='<div style="font-weight:800;color:#4ae87a;margin-bottom:5px">v912 sidework</div><div id="tt912-sidework-short" style="white-space:pre-wrap;max-height:110px;overflow:auto;margin-bottom:6px"></div><button id="tt912-reset" type="button">Nollställ</button> <button id="tt912-copy" type="button">Kopiera</button> <button id="tt912-hide" type="button">Dölj</button>';
+    document.body.appendChild(box);
+    document.getElementById('tt912-reset').addEventListener('click',function(){diag().reset();update();});
+    document.getElementById('tt912-copy').addEventListener('click',function(){var txt=makeReport();try{navigator.clipboard.writeText(txt);}catch(e){};});
+    document.getElementById('tt912-hide').addEventListener('click',function(){box.style.display='none';showMini();});
+  }
+  function showMini(){
+    if(document.getElementById('tt912-mini'))return;
+    var b=document.createElement('button');
+    b.id='tt912-mini';b.type='button';b.textContent='912';
+    b.style.cssText='position:fixed;left:8px;bottom:8px;z-index:2147483647;border:1px solid #2d4a35;background:#07120b;color:#4ae87a;border-radius:999px;padding:6px 8px;font:700 12px system-ui,sans-serif';
+    b.onclick=function(){var box=document.getElementById('tt912-sidework-panel');if(box)box.style.display='block';b.remove();};
+    document.body.appendChild(b);
+  }
+  function update(){
+    try{
+      ensurePanel();
+      var d=diag(), secs=Math.max(0.1,(Date.now()-d.started)/1000), keys=Object.keys(d.counters||{}).sort(function(a,b){return (d.counters[b]||0)-(d.counters[a]||0);});
+      var text='Läge: '+mode()+'\n'+keys.slice(0,6).map(function(k){return k+': '+d.counters[k]+' (~'+Math.round(d.counters[k]*60/secs)+'/min)';}).join('\n');
+      if(!keys.length)text+='\ninga fångade anrop';
+      var el=document.getElementById('tt912-sidework-short');if(el)el.textContent=text;
+    }catch(e){}
+  }
+  function start(){diag();ensurePanel();update();setInterval(update,1000);} 
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+
 </body>
 </html>
 
@@ -7972,4 +8048,4 @@
 </script>
 <!-- === slut v898 TEST === -->
 
-<!-- === v911 TEST: v898/v910 animationsbas + endast smal Matcher-indexguard, utan app.js-batterifixar === -->
+<!-- === v912 TEST: v911 + lätt Taktikfilm sidework-counter utan DOM-observer === -->
