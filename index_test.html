@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v907 diagnos-avstängd animationstest</title>
+<title>Taktiktavla TEST v908 ritval klickfix</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2371,7 +2371,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v907 diagnos-avstängd animationstest</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v908 ritval klickfix</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -4437,11 +4437,28 @@
     ensureLayerPanelOpen();
     protectOptions();
   }
-  function applyInactiveV905(){
+  function drawingPanelOwnerV908(){
+    // v908 TEST: tt681 är bara Taktikfilm-redigeringsägare. När Snabbtavla
+    // eller Taktiktavla är aktiv ska deras egna ritradslogik få behålla
+    // färg-/linjevalen öppna även efter klick på planen.
+    try{
+      if(document.body && document.body.classList.contains('tt733-tavla-active'))return true;
+      if(document.querySelector('.tab.on[data-panel="saves"]'))return true;
+      if(document.querySelector('.tab.on[data-panel="formations"]'))return true;
+      var saves=document.getElementById('panel-saves');
+      if(saves && (saves.classList.contains('on') || visible(saves)))return true;
+      var formations=document.getElementById('panel-formations');
+      if(formations && (formations.classList.contains('on') || visible(formations)))return true;
+      if(document.body && document.body.classList.contains('tt756-snabb-object-active'))return true;
+    }catch(e){}
+    return false;
+  }
+  function applyInactiveV908(){
     try{
       document.body.classList.remove('tt681-taktikfilm-ritval-owner','tt666-taktik-desktop-layout');
       var btn=document.getElementById('tt681-taktik-fs-btn') || document.getElementById('tt668-taktik-fs-btn');
       if(btn)btn.style.display='none';
+      if(drawingPanelOwnerV908())return;
       OPTION_IDS.forEach(function(id){
         var el=document.getElementById(id);
         if(!el)return;
@@ -4452,8 +4469,9 @@
   }
   function schedule(){
     // v905 TEST: tt681-schedulern får inte vakna i Matcher/Trupp-listläge.
-    // Kör full placering bara när Taktikfilm-redigering faktiskt är aktiv.
-    if(!active()){applyInactiveV905();return;}
+    // v908 TEST: men den får inte heller stänga Tavla/Snabbtavlas egna ritval
+    // vid vanliga klick utanför panelen.
+    if(!active()){applyInactiveV908();return;}
     try{if(window.requestAnimationFrame)requestAnimationFrame(apply);else apply();}catch(e){apply();}
     setTimeout(apply,20);
     setTimeout(apply,120);
@@ -7949,7 +7967,7 @@
 <!-- === v900 TEST: versionslabel för batteridiagnos === -->
 <script>
 (function(){
-  function setTitle(){try{document.title='Taktiktavla TEST v907 diagnos-avstängd animationstest';}catch(e){}}
+  function setTitle(){try{document.title='Taktiktavla TEST v908 ritval klickfix';}catch(e){}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setTitle,{once:true});else setTitle();
   setTimeout(setTitle,500);
 })();
