@@ -1,4 +1,4 @@
-/* v902 TEST: idempotent Taktiktavla-fillisteputs nära v722-källan, byggd från v901 TEST. */
+/* v904 TEST: matcher objektguard, byggd från v903 TEST. */
 /* v900 TEST: read-only batteridiagnos från v898 TEST. */
 /* v846 TEST: Taktiktavla→Taktikfilm-modalfix + v845/v843 kon-/pinne-context-reset. */
 /* === v585 TESTMILJÖ FASTA FILNAMN ===
@@ -45606,6 +45606,23 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   var placementPending=false;
+  // v904 TEST: smal lägesguard för objektknapp/ritverktygsplacering.
+  // Matcher -> Trupp/listläge ska inte trigga objektknappens RAF/DOM-arbete.
+  function isObjectForbiddenPanelV904(){
+    try{
+      var lagTab=document.querySelector('.tab.on[data-panel="lag"]');
+      var lagPanel=document.getElementById('panel-lag');
+      if(lagTab || (lagPanel&&lagPanel.classList&&lagPanel.classList.contains('on')))return true;
+      if(document.body && document.body.classList && document.body.classList.contains('tt744-matcher-active'))return true;
+    }catch(e){}
+    return false;
+  }
+  function objectPlacementAllowedV904(){
+    try{
+      if(isObjectForbiddenPanelV904())return false;
+      return !!isNormalTavla();
+    }catch(e){return false;}
+  }
   // v901: källnära RAF-skydd för objektknappen.
   // Den gamla breda MutationObservern reagerade på nästan alla childList-ändringar i body.
   // Det kunde skapa en loop: DOM-ändring -> scheduleObjectButtonPlacement -> RAF -> gamla RAF-wrappar
@@ -45613,6 +45630,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   // när just ritverktygsraden/objektknappen faktiskt kan behöva ny placering.
   function objectPlacementStableV901(){
     try{
+      if(!objectPlacementAllowedV904())return true;
       if(!objectButton)return false;
       var row=activeRitaRow();
       var ref=row?(row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone')):null;
@@ -45624,6 +45642,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   function isObjectPlacementMutationV901(m){
     try{
+      if(!objectPlacementAllowedV904())return false;
       if(!m)return false;
       var nodes=[];
       if(m.target)nodes.push(m.target);
@@ -45688,6 +45707,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function placeObjectButtonInRitaRow(b){
     if(!b)return;
     try{
+      if(!objectPlacementAllowedV904()){b.classList.remove('tt751-object-ready','tt749-object-ready');b.style.display='none';return;}
+      b.style.display='';
       var row=activeRitaRow();
       var ref=row?(row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone')):null;
       b.classList.remove('tt751-object-ready','tt749-object-ready');
@@ -45705,6 +45726,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function scheduleObjectButtonPlacement(force){
+    if(!objectPlacementAllowedV904())return;
     if(placementPending)return;
     // v901: om objektknappen redan sitter rätt ska vi inte starta en RAF bara för att någon annan UI-del muterade.
     if(!force && objectPlacementStableV901())return;
@@ -45716,6 +45738,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function ensureButton(){
+    if(!objectPlacementAllowedV904()){
+      var old=document.getElementById('tt747-object-btn');
+      if(old){old.classList.remove('tt751-object-ready','tt749-object-ready');old.style.display='none';}
+      closeSizePanel();
+      if(objectPanel)objectPanel.style.display='none';
+      return;
+    }
     ensureStyle();ensurePanel();ensureSizePanel();
     var b=document.getElementById('tt747-object-btn');
     if(!b){
@@ -45859,7 +45888,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(!svg)return;
       var old=svg.querySelectorAll('.tt746-object-g,.tt747-object-g');
       for(var i=0;i<old.length;i++)old[i].remove();
-      if(!isTavlaActive())return;
+      if(!isTavlaActive() || isObjectForbiddenPanelV904())return;
       var ns='http://www.w3.org/2000/svg';
       var list=arr();
       for(var j=0;j<list.length;j++)svg.appendChild(renderOneObject(ns,list[j]));
@@ -45879,7 +45908,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function placeObjectFromEvent(ev,clientX,clientY){
-    if(mode!=='object' || !isTavlaActive())return false;
+    if(mode!=='object' || !isTavlaActive() || !objectPlacementAllowedV904())return false;
     try{if(ev.target && ev.target.closest && ev.target.closest('.tt747-object-g,.tt746-object-g'))return false;}catch(e){}
     if(typeof tt634BlockIfActiveLayerLocked==='function' && tt634BlockIfActiveLayerLocked()){
       ev.preventDefault();ev.stopImmediatePropagation();
@@ -45974,38 +46003,40 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function refreshUi(){
-    try{document.body.classList.toggle('tt756-snabb-object-active',!!isSnabbNormal756());}catch(e){}
-    try{document.body.classList.toggle('tt763-taktik-object-active',!!isTaktikfilmEdit763());}catch(e){}
-    try{document.body.classList.toggle('tt758-object-fullscreen',!!isFullscreenBoard758());}catch(e){}
-    try{document.body.classList.toggle('tt764-taktik-object-fullscreen',!!isTaktikfilmFullscreen764());}catch(e){}
+    var forbidden=false;
+    try{forbidden=isObjectForbiddenPanelV904();}catch(e){}
+    try{document.body.classList.toggle('tt756-snabb-object-active',!forbidden && !!isSnabbNormal756());}catch(e){}
+    try{document.body.classList.toggle('tt763-taktik-object-active',!forbidden && !!isTaktikfilmEdit763());}catch(e){}
+    try{document.body.classList.toggle('tt758-object-fullscreen',!forbidden && !!isFullscreenBoard758());}catch(e){}
+    try{document.body.classList.toggle('tt764-taktik-object-fullscreen',!forbidden && !!isTaktikfilmFullscreen764());}catch(e){}
     ensureButton();
-    if(objectButton)objectButton.style.display=isNormalTavla()?'inline-flex':'none';
-    if(!isNormalTavla() && mode==='object'){
+    if(objectButton)objectButton.style.display=objectPlacementAllowedV904()?'inline-flex':'none';
+    if(!objectPlacementAllowedV904() && mode==='object'){
       try{setMode('move');}catch(e){}
     }
-    if(!isNormalTavla())closeSizePanel();
+    if(!objectPlacementAllowedV904())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{if(document.title!=='Taktiktavla TEST v902 fillista DOM-källfix')document.title='Taktiktavla TEST v902 fillista DOM-källfix';}catch(e){}
+    try{if(document.title!=='Taktiktavla TEST v904 matcher objektguard')document.title='Taktiktavla TEST v904 matcher objektguard';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t) && t!=='902 TEST')el.textContent='902 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t) && t!=='904 TEST')el.textContent='904 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      var bt='⚠ TESTMILJÖ – testdata / inte produktion – v902 TEST';
+      var bt='⚠ TESTMILJÖ – testdata / inte produktion – v904 TEST';
       if(banner && banner.textContent!==bt)banner.textContent=bt;
     }catch(e){}
   }
 
   try{
     var placementEvents=['pointerdown','mousedown','touchstart','click','touchend','keyup','resize','orientationchange'];
-    placementEvents.forEach(function(evt){window.addEventListener(evt,function(){scheduleObjectButtonPlacement(true);setTimeout(function(){scheduleObjectButtonPlacement(true);},40);},true);});
+    placementEvents.forEach(function(evt){window.addEventListener(evt,function(){if(!objectPlacementAllowedV904())return;scheduleObjectButtonPlacement(true);setTimeout(function(){scheduleObjectButtonPlacement(true);},40);},true);});
     if(window.MutationObserver){
       var moBtn=new MutationObserver(function(muts){
         try{
           for(var i=0;i<muts.length;i++){
-            if(isObjectPlacementMutationV901(muts[i])){scheduleObjectButtonPlacement(true);break;}
+            if(!objectPlacementAllowedV904())break;if(isObjectPlacementMutationV901(muts[i])){scheduleObjectButtonPlacement(true);break;}
           }
         }catch(e){}
       });
@@ -49180,7 +49211,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt900BatteryDiag)return;
   window.__tt900BatteryDiag=true;
 
-  var VERSION='Version 2 test v903 diagnospanel fullscreen';
+  var VERSION='Version 2 test v904 matcher objektguard';
   var STORE_KEY='tt900_battery_diag_samples_v1';
   var rafNative=window.requestAnimationFrame;
   var cancelNative=window.cancelAnimationFrame;
@@ -49255,7 +49286,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     css.textContent='#tt900-battery-diag{position:fixed;right:8px;bottom:8px;z-index:100000;background:rgba(17,26,20,.96);color:#edf5ee;border:1px solid #4ae8e8;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.45);font:12px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:min(370px,calc(100vw - 16px));max-height:min(58vh,460px);overflow:auto;padding:8px;box-sizing:border-box}#tt900-battery-diag h3{margin:0 0 5px;font-size:13px;color:#4ae8e8}#tt900-battery-diag pre{white-space:pre-wrap;margin:5px 0 0;font:11px/1.28 ui-monospace,SFMono-Regular,Menlo,monospace;color:#d8f5df}#tt900-battery-diag .tt900-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}#tt900-battery-diag button,#tt900-diag-tab{background:#0b130e;color:#4ae8e8;border:1px solid #2d4a35;border-radius:7px;padding:4px 7px;font-weight:700}#tt900-battery-diag.tt900-collapsed{display:none!important}#tt900-diag-tab{position:fixed;left:8px;bottom:8px;z-index:100001;display:none;box-shadow:0 6px 20px rgba(0,0,0,.35);font:12px/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#tt900-diag-tab.tt900-tab-visible{display:block!important}';
     if(!document.getElementById(css.id))document.head.appendChild(css);
     panel=document.createElement('div');panel.id='tt900-battery-diag';panel.setAttribute('data-tt900','1');
-    panel.innerHTML='<h3>Batteridiagnos v903</h3><div id="tt900-summary">Startar mätning...</div><div class="tt900-row tt900-extra"><button id="tt900-copy">Kopiera</button><button id="tt900-reset">Nollställ</button><button id="tt900-pause">Pausa</button><button id="tt900-collapse">Minimera</button></div><pre id="tt900-output"></pre>';
+    panel.innerHTML='<h3>Batteridiagnos v904</h3><div id="tt900-summary">Startar mätning...</div><div class="tt900-row tt900-extra"><button id="tt900-copy">Kopiera</button><button id="tt900-reset">Nollställ</button><button id="tt900-pause">Pausa</button><button id="tt900-collapse">Minimera</button></div><pre id="tt900-output"></pre>';
     document.body.appendChild(panel);
     out=byId('tt900-output');
     btn=byId('tt900-summary');
@@ -49336,7 +49367,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   function reportText(){
     var latest=samples[samples.length-1]||snapshot();
-    return 'Taktiktavla batteridiagnos v903 diagnospanel fullscreen\nBas: v902 TEST\nTid: '+new Date().toISOString()+'\nUserAgent: '+navigator.userAgent+'\n\nSenaste mätfönster:\n'+format(latest)+'\n\nSenaste '+samples.length+' samples JSON:\n'+JSON.stringify(samples,null,2);
+    return 'Taktiktavla batteridiagnos v904 matcher objektguard\nBas: v903 TEST\nTid: '+new Date().toISOString()+'\nUserAgent: '+navigator.userAgent+'\n\nSenaste mätfönster:\n'+format(latest)+'\n\nSenaste '+samples.length+' samples JSON:\n'+JSON.stringify(samples,null,2);
   }
   function renderDiag(){try{
     ensurePanel(); if(paused)return;
@@ -49351,7 +49382,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }catch(e){try{alert('Kunde inte kopiera diagnos: '+e.message);}catch(_e){}}}
   function resetStats(){counts={rafRequests:0,rafCallbacks:0,domMutations:0,attrMutations:0,childMutations:0,charsMutations:0};total={rafRequests:0,rafCallbacks:0,domMutations:0,attrMutations:0,childMutations:0,charsMutations:0};callsites={};domTargets={};domAttrs={};samples=[];started=now();lastTick=started;renderDiag();}
   function setVersion(){try{
-    document.title='Taktiktavla TEST v903 diagnospanel fullscreen';
+    document.title='Taktiktavla TEST v904 matcher objektguard';
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
       var t=safeText(el.textContent);
       if(/^(v?\d+|\d+\s*TEST|Version\s+2(\.0(\.\d+)?)?|Version 2 test v\d+.*)$/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
