@@ -1,5 +1,5 @@
 
-/* === v912 TEST: lätt sidework-counter för Taktikfilm-animation ===
+/* === v913 TEST: Taktikfilm sidework-counter + objektknapp paus under animation ===
    Ingen MutationObserver och ingen RAF-wrapper. Räknar bara utvalda funktionsanrop. */
 (function(){
   if(window.__tt912SideworkDiag)return;
@@ -45671,7 +45671,25 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }
   }
 
+  function isTaktikfilmAnimating913(){
+    try{
+      if(!(playback && playback.animating))return false;
+      var body=document.body;
+      return !!(body && (
+        body.classList.contains('tt248-taktik-active') ||
+        body.classList.contains('tt291-taktik-active') ||
+        body.classList.contains('tt763-taktik-object-active') ||
+        body.classList.contains('tt764-taktik-object-fullscreen') ||
+        document.getElementById('taktikbar')
+      ));
+    }catch(e){return false;}
+  }
+
   function scheduleObjectButtonPlacement(){try{window.__tt912Count&&window.__tt912Count('app.tt747.scheduleObjectButtonPlacement');}catch(e){}
+    if(isTaktikfilmAnimating913()){
+      try{window.__tt912Count&&window.__tt912Count('app.tt747.skipDuringAnimation913');}catch(e){}
+      return;
+    }
     if(placementPending)return;
     placementPending=true;
     requestAnimationFrame(function(){
@@ -45964,9 +45982,21 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   try{
     var placementEvents=['pointerdown','mousedown','touchstart','click','touchend','keyup','resize','orientationchange'];
-    placementEvents.forEach(function(evt){window.addEventListener(evt,function(){scheduleObjectButtonPlacement();setTimeout(scheduleObjectButtonPlacement,40);},true);});
+    placementEvents.forEach(function(evt){window.addEventListener(evt,function(){
+      if(isTaktikfilmAnimating913()){
+        try{window.__tt912Count&&window.__tt912Count('app.tt747.eventSkipDuringAnimation913');}catch(e){}
+        return;
+      }
+      scheduleObjectButtonPlacement();setTimeout(scheduleObjectButtonPlacement,40);
+    },true);});
     if(window.MutationObserver){
-      var moBtn=new MutationObserver(function(){scheduleObjectButtonPlacement();});
+      var moBtn=new MutationObserver(function(){
+        if(isTaktikfilmAnimating913()){
+          try{window.__tt912Count&&window.__tt912Count('app.tt747.moSkipDuringAnimation913');}catch(e){}
+          return;
+        }
+        scheduleObjectButtonPlacement();
+      });
       var startMo=function(){try{moBtn.observe(document.body,{childList:true,subtree:true});}catch(e){}};
       if(document.body)startMo();
       else document.addEventListener('DOMContentLoaded',startMo);
@@ -49130,4 +49160,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v898/v899 Taktikfilm-lista källfix: row-sub genererar inte längre mappnamn i Taktikfilm-rader. Mapp finns kvar som data-taktik-folder för gruppering. === */
 
-/* v912 TEST: v911 animationsbas + lätt sidework-counter. Ingen DOM-observer, ingen RAF-wrapper. */
+/* v913 TEST: v912 counter + objektknappsplacering pausas under Taktikfilm-animation. */
