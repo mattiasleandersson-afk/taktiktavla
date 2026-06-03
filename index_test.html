@@ -2371,7 +2371,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v916 Taktikfilm object-hardsleep + visual-coalesce</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v917 Taktikfilm object-deferred-sleep + visual-coalesce</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -3053,7 +3053,7 @@
 }
 </style>
 
-<script src="app_test.js?v=916-taktikfilm-object-hardsleep-visual-coalesce"></script>
+<script src="app_test.js?v=917-taktikfilm-object-deferred-sleep-visual-coalesce"></script>
 
 <script>
 (function(){
@@ -6535,7 +6535,7 @@
     Object.keys(d.counters||{}).forEach(function(k){arr.push([k,d.counters[k],Math.round(d.counters[k]*60/secs)]);});
     arr.sort(function(a,b){return b[1]-a[1];});
     var lines=[];
-    lines.push('Taktiktavla sidework-counter v916 object-hardsleep + visual-coalesce');
+    lines.push('Taktiktavla sidework-counter v917 object-deferred-sleep + visual-coalesce');
     lines.push('Bas: v911 TEST');
     lines.push('Tid: '+new Date().toISOString());
     lines.push('Läge: '+mode());
@@ -6545,7 +6545,7 @@
     if(!arr.length)lines.push('  inga fångade');
     arr.slice(0,24).forEach(function(r){lines.push('  '+r[1]+' × '+r[0]+'  (~'+r[2]+'/min)');});
     lines.push('');
-    lines.push('Obs: v916 räknar utvalda funktionsanrop, hårdstoppar objektknappens sidoarbete under Taktikfilm-animation och behåller v915:s visuella coalesce. Ingen DOM-räkning.');
+    lines.push('Obs: v917 räknar utvalda funktionsanrop, fördröjer objektknappens sidoarbete under aktiv Taktikfilm-visual-frame och behåller v915:s visuella coalesce. Ingen DOM-räkning.');
     return lines.join('\n');
   }
   function ensurePanel(){
@@ -6553,7 +6553,7 @@
     var box=document.createElement('div');
     box.id='tt912-sidework-panel';
     box.style.cssText='position:fixed;left:8px;bottom:8px;z-index:2147483647;background:rgba(7,18,11,.94);color:#dff6e6;border:1px solid #2d4a35;border-radius:10px;padding:8px;font:12px system-ui,sans-serif;max-width:min(420px,calc(100vw - 16px));box-shadow:0 6px 20px rgba(0,0,0,.35)';
-    box.innerHTML='<div style="font-weight:800;color:#4ae87a;margin-bottom:5px">v916 sidework</div><div id="tt912-sidework-short" style="white-space:pre-wrap;max-height:110px;overflow:auto;margin-bottom:6px"></div><button id="tt912-reset" type="button">Nollställ</button> <button id="tt912-copy" type="button">Kopiera</button> <button id="tt912-hide" type="button">Dölj</button>';
+    box.innerHTML='<div style="font-weight:800;color:#4ae87a;margin-bottom:5px">v917 sidework</div><div id="tt912-sidework-short" style="white-space:pre-wrap;max-height:110px;overflow:auto;margin-bottom:6px"></div><button id="tt912-reset" type="button">Nollställ</button> <button id="tt912-copy" type="button">Kopiera</button> <button id="tt912-hide" type="button">Dölj</button>';
     document.body.appendChild(box);
     document.getElementById('tt912-reset').addEventListener('click',function(){diag().reset();update();});
     document.getElementById('tt912-copy').addEventListener('click',function(){var txt=makeReport();try{navigator.clipboard.writeText(txt);}catch(e){};});
@@ -6562,7 +6562,7 @@
   function showMini(){
     if(document.getElementById('tt912-mini'))return;
     var b=document.createElement('button');
-    b.id='tt912-mini';b.type='button';b.textContent='916';
+    b.id='tt912-mini';b.type='button';b.textContent='917';
     b.style.cssText='position:fixed;left:8px;bottom:8px;z-index:2147483647;border:1px solid #2d4a35;background:#07120b;color:#4ae87a;border-radius:999px;padding:6px 8px;font:700 12px system-ui,sans-serif';
     b.onclick=function(){var box=document.getElementById('tt912-sidework-panel');if(box)box.style.display='block';b.remove();};
     document.body.appendChild(b);
