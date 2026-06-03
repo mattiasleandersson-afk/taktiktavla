@@ -2371,7 +2371,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v910 animation baslinje</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v911 matcher-only utan animationstapp</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -3053,7 +3053,7 @@
 }
 </style>
 
-<script src="app_test.js?v=910-animation-baslinje-v898"></script>
+<script src="app_test.js?v=911-matcher-only-animation-ok"></script>
 
 <script>
 (function(){
@@ -4437,7 +4437,39 @@
     ensureLayerPanelOpen();
     protectOptions();
   }
+  function drawingPanelOwnerV911(){
+    // v911 TEST: tt681 ska inte köra Taktikfilm-placering i Matcher/Trupp,
+    // men den får inte heller stänga Tavla/Snabbtavlas egna ritval vid klick.
+    try{
+      if(document.body && document.body.classList.contains('tt733-tavla-active'))return true;
+      if(document.querySelector('.tab.on[data-panel="saves"]'))return true;
+      if(document.querySelector('.tab.on[data-panel="formations"]'))return true;
+      var saves=document.getElementById('panel-saves');
+      if(saves && (saves.classList.contains('on') || visible(saves)))return true;
+      var formations=document.getElementById('panel-formations');
+      if(formations && (formations.classList.contains('on') || visible(formations)))return true;
+      if(document.body && document.body.classList.contains('tt756-snabb-object-active'))return true;
+    }catch(e){}
+    return false;
+  }
+  function applyInactiveV911(){
+    try{
+      document.body.classList.remove('tt681-taktikfilm-ritval-owner','tt666-taktik-desktop-layout');
+      var btn=document.getElementById('tt681-taktik-fs-btn') || document.getElementById('tt668-taktik-fs-btn');
+      if(btn && btn.style.display!=='none')btn.style.display='none';
+      if(drawingPanelOwnerV911())return;
+      OPTION_IDS.forEach(function(id){
+        var el=document.getElementById(id);
+        if(!el)return;
+        el.classList.remove('tt681-active-option');
+        if(el.style.display!=='none')el.style.setProperty('display','none','important');
+      });
+    }catch(e){}
+  }
   function schedule(){
+    // v911 TEST: ren indexguard från animationsbasen.
+    // Inget RAF-/placeringsarbete utanför aktiv Taktikfilm-redigering.
+    if(!active()){applyInactiveV911();return;}
     try{if(window.requestAnimationFrame)requestAnimationFrame(apply);else apply();}catch(e){apply();}
     setTimeout(apply,20);
     setTimeout(apply,120);
@@ -7933,11 +7965,11 @@
 <!-- === v898 TEST: versionslabel för ren Taktikfilm-listfix + V2-hotfixar === -->
 <script>
 (function(){
-  function setTitle(){try{document.title='Taktiktavla TEST v910 animation baslinje';}catch(e){}}
+  function setTitle(){try{document.title='Taktiktavla TEST v911 matcher-only utan animationstapp';}catch(e){}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setTitle,{once:true});else setTitle();
   setTimeout(setTitle,500);
 })();
 </script>
 <!-- === slut v898 TEST === -->
 
-<!-- === v910 TEST: animation baslinje från v898 utan batterifixar === -->
+<!-- === v911 TEST: v898/v910 animationsbas + endast smal Matcher-indexguard, utan app.js-batterifixar === -->
