@@ -1,3 +1,4 @@
+/* v900 TEST: read-only batteridiagnos från v898 TEST. */
 /* v846 TEST: Taktiktavla→Taktikfilm-modalfix + v845/v843 kon-/pinne-context-reset. */
 /* === v585 TESTMILJÖ FASTA FILNAMN ===
    Klistra denna fil i GitHub som: app_test.js
@@ -49112,3 +49113,185 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v898 TEST recovery === */
 
 /* === v898/v899 Taktikfilm-lista källfix: row-sub genererar inte längre mappnamn i Taktikfilm-rader. Mapp finns kvar som data-taktik-folder för gruppering. === */
+
+
+/* === v900 TEST: read-only batteridiagnos för iPhone/iPad ===
+   Bas: v898 TEST. Mäter RAF/min, RAF-callbacks/min och DOM-mutationer/min.
+   Viktigt: ingen RAF-broms, ingen DOM-fix, ingen funktionsändring. */
+(function(){
+  'use strict';
+  if(window.__tt900BatteryDiag)return;
+  window.__tt900BatteryDiag=true;
+
+  var VERSION='Version 2 test v900 batteridiagnos';
+  var STORE_KEY='tt900_battery_diag_samples_v1';
+  var rafNative=window.requestAnimationFrame;
+  var cancelNative=window.cancelAnimationFrame;
+  var counts={rafRequests:0,rafCallbacks:0,domMutations:0,attrMutations:0,childMutations:0,charsMutations:0};
+  var total={rafRequests:0,rafCallbacks:0,domMutations:0,attrMutations:0,childMutations:0,charsMutations:0};
+  var callsites={};
+  var domTargets={};
+  var domAttrs={};
+  var samples=[];
+  var started=Date.now();
+  var lastTick=started;
+  var lastStackAt=0;
+  var panel=null,out=null,btn=null,paused=false;
+
+  function byId(id){return document.getElementById(id);}
+  function now(){return Date.now();}
+  function safeText(v){return String(v==null?'':v).replace(/\s+/g,' ').trim();}
+  function topEntries(o,n){
+    return Object.keys(o||{}).sort(function(a,b){return (o[b]||0)-(o[a]||0);}).slice(0,n||8).map(function(k){return {name:k,count:o[k]};});
+  }
+  function contextLabel(){try{
+    var b=document.body;
+    var tab=document.querySelector('.tab.on[data-panel]');
+    var panelName=tab?tab.getAttribute('data-panel'):'';
+    if(b.classList.contains('fullscreen-portrait')){
+      if(b.classList.contains('v66-taktik-fs')||b.classList.contains('tt743-mobile-taktikfilm-fullscreen'))return 'Taktikfilm fullscreen';
+      return 'Taktiktavla fullscreen';
+    }
+    if(panelName==='taktik'){
+      if(b.classList.contains('tt-v82-taktik-library')||(!b.classList.contains('tt688-taktikfilm-editor-active')&&!(typeof editingTaktikIdx==='number'&&editingTaktikIdx!==null)))return 'Taktikfilm filvy';
+      return 'Taktikfilm redigering';
+    }
+    if(panelName==='saves'||panelName==='uppstallning'||panelName==='start')return 'Taktiktavla filvy/redigering';
+    if(panelName==='lag'||panelName==='matcher'||panelName==='match')return 'Matcher';
+    if(panelName==='trupp')return 'Trupp';
+    if(panelName==='snabb')return 'Snabbtavla';
+    return panelName||safeText((tab&&tab.textContent)||'okänt läge')||'okänt läge';
+  }catch(e){return 'okänt läge';}}
+  function stackKey(){try{
+    var t=now();
+    if(t-lastStackAt<250)return '';
+    lastStackAt=t;
+    var s=(new Error()).stack||'';
+    var lines=s.split('\n').map(function(x){return x.trim();}).filter(Boolean);
+    // Hoppa över diagnostikens egna rader och webbläsarens RAF-rad.
+    var useful=[];
+    for(var i=0;i<lines.length;i++){
+      if(lines[i].indexOf('tt900')>=0 || lines[i].indexOf('stackKey')>=0 || lines[i].indexOf('requestAnimationFrame')>=0)continue;
+      useful.push(lines[i].replace(/^at\s+/,''));
+      if(useful.length>=2)break;
+    }
+    return useful.join(' ← ')||'okänd RAF-källa';
+  }catch(e){return '';}}
+
+  if(typeof rafNative==='function' && !rafNative.__tt900Wrapped){
+    window.requestAnimationFrame=function(cb){
+      counts.rafRequests++; total.rafRequests++;
+      var k=stackKey(); if(k)callsites[k]=(callsites[k]||0)+1;
+      return rafNative.call(window,function(ts){
+        counts.rafCallbacks++; total.rafCallbacks++;
+        return cb.apply(this,arguments);
+      });
+    };
+    try{window.requestAnimationFrame.__tt900Wrapped=true;}catch(e){}
+    if(typeof cancelNative==='function')window.cancelAnimationFrame=function(id){return cancelNative.call(window,id);};
+  }
+
+  function ensurePanel(){try{
+    if(panel&&document.body.contains(panel))return;
+    var css=document.createElement('style');
+    css.id='tt900-battery-diag-css';
+    css.textContent='#tt900-battery-diag{position:fixed;right:8px;bottom:8px;z-index:100000;background:rgba(17,26,20,.96);color:#edf5ee;border:1px solid #4ae8e8;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.45);font:12px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:min(370px,calc(100vw - 16px));max-height:min(58vh,460px);overflow:auto;padding:8px;box-sizing:border-box}#tt900-battery-diag h3{margin:0 0 5px;font-size:13px;color:#4ae8e8}#tt900-battery-diag pre{white-space:pre-wrap;margin:5px 0 0;font:11px/1.28 ui-monospace,SFMono-Regular,Menlo,monospace;color:#d8f5df}#tt900-battery-diag .tt900-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}#tt900-battery-diag button{background:#0b130e;color:#4ae8e8;border:1px solid #2d4a35;border-radius:7px;padding:4px 7px;font-weight:700}#tt900-battery-diag.tt900-collapsed pre,#tt900-battery-diag.tt900-collapsed .tt900-extra{display:none}';
+    if(!document.getElementById(css.id))document.head.appendChild(css);
+    panel=document.createElement('div');panel.id='tt900-battery-diag';panel.setAttribute('data-tt900','1');
+    panel.innerHTML='<h3>Batteridiagnos v900</h3><div id="tt900-summary">Startar mätning...</div><div class="tt900-row tt900-extra"><button id="tt900-copy">Kopiera</button><button id="tt900-reset">Nollställ</button><button id="tt900-pause">Pausa</button><button id="tt900-collapse">Dölj detaljer</button></div><pre id="tt900-output"></pre>';
+    document.body.appendChild(panel);
+    out=byId('tt900-output');
+    btn=byId('tt900-summary');
+    byId('tt900-copy').addEventListener('click',copyReport);
+    byId('tt900-reset').addEventListener('click',resetStats);
+    byId('tt900-pause').addEventListener('click',function(){paused=!paused;this.textContent=paused?'Fortsätt':'Pausa';});
+    byId('tt900-collapse').addEventListener('click',function(){panel.classList.toggle('tt900-collapsed');this.textContent=panel.classList.contains('tt900-collapsed')?'Visa detaljer':'Dölj detaljer';});
+  }catch(e){} }
+  function ignoreNode(n){try{return !!(n&&n.closest&&n.closest('#tt900-battery-diag'));}catch(e){return false;}}
+  try{
+    var mo=new MutationObserver(function(list){
+      if(paused)return;
+      for(var i=0;i<list.length;i++){
+        var m=list[i];
+        if(ignoreNode(m.target))continue;
+        counts.domMutations++; total.domMutations++;
+        if(m.type==='attributes'){counts.attrMutations++;total.attrMutations++;var a=m.attributeName||'attr';domAttrs[a]=(domAttrs[a]||0)+1;}
+        else if(m.type==='childList'){counts.childMutations++;total.childMutations++;}
+        else if(m.type==='characterData'){counts.charsMutations++;total.charsMutations++;}
+        var t=m.target, name=(t&&t.nodeType===1)?(t.tagName.toLowerCase()+(t.id?('#'+t.id):'')+(t.className&&typeof t.className==='string'?('.'+t.className.split(/\s+/).slice(0,2).join('.')):'')):(m.type||'node');
+        domTargets[name]=(domTargets[name]||0)+1;
+      }
+    });
+    function startMo(){try{mo.observe(document.body,{subtree:true,childList:true,attributes:true,characterData:true,attributeOldValue:false,characterDataOldValue:false});}catch(e){}}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startMo,{once:true});else startMo();
+  }catch(e){}
+
+  function perMin(v,dt){return Math.round((v||0)*60000/Math.max(1,dt));}
+  function snapshot(){
+    var t=now(), dt=t-lastTick; lastTick=t;
+    var s={
+      time:new Date(t).toISOString(),
+      context:contextLabel(),
+      msSinceStart:t-started,
+      rafRequestsPerMin:perMin(counts.rafRequests,dt),
+      rafCallbacksPerMin:perMin(counts.rafCallbacks,dt),
+      domMutationsPerMin:perMin(counts.domMutations,dt),
+      attrMutationsPerMin:perMin(counts.attrMutations,dt),
+      childMutationsPerMin:perMin(counts.childMutations,dt),
+      charsMutationsPerMin:perMin(counts.charsMutations,dt),
+      totals:JSON.parse(JSON.stringify(total)),
+      topRafCallsites:topEntries(callsites,6),
+      topDomTargets:topEntries(domTargets,8),
+      topDomAttrs:topEntries(domAttrs,8)
+    };
+    counts={rafRequests:0,rafCallbacks:0,domMutations:0,attrMutations:0,childMutations:0,charsMutations:0};
+    samples.push(s); if(samples.length>90)samples.shift();
+    try{localStorage.setItem(STORE_KEY,JSON.stringify(samples.slice(-30)));}catch(e){}
+    return s;
+  }
+  function format(s){
+    var lines=[];
+    lines.push('Läge: '+s.context);
+    lines.push('RAF begärda/min: '+s.rafRequestsPerMin);
+    lines.push('RAF callbacks/min: '+s.rafCallbacksPerMin);
+    lines.push('DOM mutationer/min: '+s.domMutationsPerMin+' (attr '+s.attrMutationsPerMin+', child '+s.childMutationsPerMin+', text '+s.charsMutationsPerMin+')');
+    lines.push('Totalt sedan start: RAF '+s.totals.rafRequests+'/'+s.totals.rafCallbacks+', DOM '+s.totals.domMutations);
+    lines.push('');
+    lines.push('Topp RAF-källor:');
+    (s.topRafCallsites.length?s.topRafCallsites:[{name:'inga fångade',count:0}]).forEach(function(x){lines.push('  '+x.count+' × '+x.name);});
+    lines.push('');
+    lines.push('Topp DOM-mål:');
+    (s.topDomTargets.length?s.topDomTargets:[{name:'inga',count:0}]).forEach(function(x){lines.push('  '+x.count+' × '+x.name);});
+    lines.push('');
+    lines.push('Topp attribut:');
+    (s.topDomAttrs.length?s.topDomAttrs:[{name:'inga',count:0}]).forEach(function(x){lines.push('  '+x.count+' × '+x.name);});
+    return lines.join('\n');
+  }
+  function reportText(){
+    var latest=samples[samples.length-1]||snapshot();
+    return 'Taktiktavla batteridiagnos v900\nBas: v898 TEST\nTid: '+new Date().toISOString()+'\nUserAgent: '+navigator.userAgent+'\n\nSenaste mätfönster:\n'+format(latest)+'\n\nSenaste '+samples.length+' samples JSON:\n'+JSON.stringify(samples,null,2);
+  }
+  function renderDiag(){try{
+    ensurePanel(); if(paused)return;
+    var s=snapshot();
+    if(btn)btn.textContent='RAF/min '+s.rafCallbacksPerMin+' · DOM/min '+s.domMutationsPerMin+' · '+s.context;
+    if(out)out.textContent=format(s);
+  }catch(e){} }
+  function copyReport(){try{
+    var txt=reportText();
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){try{if(typeof showToast==='function')showToast('Diagnos kopierad');}catch(e){}});}
+    else{var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+  }catch(e){try{alert('Kunde inte kopiera diagnos: '+e.message);}catch(_e){}}}
+  function resetStats(){counts={rafRequests:0,rafCallbacks:0,domMutations:0,attrMutations:0,childMutations:0,charsMutations:0};total={rafRequests:0,rafCallbacks:0,domMutations:0,attrMutations:0,childMutations:0,charsMutations:0};callsites={};domTargets={};domAttrs={};samples=[];started=now();lastTick=started;renderDiag();}
+  function setVersion(){try{
+    document.title='Taktiktavla TEST v900 batteridiagnos';
+    document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
+      var t=safeText(el.textContent);
+      if(/^(v?\d+|\d+\s*TEST|Version\s+2(\.0(\.\d+)?)?|Version 2 test v\d+.*)$/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
+    });
+  }catch(e){} }
+  window.tt900BatteryDiag={report:reportText,reset:resetStats,samples:function(){return samples.slice();}};
+  function start(){ensurePanel();setVersion();renderDiag();setInterval(renderDiag,1000);setInterval(setVersion,2000);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+/* === slut v900 TEST batteridiagnos === */
