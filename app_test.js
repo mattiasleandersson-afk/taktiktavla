@@ -49113,4 +49113,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v898/v899 Taktikfilm-lista källfix: row-sub genererar inte längre mappnamn i Taktikfilm-rader. Mapp finns kvar som data-taktik-folder för gruppering. === */
 
-/* v910 TEST: animation baslinje från v898 utan batterifixar; ingen logikändring mot v898. */
+/* v911 TEST: app.js oförändrad animationsbas från v898/v910; Matcher-fix ligger endast i index. */
