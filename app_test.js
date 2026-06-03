@@ -26638,6 +26638,20 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return false;
   }
 
+
+  function isIpadRitaSingleOwner921(){
+    try{
+      if(document.body.classList.contains('fullscreen-portrait'))return false;
+      var w=Math.max(window.innerWidth||0,document.documentElement.clientWidth||0);
+      var h=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
+      var minSide=Math.min(w,h),maxSide=Math.max(w,h);
+      var coarse=window.matchMedia&&window.matchMedia('(pointer: coarse)').matches;
+      var ua=navigator.userAgent||'';
+      var explicitIpad=/iPad/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+      return explicitIpad || (coarse&&minSide>=700&&maxSide<=1400) || (minSide>=760);
+    }catch(e){return false;}
+  }
+
   function ritaBar248(){
     var ref=document.getElementById('tt236-rita-move')||
             document.getElementById('btn-arrow')||
@@ -26727,7 +26741,18 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       setVersion248();
       injectStyle248();
 
-      // Låt de fungerande 236/239-byggblocken skapa/flytta knapparna först.
+      var taktik=isTaktikActive248();
+
+      // v921: på iPad/tablet ska v252 vara ensam ägare till ritraden.
+      // v248 får annars först flytta/visa/gömma arrow/freehand/zone och konknappen,
+      // varpå v252 flyttar tillbaka dem. Det är det synliga hoppet i Taktiktavla/Snabbtavla.
+      if(isIpadRitaSingleOwner921() && !taktik && !document.body.classList.contains('fullscreen-portrait')){
+        document.body.classList.remove('tt248-taktik-active');
+        markAndHideRitaButtons248();
+        return;
+      }
+
+      // Låt de fungerande 236/239-byggblocken skapa/flytta knapparna först i icke-iPad-lägen.
       if(typeof window.tt236ApplyTavlaRitaToolbar==='function'){
         try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
       }
@@ -26735,7 +26760,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         try{window.tt239MoveNormalTavlaOptionsNextToTool();}catch(e){}
       }
 
-      var taktik=isTaktikActive248();
       document.body.classList.toggle('tt248-taktik-active',!!taktik);
 
       var bar=ritaBar248();
@@ -26772,8 +26796,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function schedule248(){
-    // v920: kör en enda idempotent synk. De gamla fördröjda omsynkarna
-    // orsakade synligt hopp i ritraden på iPad/Snabbtavla/Taktiktavla.
+    // v921: inga fördröjda omsynkar från v248 i iPad-läget.
+    // v252 äger raden där; v248 ska inte synligt flytta dit/flytta tillbaka.
     sync248();
   }
 
@@ -26792,8 +26816,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   document.addEventListener('click',function(ev){
     try{
       if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;
-      // v920: reagera inte på alla klick i hela appen. Synka bara när ritrad/flik berörs.
-      if(!(ev&&ev.target&&ev.target.closest&&ev.target.closest('.tab,#tt252-ipad-rita-row,.tt248-tavla-rita-row,.tt238-rita-scrollbar')))return;
+      if(isIpadRitaSingleOwner921()){
+        if(!(ev&&ev.target&&ev.target.closest&&ev.target.closest('.tab,#tt252-ipad-rita-row,.tt248-tavla-rita-row,.tt238-rita-scrollbar')))return;
+      }
     }catch(e){}
     setTimeout(schedule248,0);
   },true);
@@ -26907,7 +26932,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function toolIds252(){
-    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
+    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
   }
   function optionIds252(){return ['arrow-options','freehand-options','zone-options'];}
 
@@ -26969,8 +26994,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       setVersion252();
       injectStyle252();
 
-      if(typeof window.tt248AlwaysOpenRitaRowNoToggle==='function'){
-        try{window.tt248AlwaysOpenRitaRowNoToggle();}catch(e){}
+      // v921: kalla inte v248 här. v248 är den gamla ritägaren och orsakar hopp
+      // genom att först flytta ritvalen, innan v252 flyttar dem tillbaka.
+      // Kalla bara de underliggande byggblocken som behövs för att knapparna ska finnas.
+      if(typeof window.tt236ApplyTavlaRitaToolbar==='function'){
+        try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
+      }
+      if(typeof window.tt239MoveNormalTavlaOptionsNextToTool==='function'){
+        try{window.tt239MoveNormalTavlaOptionsNextToTool();}catch(e){}
       }
 
       var useIpad=isIpadLike252();
@@ -26988,9 +27019,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var activeOpt=activeOptionId252();
 
       if(useIpad){
-        // v920: en enda kanonisk ordning i iPad-raden.
-        // Tidigare appendades bara aktivt ritval, vilket gjorde att gamla element kunde
-        // ligga kvar och hoppa mellan index när v248/v252/tt747 synkade efter varandra.
+        // v921: en kanonisk ritrad, en ägare.
+        // Alla ritval ligger kvar i raden men bara aktivt val visas. Då ändras inte ordningen
+        // när man växlar verktyg eller går Taktiktavla <-> Snabbtavla.
         var sequence=[
           'tt236-rita-move',
           'btn-arrow','arrow-options',
@@ -27002,8 +27033,36 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           var el=document.getElementById(id);
           if(!el)return;
           currentOriginalParent252(el);
-          if(el.parentNode!==ipadRow || el!==ipadRow.lastElementChild)ipadRow.appendChild(el);
+          if(el.parentNode!==ipadRow)ipadRow.appendChild(el);
         });
+        // Säkerställ ordning utan att först riva loss elementen till en annan parent.
+        sequence.forEach(function(id){
+          var el=document.getElementById(id);
+          if(!el||el.parentNode!==ipadRow)return;
+          ipadRow.appendChild(el);
+        });
+        opts.forEach(function(id){
+          var el=document.getElementById(id);
+          if(!el)return;
+          if(activeOpt===id){
+            el.style.setProperty('display','flex','important');
+            el.classList.add('tt291-active-option');
+          }else{
+            el.style.setProperty('display','none','important');
+            el.classList.remove('tt291-active-option');
+          }
+        });
+        var objBtn=document.getElementById('tt747-object-btn');
+        if(objBtn){
+          objBtn.classList.add('tt751-object-ready');
+          objBtn.style.setProperty('display','inline-flex','important');
+          objBtn.style.setProperty('position','relative','important');
+          objBtn.style.setProperty('left','auto','important');
+          objBtn.style.setProperty('top','auto','important');
+          objBtn.style.setProperty('right','auto','important');
+          objBtn.style.setProperty('bottom','auto','important');
+          objBtn.style.setProperty('transform','none','important');
+        }
         ipadRow.style.setProperty('display',taktik?'none':'flex','important');
       }else{
         // På dator/mobil lämnas 248/251-layouten som den var.
@@ -27017,7 +27076,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function schedule252(){
-    // v920: en synk räcker när raden byggs kanoniskt. Fördröjda omsynkar gav hopp.
+    // v921: v252 är ensam ritägare i iPad-läge och ska inte göra fördröjda
+    // omflyttningar som syns som ikonhopp.
     moveIntoIpadRow252();
   }
 
@@ -27036,7 +27096,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   document.addEventListener('click',function(ev){
     try{
       if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;
-      // v920: ingen bred klick-synk från hela appen. Bara ritrad/flik.
       if(!(ev&&ev.target&&ev.target.closest&&ev.target.closest('.tab,#tt252-ipad-rita-row,.tt248-tavla-rita-row,.tt238-rita-scrollbar')))return;
     }catch(e){}
     setTimeout(schedule252,0);
@@ -45754,20 +45813,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       var row=activeRitaRow();
       var ref=row?(row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone')):null;
+      b.classList.remove('tt751-object-ready','tt749-object-ready');
       if(row && ref){
-        // v920: om konknappen redan ligger direkt efter zonknappen ska vi inte
-        // ta bort ready-klassen eller flytta den. Det var en av orsakerna till hoppet.
-        if(b.parentNode===row && b.previousElementSibling===ref){
-          markButtonReady(b,row,ref);
-          return;
-        }
-        b.classList.remove('tt751-object-ready','tt749-object-ready');
         if(b.parentNode!==row || b.previousElementSibling!==ref){
           row.insertBefore(b,ref.nextSibling);
         }
         markButtonReady(b,row,ref);
       }else{
-        b.classList.remove('tt751-object-ready','tt749-object-ready');
         if(!b.parentNode)document.body.appendChild(b);
       }
     }catch(e){
