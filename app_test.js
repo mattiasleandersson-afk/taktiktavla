@@ -45591,6 +45591,39 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   var placementPending=false;
+  // v901: källnära RAF-skydd för objektknappen.
+  // Den gamla breda MutationObservern reagerade på nästan alla childList-ändringar i body.
+  // Det kunde skapa en loop: DOM-ändring -> scheduleObjectButtonPlacement -> RAF -> gamla RAF-wrappar
+  // -> filrader/knappar skrivs om -> ny DOM-ändring. Här låter vi objektknappen bara schemalägga RAF
+  // när just ritverktygsraden/objektknappen faktiskt kan behöva ny placering.
+  function objectPlacementStableV901(){
+    try{
+      if(!objectButton)return false;
+      var row=activeRitaRow();
+      var ref=row?(row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone')):null;
+      if(row&&ref){
+        return objectButton.parentNode===row && objectButton.previousElementSibling===ref;
+      }
+      return !!objectButton.parentNode;
+    }catch(e){return false;}
+  }
+  function isObjectPlacementMutationV901(m){
+    try{
+      if(!m)return false;
+      var nodes=[];
+      if(m.target)nodes.push(m.target);
+      if(m.addedNodes){for(var i=0;i<m.addedNodes.length;i++)nodes.push(m.addedNodes[i]);}
+      if(m.removedNodes){for(var j=0;j<m.removedNodes.length;j++)nodes.push(m.removedNodes[j]);}
+      for(var k=0;k<nodes.length;k++){
+        var n=nodes[k];
+        if(!n || n.nodeType!==1)continue;
+        if(n.id==='tt747-object-btn' || n.id==='btn-zone' || n.id==='btn-tb-zone' || n.id==='fs-tb-zone')return true;
+        if(n.matches && n.matches('#tt252-ipad-rita-row,.tt248-tavla-rita-row,.tt238-rita-scrollbar,#taktikbar,#fs-top-tools'))return true;
+        if(n.querySelector && n.querySelector('#tt747-object-btn,#btn-zone,#btn-tb-zone,#fs-tb-zone,#tt252-ipad-rita-row,.tt248-tavla-rita-row,.tt238-rita-scrollbar'))return true;
+      }
+    }catch(e){}
+    return false;
+  }
 
   function validRitaRow(row){
     if(!row)return false;
@@ -45656,8 +45689,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }
   }
 
-  function scheduleObjectButtonPlacement(){
+  function scheduleObjectButtonPlacement(force){
     if(placementPending)return;
+    // v901: om objektknappen redan sitter rätt ska vi inte starta en RAF bara för att någon annan UI-del muterade.
+    if(!force && objectPlacementStableV901())return;
     placementPending=true;
     requestAnimationFrame(function(){
       placementPending=false;
@@ -45936,22 +45971,29 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v773 formationknappar_kompakt';}catch(e){}
+    try{if(document.title!=='Taktiktavla TEST v901 objektknapp RAF-källfix')document.title='Taktiktavla TEST v901 objektknapp RAF-källfix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='773 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t) && t!=='901 TEST')el.textContent='901 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v800 TEST';
+      var bt='⚠ TESTMILJÖ – testdata / inte produktion – v901 TEST';
+      if(banner && banner.textContent!==bt)banner.textContent=bt;
     }catch(e){}
   }
 
   try{
     var placementEvents=['pointerdown','mousedown','touchstart','click','touchend','keyup','resize','orientationchange'];
-    placementEvents.forEach(function(evt){window.addEventListener(evt,function(){scheduleObjectButtonPlacement();setTimeout(scheduleObjectButtonPlacement,40);},true);});
+    placementEvents.forEach(function(evt){window.addEventListener(evt,function(){scheduleObjectButtonPlacement(true);setTimeout(function(){scheduleObjectButtonPlacement(true);},40);},true);});
     if(window.MutationObserver){
-      var moBtn=new MutationObserver(function(){scheduleObjectButtonPlacement();});
+      var moBtn=new MutationObserver(function(muts){
+        try{
+          for(var i=0;i<muts.length;i++){
+            if(isObjectPlacementMutationV901(muts[i])){scheduleObjectButtonPlacement(true);break;}
+          }
+        }catch(e){}
+      });
       var startMo=function(){try{moBtn.observe(document.body,{childList:true,subtree:true});}catch(e){}};
       if(document.body)startMo();
       else document.addEventListener('DOMContentLoaded',startMo);
@@ -49269,7 +49311,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   function reportText(){
     var latest=samples[samples.length-1]||snapshot();
-    return 'Taktiktavla batteridiagnos v900\nBas: v898 TEST\nTid: '+new Date().toISOString()+'\nUserAgent: '+navigator.userAgent+'\n\nSenaste mätfönster:\n'+format(latest)+'\n\nSenaste '+samples.length+' samples JSON:\n'+JSON.stringify(samples,null,2);
+    return 'Taktiktavla batteridiagnos v901 objektknapp RAF-källfix\nBas: v898 TEST\nTid: '+new Date().toISOString()+'\nUserAgent: '+navigator.userAgent+'\n\nSenaste mätfönster:\n'+format(latest)+'\n\nSenaste '+samples.length+' samples JSON:\n'+JSON.stringify(samples,null,2);
   }
   function renderDiag(){try{
     ensurePanel(); if(paused)return;
