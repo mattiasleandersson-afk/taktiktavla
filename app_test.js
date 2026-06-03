@@ -37641,8 +37641,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v915-taktikfilm-visual-sidework-coalesce ===
-   Bas: v914/v911. Smal Taktikfilm-batteritest:
+/* === v916-taktikfilm-object-hard-sleep + v915-visual-sidework-coalesce ===
+   Bas: v915/v911. Smal Taktikfilm-batteritest:
    - ändrar inte animations-RAF, hastighet eller positionsberäkning
    - samlar ihop gamla visuella efter-frame-syncar så samma dyra namn/nummer/text-sync
      inte kör flera gånger i samma animationsframe
@@ -37700,7 +37700,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){return false;}
   };
 })();
-/* === slut v915-taktikfilm-visual-sidework-coalesce === */
+/* === slut v916/v915-taktikfilm-sidework === */
 
 
 /* === v424-taktikfilm-squad-name-frame-sync ===
@@ -45776,6 +45776,22 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){return false;}
   }
 
+  /* v916: hårdare och säkrare animationsdetektor för objektknappens sidoarbete.
+     Använder både v914:s lokala markering och v915:s gemensamma animationsmarkör.
+     Den rör inte animations-RAF eller positionsberäkningen; den stoppar bara objektknapps-
+     placering medan Taktikfilm faktiskt spelar/animerar. */
+  function isTaktikfilmAnimatingForObject916(){
+    try{
+      if(!isTaktikfilmContext914())return false;
+      if(typeof window.__tt915IsTaktikfilmAnimating==='function' && window.__tt915IsTaktikfilmAnimating()){
+        markTaktikfilmAnimationSideworkBlock914(900);
+        return true;
+      }
+      if(playback && playback.animating){markTaktikfilmAnimationSideworkBlock914(900);return true;}
+      return Date.now()<tt914AnimBlockUntil;
+    }catch(e){return isTaktikfilmAnimating914();}
+  }
+
   try{
     if(typeof animateToStep==='function' && !animateToStep.__tt914SideworkWrapped){
       var oldAnimateToStep914=animateToStep;
@@ -45788,8 +45804,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }catch(e){}
 
   function scheduleObjectButtonPlacement(){
-    if(isTaktikfilmAnimating914()){
-      try{window.__tt912Count&&window.__tt912Count('app.tt747.skipBeforeSchedule914');}catch(e){}
+    if(isTaktikfilmAnimatingForObject916()){
+      try{window.__tt912Count&&window.__tt912Count('app.tt747.skipBeforeSchedule916');}catch(e){}
       return;
     }
     try{window.__tt912Count&&window.__tt912Count('app.tt747.scheduleObjectButtonPlacement');}catch(e){}
@@ -46064,7 +46080,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{document.body.classList.toggle('tt763-taktik-object-active',!!isTaktikfilmEdit763());}catch(e){}
     try{document.body.classList.toggle('tt758-object-fullscreen',!!isFullscreenBoard758());}catch(e){}
     try{document.body.classList.toggle('tt764-taktik-object-fullscreen',!!isTaktikfilmFullscreen764());}catch(e){}
-    ensureButton();
+    if(isTaktikfilmAnimatingForObject916()){
+      try{window.__tt912Count&&window.__tt912Count('app.tt747.refreshSkipDuringAnimation916');}catch(e){}
+    }else{
+      ensureButton();
+    }
     if(objectButton)objectButton.style.display=isNormalTavla()?'inline-flex':'none';
     if(!isNormalTavla() && mode==='object'){
       try{setMode('move');}catch(e){}
@@ -46086,8 +46106,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   try{
     var placementEvents=['pointerdown','mousedown','touchstart','click','touchend','keyup','resize','orientationchange'];
     placementEvents.forEach(function(evt){window.addEventListener(evt,function(){
-      if(isTaktikfilmAnimating914()){
-        try{window.__tt912Count&&window.__tt912Count('app.tt747.eventSkipDuringAnimation914');}catch(e){}
+      if(isTaktikfilmAnimatingForObject916()){
+        try{window.__tt912Count&&window.__tt912Count('app.tt747.eventSkipDuringAnimation916');}catch(e){}
         return;
       }
       scheduleObjectButtonPlacement();setTimeout(scheduleObjectButtonPlacement,40);
@@ -46096,13 +46116,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var moConnected914=false;
       var reconnectTimer914=0;
       var moBtn=new MutationObserver(function(){
-        if(isTaktikfilmAnimating914()){
-          try{window.__tt912Count&&window.__tt912Count('app.tt747.moSleepDuringAnimation914');}catch(e){}
+        if(isTaktikfilmAnimatingForObject916()){
+          try{window.__tt912Count&&window.__tt912Count('app.tt747.moSleepDuringAnimation916');}catch(e){}
           try{moBtn.disconnect();moConnected914=false;}catch(e){}
           if(!reconnectTimer914){
             reconnectTimer914=setTimeout(function retryReconnect914(){
               reconnectTimer914=0;
-              if(isTaktikfilmAnimating914()){
+              if(isTaktikfilmAnimatingForObject916()){
                 reconnectTimer914=setTimeout(retryReconnect914,450);
                 return;
               }
@@ -46116,7 +46136,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       });
       var startMo=function(){
         try{
-          if(moConnected914 || !document.body || isTaktikfilmAnimating914())return;
+          if(moConnected914 || !document.body || isTaktikfilmAnimatingForObject916())return;
           moBtn.observe(document.body,{childList:true,subtree:true});
           moConnected914=true;
         }catch(e){}
