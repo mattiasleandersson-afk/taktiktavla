@@ -26176,6 +26176,19 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){return false;}
   }
 
+  function isIpadRitaSingleOwner922(){
+    try{
+      if(document.body && document.body.classList && document.body.classList.contains('fullscreen-portrait'))return false;
+      var w=Math.max(window.innerWidth||0,document.documentElement.clientWidth||0);
+      var h=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
+      var minSide=Math.min(w,h),maxSide=Math.max(w,h);
+      var coarse=window.matchMedia&&window.matchMedia('(pointer: coarse)').matches;
+      var ua=navigator.userAgent||'';
+      var explicitIpad=/iPad/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+      return !!(document.body&&document.body.classList&&document.body.classList.contains('tt252-ipad-layout')) || explicitIpad || (coarse&&minSide>=700&&maxSide<=1400) || (minSide>=760);
+    }catch(e){return false;}
+  }
+
   function clearDrawingsOnly236(){
     try{if(typeof saveUndo==="function")saveUndo();}catch(e){}
     try{arrows=[];}catch(e){}
@@ -26349,6 +26362,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     setVersion236();
     injectStyle236();
     renameFormationToTavla236();
+    // v922: i iPad/tablet-läge äger v252 ritraden. v236 får inte append:a om
+    // knapparna vid flikbyte/klick, eftersom det är första synliga hoppet.
+    if(isIpadRitaSingleOwner922() && document.body.classList.contains('tt252-ipad-layout')){
+      syncRitaToolState236();
+      return;
+    }
     placeRitaTools236();
   }
 
@@ -26358,6 +26377,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   document.addEventListener("click",function(ev){
     try{
       if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
+      if(isIpadRitaSingleOwner922() && document.body.classList.contains('tt252-ipad-layout'))return;
     }catch(e){}
     setTimeout(function(){
       setVersion236();
@@ -26399,6 +26419,19 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return ref&&ref.parentNode?ref.parentNode:null;
   }
 
+  function isIpadRitaSingleOwner922(){
+    try{
+      if(document.body&&document.body.classList&&document.body.classList.contains('fullscreen-portrait'))return false;
+      var w=Math.max(window.innerWidth||0,document.documentElement.clientWidth||0);
+      var h=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
+      var minSide=Math.min(w,h),maxSide=Math.max(w,h);
+      var coarse=window.matchMedia&&window.matchMedia('(pointer: coarse)').matches;
+      var ua=navigator.userAgent||'';
+      var explicitIpad=/iPad/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+      return !!(document.body&&document.body.classList&&document.body.classList.contains('tt252-ipad-layout')) || explicitIpad || (coarse&&minSide>=700&&maxSide<=1400) || (minSide>=760);
+    }catch(e){return false;}
+  }
+
   function injectStyle238(){
     if(document.getElementById("tt238-normal-options-style"))return;
     var st=document.createElement("style");
@@ -26422,6 +26455,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function moveOptionsIntoRita238(){
     try{
       if(document.body.classList.contains("fullscreen-portrait"))return;
+      if(isIpadRitaSingleOwner922() && document.body.classList.contains('tt252-ipad-layout'))return;
       if(document.querySelector('.tab.on[data-panel="taktik"]') || (document.getElementById('panel-taktik')&&document.getElementById('panel-taktik').classList.contains('on')))return;
       var bar=ritaBar238();
       if(!bar)return;
@@ -26463,6 +26497,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   document.addEventListener("click",function(ev){
     try{
       if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
+      if(isIpadRitaSingleOwner922() && document.body.classList.contains('tt252-ipad-layout'))return;
     }catch(e){}
     setTimeout(apply238,20);
   },true);
@@ -26500,6 +26535,19 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return ref&&ref.parentNode?ref.parentNode:null;
   }
 
+  function isIpadRitaSingleOwner922(){
+    try{
+      if(document.body&&document.body.classList&&document.body.classList.contains('fullscreen-portrait'))return false;
+      var w=Math.max(window.innerWidth||0,document.documentElement.clientWidth||0);
+      var h=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
+      var minSide=Math.min(w,h),maxSide=Math.max(w,h);
+      var coarse=window.matchMedia&&window.matchMedia('(pointer: coarse)').matches;
+      var ua=navigator.userAgent||'';
+      var explicitIpad=/iPad/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+      return !!(document.body&&document.body.classList&&document.body.classList.contains('tt252-ipad-layout')) || explicitIpad || (coarse&&minSide>=700&&maxSide<=1400) || (minSide>=760);
+    }catch(e){return false;}
+  }
+
   function putAfter239(el,anchor){
     if(!el||!anchor||!anchor.parentNode)return;
     var parent=anchor.parentNode;
@@ -26532,6 +26580,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       setVersion239();
       if(document.body.classList.contains("fullscreen-portrait"))return;
+      if(isIpadRitaSingleOwner922() && document.body.classList.contains('tt252-ipad-layout'))return;
       if(document.querySelector('.tab.on[data-panel="taktik"]') || (document.getElementById('panel-taktik')&&document.getElementById('panel-taktik').classList.contains('on')))return;
       var bar=ritaBar239();
       if(!bar)return;
@@ -26582,6 +26631,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   document.addEventListener("click",function(ev){
     try{
       if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
+      if(isIpadRitaSingleOwner922() && document.body.classList.contains('tt252-ipad-layout'))return;
     }catch(e){}
     setTimeout(apply239,20);
   },true);
@@ -26638,20 +26688,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return false;
   }
 
-
-  function isIpadRitaSingleOwner921(){
-    try{
-      if(document.body.classList.contains('fullscreen-portrait'))return false;
-      var w=Math.max(window.innerWidth||0,document.documentElement.clientWidth||0);
-      var h=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
-      var minSide=Math.min(w,h),maxSide=Math.max(w,h);
-      var coarse=window.matchMedia&&window.matchMedia('(pointer: coarse)').matches;
-      var ua=navigator.userAgent||'';
-      var explicitIpad=/iPad/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-      return explicitIpad || (coarse&&minSide>=700&&maxSide<=1400) || (minSide>=760);
-    }catch(e){return false;}
-  }
-
   function ritaBar248(){
     var ref=document.getElementById('tt236-rita-move')||
             document.getElementById('btn-arrow')||
@@ -26662,7 +26698,20 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function toolIds248(){
-    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
+    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
+  }
+
+  function isIpadRitaSingleOwner922(){
+    try{
+      if(document.body&&document.body.classList&&document.body.classList.contains('fullscreen-portrait'))return false;
+      var w=Math.max(window.innerWidth||0,document.documentElement.clientWidth||0);
+      var h=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
+      var minSide=Math.min(w,h),maxSide=Math.max(w,h);
+      var coarse=window.matchMedia&&window.matchMedia('(pointer: coarse)').matches;
+      var ua=navigator.userAgent||'';
+      var explicitIpad=/iPad/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+      return !!(document.body&&document.body.classList&&document.body.classList.contains('tt252-ipad-layout')) || explicitIpad || (coarse&&minSide>=700&&maxSide<=1400) || (minSide>=760);
+    }catch(e){return false;}
   }
 
   function optionIds248(){return ['arrow-options','freehand-options','zone-options'];}
@@ -26741,18 +26790,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       setVersion248();
       injectStyle248();
 
-      var taktik=isTaktikActive248();
-
-      // v921: på iPad/tablet ska v252 vara ensam ägare till ritraden.
-      // v248 får annars först flytta/visa/gömma arrow/freehand/zone och konknappen,
-      // varpå v252 flyttar tillbaka dem. Det är det synliga hoppet i Taktiktavla/Snabbtavla.
-      if(isIpadRitaSingleOwner921() && !taktik && !document.body.classList.contains('fullscreen-portrait')){
-        document.body.classList.remove('tt248-taktik-active');
-        markAndHideRitaButtons248();
-        return;
-      }
-
-      // Låt de fungerande 236/239-byggblocken skapa/flytta knapparna först i icke-iPad-lägen.
+      // Låt de fungerande 236/239-byggblocken skapa/flytta knapparna först.
       if(typeof window.tt236ApplyTavlaRitaToolbar==='function'){
         try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
       }
@@ -26760,6 +26798,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         try{window.tt239MoveNormalTavlaOptionsNextToTool();}catch(e){}
       }
 
+      var taktik=isTaktikActive248();
       document.body.classList.toggle('tt248-taktik-active',!!taktik);
 
       var bar=ritaBar248();
@@ -26796,9 +26835,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function schedule248(){
-    // v921: inga fördröjda omsynkar från v248 i iPad-läget.
-    // v252 äger raden där; v248 ska inte synligt flytta dit/flytta tillbaka.
     sync248();
+    setTimeout(sync248,0);
+    setTimeout(sync248,60);
+    setTimeout(sync248,180);
   }
 
   var oldSetMode248=typeof setMode==='function'?setMode:null;
@@ -26813,15 +26853,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     window.setMode=wrappedSetMode248;
   }
 
-  document.addEventListener('click',function(ev){
-    try{
-      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;
-      if(isIpadRitaSingleOwner921()){
-        if(!(ev&&ev.target&&ev.target.closest&&ev.target.closest('.tab,#tt252-ipad-rita-row,.tt248-tavla-rita-row,.tt238-rita-scrollbar')))return;
-      }
-    }catch(e){}
-    setTimeout(schedule248,0);
-  },true);
+  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}setTimeout(schedule248,0);},true);
   window.addEventListener('resize',function(){setTimeout(schedule248,80);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule248);
   else schedule248();
@@ -26994,14 +27026,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       setVersion252();
       injectStyle252();
 
-      // v921: kalla inte v248 här. v248 är den gamla ritägaren och orsakar hopp
-      // genom att först flytta ritvalen, innan v252 flyttar dem tillbaka.
-      // Kalla bara de underliggande byggblocken som behövs för att knapparna ska finnas.
-      if(typeof window.tt236ApplyTavlaRitaToolbar==='function'){
-        try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
-      }
-      if(typeof window.tt239MoveNormalTavlaOptionsNextToTool==='function'){
-        try{window.tt239MoveNormalTavlaOptionsNextToTool();}catch(e){}
+      // v922: v252 är ensam synlig ritägare i iPad/tablet-läge. Kalla inte v248/239
+      // vid varje sync, eftersom de flyttar ritval/kon först och skapar hopp.
+      if(!(isIpadLike252() && document.body && !document.body.classList.contains('fullscreen-portrait'))){
+        if(typeof window.tt248AlwaysOpenRitaRowNoToggle==='function'){
+          try{window.tt248AlwaysOpenRitaRowNoToggle();}catch(e){}
+        }
       }
 
       var useIpad=isIpadLike252();
@@ -27019,14 +27049,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var activeOpt=activeOptionId252();
 
       if(useIpad){
-        // v921: en kanonisk ritrad, en ägare.
-        // Alla ritval ligger kvar i raden men bara aktivt val visas. Då ändras inte ordningen
-        // när man växlar verktyg eller går Taktiktavla <-> Snabbtavla.
+        // v922: fast kanonisk ordning. Lägg zonens ritval före konknappen så
+        // konen inte hoppar in före valen när fyrkant/formval öppnas.
         var sequence=[
           'tt236-rita-move',
           'btn-arrow','arrow-options',
           'btn-freehand','freehand-options',
-          'btn-zone','tt747-object-btn','zone-options',
+          'btn-zone','zone-options','tt747-object-btn',
           'btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'
         ];
         sequence.forEach(function(id){
@@ -27035,11 +27064,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           currentOriginalParent252(el);
           if(el.parentNode!==ipadRow)ipadRow.appendChild(el);
         });
-        // Säkerställ ordning utan att först riva loss elementen till en annan parent.
         sequence.forEach(function(id){
           var el=document.getElementById(id);
-          if(!el||el.parentNode!==ipadRow)return;
-          ipadRow.appendChild(el);
+          if(el&&el.parentNode===ipadRow)ipadRow.appendChild(el);
         });
         opts.forEach(function(id){
           var el=document.getElementById(id);
@@ -27076,9 +27103,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function schedule252(){
-    // v921: v252 är ensam ritägare i iPad-läge och ska inte göra fördröjda
-    // omflyttningar som syns som ikonhopp.
     moveIntoIpadRow252();
+    // v922: inga synliga fördröjda omsynkar i iPad-läge.
+    if(isIpadLike252() && document.body && document.body.classList.contains('tt252-ipad-layout'))return;
+    setTimeout(moveIntoIpadRow252,0);
+    setTimeout(moveIntoIpadRow252,80);
   }
 
   var oldSetMode252=typeof setMode==='function'?setMode:null;
@@ -27096,7 +27125,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   document.addEventListener('click',function(ev){
     try{
       if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;
-      if(!(ev&&ev.target&&ev.target.closest&&ev.target.closest('.tab,#tt252-ipad-rita-row,.tt248-tavla-rita-row,.tt238-rita-scrollbar')))return;
+      if(ev&&ev.target&&ev.target.closest&&!(ev.target.closest('.tab,#tt252-ipad-rita-row,.tt248-tavla-rita-row,.tt238-rita-scrollbar')))return;
     }catch(e){}
     setTimeout(schedule252,0);
   },true);
@@ -45391,7 +45420,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v917 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v922 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -45799,6 +45828,18 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){return null;}
   }
 
+  function objectAnchorForRow922(row){
+    try{
+      if(!row)return null;
+      // I vanlig Taktiktavla/Snabbtavla ska konen ligga efter zonens ritval, inte
+      // tillfälligt före ritvalen när fyrkant/formval visas.
+      var normalRow=!!(row.id==='tt252-ipad-rita-row' || row.classList.contains('tt248-tavla-rita-row') || row.classList.contains('tt238-rita-scrollbar'));
+      var zoneOpt=document.getElementById('zone-options');
+      if(normalRow && zoneOpt && zoneOpt.parentNode===row)return zoneOpt;
+      return row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone');
+    }catch(e){return row?(row.querySelector('#btn-zone')):null;}
+  }
+
   function markButtonReady(b,row,ref){
     try{
       var ok=!!(b && row && ref && b.parentNode===row && b.previousElementSibling===ref && validRitaRow(row) && isNormalTavla());
@@ -45812,14 +45853,15 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!b)return;
     try{
       var row=activeRitaRow();
-      var ref=row?(row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone')):null;
-      b.classList.remove('tt751-object-ready','tt749-object-ready');
+      var ref=objectAnchorForRow922(row);
+      // v922: ta inte bort ready före kontrollen; det gav synliga displayhopp via CSS.
       if(row && ref){
         if(b.parentNode!==row || b.previousElementSibling!==ref){
           row.insertBefore(b,ref.nextSibling);
         }
         markButtonReady(b,row,ref);
       }else{
+        b.classList.remove('tt751-object-ready','tt749-object-ready');
         if(!b.parentNode)document.body.appendChild(b);
       }
     }catch(e){
@@ -46194,14 +46236,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
+    try{document.title='Taktiktavla TEST v922 ritverktygsrad stable-owner';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='917 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='922 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v917 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v922 TEST';
     }catch(e){}
   }
 
@@ -46256,7 +46298,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v917 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v922 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -46305,11 +46347,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v917 TEST === */
+/* === slut v922 TEST === */
 
 
 
-/* === v917 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v922 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46358,10 +46400,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v917 TEST === */
+/* === slut v922 TEST === */
 
 
-/* === v917 TEST: Taktiktavla formationsval applicerar även spelform ===
+/* === v922 TEST: Taktiktavla formationsval applicerar även spelform ===
    Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
 (function(){
   'use strict';
@@ -46398,12 +46440,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       box.dataset.tt771ButtonApply='1';
       box.addEventListener('click',function(ev){var btn=ev.target&&ev.target.closest?ev.target.closest('button.btn'):null; if(!btn||!box.contains(btn))return; ev.preventDefault();ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation(); var fmt=parseInt((byId('tt205-qf-format')||{}).value,10)||((typeof format!=='undefined'&&format)||11); applyFormationLocal(fmt,(btn.textContent||'').trim());},true);
     }
-    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
+    try{document.title='Taktiktavla TEST v922 ritverktygsrad stable-owner';}catch(e){}
   }
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
-/* === slut v917 TEST === */
+/* === slut v922 TEST === */
 
 
 /* === v846 TEST: robust Ny film från taktiktavla + synlig modal från Taktiktavla-listan ===
