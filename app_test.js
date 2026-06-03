@@ -1,4 +1,4 @@
-/* v906 TEST: taktikfilm liggande placement-throttle, byggd från v905 TEST. */
+/* v909 TEST: animation rollback av v906-throttle, byggd från v907/v908 TEST-bas. */
 /* v900 TEST: read-only batteridiagnos från v898 TEST. */
 /* v846 TEST: Taktiktavla→Taktikfilm-modalfix + v845/v843 kon-/pinne-context-reset. */
 /* === v585 TESTMILJÖ FASTA FILNAMN ===
@@ -45606,27 +45606,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   var placementPending=false;
-  var lastObjectPlacementSigV906='';
-  function objectPlacementSigV906(){
-    try{
-      var row=activeRitaRow();
-      var btn=document.getElementById('tt747-object-btn');
-      var ref=row?(row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone')):null;
-      var w=Math.round(window.innerWidth||0), h=Math.round(window.innerHeight||0);
-      return [w,h,document.body&&document.body.className||'',row&&row.id||'',ref&&ref.id||'',btn&&btn.parentNode===row?'in':'out'].join('|');
-    }catch(e){return '';}
-  }
-  function shouldSkipStableForcedPlacementV906(){
-    try{
-      if(!isTaktikfilmEdit763())return false;
-      if(!(window.innerWidth>window.innerHeight))return false;
-      if(!objectPlacementStableV901())return false;
-      var sig=objectPlacementSigV906();
-      if(sig && sig===lastObjectPlacementSigV906)return true;
-      return false;
-    }catch(e){return false;}
-  }
-  // v906 TEST: smal lägesguard för objektknapp/ritverktygsplacering.
+  // v909 TEST: behåller v904/v905 lägesguard, men utan v906 placement-throttle.
   // Matcher -> Trupp/listläge ska inte trigga objektknappens RAF/DOM-arbete.
   function isObjectForbiddenPanelV904(){
     try{
@@ -45748,16 +45728,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function scheduleObjectButtonPlacement(force){
     if(!objectPlacementAllowedV904())return;
     if(placementPending)return;
-    // v906: i Taktikfilm redigering + liggande skärmrotation kan resize/orientation/touch
-    // skicka upprepade forced-placeringar trots att objektknappen redan sitter rätt.
-    // Tillåt om layoutsignaturen ändrats, men hoppa över identiska stabila anrop.
-    if(force && shouldSkipStableForcedPlacementV906())return;
     // v901: om objektknappen redan sitter rätt ska vi inte starta en RAF bara för att någon annan UI-del muterade.
     if(!force && objectPlacementStableV901())return;
     placementPending=true;
     requestAnimationFrame(function(){
       placementPending=false;
-      try{placeObjectButtonInRitaRow(objectButton);syncPanel();lastObjectPlacementSigV906=objectPlacementSigV906();}catch(e){}
+      try{placeObjectButtonInRitaRow(objectButton);syncPanel();}catch(e){}
     });
   }
 
@@ -46041,14 +46017,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!objectPlacementAllowedV904())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{if(document.title!=='Taktiktavla TEST v907 diagnos-avstängd animationstest')document.title='Taktiktavla TEST v907 diagnos-avstängd animationstest';}catch(e){}
+    try{if(document.title!=='Taktiktavla TEST v909 animation rollback utan v906-throttle')document.title='Taktiktavla TEST v909 animation rollback utan v906-throttle';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t) && t!=='906 TEST')el.textContent='906 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t) && t!=='909 TEST')el.textContent='909 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      var bt='⚠ TESTMILJÖ – testdata / inte produktion – v906 TEST';
+      var bt='⚠ TESTMILJÖ – testdata / inte produktion – v909 TEST';
       if(banner && banner.textContent!==bt)banner.textContent=bt;
     }catch(e){}
   }
@@ -49227,28 +49203,28 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v898/v899 Taktikfilm-lista källfix: row-sub genererar inte längre mappnamn i Taktikfilm-rader. Mapp finns kvar som data-taktik-folder för gruppering. === */
 
 
-/* === v907 TEST: diagnos avstängd för animationsjämförelse ===
-   Bas: v906 TEST. Behåller v905/v906-fixar men tar bort aktiv RAF-/DOM-räkning.
+/* === v909 TEST: diagnos avstängd för animationsjämförelse ===
+   Bas: v907/v908 TEST. Behåller v905 och v908 men backar v906-throttle.
    Syfte: testa Taktikfilm-animation utan att diagnostikens MutationObserver stör. */
 (function(){
   'use strict';
-  if(window.__tt907DiagOff)return;
-  window.__tt907DiagOff=true;
-  var VERSION='Version 2 test v907 diagnos-avstängd animationstest';
+  if(window.__tt909DiagOff)return;
+  window.__tt909DiagOff=true;
+  var VERSION='Version 2 test v909 animation rollback utan v906-throttle';
   function safeText(v){return String(v==null?'':v).replace(/\s+/g,' ').trim();}
   function setVersion(){try{
-    document.title='Taktiktavla TEST v907 diagnos-avstängd animationstest';
+    document.title='Taktiktavla TEST v909 animation rollback utan v906-throttle';
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
       var t=safeText(el.textContent);
       if(/^(v?\d+|\d+\s*TEST|Version\s+2(\.0(\.\d+)?)?|Version 2 test v\d+.*)$/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
     });
   }catch(e){}}
   window.tt900BatteryDiag={
-    report:function(){return 'Taktiktavla v907: batteridiagnosen är avstängd för animationsjämförelse. Bas: v906 TEST. Tid: '+new Date().toISOString();},
+    report:function(){return 'Taktiktavla v909: diagnosen är avstängd. Bas: v907/v908 med v906-throttle bortbackad. Tid: '+new Date().toISOString();},
     reset:function(){},
     samples:function(){return [];}
   };
   function start(){setVersion();setTimeout(setVersion,800);setTimeout(setVersion,2500);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
-/* === slut v907 TEST diagnos avstängd === */
+/* === slut v909 TEST diagnos avstängd === */
