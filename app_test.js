@@ -26648,7 +26648,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function toolIds248(){
-    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
+    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
   }
 
   function optionIds248(){return ['arrow-options','freehand-options','zone-options'];}
@@ -26901,7 +26901,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function toolIds252(){
-    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
+    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
   }
   function optionIds252(){return ['arrow-options','freehand-options','zone-options'];}
 
@@ -45316,7 +45316,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v918 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v917 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -45738,13 +45738,19 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       var row=activeRitaRow();
       var ref=row?(row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone')):null;
-      b.classList.remove('tt751-object-ready','tt749-object-ready');
+      // v919: undvik att tillfälligt släppa ready-klassen/flytta konknappen när 248/252-radägaren
+      // redan har knappen på rätt plats. Detta stoppar hoppet 152px -> 8px -> 152px i Tavla/Snabbtavla.
+      if(row && ref && b.parentNode===row && b.previousElementSibling===ref){
+        markButtonReady(b,row,ref);
+        return;
+      }
       if(row && ref){
         if(b.parentNode!==row || b.previousElementSibling!==ref){
           row.insertBefore(b,ref.nextSibling);
         }
         markButtonReady(b,row,ref);
       }else{
+        b.classList.remove('tt751-object-ready','tt749-object-ready');
         if(!b.parentNode)document.body.appendChild(b);
       }
     }catch(e){
@@ -46119,14 +46125,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v918 ritverktygsdiagnos';}catch(e){}
+    try{document.title='Taktiktavla TEST v919 ritverktygsägare guard';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='917 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='919 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v918 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v919 TEST';
     }catch(e){}
   }
 
@@ -46181,7 +46187,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v918 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v917 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -46230,11 +46236,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v918 TEST === */
+/* === slut v917 TEST === */
 
 
 
-/* === v918 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v917 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46283,10 +46289,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v918 TEST === */
+/* === slut v917 TEST === */
 
 
-/* === v918 TEST: Taktiktavla formationsval applicerar även spelform ===
+/* === v917 TEST: Taktiktavla formationsval applicerar även spelform ===
    Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
 (function(){
   'use strict';
@@ -46323,12 +46329,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       box.dataset.tt771ButtonApply='1';
       box.addEventListener('click',function(ev){var btn=ev.target&&ev.target.closest?ev.target.closest('button.btn'):null; if(!btn||!box.contains(btn))return; ev.preventDefault();ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation(); var fmt=parseInt((byId('tt205-qf-format')||{}).value,10)||((typeof format!=='undefined'&&format)||11); applyFormationLocal(fmt,(btn.textContent||'').trim());},true);
     }
-    try{document.title='Taktiktavla TEST v918 ritverktygsdiagnos';}catch(e){}
+    try{document.title='Taktiktavla TEST v919 ritverktygsägare guard';}catch(e){}
   }
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
-/* === slut v918 TEST === */
+/* === slut v917 TEST === */
 
 
 /* === v846 TEST: robust Ny film från taktiktavla + synlig modal från Taktiktavla-listan ===
