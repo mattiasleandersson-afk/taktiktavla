@@ -37641,8 +37641,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 
-/* === v916-taktikfilm-object-hard-sleep + v915-visual-sidework-coalesce ===
-   Bas: v915/v911. Smal Taktikfilm-batteritest:
+/* === v917-taktikfilm-object-deferred-sleep + v915-visual-sidework-coalesce ===
+   Bas: v916/v911. Smal Taktikfilm-batteritest:
    - ändrar inte animations-RAF, hastighet eller positionsberäkning
    - samlar ihop gamla visuella efter-frame-syncar så samma dyra namn/nummer/text-sync
      inte kör flera gånger i samma animationsframe
@@ -37687,8 +37687,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       return parts.join('|')+'|'+(extra||'')+'|'+(document.body&&document.body.classList.contains('landscape')?'L':'P')+'|'+(document.body&&document.body.classList.contains('desktop')?'D':'M');
     }catch(e){return String(extra||'');}
   };
+  window.__tt917RecentTaktikfilmVisualUntil=0;
   window.__tt915ShouldSkipVisualSync=function(key,minMs,sig){
     try{
+      if(isFilmContext915())window.__tt917RecentTaktikfilmVisualUntil=Math.max(window.__tt917RecentTaktikfilmVisualUntil||0,Date.now()+520);
       if(!isAnimating915())return false;
       var t=now915();
       var r=last[key];
@@ -37700,7 +37702,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){return false;}
   };
 })();
-/* === slut v916/v915-taktikfilm-sidework === */
+/* === slut v917/v915-taktikfilm-sidework === */
 
 
 /* === v424-taktikfilm-squad-name-frame-sync ===
@@ -45314,7 +45316,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v800 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v917 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -45776,10 +45778,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){return false;}
   }
 
-  /* v916: hårdare och säkrare animationsdetektor för objektknappens sidoarbete.
-     Använder både v914:s lokala markering och v915:s gemensamma animationsmarkör.
-     Den rör inte animations-RAF eller positionsberäkningen; den stoppar bara objektknapps-
-     placering medan Taktikfilm faktiskt spelar/animerar. */
+  /* v917: hårdare objekt-sömn även när animationen främst syns via de gamla visual-RAF-kedjorna.
+     Den rör inte animations-RAF eller positionsberäkningen; den fördröjer bara objektknapps-
+     placering medan Taktikfilm nyligen har haft aktiv visual-frame-sync. */
   function isTaktikfilmAnimatingForObject916(){
     try{
       if(!isTaktikfilmContext914())return false;
@@ -45803,11 +45804,37 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }
   }catch(e){}
 
+  var tt917DeferredObjectScheduleTimer=0;
+  var tt917LastTaktikfilmObjectSchedule=0;
+  function tt917RecentVisualFrameActive(){
+    try{return isTaktikfilmContext914() && Date.now() < (window.__tt917RecentTaktikfilmVisualUntil||0);}catch(e){return false;}
+  }
+  function tt917DeferObjectSchedule(){
+    try{
+      if(tt917DeferredObjectScheduleTimer)return;
+      tt917DeferredObjectScheduleTimer=setTimeout(function(){
+        tt917DeferredObjectScheduleTimer=0;
+        scheduleObjectButtonPlacement();
+      },560);
+    }catch(e){}
+  }
   function scheduleObjectButtonPlacement(){
-    if(isTaktikfilmAnimatingForObject916()){
-      try{window.__tt912Count&&window.__tt912Count('app.tt747.skipBeforeSchedule916');}catch(e){}
+    if(isTaktikfilmAnimatingForObject916() || tt917RecentVisualFrameActive()){
+      try{window.__tt912Count&&window.__tt912Count('app.tt747.skipBeforeSchedule917');}catch(e){}
+      tt917DeferObjectSchedule();
       return;
     }
+    try{
+      if(isTaktikfilmContext914()){
+        var n=Date.now();
+        if((n-tt917LastTaktikfilmObjectSchedule)<240){
+          try{window.__tt912Count&&window.__tt912Count('app.tt747.coalesceSchedule917');}catch(_e){}
+          tt917DeferObjectSchedule();
+          return;
+        }
+        tt917LastTaktikfilmObjectSchedule=n;
+      }
+    }catch(e){}
     try{window.__tt912Count&&window.__tt912Count('app.tt747.scheduleObjectButtonPlacement');}catch(e){}
     if(placementPending)return;
     placementPending=true;
@@ -46081,7 +46108,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{document.body.classList.toggle('tt758-object-fullscreen',!!isFullscreenBoard758());}catch(e){}
     try{document.body.classList.toggle('tt764-taktik-object-fullscreen',!!isTaktikfilmFullscreen764());}catch(e){}
     if(isTaktikfilmAnimatingForObject916()){
-      try{window.__tt912Count&&window.__tt912Count('app.tt747.refreshSkipDuringAnimation916');}catch(e){}
+      try{window.__tt912Count&&window.__tt912Count('app.tt747.refreshSkipDuringAnimation917');}catch(e){}
     }else{
       ensureButton();
     }
@@ -46092,14 +46119,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v773 formationknappar_kompakt';}catch(e){}
+    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='773 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='917 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v800 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v917 TEST';
     }catch(e){}
   }
 
@@ -46107,7 +46134,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var placementEvents=['pointerdown','mousedown','touchstart','click','touchend','keyup','resize','orientationchange'];
     placementEvents.forEach(function(evt){window.addEventListener(evt,function(){
       if(isTaktikfilmAnimatingForObject916()){
-        try{window.__tt912Count&&window.__tt912Count('app.tt747.eventSkipDuringAnimation916');}catch(e){}
+        try{window.__tt912Count&&window.__tt912Count('app.tt747.eventSkipDuringAnimation917');}catch(e){}
         return;
       }
       scheduleObjectButtonPlacement();setTimeout(scheduleObjectButtonPlacement,40);
@@ -46117,7 +46144,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var reconnectTimer914=0;
       var moBtn=new MutationObserver(function(){
         if(isTaktikfilmAnimatingForObject916()){
-          try{window.__tt912Count&&window.__tt912Count('app.tt747.moSleepDuringAnimation916');}catch(e){}
+          try{window.__tt912Count&&window.__tt912Count('app.tt747.moSleepDuringAnimation917');}catch(e){}
           try{moBtn.disconnect();moConnected914=false;}catch(e){}
           if(!reconnectTimer914){
             reconnectTimer914=setTimeout(function retryReconnect914(){
@@ -46154,7 +46181,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v800 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v917 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -46203,11 +46230,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v800 TEST === */
+/* === slut v917 TEST === */
 
 
 
-/* === v800 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v917 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46256,10 +46283,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v800 TEST === */
+/* === slut v917 TEST === */
 
 
-/* === v800 TEST: Taktiktavla formationsval applicerar även spelform ===
+/* === v917 TEST: Taktiktavla formationsval applicerar även spelform ===
    Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
 (function(){
   'use strict';
@@ -46296,12 +46323,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       box.dataset.tt771ButtonApply='1';
       box.addEventListener('click',function(ev){var btn=ev.target&&ev.target.closest?ev.target.closest('button.btn'):null; if(!btn||!box.contains(btn))return; ev.preventDefault();ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation(); var fmt=parseInt((byId('tt205-qf-format')||{}).value,10)||((typeof format!=='undefined'&&format)||11); applyFormationLocal(fmt,(btn.textContent||'').trim());},true);
     }
-    try{document.title='Taktiktavla TEST v773 formationknappar_kompakt';}catch(e){}
+    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
   }
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
-/* === slut v800 TEST === */
+/* === slut v917 TEST === */
 
 
 /* === v846 TEST: robust Ny film från taktiktavla + synlig modal från Taktiktavla-listan ===
