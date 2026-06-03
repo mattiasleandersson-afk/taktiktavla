@@ -1,3 +1,4 @@
+/* v902 TEST: idempotent Taktiktavla-fillisteputs nära v722-källan, byggd från v901 TEST. */
 /* v900 TEST: read-only batteridiagnos från v898 TEST. */
 /* v846 TEST: Taktiktavla→Taktikfilm-modalfix + v845/v843 kon-/pinne-context-reset. */
 /* === v585 TESTMILJÖ FASTA FILNAMN ===
@@ -44816,17 +44817,30 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     document.head.appendChild(st);
   }
 
+  // v902 TEST: gör v722:s fillisteputs idempotent nära källan.
+  // Tidigare skrevs text/title/aria/class om vid varje apply(), vilket gav mycket DOM-brus i stillaläge.
+  function setTextIfNeeded902(el,val){if(el && String(el.textContent||'')!==String(val))el.textContent=val;}
+  function setTitleIfNeeded902(el,val){if(el && String(el.title||'')!==String(val))el.title=val;}
+  function setAttrIfNeeded902(el,name,val){if(el && String(el.getAttribute(name)||'')!==String(val))el.setAttribute(name,val);}
+  function addClassIfNeeded902(el,cls){if(el && !el.classList.contains(cls))el.classList.add(cls);}
+  function removeClassIfNeeded902(el,cls){if(el && el.classList.contains(cls))el.classList.remove(cls);}
+
   function normalizeButton(btn){
     if(!btn)return;
     var txt=String(btn.textContent||'').trim();
     var title=String(btn.title||btn.getAttribute('aria-label')||'').trim();
     var key=(title+' '+txt).toLowerCase();
-    if(key.indexOf('ladda')>=0){btn.textContent='▶';btn.title='Ladda';btn.setAttribute('aria-label','Ladda');return;}
-    if(key.indexOf('taktikfilm')>=0 || key.indexOf('ny film')>=0 || txt==='↗'){btn.textContent='🎬';btn.title='Till taktikfilm';btn.setAttribute('aria-label','Till taktikfilm');return;}
-    if(key.indexOf('flytta')>=0 || txt==='⇆'){btn.textContent='⇆';btn.title='Flytta till mapp';btn.setAttribute('aria-label','Flytta till mapp');return;}
-    if(key.indexOf('kopiera')>=0 || txt==='⧉'){btn.textContent='⧉';btn.title='Kopiera';btn.setAttribute('aria-label','Kopiera');return;}
-    if(key.indexOf('dela')>=0 || txt==='👥' || txt==='🙈'){btn.textContent=(txt==='🙈'?'🙈':'👥');btn.setAttribute('aria-label',btn.title||'Dela');return;}
-    if(key.indexOf('radera')>=0 || txt==='×' || txt==='x'){btn.textContent='×';btn.title='Radera';btn.setAttribute('aria-label','Radera');return;}
+    if(key.indexOf('ladda')>=0){setTextIfNeeded902(btn,'▶');setTitleIfNeeded902(btn,'Ladda');setAttrIfNeeded902(btn,'aria-label','Ladda');return;}
+    if(key.indexOf('taktikfilm')>=0 || key.indexOf('ny film')>=0 || txt==='↗'){setTextIfNeeded902(btn,'🎬');setTitleIfNeeded902(btn,'Till taktikfilm');setAttrIfNeeded902(btn,'aria-label','Till taktikfilm');return;}
+    if(key.indexOf('flytta')>=0 || txt==='⇆'){setTextIfNeeded902(btn,'⇆');setTitleIfNeeded902(btn,'Flytta till mapp');setAttrIfNeeded902(btn,'aria-label','Flytta till mapp');return;}
+    if(key.indexOf('kopiera')>=0 || txt==='⧉'){setTextIfNeeded902(btn,'⧉');setTitleIfNeeded902(btn,'Kopiera');setAttrIfNeeded902(btn,'aria-label','Kopiera');return;}
+    if(key.indexOf('dela')>=0 || txt==='👥' || txt==='🙈'){
+      var icon=(txt==='🙈'?'🙈':'👥');
+      setTextIfNeeded902(btn,icon);
+      setAttrIfNeeded902(btn,'aria-label',btn.title||'Dela');
+      return;
+    }
+    if(key.indexOf('radera')>=0 || txt==='×' || txt==='x'){setTextIfNeeded902(btn,'×');setTitleIfNeeded902(btn,'Radera');setAttrIfNeeded902(btn,'aria-label','Radera');return;}
   }
 
   function normalizeRows(){
@@ -44834,16 +44848,17 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!list)return;
     Array.prototype.slice.call(list.querySelectorAll('.row')).forEach(function(row){
       if(!row || row.classList.contains('folder-row'))return;
-      row.classList.add('tt722-file-row');
+      addClassIfNeeded902(row,'tt722-file-row');
       var buttons=Array.prototype.slice.call(row.querySelectorAll('button'));
       buttons.forEach(function(b){
-        b.classList.remove('tt721-primary-load','tt721-file-menu-btn');
+        removeClassIfNeeded902(b,'tt721-primary-load');
+        removeClassIfNeeded902(b,'tt721-file-menu-btn');
         normalizeButton(b);
       });
       var menu=row.querySelector('.tt721-file-menu');
       if(menu){
         // Om någon råkat blanda in v721 ska dess extra meny döljas i v722.
-        menu.classList.add('tt722-hidden-extra');
+        addClassIfNeeded902(menu,'tt722-hidden-extra');
       }
     });
   }
@@ -45971,14 +45986,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{if(document.title!=='Taktiktavla TEST v901 objektknapp RAF-källfix')document.title='Taktiktavla TEST v901 objektknapp RAF-källfix';}catch(e){}
+    try{if(document.title!=='Taktiktavla TEST v902 fillista DOM-källfix')document.title='Taktiktavla TEST v902 fillista DOM-källfix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t) && t!=='901 TEST')el.textContent='901 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t) && t!=='902 TEST')el.textContent='902 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      var bt='⚠ TESTMILJÖ – testdata / inte produktion – v901 TEST';
+      var bt='⚠ TESTMILJÖ – testdata / inte produktion – v902 TEST';
       if(banner && banner.textContent!==bt)banner.textContent=bt;
     }catch(e){}
   }
@@ -49311,7 +49326,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   function reportText(){
     var latest=samples[samples.length-1]||snapshot();
-    return 'Taktiktavla batteridiagnos v901 objektknapp RAF-källfix\nBas: v898 TEST\nTid: '+new Date().toISOString()+'\nUserAgent: '+navigator.userAgent+'\n\nSenaste mätfönster:\n'+format(latest)+'\n\nSenaste '+samples.length+' samples JSON:\n'+JSON.stringify(samples,null,2);
+    return 'Taktiktavla batteridiagnos v902 fillista DOM-källfix\nBas: v898 TEST\nTid: '+new Date().toISOString()+'\nUserAgent: '+navigator.userAgent+'\n\nSenaste mätfönster:\n'+format(latest)+'\n\nSenaste '+samples.length+' samples JSON:\n'+JSON.stringify(samples,null,2);
   }
   function renderDiag(){try{
     ensurePanel(); if(paused)return;
