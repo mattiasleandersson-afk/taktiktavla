@@ -49180,7 +49180,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt900BatteryDiag)return;
   window.__tt900BatteryDiag=true;
 
-  var VERSION='Version 2 test v900 batteridiagnos';
+  var VERSION='Version 2 test v903 diagnospanel fullscreen';
   var STORE_KEY='tt900_battery_diag_samples_v1';
   var rafNative=window.requestAnimationFrame;
   var cancelNative=window.cancelAnimationFrame;
@@ -49193,7 +49193,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var started=Date.now();
   var lastTick=started;
   var lastStackAt=0;
-  var panel=null,out=null,btn=null,paused=false;
+  var panel=null,out=null,btn=null,tabBtn=null,paused=false;
 
   function byId(id){return document.getElementById(id);}
   function now(){return Date.now();}
@@ -49252,19 +49252,29 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(panel&&document.body.contains(panel))return;
     var css=document.createElement('style');
     css.id='tt900-battery-diag-css';
-    css.textContent='#tt900-battery-diag{position:fixed;right:8px;bottom:8px;z-index:100000;background:rgba(17,26,20,.96);color:#edf5ee;border:1px solid #4ae8e8;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.45);font:12px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:min(370px,calc(100vw - 16px));max-height:min(58vh,460px);overflow:auto;padding:8px;box-sizing:border-box}#tt900-battery-diag h3{margin:0 0 5px;font-size:13px;color:#4ae8e8}#tt900-battery-diag pre{white-space:pre-wrap;margin:5px 0 0;font:11px/1.28 ui-monospace,SFMono-Regular,Menlo,monospace;color:#d8f5df}#tt900-battery-diag .tt900-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}#tt900-battery-diag button{background:#0b130e;color:#4ae8e8;border:1px solid #2d4a35;border-radius:7px;padding:4px 7px;font-weight:700}#tt900-battery-diag.tt900-collapsed pre,#tt900-battery-diag.tt900-collapsed .tt900-extra{display:none}';
+    css.textContent='#tt900-battery-diag{position:fixed;right:8px;bottom:8px;z-index:100000;background:rgba(17,26,20,.96);color:#edf5ee;border:1px solid #4ae8e8;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.45);font:12px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:min(370px,calc(100vw - 16px));max-height:min(58vh,460px);overflow:auto;padding:8px;box-sizing:border-box}#tt900-battery-diag h3{margin:0 0 5px;font-size:13px;color:#4ae8e8}#tt900-battery-diag pre{white-space:pre-wrap;margin:5px 0 0;font:11px/1.28 ui-monospace,SFMono-Regular,Menlo,monospace;color:#d8f5df}#tt900-battery-diag .tt900-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}#tt900-battery-diag button,#tt900-diag-tab{background:#0b130e;color:#4ae8e8;border:1px solid #2d4a35;border-radius:7px;padding:4px 7px;font-weight:700}#tt900-battery-diag.tt900-collapsed{display:none!important}#tt900-diag-tab{position:fixed;left:8px;bottom:8px;z-index:100001;display:none;box-shadow:0 6px 20px rgba(0,0,0,.35);font:12px/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#tt900-diag-tab.tt900-tab-visible{display:block!important}';
     if(!document.getElementById(css.id))document.head.appendChild(css);
     panel=document.createElement('div');panel.id='tt900-battery-diag';panel.setAttribute('data-tt900','1');
-    panel.innerHTML='<h3>Batteridiagnos v900</h3><div id="tt900-summary">Startar mätning...</div><div class="tt900-row tt900-extra"><button id="tt900-copy">Kopiera</button><button id="tt900-reset">Nollställ</button><button id="tt900-pause">Pausa</button><button id="tt900-collapse">Dölj detaljer</button></div><pre id="tt900-output"></pre>';
+    panel.innerHTML='<h3>Batteridiagnos v903</h3><div id="tt900-summary">Startar mätning...</div><div class="tt900-row tt900-extra"><button id="tt900-copy">Kopiera</button><button id="tt900-reset">Nollställ</button><button id="tt900-pause">Pausa</button><button id="tt900-collapse">Minimera</button></div><pre id="tt900-output"></pre>';
     document.body.appendChild(panel);
     out=byId('tt900-output');
     btn=byId('tt900-summary');
     byId('tt900-copy').addEventListener('click',copyReport);
     byId('tt900-reset').addEventListener('click',resetStats);
     byId('tt900-pause').addEventListener('click',function(){paused=!paused;this.textContent=paused?'Fortsätt':'Pausa';});
-    byId('tt900-collapse').addEventListener('click',function(){panel.classList.toggle('tt900-collapsed');this.textContent=panel.classList.contains('tt900-collapsed')?'Visa detaljer':'Dölj detaljer';});
+    if(!tabBtn||!document.body.contains(tabBtn)){
+      tabBtn=document.createElement('button');
+      tabBtn.id='tt900-diag-tab';
+      tabBtn.type='button';
+      tabBtn.textContent='Diag';
+      tabBtn.setAttribute('data-tt900','1');
+      tabBtn.title='Visa batteridiagnos';
+      tabBtn.addEventListener('click',function(){try{panel.classList.remove('tt900-collapsed');tabBtn.classList.remove('tt900-tab-visible');}catch(e){}});
+      document.body.appendChild(tabBtn);
+    }
+    byId('tt900-collapse').addEventListener('click',function(){panel.classList.add('tt900-collapsed');if(tabBtn)tabBtn.classList.add('tt900-tab-visible');});
   }catch(e){} }
-  function ignoreNode(n){try{return !!(n&&n.closest&&n.closest('#tt900-battery-diag'));}catch(e){return false;}}
+  function ignoreNode(n){try{return !!(n&&n.closest&&(n.closest('#tt900-battery-diag')||n.closest('#tt900-diag-tab')));}catch(e){return false;}}
   try{
     var mo=new MutationObserver(function(list){
       if(paused)return;
@@ -49326,7 +49336,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   function reportText(){
     var latest=samples[samples.length-1]||snapshot();
-    return 'Taktiktavla batteridiagnos v902 fillista DOM-källfix\nBas: v898 TEST\nTid: '+new Date().toISOString()+'\nUserAgent: '+navigator.userAgent+'\n\nSenaste mätfönster:\n'+format(latest)+'\n\nSenaste '+samples.length+' samples JSON:\n'+JSON.stringify(samples,null,2);
+    return 'Taktiktavla batteridiagnos v903 diagnospanel fullscreen\nBas: v902 TEST\nTid: '+new Date().toISOString()+'\nUserAgent: '+navigator.userAgent+'\n\nSenaste mätfönster:\n'+format(latest)+'\n\nSenaste '+samples.length+' samples JSON:\n'+JSON.stringify(samples,null,2);
   }
   function renderDiag(){try{
     ensurePanel(); if(paused)return;
@@ -49341,7 +49351,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }catch(e){try{alert('Kunde inte kopiera diagnos: '+e.message);}catch(_e){}}}
   function resetStats(){counts={rafRequests:0,rafCallbacks:0,domMutations:0,attrMutations:0,childMutations:0,charsMutations:0};total={rafRequests:0,rafCallbacks:0,domMutations:0,attrMutations:0,childMutations:0,charsMutations:0};callsites={};domTargets={};domAttrs={};samples=[];started=now();lastTick=started;renderDiag();}
   function setVersion(){try{
-    document.title='Taktiktavla TEST v900 batteridiagnos';
+    document.title='Taktiktavla TEST v903 diagnospanel fullscreen';
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
       var t=safeText(el.textContent);
       if(/^(v?\d+|\d+\s*TEST|Version\s+2(\.0(\.\d+)?)?|Version 2 test v\d+.*)$/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
