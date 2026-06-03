@@ -1,5 +1,5 @@
 
-/* === v913 TEST: Taktikfilm sidework-counter + objektknapp paus under animation ===
+/* === v914 TEST: Taktikfilm object observer sleep ===
    Ingen MutationObserver och ingen RAF-wrapper. Räknar bara utvalda funktionsanrop. */
 (function(){
   if(window.__tt912SideworkDiag)return;
@@ -45671,9 +45671,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }
   }
 
-  function isTaktikfilmAnimating913(){
+  var tt914AnimBlockUntil=0;
+  function markTaktikfilmAnimationSideworkBlock914(ms){
+    try{tt914AnimBlockUntil=Math.max(tt914AnimBlockUntil,Date.now()+(ms||700));}catch(e){}
+  }
+
+  function isTaktikfilmContext914(){
     try{
-      if(!(playback && playback.animating))return false;
       var body=document.body;
       return !!(body && (
         body.classList.contains('tt248-taktik-active') ||
@@ -45685,11 +45689,31 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){return false;}
   }
 
-  function scheduleObjectButtonPlacement(){try{window.__tt912Count&&window.__tt912Count('app.tt747.scheduleObjectButtonPlacement');}catch(e){}
-    if(isTaktikfilmAnimating913()){
-      try{window.__tt912Count&&window.__tt912Count('app.tt747.skipDuringAnimation913');}catch(e){}
+  function isTaktikfilmAnimating914(){
+    try{
+      if(!isTaktikfilmContext914())return false;
+      if(playback && playback.animating){markTaktikfilmAnimationSideworkBlock914(750);return true;}
+      return Date.now()<tt914AnimBlockUntil;
+    }catch(e){return false;}
+  }
+
+  try{
+    if(typeof animateToStep==='function' && !animateToStep.__tt914SideworkWrapped){
+      var oldAnimateToStep914=animateToStep;
+      animateToStep=function(){
+        markTaktikfilmAnimationSideworkBlock914(1200);
+        return oldAnimateToStep914.apply(this,arguments);
+      };
+      animateToStep.__tt914SideworkWrapped=true;
+    }
+  }catch(e){}
+
+  function scheduleObjectButtonPlacement(){
+    if(isTaktikfilmAnimating914()){
+      try{window.__tt912Count&&window.__tt912Count('app.tt747.skipBeforeSchedule914');}catch(e){}
       return;
     }
+    try{window.__tt912Count&&window.__tt912Count('app.tt747.scheduleObjectButtonPlacement');}catch(e){}
     if(placementPending)return;
     placementPending=true;
     requestAnimationFrame(function(){
@@ -45983,21 +46007,41 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   try{
     var placementEvents=['pointerdown','mousedown','touchstart','click','touchend','keyup','resize','orientationchange'];
     placementEvents.forEach(function(evt){window.addEventListener(evt,function(){
-      if(isTaktikfilmAnimating913()){
-        try{window.__tt912Count&&window.__tt912Count('app.tt747.eventSkipDuringAnimation913');}catch(e){}
+      if(isTaktikfilmAnimating914()){
+        try{window.__tt912Count&&window.__tt912Count('app.tt747.eventSkipDuringAnimation914');}catch(e){}
         return;
       }
       scheduleObjectButtonPlacement();setTimeout(scheduleObjectButtonPlacement,40);
     },true);});
     if(window.MutationObserver){
+      var moConnected914=false;
+      var reconnectTimer914=0;
       var moBtn=new MutationObserver(function(){
-        if(isTaktikfilmAnimating913()){
-          try{window.__tt912Count&&window.__tt912Count('app.tt747.moSkipDuringAnimation913');}catch(e){}
+        if(isTaktikfilmAnimating914()){
+          try{window.__tt912Count&&window.__tt912Count('app.tt747.moSleepDuringAnimation914');}catch(e){}
+          try{moBtn.disconnect();moConnected914=false;}catch(e){}
+          if(!reconnectTimer914){
+            reconnectTimer914=setTimeout(function retryReconnect914(){
+              reconnectTimer914=0;
+              if(isTaktikfilmAnimating914()){
+                reconnectTimer914=setTimeout(retryReconnect914,450);
+                return;
+              }
+              startMo();
+              scheduleObjectButtonPlacement();
+            },450);
+          }
           return;
         }
         scheduleObjectButtonPlacement();
       });
-      var startMo=function(){try{moBtn.observe(document.body,{childList:true,subtree:true});}catch(e){}};
+      var startMo=function(){
+        try{
+          if(moConnected914 || !document.body || isTaktikfilmAnimating914())return;
+          moBtn.observe(document.body,{childList:true,subtree:true});
+          moConnected914=true;
+        }catch(e){}
+      };
       if(document.body)startMo();
       else document.addEventListener('DOMContentLoaded',startMo);
     }
