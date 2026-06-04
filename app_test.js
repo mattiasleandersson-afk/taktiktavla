@@ -26275,6 +26275,21 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     document.head.appendChild(st);
   }
 
+  function ensureObjectToolButton236(){
+    var b=document.getElementById("tt747-object-btn");
+    if(!b){
+      b=document.createElement("button");
+      b.type="button";
+      b.id="tt747-object-btn";
+      b.className="btn tt236-rita-tool";
+      b.innerHTML='<span class="tt748-cone-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3L5 20h14L12 3z" fill="#f47b20" stroke="#fff3d0" stroke-width="1.7"/><rect x="7.4" y="13" width="9.2" height="2.8" rx="1" fill="#fff3d0"/><rect x="4.3" y="19" width="15.4" height="2.3" rx="1" fill="#ffdd44"/></svg></span>';
+      b.title="Objekt: kon/pinne";
+      b.setAttribute("aria-label","Objekt");
+    }
+    b.classList.add("tt236-rita-tool");
+    return b;
+  }
+
   function placeRitaTools236(){
     var bar=drawToolsParent236();
     if(!bar)return;
@@ -26283,13 +26298,15 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var arrow=prepExistingTool236("btn-arrow","fs-tb-arrow","↗","Pil");
     var free=prepExistingTool236("btn-freehand","fs-tb-freehand","✎","Rita fritt");
     var zone=prepExistingTool236("btn-zone","fs-tb-zone","▭","Zon");
+    var objectBtn=ensureObjectToolButton236();
     var text=prepExistingTool236("btn-text","fs-tb-text","T","Text");
     var clear=makeRitaButton236("tt236-rita-clear","🧽","Sudda/rensa ritningar",clearDrawingsOnly236);
     var undo=makeRitaButton236("tt236-rita-undo","↶","Ångra",function(){try{if(typeof doUndo==="function")doUndo();}catch(e){}});
     var reset=makeRitaButton236("tt236-rita-reset","↻","Återställ tavlan",resetBoard236);
 
     // Exakt Tavla-ordning enligt helskärmsraden, men utan rörelsepil och utan dagsljus.
-    [move,arrow,free,zone,text,clear,undo,reset].forEach(function(b){
+    // v938: kon/objektknappen måste ingå i samma grundordning som övriga Tavla-knappar.
+    [move,arrow,free,zone,objectBtn,text,clear,undo,reset].forEach(function(b){
       if(b)bar.appendChild(b);
     });
 
@@ -26640,7 +26657,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function toolIds248(){
-    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt937-object-btn-tavla','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
+    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
   }
 
   function optionIds248(){return ['arrow-options','freehand-options','zone-options'];}
@@ -26893,7 +26910,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function toolIds252(){
-    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt937-object-btn-tavla','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
+    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
   }
   function optionIds252(){return ['arrow-options','freehand-options','zone-options'];}
 
@@ -45484,20 +45501,21 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var st=document.createElement('style');
     st.id='tt747-object-style';
     st.textContent=[
-      '.tt747-object-btn{color:#e8c84a!important;border-color:#e8c84a!important}',
-      '.tt747-object-btn .tt748-cone-icon{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px}',
-      '.tt747-object-btn .tt748-cone-icon svg{display:block;width:20px;height:20px}',
-      '.tt747-object-btn.on,.tt747-object-btn.active{background:rgba(232,200,74,.12)!important;color:#ffdd44!important;border-color:#ffdd44!important}',
+      '#tt747-object-btn{color:#e8c84a!important;border-color:#e8c84a!important}',
+      '#tt747-object-btn .tt748-cone-icon{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px}',
+      '#tt747-object-btn .tt748-cone-icon svg{display:block;width:20px;height:20px}',
+      '#tt747-object-btn.on,#tt747-object-btn.active{background:rgba(232,200,74,.12)!important;color:#ffdd44!important;border-color:#ffdd44!important}',
       '#tt747-object-panel,#tt747-size-panel{position:fixed;z-index:10080;display:none;gap:6px;align-items:center;padding:6px;background:rgba(8,16,12,.98);border:1px solid rgba(232,200,74,.65);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.42)}',
       '#tt747-object-panel button,#tt747-size-panel button{height:30px;min-width:42px;border-radius:8px;border:1px solid rgba(232,200,74,.45);background:rgba(255,255,255,.04);color:#f4e7ad;font-weight:800;cursor:pointer;white-space:nowrap}',
       '#tt747-object-panel button.on,#tt747-size-panel button.on{background:rgba(74,232,122,.16);border-color:#4ae87a;color:#4ae87a}',
       '#tt747-size-panel .tt747-size-label{color:#f4e7ad;font-size:12px;font-weight:800;padding:0 3px;white-space:nowrap}',
       '#tt747-size-panel .tt749-size-divider{width:1px;height:22px;background:rgba(232,200,74,.28);margin:0 2px}',
       '#tt747-size-panel button.tt749-scope-btn{min-width:64px}',
-      '.tt747-object-btn{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;transform:none!important;flex:0 0 auto!important;display:none!important}',
-      '.tt747-object-btn.tt751-object-ready{display:inline-flex!important;align-items:center!important;justify-content:center!important}',
-      'body.fullscreen-portrait .tt747-object-btn.tt751-object-ready{height:30px!important;min-width:30px!important;padding:4px 6px!important;border-radius:7px!important}',
-      'body.tt763-taktik-object-active #taktikbar .tt747-object-btn.tt751-object-ready{height:26px!important;min-width:30px!important;padding:2px 6px!important;border-radius:7px!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn,body.tt756-snabb-object-active #tt747-object-btn,body.tt763-taktik-object-active #tt747-object-btn,body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-btn,body.fullscreen-portrait.tt764-taktik-object-fullscreen #tt747-object-btn{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin:0!important;transform:none!important;flex:0 0 auto!important}',
+      'body.tt733-tavla-active:not(.fullscreen-portrait) #tt747-object-btn:not(.tt751-object-ready),body.tt756-snabb-object-active #tt747-object-btn:not(.tt751-object-ready),body.tt763-taktik-object-active #tt747-object-btn:not(.tt751-object-ready),body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-btn:not(.tt751-object-ready),body.fullscreen-portrait.tt764-taktik-object-fullscreen #tt747-object-btn:not(.tt751-object-ready){display:none!important}',
+      'body:not(.tt733-tavla-active):not(.tt756-snabb-object-active):not(.tt763-taktik-object-active):not(.tt758-object-fullscreen):not(.tt764-taktik-object-fullscreen) #tt747-object-btn{display:none!important}',
+      'body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-btn,body.fullscreen-portrait.tt764-taktik-object-fullscreen #tt747-object-btn{height:30px!important;min-width:30px!important;padding:4px 6px!important;border-radius:7px!important}',
+      'body.tt763-taktik-object-active #taktikbar #tt747-object-btn{height:26px!important;min-width:30px!important;padding:2px 6px!important;border-radius:7px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}',
       'body.fullscreen-portrait.tt758-object-fullscreen #fs-top-tools,body.fullscreen-portrait.tt764-taktik-object-fullscreen #fs-top-tools{max-width:calc(100vw - 8px)!important;width:auto!important;overflow-x:auto!important;overflow-y:visible!important;gap:4px!important;padding:4px 6px!important;z-index:10040!important}',
       'body.fullscreen-portrait.tt758-object-fullscreen #fs-top-tools .ls-btn,body.fullscreen-portrait.tt758-object-fullscreen #fs-top-tools button,body.fullscreen-portrait.tt764-taktik-object-fullscreen #fs-top-tools .ls-btn,body.fullscreen-portrait.tt764-taktik-object-fullscreen #fs-top-tools button{flex:0 0 auto!important}',
       'body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-panel,body.fullscreen-portrait.tt764-taktik-object-fullscreen #tt747-object-panel{z-index:10090!important}',
@@ -45641,13 +45659,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function syncPanel(){
     try{
-      try{selectActiveObjectButton937();}catch(_e){}
-      var btns=[];
-      try{btns=Array.prototype.slice.call(document.querySelectorAll('.tt747-object-btn'));}catch(_e2){btns=objectButton?[objectButton]:[];}
-      btns.forEach(function(b){
-        b.classList.toggle('on',mode==='object');
-        b.classList.toggle('active',mode==='object');
-      });
+      if(objectButton){
+        objectButton.classList.toggle('on',mode==='object');
+        objectButton.classList.toggle('active',mode==='object');
+      }
       if(objectPanel){
         Array.from(objectPanel.querySelectorAll('button')).forEach(function(b){b.classList.toggle('on',b.dataset.obj===objectToolType);});
         objectPanel.style.display=(mode==='object'&&isNormalTavla())?'flex':'none';
@@ -45718,127 +45733,41 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){return null;}
   }
 
-  function markButtonReady(b,row,ref,visible){
+  function markButtonReady(b,row,ref){
     try{
-      var ok=!!(b && row && ref && b.parentNode===row && validRitaRow(row) && isNormalTavla());
-      b.classList.toggle('tt751-object-ready',!!(ok && visible));
+      var ok=!!(b && row && ref && b.parentNode===row && b.previousElementSibling===ref && validRitaRow(row) && isNormalTavla());
+      b.classList.toggle('tt751-object-ready',ok);
       b.classList.remove('tt749-object-ready');
       return ok;
     }catch(e){return false;}
   }
 
-  function tt937Context(){
+  function placeObjectButtonInRitaRow(b){
+    if(!b)return;
     try{
-      if(isTaktikfilmEdit763())return 'taktik';
-      if(isTaktikfilmFullscreen764())return 'fs-taktik';
-      if(isFullscreenBoard758())return 'fs-board';
-      if(isSnabbNormal756())return 'tavla';
-      if(document.body.classList.contains('tt733-tavla-active'))return 'tavla';
-      var tab=document.querySelector('.tab.on[data-panel="saves"]');
-      var panel=document.getElementById('panel-saves');
-      if(tab || (panel&&panel.classList.contains('on')))return 'tavla';
-    }catch(e){}
-    return '';
-  }
-
-  function selectActiveObjectButton937(){
-    try{
-      var ctx=tt937Context();
-      var id=(ctx==='taktik')?'tt937-object-btn-taktik':((ctx==='fs-taktik'||ctx==='fs-board')?'tt937-object-btn-fs':'tt937-object-btn-tavla');
-      var b=document.getElementById(id) || objectButton;
-      if(b)objectButton=b;
-      return b;
-    }catch(e){return objectButton;}
-  }
-
-  function placeAfter937(row,b,ref){
-    if(!row||!b||!ref)return;
-    var next=ref.nextSibling;
-    if(b.parentNode!==row || next!==b){row.insertBefore(b,next);}
-  }
-
-  function visibleRow937(row){
-    try{
-      if(!row)return false;
-      var cs=window.getComputedStyle?window.getComputedStyle(row):null;
-      if(cs && (cs.display==='none' || cs.visibility==='hidden'))return false;
-      var r=row.getBoundingClientRect();
-      return r.width>20 && r.height>8;
-    }catch(e){return false;}
-  }
-
-  function tavlaRow937(){
-    try{
-      var rows=[];
-      var ipad=document.getElementById('tt252-ipad-rita-row');
-      if(ipad)rows.push(ipad);
-      Array.prototype.forEach.call(document.querySelectorAll('.tt248-tavla-rita-row,.tt238-rita-scrollbar'),function(r){if(rows.indexOf(r)<0)rows.push(r);});
-      for(var i=0;i<rows.length;i++){
-        var row=rows[i];
-        if(row && row.querySelector && row.querySelector('#btn-zone') && visibleRow937(row))return row;
-      }
-      var z=document.getElementById('btn-zone');
-      return z&&z.parentNode?z.parentNode:null;
-    }catch(e){return null;}
-  }
-  function taktikRow937(){try{var z=document.getElementById('btn-tb-zone');return z&&z.parentNode?z.parentNode:null;}catch(e){return null;}}
-  function fsRow937(){try{var z=document.getElementById('fs-tb-zone');return z&&z.parentNode?z.parentNode:null;}catch(e){return null;}}
-
-  function makeObjectButton937(id,label){
-    var b=document.getElementById(id);
-    if(!b){
-      b=document.createElement('button');
-      b.type='button';
-      b.id=id;
-      b.className='btn tt236-rita-tool tt747-object-btn';
-      b.innerHTML='<span class="tt748-cone-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3L5 20h14L12 3z" fill="#f47b20" stroke="#fff3d0" stroke-width="1.7"/><rect x="7.4" y="13" width="9.2" height="2.8" rx="1" fill="#fff3d0"/><rect x="4.3" y="19" width="15.4" height="2.3" rx="1" fill="#ffdd44"/></svg></span>';
-      b.title=label||'Objekt: kon/pinne';
-      b.setAttribute('aria-label','Objekt');
-    }
-    if(!b.dataset.tt937Bound){
-      b.dataset.tt937Bound='1';
-      b.addEventListener('click',function(e){
-        e.preventDefault();e.stopPropagation();
-        objectButton=b;
-        closeSizePanel();
-        try{if(typeof setMode==='function')setMode(mode==='object'?'move':'object');}catch(_e){}
-        syncPanel();
-      });
-    }
-    b.classList.add('tt747-object-btn','tt236-rita-tool');
-    return b;
-  }
-
-  function hideButton937(b){try{if(!b)return;b.classList.remove('tt751-object-ready','tt749-object-ready');b.style.setProperty('display','none','important');}catch(e){}}
-  function showButton937(b){try{if(!b)return;b.classList.add('tt751-object-ready');b.style.setProperty('display','inline-flex','important');}catch(e){}}
-
-  function placeObjectButtonInRitaRow(){
-    try{
-      var ctx=tt937Context();
-      var tavlaBtn=makeObjectButton937('tt937-object-btn-tavla','Objekt: kon/pinne');
-      var taktikBtn=makeObjectButton937('tt937-object-btn-taktik','Objekt: kon/pinne');
-      var fsBtn=makeObjectButton937('tt937-object-btn-fs','Objekt: kon/pinne');
-
-      var tavlaRow=tavlaRow937();
-      if(tavlaRow){
+      var row=activeRitaRow();
+      var ref=null;
+      if(row){
+        ref=row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone');
+        // v938: i Tavla/iPad ska konen ligga efter öppet zon-/fyrkantsval, annars
+        // börjar v239 och v747 flytta samma knapp fram och tillbaka vid verktygsbyte.
         var zOpt=document.getElementById('zone-options');
-        var z=document.getElementById('btn-zone');
-        var ref=(zOpt&&zOpt.parentNode===tavlaRow)?zOpt:z;
-        if(ref)placeAfter937(tavlaRow,tavlaBtn,ref);
-      }else if(!tavlaBtn.parentNode)document.body.appendChild(tavlaBtn);
-
-      var taktikRow=taktikRow937();
-      if(taktikRow){var tz=document.getElementById('btn-tb-zone');if(tz)placeAfter937(taktikRow,taktikBtn,tz);}else if(!taktikBtn.parentNode)document.body.appendChild(taktikBtn);
-
-      var fsRow=fsRow937();
-      if(fsRow){var fz=document.getElementById('fs-tb-zone');if(fz)placeAfter937(fsRow,fsBtn,fz);}else if(!fsBtn.parentNode)document.body.appendChild(fsBtn);
-
-      hideButton937(tavlaBtn);hideButton937(taktikBtn);hideButton937(fsBtn);
-      if(ctx==='taktik')showButton937(taktikBtn);
-      else if(ctx==='fs-taktik'||ctx==='fs-board')showButton937(fsBtn);
-      else if(ctx==='tavla')showButton937(tavlaBtn);
-      objectButton=selectActiveObjectButton937();
-    }catch(e){}
+        if(zOpt && zOpt.parentNode===row && !(row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone'))){
+          ref=zOpt;
+        }
+      }
+      b.classList.remove('tt751-object-ready','tt749-object-ready');
+      if(row && ref){
+        if(b.parentNode!==row || b.previousElementSibling!==ref){
+          row.insertBefore(b,ref.nextSibling);
+        }
+        markButtonReady(b,row,ref);
+      }else{
+        if(!b.parentNode)document.body.appendChild(b);
+      }
+    }catch(e){
+      try{b.classList.remove('tt751-object-ready','tt749-object-ready');}catch(_e){}
+    }
   }
 
   var tt914AnimBlockUntil=0;
@@ -45935,9 +45864,31 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function ensureButton(){
     ensureStyle();ensurePanel();ensureSizePanel();
-    placeObjectButtonInRitaRow();
+    var b=document.getElementById('tt747-object-btn');
+    if(!b){
+      b=document.createElement('button');
+      b.type='button';
+      b.id='tt747-object-btn';
+      b.className='btn tt236-rita-tool';
+      b.innerHTML='<span class="tt748-cone-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3L5 20h14L12 3z" fill="#f47b20" stroke="#fff3d0" stroke-width="1.7"/><rect x="7.4" y="13" width="9.2" height="2.8" rx="1" fill="#fff3d0"/><rect x="4.3" y="19" width="15.4" height="2.3" rx="1" fill="#ffdd44"/></svg></span>';
+      b.title='Objekt: kon/pinne';
+      b.setAttribute('aria-label','Objekt');
+    }
+    b.classList.add('tt236-rita-tool');
+    b.title='Objekt: kon/pinne';
+    b.setAttribute('aria-label','Objekt');
+    if(!b.dataset.tt938ObjectBound){
+      b.dataset.tt938ObjectBound='1';
+      b.addEventListener('click',function(e){
+        e.preventDefault();e.stopPropagation();
+        closeSizePanel();
+        try{if(typeof setMode==='function')setMode(mode==='object'?'move':'object');}catch(_e){}
+        syncPanel();
+      });
+    }
+    objectButton=b;
+    placeObjectButtonInRitaRow(b);
     syncPanel();
-    return objectButton;
   }
 
   function makeCone(ns,o){
@@ -46192,14 +46143,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
+    try{document.title='Taktiktavla TEST v938 object-button-in-core-ritrad';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='917 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='938 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v917 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v938 TEST';
     }catch(e){}
   }
 
@@ -49546,5 +49497,5 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v936 TEST === */
 
 
-/* === v937 TEST: separata objektknappar per läge === */
-(function(){try{document.title='Taktiktavla TEST v937 separate object buttons';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v937 TEST';}catch(e){}})();
+/* === v938 TEST: objektknapp in i gamla kärn-ritraden === */
+(function(){try{document.title='Taktiktavla TEST v938 object-button-in-core-ritrad';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v938 TEST';}catch(e){}})();
