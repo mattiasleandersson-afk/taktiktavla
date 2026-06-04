@@ -3053,7 +3053,7 @@
 }
 </style>
 
-<script src="app_test.js?v=939-taktikfilm-object-no-steal"></script>
+<script src="app_test.js?v=940-layer-button-up-viewport-menus"></script>
 
 <script>
 (function(){
@@ -7982,3 +7982,163 @@
 <!-- === v913 TEST: v912 + objektknappsplacering pausas under Taktikfilm-animation === -->
 
 <!-- v939 TEST: Taktikfilm object no-steal efter v938 Tavla-fix. -->
+
+
+<!-- === v940 TEST: Lagerknapp upp + viewport-säkra lagermenyer ===
+     Bas: v939 TEST.
+     Ändrar bara index/CSS/JS runt lagerknappen och ⋯-menyernas placering.
+     Syfte:
+     - Taktiktavla redigeringsvy: flytta upp lagerknappen så den inte ligger över lager 1:s ⋯.
+     - Alla relevanta lagerlägen: öppna ⋯-menyn som viewport-popover som kan placeras uppåt och scrollas.
+     - Gäller Taktiktavla normal/fullscreen samt Taktikfilm normal/fullscreen.
+-->
+<style id="tt940-layer-button-menu-css">
+@media (hover:none) and (pointer:coarse) and (min-width:721px) and (max-width:1024px){
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt719-tavla-active:not(.fullscreen-portrait):not(.tt816-ipad-layer-invalid) #tt642-layer-mobile-toggle,
+  body.tt816-ipad-layer-mode.tt816-ipad-layer-allowed.tt733-tavla-active:not(.fullscreen-portrait):not(.tt816-ipad-layer-invalid) #tt642-layer-mobile-toggle{
+    top:calc(env(safe-area-inset-top,0px) + 48px)!important;
+  }
+}
+@media (max-width:720px){
+  body.tt742-mobile-tavla-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle,
+  body.tt719-tavla-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle,
+  body.tt733-tavla-active:not(.fullscreen-portrait) #tt642-layer-mobile-toggle{
+    top:calc(env(safe-area-inset-top,0px) + 72px)!important;
+    bottom:auto!important;
+  }
+}
+#tt616-layer-panel .tt661-layer-menu-panel.tt940-layer-menu-popover{
+  position:fixed!important;
+  grid-column:auto!important;
+  margin:0!important;
+  padding:8px!important;
+  border:1px solid rgba(74,232,122,.34)!important;
+  border-radius:10px!important;
+  background:rgba(5,18,10,.985)!important;
+  box-shadow:0 16px 34px rgba(0,0,0,.55)!important;
+  z-index:120900!important;
+  width:260px!important;
+  max-width:calc(100vw - 16px)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior:contain!important;
+  touch-action:pan-y!important;
+  box-sizing:border-box!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:6px!important;
+}
+#tt616-layer-panel .tt661-layer-menu:not(.tt663-menu-open) .tt661-layer-menu-panel.tt940-layer-menu-popover{
+  display:none!important;
+}
+#tt616-layer-panel .tt661-layer-menu.tt663-menu-open .tt661-layer-menu-panel.tt940-layer-menu-popover{
+  display:grid!important;
+}
+#tt616-layer-panel .tt661-layer-menu-panel.tt940-layer-menu-popover button{
+  min-height:30px!important;
+  padding:5px 6px!important;
+  line-height:1.12!important;
+  white-space:normal!important;
+  touch-action:manipulation!important;
+}
+#tt616-layer-panel .tt661-layer-menu-panel.tt940-layer-menu-popover .tt661-wide,
+#tt616-layer-panel .tt661-layer-menu-panel.tt940-layer-menu-popover .tt665-menu-section{
+  grid-column:1 / -1!important;
+}
+</style>
+<script id="tt940-layer-menu-viewport-js">
+(function(){
+  'use strict';
+  if(window.__tt940LayerMenuViewportInstalled)return;
+  window.__tt940LayerMenuViewportInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function visible(el){try{var r=el.getBoundingClientRect();var cs=getComputedStyle(el);return r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden';}catch(e){return false;}}
+  function layerAllowed(){try{
+    var b=document.body;
+    if(!b||b.classList.contains('tt816-ipad-layer-invalid')||b.classList.contains('tt813-mobile-layer-invalid'))return false;
+    if(b.classList.contains('tt-v82-taktik-library')||b.classList.contains('tt744-matcher-active'))return false;
+    var p=byId('tt616-layer-panel');
+    return !!(p&&visible(p));
+  }catch(e){return false;}}
+
+  function cleanupClosed(){try{
+    document.querySelectorAll('#tt616-layer-panel .tt661-layer-menu-panel.tt940-layer-menu-popover').forEach(function(panel){
+      var menu=panel.closest('.tt661-layer-menu');
+      if(!menu||!menu.classList.contains('tt663-menu-open')){
+        panel.classList.remove('tt940-layer-menu-popover');
+        ['left','top','width','maxWidth','maxHeight','visibility'].forEach(function(k){panel.style[k]='';});
+      }
+    });
+  }catch(e){} }
+
+  function place(panel,btn){try{
+    if(!panel||!btn)return;
+    var vw=Math.max(320,window.innerWidth||document.documentElement.clientWidth||1024);
+    var vh=Math.max(320,window.innerHeight||document.documentElement.clientHeight||768);
+    var gap=8;
+    var rect=btn.getBoundingClientRect();
+    var w=Math.min(260,vw-gap*2);
+
+    panel.classList.add('tt940-layer-menu-popover');
+    panel.style.width=w+'px';
+    panel.style.maxWidth=(vw-gap*2)+'px';
+    panel.style.visibility='hidden';
+    panel.style.display='grid';
+    panel.style.left='0px';
+    panel.style.top='0px';
+    panel.style.maxHeight=(vh-gap*2)+'px';
+
+    var fullH=Math.max(160,Math.min(panel.scrollHeight||360,vh-gap*2));
+    var below=Math.max(0,vh-rect.bottom-gap);
+    var above=Math.max(0,rect.top-gap);
+    var top,maxH;
+
+    if(below>=fullH || (below>=180 && below>=above)){
+      top=Math.min(vh-gap-80,rect.bottom+6);
+      maxH=Math.max(120,vh-top-gap);
+    }else if(above>=120){
+      maxH=Math.max(120,Math.min(fullH,above-6));
+      top=Math.max(gap,rect.top-6-maxH);
+    }else{
+      top=gap;
+      maxH=Math.max(120,vh-gap*2);
+    }
+
+    var left=rect.right-w;
+    if(left<gap)left=gap;
+    if(left+w>vw-gap)left=vw-gap-w;
+
+    panel.style.left=Math.round(left)+'px';
+    panel.style.top=Math.round(top)+'px';
+    panel.style.maxHeight=Math.round(maxH)+'px';
+    panel.style.visibility='visible';
+  }catch(e){} }
+
+  function placeOpen(){try{
+    cleanupClosed();
+    if(!layerAllowed())return;
+    document.querySelectorAll('#tt616-layer-panel .tt661-layer-menu.tt663-menu-open').forEach(function(menu){
+      place(menu.querySelector('.tt661-layer-menu-panel'),menu.querySelector('.tt661-layer-menu-button'));
+    });
+  }catch(e){} }
+
+  function schedule(){setTimeout(placeOpen,0);setTimeout(placeOpen,60);setTimeout(placeOpen,180);}
+  ['click','touchend','pointerup','resize','orientationchange','fullscreenchange','scroll'].forEach(function(evt){
+    try{window.addEventListener(evt,schedule,true);document.addEventListener(evt,schedule,true);}catch(e){}
+  });
+  try{
+    var mo=new MutationObserver(schedule);
+    function start(){var p=byId('tt616-layer-panel');if(p)mo.observe(p,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','open','aria-expanded']});}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
+  }catch(e){}
+
+  function setVersion(){try{document.title='Taktiktavla TEST v940 lagerknapp/lagermeny';}catch(e){}
+    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v940 TEST';}catch(e){}
+    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='940 TEST';});}catch(e){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion();schedule();},{once:true});
+  else{setVersion();schedule();}
+})();
+</script>
+<!-- === slut v940 TEST === -->
