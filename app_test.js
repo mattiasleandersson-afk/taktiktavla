@@ -1,5 +1,5 @@
 
-/* === v930 TEST: ritstart/autospar-diagnos, byggd från v927 clean no panels ===
+/* === v927 TEST: rollback v917 clean no panels ===
    Behåller v917:s Taktikfilm-fixar men stänger av sidework-räkning/panel. */
 (function(){
   window.__tt912Count=function(){};
@@ -49323,3 +49323,143 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v898/v899 Taktikfilm-lista källfix: row-sub genererar inte längre mappnamn i Taktikfilm-rader. Mapp finns kvar som data-taktik-folder för gruppering. === */
 
 /* v913 TEST: v912 counter + objektknappsplacering pausas under Taktikfilm-animation. */
+
+
+/* === v931 TEST: Taktiktavla frihand snabb ritstart-fix ===
+   Bas: v927 clean no panels.
+   Smal fix efter v930-diagnos:
+   - Taktiktavla tar ibland emot touchstart/pointerdown men startar inte nytt frihandsstreck vid snabba separata streck.
+   - Lägg en fallback EFTER ordinarie touchstart/mousedown-flöde: om frihand fortfarande inte startat, starta strecket direkt.
+   - Skjut upp lagerpanel-refresh kort under snabb frihand i Taktiktavla.
+   Rör inte Snabbtavla, Taktikfilm-animation, Supabase eller ikonordning. */
+(function(){
+  if(window.__tt931TavlaFreehandFastStartFix)return;
+  window.__tt931TavlaFreehandFastStartFix=true;
+
+  var lastFreehandActivity931=0;
+  var lastFallbackStart931=0;
+  var pendingLayerRefresh931=0;
+
+  function isTavla931(){
+    try{
+      var b=document.body && document.body.classList;
+      if(!b)return false;
+      if(b.contains('tt745-snabb-active'))return false;
+      if(b.contains('tt688-taktikfilm-editor-active')||b.contains('tt743-mobile-taktikfilm-active')||b.contains('tt743-mobile-taktikfilm-fullscreen'))return false;
+      return b.contains('tt733-tavla-active')||b.contains('tt718-tavla-active')||b.contains('tt719-tavla-active');
+    }catch(e){return false;}
+  }
+
+  function isFreehandMode931(){
+    try{return typeof mode!=='undefined' && mode==='freehand';}catch(e){return false;}
+  }
+
+  function getSvg931(){
+    try{return (typeof svg!=='undefined' && svg) ? svg : document.getElementById('pitch-svg');}catch(e){return document.getElementById('pitch-svg');}
+  }
+
+  function isPitchDrawingEvent931(ev){
+    try{
+      var s=getSvg931();
+      if(!s || !ev || !ev.target || !s.contains(ev.target))return false;
+      var t=ev.target;
+      if(t.closest && t.closest('button,input,select,textarea,.modal,.panel,.toolbar,#tt616-layer-panel,#tt642-layer-mobile-toggle,#tt918-tool-diag,#tt924-compare-diag,#tt930-freehand-diag'))return false;
+      return true;
+    }catch(e){return false;}
+  }
+
+  function pointFromEvent931(ev){
+    try{
+      var p=null;
+      if(ev.touches && ev.touches[0])p=ev.touches[0];
+      else if(ev.changedTouches && ev.changedTouches[0])p=ev.changedTouches[0];
+      else if(typeof ev.clientX==='number')p=ev;
+      if(!p || typeof svgPt!=='function')return null;
+      return svgPt(p.clientX,p.clientY);
+    }catch(e){return null;}
+  }
+
+  function canStartFallback931(){
+    try{
+      if(!isTavla931() || !isFreehandMode931())return false;
+      if(typeof freehandDrawing!=='undefined' && freehandDrawing)return false;
+      if(typeof freehandCurrent!=='undefined' && freehandCurrent)return false;
+      if(typeof tt634BlockIfActiveLayerLocked==='function' && tt634BlockIfActiveLayerLocked())return false;
+      return true;
+    }catch(e){return false;}
+  }
+
+  function startFreehandFallback931(pt,kind){
+    try{
+      if(!pt || !canStartFallback931())return false;
+      var now=Date.now();
+      if(now-lastFallbackStart931<70)return false;
+      lastFallbackStart931=now;
+      lastFreehandActivity931=now;
+      if(typeof saveUndo==='function')saveUndo();
+      freehandDrawing=true;
+      freehandCurrent=tt631MarkObjectLayer({
+        id:'fp'+(idCounter++),
+        pts:[pt],
+        color:(typeof freehandColor!=='undefined'?freehandColor:'#ffdd44'),
+        width:(typeof freehandWidth!=='undefined'?freehandWidth:4)
+      });
+      if(kind==='mouse'){
+        window.addEventListener('mousemove',onMM);
+        window.addEventListener('mouseup',onMU);
+      }else{
+        window.addEventListener('touchmove',onTM,{passive:false});
+        window.addEventListener('touchend',onTE);
+        window.addEventListener('touchcancel',onTE);
+      }
+      return true;
+    }catch(e){return false;}
+  }
+
+  function scheduleFallback931(ev,kind){
+    try{
+      if(!isTavla931() || !isFreehandMode931() || !isPitchDrawingEvent931(ev))return;
+      var pt=pointFromEvent931(ev);
+      if(!pt)return;
+      lastFreehandActivity931=Date.now();
+      // Låt ordinarie svg-touchstart/mousedown köra först. Starta bara om den missar.
+      setTimeout(function(){
+        try{
+          if(canStartFallback931())startFreehandFallback931(pt,kind);
+        }catch(e){}
+      },0);
+    }catch(e){}
+  }
+
+  document.addEventListener('touchstart',function(ev){scheduleFallback931(ev,'touch');},{capture:true,passive:false});
+  document.addEventListener('mousedown',function(ev){scheduleFallback931(ev,'mouse');},true);
+  document.addEventListener('touchmove',function(ev){try{if(isTavla931()&&isFreehandMode931()&&isPitchDrawingEvent931(ev))lastFreehandActivity931=Date.now();}catch(e){}},{capture:true,passive:true});
+  document.addEventListener('mousemove',function(ev){try{if(isTavla931()&&isFreehandMode931()&&isPitchDrawingEvent931(ev))lastFreehandActivity931=Date.now();}catch(e){}},true);
+
+  if(typeof tt631RefreshLayerPanelSoon==='function' && !tt631RefreshLayerPanelSoon.__tt931Wrapped){
+    var oldRefresh931=tt631RefreshLayerPanelSoon;
+    tt631RefreshLayerPanelSoon=function(){
+      try{
+        var recent=Date.now()-lastFreehandActivity931;
+        if(isTavla931() && isFreehandMode931() && recent<220){
+          clearTimeout(pendingLayerRefresh931);
+          pendingLayerRefresh931=setTimeout(function(){try{oldRefresh931();}catch(e){}},260);
+          return;
+        }
+      }catch(e){}
+      return oldRefresh931.apply(this,arguments);
+    };
+    tt631RefreshLayerPanelSoon.__tt931Wrapped=true;
+    try{window.tt631RefreshLayerPanelSoon=tt631RefreshLayerPanelSoon;}catch(e){}
+  }
+
+  function setVersion931(){try{
+    var VERSION='Version 2 test v931';
+    document.title='Taktiktavla';
+    var ids=['version','app-version','version-label','app-version-label','ver','build-version'];
+    ids.forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
+  }catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion931,{once:true}); else setVersion931();
+  setTimeout(setVersion931,500);
+})();
+/* === slut v931 TEST === */
