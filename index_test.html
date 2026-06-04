@@ -2371,7 +2371,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v930 ritstart autospar diagnos</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v931 tavla freehand fast start-fix</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -3053,7 +3053,7 @@
 }
 </style>
 
-<script src="app_test.js?v=930-ritstart-autospar-diagnos"></script>
+<script src="app_test.js?v=931-tavla-freehand-fast-start-fix"></script>
 
 <script>
 (function(){
@@ -6512,248 +6512,6 @@
 <!-- v927: v917 sidework-panel borttagen. -->
 
 
-
-<!-- === v930 TEST: ritstart-/autospar-diagnos Snabbtavla vs Taktiktavla === -->
-<style id="tt930-ritstart-autospar-diagnos-css">
-  #tt930-panel{position:fixed;right:10px;bottom:10px;z-index:12080;width:min(390px,calc(100vw - 20px));max-height:45vh;overflow:auto;background:rgba(7,15,12,.96);color:#f4e7ad;border:1px solid rgba(232,200,74,.55);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.45);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:12px;padding:8px;}
-  #tt930-panel.tt930-min{width:auto;max-height:none;overflow:hidden;}
-  #tt930-panel.tt930-min .tt930-body{display:none;}
-  #tt930-panel button{font:inherit;font-weight:800;border:1px solid rgba(232,200,74,.45);background:rgba(255,255,255,.04);color:#f4e7ad;border-radius:8px;padding:5px 8px;margin:2px;}
-  #tt930-panel textarea{width:100%;height:150px;box-sizing:border-box;background:#06100c;color:#e9ffe9;border:1px solid rgba(232,200,74,.35);border-radius:8px;font:11px ui-monospace,SFMono-Regular,Menlo,monospace;}
-  #tt930-panel .tt930-title{font-weight:900;color:#ffdd44;margin-bottom:4px;}
-  #tt930-panel .tt930-small{opacity:.78;font-size:11px;line-height:1.25;}
-</style>
-<script id="tt930-ritstart-autospar-diagnos-js">
-(function(){
-  'use strict';
-  if(window.__tt930RitStartAutosparDiagInstalled)return;
-  window.__tt930RitStartAutosparDiagInstalled=true;
-
-  var started=performance.now();
-  var events=[];
-  var counts={};
-  var lastLogAt=0;
-  var maxEvents=260;
-  var lastSvgStartByMode={};
-  var strokeSeq=0;
-
-  function now(){return performance.now();}
-  function dt(){return ((now()-started)/1000).toFixed(1)+'s';}
-  function bodyFlags(){try{return Array.from(document.body.classList).filter(function(c){return /^tt(718|719|733|745|756|252|816|813|642|688|743|763|764|758)/.test(c)||c==='fullscreen-portrait';}).join(' ');}catch(e){return '';}}
-  function modeName(){
-    try{
-      var b=document.body.classList;
-      if(b.contains('tt745-snabb-active')||b.contains('tt756-snabb-object-active'))return 'Snabbtavla';
-      if(b.contains('tt733-tavla-active')||b.contains('tt718-tavla-active')||b.contains('tt719-tavla-active'))return 'Taktiktavla';
-      var tab=document.querySelector('.tab.on[data-panel]');
-      var p=tab?tab.getAttribute('data-panel'):'';
-      if(p==='snabb'||p==='quick')return 'Snabbtavla';
-      if(p==='saves')return 'Taktiktavla';
-    }catch(e){}
-    return 'Okänt';
-  }
-  function inc(name,mode){
-    mode=mode||modeName();
-    var k=name+' ['+mode+']';
-    counts[k]=(counts[k]||0)+1;
-  }
-  function val(name){try{return window[name];}catch(e){return undefined;}}
-  function safeLen(x){try{return Array.isArray(x)?x.length:'';}catch(e){return '';}}
-  function activeTool(){
-    try{
-      if(typeof window.mode!=='undefined')return String(window.mode);
-      var on=document.querySelector('#tt252-ipad-rita-row .tt236-rita-tool.on,#tt252-ipad-rita-row .tt236-rita-tool.active');
-      if(on){
-        if(on.id==='btn-freehand')return 'freehand';
-        if(on.id==='btn-arrow')return 'arrow';
-        if(on.id==='btn-zone')return 'zone';
-        if(on.id==='tt747-object-btn')return 'object';
-        if(on.id==='tt236-rita-move')return 'move';
-      }
-    }catch(e){}
-    return '';
-  }
-  function snap(){
-    var parts=[];
-    try{parts.push('tool='+activeTool());}catch(e){}
-    try{parts.push('freehandDrawing='+(!!window.freehandDrawing));}catch(e){}
-    try{parts.push('freehandCurrentPts='+(window.freehandCurrent&&window.freehandCurrent.pts?window.freehandCurrent.pts.length:0));}catch(e){}
-    try{parts.push('arrowStart='+(window.arrowStart?'ja':'nej'));}catch(e){}
-    try{parts.push('zoneStart='+(window.zoneStart?'ja':'nej'));}catch(e){}
-    try{parts.push('paths='+safeLen(window.freehandPaths));}catch(e){}
-    try{parts.push('arrows='+safeLen(window.arrows));}catch(e){}
-    try{parts.push('zones='+safeLen(window.zones));}catch(e){}
-    try{parts.push('selected='+(window.selectedId||''));}catch(e){}
-    return parts.join(' | ');
-  }
-  function shortTarget(t){
-    try{
-      if(!t)return '';
-      if(t.nodeType===3)t=t.parentElement;
-      var s=(t.tagName||'').toLowerCase();
-      if(t.id)s+='#'+t.id;
-      if(t.className&&typeof t.className==='string')s+='.'+t.className.trim().split(/\s+/).slice(0,3).join('.');
-      var txt=(t.textContent||'').trim().replace(/\s+/g,' ');
-      if(txt&&txt.length<24)s+=' text="'+txt+'"';
-      return s;
-    }catch(e){return '';}
-  }
-  function isPitchEvent(ev){
-    try{
-      var path=ev.composedPath?ev.composedPath():[];
-      for(var i=0;i<path.length;i++){
-        var n=path[i];
-        if(!n||!n.id&&!n.classList)continue;
-        if(n.id==='pitch-svg'||n.id==='pitch-wrapper')return true;
-        if(n.classList&&n.classList.contains('pitch-svg'))return true;
-      }
-      var t=ev.target;
-      if(t&&t.closest&&t.closest('#pitch-wrapper,#pitch-svg'))return true;
-      if(t&&t.ownerSVGElement&&t.ownerSVGElement.id==='pitch-svg')return true;
-    }catch(e){}
-    return false;
-  }
-  function log(line){
-    events.push(dt()+' | '+modeName()+' | '+line+' | '+snap()+' | body: '+bodyFlags());
-    if(events.length>maxEvents)events.shift();
-    lastLogAt=now();
-    updatePanelSoon();
-  }
-  function logLite(line){
-    events.push(dt()+' | '+modeName()+' | '+line);
-    if(events.length>maxEvents)events.shift();
-    updatePanelSoon();
-  }
-  var updateTimer=null;
-  function updatePanelSoon(){ if(updateTimer)return; updateTimer=setTimeout(function(){updateTimer=null; updatePanel();},140); }
-
-  function wrapFn(name,label){
-    try{
-      var fn=window[name];
-      if(typeof fn!=='function'||fn.__tt930Wrapped)return;
-      var w=function(){
-        inc(label||name);
-        var t0=now();
-        try{return fn.apply(this,arguments);}finally{
-          var ms=now()-t0;
-          if(ms>12)logLite((label||name)+' tog '+ms.toFixed(1)+' ms');
-        }
-      };
-      w.__tt930Wrapped=true;
-      w.__tt930Orig=fn;
-      window[name]=w;
-    }catch(e){}
-  }
-  function installWraps(){
-    ['render','renderFreehandPreview','drawPitch','saveUndo','buildState','applyState','setMode','tt631RefreshLayerPanelSoon','tt635ExportFreeLayerState','tt635ImportFreeLayerState','tt747ScheduleObjectButtonPlacement','scheduleObjectButtonPlacement','autoSaveCurrentStepLocalV16','autoSaveStepQuietV69','autosaveCurrentEditStepV71','scheduleAutosaveV71','autosaveAfterEditV73','markDirtyV19','markDirtyV20Safe'].forEach(function(n){wrapFn(n,'fn.'+n);});
-  }
-
-  function installLocalStorageWrap(){
-    try{
-      if(Storage.prototype.setItem.__tt930Wrapped)return;
-      var orig=Storage.prototype.setItem;
-      var w=function(k,v){
-        try{inc('localStorage.setItem '+String(k).slice(0,38));}catch(e){}
-        return orig.apply(this,arguments);
-      };
-      w.__tt930Wrapped=true;
-      Storage.prototype.setItem=w;
-    }catch(e){}
-  }
-
-  function onEvent(ev){
-    try{
-      var m=modeName();
-      var pitch=isPitchEvent(ev);
-      if(!pitch && !(/^(pointerdown|touchstart|mousedown)$/.test(ev.type)))return;
-      if(pitch){
-        inc('event.'+ev.type+'.pitch',m);
-        if(/^(pointerdown|touchstart|mousedown)$/.test(ev.type)){
-          strokeSeq++;
-          var seq=strokeSeq;
-          lastSvgStartByMode[m]=now();
-          log('ritstart? #'+seq+' '+ev.type+' på '+shortTarget(ev.target));
-          setTimeout(function(){log('ritstart #'+seq+' +45ms');},45);
-          setTimeout(function(){log('ritstart #'+seq+' +160ms');},160);
-        }else if(/^(pointerup|touchend|mouseup|pointercancel|touchcancel)$/.test(ev.type)){
-          log('ritslut '+ev.type+' på '+shortTarget(ev.target));
-        }
-      }else if(/^(pointerdown|touchstart|mousedown)$/.test(ev.type)){
-        var t=shortTarget(ev.target);
-        if(/btn-|tab|button|select|input|tt252|tt747|freehand|arrow|zone/i.test(t)){
-          inc('event.'+ev.type+'.ui',m);
-          log('ui '+ev.type+' på '+t);
-        }
-      }
-    }catch(e){}
-  }
-  ['pointerdown','pointerup','pointercancel','touchstart','touchend','touchcancel','mousedown','mouseup','click'].forEach(function(evt){
-    document.addEventListener(evt,onEvent,true);
-  });
-
-  function makeReport(){
-    var secs=Math.max(1,(now()-started)/1000);
-    var lines=[];
-    lines.push('Taktiktavla ritstart/autospar-diagnos v930');
-    lines.push('Bas: v927 TEST clean no panels');
-    lines.push('Tid: '+new Date().toISOString());
-    lines.push('Aktuellt läge: '+modeName());
-    lines.push('Mättid: '+secs.toFixed(1)+' s');
-    lines.push('Bodyflaggor: '+bodyFlags());
-    lines.push('');
-    lines.push('Funktions-/händelseräkning:');
-    Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];}).slice(0,80).forEach(function(k){
-      lines.push('  '+counts[k]+' × '+k+'  (~'+(counts[k]*60/secs).toFixed(0)+'/min)');
-    });
-    lines.push('');
-    lines.push('Senaste ritstart-/autosparhändelser:');
-    events.slice(-170).forEach(function(e){lines.push('  '+e);});
-    lines.push('');
-    lines.push('Instruktion: Nollställ. Skriv samma ord med frihand i Snabbtavla och Taktiktavla. Kopiera loggen. Diagnosen visar ritstart, +45/+160 ms, render/autospar/localStorage och ev. tungt efterjobb.');
-    return lines.join('\n');
-  }
-  function updatePanel(){
-    try{
-      var out=document.getElementById('tt930-out');
-      var stat=document.getElementById('tt930-stat');
-      if(out)out.value=makeReport();
-      if(stat)stat.textContent='Läge: '+modeName()+' | händelser: '+events.length+' | '+dt();
-    }catch(e){}
-  }
-  function reset(){
-    started=performance.now();events=[];counts={};strokeSeq=0;
-    log('reset');
-    updatePanel();
-  }
-  function copy(){
-    var text=makeReport();
-    var out=document.getElementById('tt930-out');if(out)out.value=text;
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).catch(function(){});}else{try{out.focus();out.select();document.execCommand('copy');}catch(e){}}
-  }
-  function buildPanel(){
-    if(document.getElementById('tt930-panel'))return;
-    var p=document.createElement('div');p.id='tt930-panel';
-    p.innerHTML='<div class="tt930-title">v930 ritstart/autospar-diagnos</div><div class="tt930-body"><div class="tt930-small" id="tt930-stat"></div><div><button id="tt930-reset">Nollställ</button><button id="tt930-copy">Kopiera</button><button id="tt930-min">Minimera</button></div><div class="tt930-small">Skriv samma ord med frihand i Snabbtavla och Taktiktavla. Kopiera efteråt.</div><textarea id="tt930-out" readonly></textarea></div><button id="tt930-open" style="display:none">Ritdiag</button>';
-    document.body.appendChild(p);
-    document.getElementById('tt930-reset').addEventListener('click',reset);
-    document.getElementById('tt930-copy').addEventListener('click',copy);
-    document.getElementById('tt930-min').addEventListener('click',function(){p.classList.add('tt930-min');document.getElementById('tt930-open').style.display='inline-block';});
-    document.getElementById('tt930-open').addEventListener('click',function(){p.classList.remove('tt930-min');document.getElementById('tt930-open').style.display='none';updatePanel();});
-    updatePanel();
-  }
-  function boot(){
-    installWraps();installLocalStorageWrap();buildPanel();
-    log('diagnos start');
-    var tries=0;var int=setInterval(function(){installWraps(); if(++tries>20)clearInterval(int);},500);
-    setInterval(updatePanel,1400);
-    try{document.title='Taktiktavla TEST v930 ritstart/autospar-diagnos';}catch(e){}
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-  window.tt930RitDiag={report:makeReport,reset:reset,copy:copy,counts:function(){return counts;},events:function(){return events.slice();}};
-})();
-</script>
-<!-- === slut v930 TEST === -->
-
 </body>
 </html>
 
@@ -8222,3 +7980,5 @@
 <!-- === slut v898 TEST === -->
 
 <!-- === v913 TEST: v912 + objektknappsplacering pausas under Taktikfilm-animation === -->
+
+<!-- v931 TEST: Taktiktavla frihand snabb ritstart-fix. -->
