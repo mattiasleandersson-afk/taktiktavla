@@ -8182,9 +8182,9 @@
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
   }catch(e){}
 
-  function setVersion(){try{document.title='Taktiktavla TEST v945 rollback v943 after margin fail';}catch(e){}
-    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v942 TEST';}catch(e){}
-    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='940 TEST';});}catch(e){}
+  function setVersion(){try{document.title='Taktiktavla TEST v953 DIAG ritval trace READONLY';}catch(e){}
+    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v953 DIAG';}catch(e){}
+    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='953 DIAG';});}catch(e){}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion();schedule();},{once:true});
   else{setVersion();schedule();}
@@ -8193,209 +8193,142 @@
 <!-- === slut v942 TEST === -->
 
 
-<!-- === v952 TEST: sen ensam ägare för ritval i Tavla/Snabbtavla === -->
-<style id="tt952-draw-options-late-single-owner-css">
-  #tt952-draw-options-host{
-    display:none;
-    position:absolute;
-    top:8px;
-    right:8px;
-    z-index:2147482500;
-    max-width:min(430px, calc(100% - 16px));
-    box-sizing:border-box;
-    align-items:center;
-    gap:4px;
-    pointer-events:none;
-  }
-  body.fullscreen-portrait:not(.v66-taktik-fs) #tt952-draw-options-host{
-    position:fixed;
-    top:calc(env(safe-area-inset-top,0px) + 46px);
-    left:calc(env(safe-area-inset-left,0px) + 8px);
-    right:auto;
-    max-width:min(430px, calc(100vw - 16px));
-  }
-  body.tt952-draw-options-owner #tt952-draw-options-host{
-    display:flex!important;
-    pointer-events:auto!important;
-  }
-  body.tt952-draw-options-owner #tt952-draw-options-host #arrow-options,
-  body.tt952-draw-options-owner #tt952-draw-options-host #freehand-options,
-  body.tt952-draw-options-owner #tt952-draw-options-host #zone-options{
-    position:static!important;
-    left:auto!important;
-    right:auto!important;
-    top:auto!important;
-    bottom:auto!important;
-    transform:none!important;
-    display:none!important;
-    visibility:hidden!important;
-    opacity:0!important;
-    z-index:auto!important;
-    max-width:min(430px, calc(100vw - 16px))!important;
-    overflow-x:auto!important;
-    overflow-y:hidden!important;
-    -webkit-overflow-scrolling:touch!important;
-    box-sizing:border-box!important;
-    align-items:center!important;
-    gap:4px!important;
-    padding:4px 6px!important;
-    margin:0!important;
-    background:rgba(17,26,20,.97)!important;
-    border:1px solid #2d4a35!important;
-    border-radius:8px!important;
-    box-shadow:0 4px 14px rgba(0,0,0,.38)!important;
-    pointer-events:auto!important;
-    white-space:nowrap!important;
-  }
-  body.tt952-draw-options-owner #tt952-draw-options-host #arrow-options.tt952-active-option,
-  body.tt952-draw-options-owner #tt952-draw-options-host #freehand-options.tt952-active-option,
-  body.tt952-draw-options-owner #tt952-draw-options-host #zone-options.tt952-active-option{
-    display:flex!important;
-    visibility:visible!important;
-    opacity:1!important;
-  }
-  body.tt952-draw-options-owner #tt952-draw-options-host select,
-  body.tt952-draw-options-owner #tt952-draw-options-host button{
-    min-height:26px!important;
-    height:26px!important;
-    max-width:126px!important;
-    font-size:.66rem!important;
-    line-height:1!important;
-    padding:2px 5px!important;
-    margin:0!important;
-    pointer-events:auto!important;
-  }
+<!-- === v953 DIAG READONLY: ritval/toolbar trace, byggd från v946-index. Ändrar inte appbeteende. === -->
+<style id="tt953-draw-options-diag-css">
+  #tt953-diag-toggle{position:fixed;left:6px;bottom:6px;z-index:2147483647;font:12px Arial,sans-serif;padding:5px 7px;border-radius:8px;border:1px solid #4ae87a;background:rgba(17,26,20,.96);color:#eaffef;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  #tt953-diag-panel{display:none;position:fixed;left:6px;right:6px;bottom:40px;z-index:2147483647;max-height:42vh;overflow:auto;padding:8px;border:1px solid #4ae87a;border-radius:10px;background:rgba(10,16,12,.98);color:#eaffef;font:11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-shadow:0 4px 18px rgba(0,0,0,.5);white-space:pre-wrap;overscroll-behavior:contain}
+  #tt953-diag-panel.tt953-open{display:block!important}
+  #tt953-diag-actions{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+  #tt953-diag-actions button{font:12px Arial,sans-serif;padding:4px 7px;border-radius:7px;border:1px solid #4ae87a;background:#1e2e22;color:#eaffef}
+  #tt953-diag-status{opacity:.85;font:11px Arial,sans-serif}
 </style>
-<script id="tt952-draw-options-late-single-owner-js">
+<script id="tt953-draw-options-trace-readonly-js">
 (function(){
   'use strict';
-  if(window.__tt952DrawOptionsLateSingleOwnerInstalled)return;
-  window.__tt952DrawOptionsLateSingleOwnerInstalled=true;
+  if(window.__tt953DrawOptionsTraceInstalled)return;
+  window.__tt953DrawOptionsTraceInstalled=true;
 
-  var MODE_TO_OPTION={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
+  var WATCH_IDS={
+    'arrow-options':1,'freehand-options':1,'zone-options':1,
+    'btn-arrow':1,'btn-freehand':1,'btn-zone':1,'btn-text':1,'btn-movement':1,
+    'tt747-object-btn':1,'tt834-tf-touch-options':1,
+    'tt291-plan-draw-options':1,'tt667-draw-options-slot':1,
+    'tt236-rita-row':1,'tt252-ipad-rita-row':1,'taktikbar':1,
+    'panel-saves':1,'panel-formations':1,'panel-taktik':1
+  };
   var OPTION_IDS=['arrow-options','freehand-options','zone-options'];
-  var lastMode='';
-  var scheduled=false;
+  var TOOL_IDS=['btn-arrow','btn-freehand','btn-zone','btn-text','btn-movement','tt747-object-btn'];
+  var logs=[];
+  var maxLogs=260;
+  var seq=0;
+  var lastSignature={};
+  var lastEvent='start';
+  var internal=false;
 
-  function byId(id){return document.getElementById(id);}
-  function activePanel(){try{var t=document.querySelector('.tab.on[data-panel]');return t?String(t.getAttribute('data-panel')||''):'';}catch(e){return '';}}
-  function isTavlaOrSnabb(){var p=activePanel();return p==='saves'||p==='formations';}
-  function isTaktik(){try{return activePanel()==='taktik'||document.body.classList.contains('tt688-taktikfilm-editor-active')||document.body.classList.contains('tt743-mobile-taktikfilm-active')||document.body.classList.contains('v66-taktik-fs');}catch(e){return false;}}
-  function inferMode(){
-    try{if(lastMode)return lastMode;}catch(e){}
+  function now(){try{return new Date().toLocaleTimeString('sv-SE',{hour12:false})+'.'+String(Date.now()%1000).padStart(3,'0');}catch(e){return String(Date.now());}}
+  function idOf(n){try{return n&&n.id?n.id:(n&&n.tagName?n.tagName.toLowerCase():'');}catch(e){return '';}}
+  function nodeLabel(n){try{if(!n)return 'null';var s=n.tagName?n.tagName.toLowerCase():String(n.nodeName||'node');if(n.id)s+='#'+n.id;if(n.className&&typeof n.className==='string'){var c=n.className.trim().split(/\s+/).slice(0,3).join('.');if(c)s+='.'+c;}return s;}catch(e){return 'node?';}}
+  function isWatchedNode(n){try{return !!(n && n.nodeType===1 && n.id && WATCH_IDS[n.id]);}catch(e){return false;}}
+  function containsWatched(n){try{if(!n||n.nodeType!==1)return false;if(isWatchedNode(n))return true;return !!(n.querySelector&&n.querySelector('#'+Object.keys(WATCH_IDS).join(',#')));}catch(e){return false;}}
+  function cleanStack(){try{var st=(new Error()).stack||'';return st.split('\n').slice(3,8).map(function(x){return x.replace(location.href.split('#')[0],'index').trim();}).join(' | ');}catch(e){return '';}}
+  function activePanel(){try{var t=document.querySelector('.tab.on[data-panel]');if(t)return t.getAttribute('data-panel')||'';var ps=['saves','formations','taktik','matches','squad','stats'];for(var i=0;i<ps.length;i++){var p=document.getElementById('panel-'+ps[i]);if(p&&p.classList.contains('on'))return ps[i];}}catch(e){}return '';}
+  function modeNow(){try{return String((typeof mode!=='undefined'&&mode)||window.mode||'');}catch(e){return String(window.mode||'');}}
+  function bodyFlags(){try{return Array.from(document.body.classList).filter(function(c){return /tt|fullscreen|taktik|fs|mobile|ipad|rita|draw|layer|v66/.test(c);}).slice(0,18).join(' ');}catch(e){return '';}}
+  function rectOf(el){try{var r=el.getBoundingClientRect();return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)].join(',');}catch(e){return '?';}}
+  function summaryFor(id){try{var el=document.getElementById(id);if(!el)return id+':missing';var cs=getComputedStyle(el);return id+' p='+idOf(el.parentNode)+' d='+cs.display+' v='+cs.visibility+' pos='+cs.position+' rect='+rectOf(el)+' cls='+String(el.className||'').trim();}catch(e){return id+':err';}}
+  function snapshot(){return OPTION_IDS.map(summaryFor).join(' || ');}
+  function log(kind,msg,force){
     try{
-      if(byId('btn-arrow')&&byId('btn-arrow').classList.contains('on'))return 'arrow';
-      if(byId('btn-freehand')&&byId('btn-freehand').classList.contains('on'))return 'freehand';
-      if(byId('btn-zone')&&byId('btn-zone').classList.contains('on'))return 'zone';
-      if(byId('btn-text')&&byId('btn-text').classList.contains('on'))return 'text';
-      if(byId('btn-movement')&&byId('btn-movement').classList.contains('on'))return 'movement';
-    }catch(e){}
-    try{if(window.mode)return String(window.mode||'');}catch(e){}
-    return '';
-  }
-  function ensureHost(){
-    var h=byId('tt952-draw-options-host');
-    if(h)return h;
-    h=document.createElement('div');
-    h.id='tt952-draw-options-host';
-    h.setAttribute('aria-label','Ritval');
-    ['pointerdown','touchstart','mousedown','click','touchend'].forEach(function(type){
-      h.addEventListener(type,function(ev){try{ev.stopPropagation();}catch(e){}},{capture:true,passive:true});
-    });
-    var pw=byId('pitch-wrapper')||document.body||document.documentElement;
-    pw.appendChild(h);
-    return h;
-  }
-  function clearOldClasses(el){
-    if(!el)return;
-    try{
-      el.classList.remove('tt291-active-option','tt681-active-option','tt679-active-option','tt678-active-option','tt676-active-option','tt677-active-option','tt252-active-option','tt238-rita-options');
+      var key=kind+'|'+msg+'|'+snapshot()+'|'+activePanel()+'|'+modeNow()+'|'+bodyFlags();
+      if(!force && lastSignature[key] && Date.now()-lastSignature[key]<180)return;
+      lastSignature[key]=Date.now();
+      var row='['+(++seq)+' '+now()+'] '+kind+' '+msg+' | panel='+activePanel()+' mode='+modeNow()+' last='+lastEvent+' | body='+bodyFlags()+' | '+snapshot();
+      logs.push(row);
+      if(logs.length>maxLogs)logs.shift();
+      try{console.log('TT953',row);}catch(e){}
+      renderPanel();
     }catch(e){}
   }
-  function apply(){
-    scheduled=false;
-    try{
-      var owner=!!(isTavlaOrSnabb() && !isTaktik());
-      var mode=inferMode();
-      var activeId=MODE_TO_OPTION[mode]||'';
-      var h=ensureHost();
-      document.body.classList.toggle('tt952-draw-options-owner',owner && !!activeId);
-      if(!(owner && activeId)){
-        OPTION_IDS.forEach(function(id){var el=byId(id);if(el){el.classList.remove('tt952-active-option');}});
-        if(h)h.style.setProperty('display','none','important');
-        return;
-      }
-      if(h)h.style.removeProperty('display');
-      OPTION_IDS.forEach(function(id){
-        var el=byId(id);
-        if(!el)return;
-        clearOldClasses(el);
-        if(el.parentNode!==h)h.appendChild(el);
-        var on=id===activeId;
-        el.classList.toggle('tt952-active-option',on);
-        el.style.setProperty('display',on?'flex':'none','important');
-        el.style.setProperty('visibility',on?'visible':'hidden','important');
-        el.style.setProperty('opacity',on?'1':'0','important');
-        el.style.setProperty('position','static','important');
-        el.style.setProperty('left','auto','important');
-        el.style.setProperty('right','auto','important');
-        el.style.setProperty('top','auto','important');
-        el.style.setProperty('bottom','auto','important');
-        el.style.setProperty('transform','none','important');
-        el.style.setProperty('pointer-events',on?'auto':'none','important');
-      });
-    }catch(e){}
+  function renderPanel(){try{var pre=document.getElementById('tt953-diag-content');if(pre)pre.textContent=logs.slice(-90).join('\n');}catch(e){}}
+  function copyLogs(){
+    var txt='TT953 ritvalsdiagnos\nUA: '+navigator.userAgent+'\nURL: '+location.href+'\n\n'+logs.join('\n');
+    function ok(){try{var s=document.getElementById('tt953-diag-status');if(s)s.textContent='Kopierat '+logs.length+' rader';}catch(e){}}
+    try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(ok,function(){fallback();});return;}}catch(e){}
+    fallback();
+    function fallback(){try{var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();ok();}catch(e){prompt('Kopiera diagnoslogg:',txt);}}
   }
-  function schedule(){
-    if(scheduled)return;
-    scheduled=true;
-    try{requestAnimationFrame(apply);}catch(e){setTimeout(apply,0);}
-  }
-  function scheduleDeep(){schedule();setTimeout(apply,0);setTimeout(apply,80);setTimeout(apply,220);}
+  function installUi(){try{
+    if(document.getElementById('tt953-diag-toggle'))return;
+    var b=document.createElement('button');b.id='tt953-diag-toggle';b.type='button';b.textContent='DIAG';
+    var p=document.createElement('div');p.id='tt953-diag-panel';
+    p.innerHTML='<div id="tt953-diag-actions"><button type="button" id="tt953-copy">Kopiera logg</button><button type="button" id="tt953-mark">Markera nuläge</button><button type="button" id="tt953-clear">Rensa</button><span id="tt953-diag-status">v953 READONLY</span></div><div id="tt953-diag-content"></div>';
+    document.body.appendChild(p);document.body.appendChild(b);
+    b.addEventListener('click',function(e){e.preventDefault();p.classList.toggle('tt953-open');renderPanel();},true);
+    document.getElementById('tt953-copy').addEventListener('click',function(e){e.preventDefault();copyLogs();},true);
+    document.getElementById('tt953-mark').addEventListener('click',function(e){e.preventDefault();log('MARK','manual',true);},true);
+    document.getElementById('tt953-clear').addEventListener('click',function(e){e.preventDefault();logs=[];seq=0;renderPanel();},true);
+  }catch(e){}}
 
-  function wrapSetMode(){
-    try{
+  function patchDomMoves(){try{
+    if(window.__tt953DomMovePatched)return; window.__tt953DomMovePatched=true;
+    var ap=Element.prototype.appendChild, ib=Element.prototype.insertBefore, rc=Element.prototype.replaceChild;
+    Element.prototype.appendChild=function(child){
+      if(!internal && containsWatched(child)){log('DOM.appendChild',nodeLabel(child)+' -> '+nodeLabel(this)+' stack='+cleanStack(),true);}
+      return ap.apply(this,arguments);
+    };
+    Element.prototype.insertBefore=function(child,before){
+      if(!internal && containsWatched(child)){log('DOM.insertBefore',nodeLabel(child)+' -> '+nodeLabel(this)+' before '+nodeLabel(before)+' stack='+cleanStack(),true);}
+      return ib.apply(this,arguments);
+    };
+    Element.prototype.replaceChild=function(n,o){
+      if(!internal && (containsWatched(n)||containsWatched(o))){log('DOM.replaceChild',nodeLabel(o)+' -> '+nodeLabel(n)+' in '+nodeLabel(this)+' stack='+cleanStack(),true);}
+      return rc.apply(this,arguments);
+    };
+  }catch(e){log('DIAGERR','patchDomMoves '+e,true);}}
+
+  function patchSetMode(){try{
+    if(typeof window.setMode==='function' && !window.setMode.__tt953Wrapped){
       var old=window.setMode;
-      if(typeof old==='function' && !old.__tt952Wrapped){
-        var wrapped=function(m){
-          try{lastMode=String(m||'');}catch(e){}
-          var res=old.apply(this,arguments);
-          scheduleDeep();
-          return res;
-        };
-        wrapped.__tt952Wrapped=true;
-        window.setMode=wrapped;
-        try{setMode=wrapped;}catch(e){}
-      }
-    }catch(e){}
-  }
+      window.setMode=function(m){log('CALL.setMode','arg='+m+' before='+modeNow()+' stack='+cleanStack(),true);var r=old.apply(this,arguments);setTimeout(function(){log('AFTER.setMode','arg='+m,true);},0);setTimeout(function(){log('AFTER.setMode+120','arg='+m,true);},120);return r;};
+      window.setMode.__tt953Wrapped=true;
+      log('DIAG','setMode wrapped',true);
+    }else{log('DIAG','setMode not found/wrapped',true);}
+  }catch(e){log('DIAGERR','patchSetMode '+e,true);}}
 
-  ['click','touchstart','touchend','pointerdown','pointerup','change','input','resize','orientationchange','fullscreenchange','webkitfullscreenchange'].forEach(function(evt){
-    try{window.addEventListener(evt,scheduleDeep,true);document.addEventListener(evt,scheduleDeep,true);}catch(e){}
-  });
-  try{
-    document.addEventListener('click',function(ev){
-      var t=ev&&ev.target;
-      if(t&&t.id){
-        if(t.id==='btn-arrow')lastMode='arrow';
-        else if(t.id==='btn-freehand')lastMode='freehand';
-        else if(t.id==='btn-zone')lastMode='zone';
-        else if(t.id==='btn-text'||t.id==='btn-movement'||t.id==='tt236-rita-move')lastMode='';
+  function observe(){try{
+    OPTION_IDS.concat(TOOL_IDS).forEach(function(id){var el=document.getElementById(id);if(!el)return;
+      var mo=new MutationObserver(function(ms){ms.forEach(function(m){
+        if(m.type==='attributes')log('MUT.attr',id+' '+m.attributeName+'="'+(el.getAttribute(m.attributeName)||'')+'" stack?');
+        else log('MUT.child',id+' childList');
+      });});
+      mo.observe(el,{attributes:true,attributeFilter:['style','class','hidden','aria-hidden'],childList:true,subtree:false});
+    });
+    var bmo=new MutationObserver(function(ms){ms.forEach(function(m){log('MUT.body','class="'+document.body.className+'"');});});
+    bmo.observe(document.body,{attributes:true,attributeFilter:['class']});
+    var pmo=new MutationObserver(function(ms){ms.forEach(function(m){
+      if(containsWatched(m.target)||Array.from(m.addedNodes||[]).some(containsWatched)||Array.from(m.removedNodes||[]).some(containsWatched)){
+        log('MUT.tree','target='+nodeLabel(m.target)+' added='+Array.from(m.addedNodes||[]).map(nodeLabel).join(',')+' removed='+Array.from(m.removedNodes||[]).map(nodeLabel).join(','));
       }
-    },true);
+    });});
+    pmo.observe(document.body,{childList:true,subtree:true});
+    log('DIAG','observers installed',true);
+  }catch(e){log('DIAGERR','observe '+e,true);}}
+
+  function recordEvent(ev){try{
+    var t=ev.target&&ev.target.closest?ev.target.closest('button,[id],.tab,select,#pitch-svg,#pitch-wrapper'):ev.target;
+    lastEvent=ev.type+':'+nodeLabel(t);
+    if(ev.type==='click'||ev.type==='pointerdown'||ev.type==='touchstart'){
+      if(isWatchedNode(t)|| (t&&t.closest&&t.closest('#arrow-options,#freehand-options,#zone-options,#taktikbar,#tt236-rita-row,#tt252-ipad-rita-row'))){
+        log('EVENT',lastEvent,true);
+      }
+    }
   }catch(e){}
-  function setVersion(){
-    try{document.title='Taktiktavla TEST v952 ritval single owner';}catch(e){}
-    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v952 TEST';}catch(e){}
-    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='952 TEST';});}catch(e){}
   }
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',function(){wrapSetMode();setVersion();scheduleDeep();},{once:true});
-  }else{
-    wrapSetMode();setVersion();scheduleDeep();
-  }
-  setTimeout(function(){wrapSetMode();setVersion();scheduleDeep();},300);
-  setTimeout(function(){wrapSetMode();scheduleDeep();},1200);
+  ['pointerdown','touchstart','click','change','input'].forEach(function(evt){try{document.addEventListener(evt,recordEvent,true);window.addEventListener(evt,recordEvent,true);}catch(e){}});
+  ['resize','orientationchange','fullscreenchange','pageshow'].forEach(function(evt){try{window.addEventListener(evt,function(){lastEvent=evt;log('EVENT',evt,true);},true);}catch(e){}});
+
+  function init(){internal=true;installUi();internal=false;patchDomMoves();patchSetMode();observe();log('DIAG','v953 READONLY start',true);setTimeout(function(){log('DIAG+500','settled',true);},500);setTimeout(function(){log('DIAG+1500','settled',true);},1500);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
-<!-- === slut v952 TEST === -->
+<!-- === slut v953 DIAG READONLY === -->
