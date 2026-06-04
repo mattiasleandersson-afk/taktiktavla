@@ -45308,7 +45308,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v917 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v928 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -46111,14 +46111,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
+    try{document.title='Taktiktavla TEST v928 tavla ritkansla object observer narrow';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='917 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='928 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v917 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v928 TEST';
     }catch(e){}
   }
 
@@ -46155,8 +46155,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       });
       var startMo=function(){
         try{
-          if(moConnected914 || !document.body || isTaktikfilmAnimatingForObject916())return;
-          moBtn.observe(document.body,{childList:true,subtree:true});
+          if(moConnected914 || isTaktikfilmAnimatingForObject916())return;
+          var target=document.getElementById('topbar')||document.getElementById('taktikbar')||document.getElementById('fs-top-tools');
+          if(!target)return;
+          // v928: observera bara verktygsraderna, inte hela body.
+          // Body-observern vaknade av SVG/rit-DOM i Taktiktavla och kunde göra penna/pil hackigare.
+          moBtn.observe(target,{childList:true,subtree:true});
           moConnected914=true;
         }catch(e){}
       };
@@ -46173,7 +46177,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v917 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v928 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -46222,11 +46226,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v917 TEST === */
+/* === slut v928 TEST === */
 
 
 
-/* === v917 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v928 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46275,10 +46279,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v917 TEST === */
+/* === slut v928 TEST === */
 
 
-/* === v917 TEST: Taktiktavla formationsval applicerar även spelform ===
+/* === v928 TEST: Taktiktavla formationsval applicerar även spelform ===
    Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
 (function(){
   'use strict';
@@ -46315,12 +46319,12 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       box.dataset.tt771ButtonApply='1';
       box.addEventListener('click',function(ev){var btn=ev.target&&ev.target.closest?ev.target.closest('button.btn'):null; if(!btn||!box.contains(btn))return; ev.preventDefault();ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation(); var fmt=parseInt((byId('tt205-qf-format')||{}).value,10)||((typeof format!=='undefined'&&format)||11); applyFormationLocal(fmt,(btn.textContent||'').trim());},true);
     }
-    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
+    try{document.title='Taktiktavla TEST v928 tavla ritkansla object observer narrow';}catch(e){}
   }
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
-/* === slut v917 TEST === */
+/* === slut v928 TEST === */
 
 
 /* === v846 TEST: robust Ny film från taktiktavla + synlig modal från Taktiktavla-listan ===
