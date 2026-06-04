@@ -45337,7 +45337,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v741 TEST === */
 
 
-/* === v917 TEST: Objekt i Taktikfilm fullscreen ===
+/* === v934 TEST: Objekt i Taktikfilm fullscreen ===
    Bas: v762.
    Behåller v759/v762:s fungerande objektknapp i Taktiktavla/Snabbtavla och lagerpanel i Taktikfilm.
    Lägger till Taktikfilm redigeringsläge med strikt lägeskontroll och samma objektägare. */
@@ -46148,10 +46148,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='917 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='934 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v917 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v934 TEST';
     }catch(e){}
   }
 
@@ -46206,7 +46206,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 
 
-/* === v917 TEST: dölj lagerpanel/knappar i Matcher ===
+/* === v934 TEST: dölj lagerpanel/knappar i Matcher ===
    Bas: v750. Gäller bara huvudfliken Matcher/Match och rör inte lagerlogiken i Tavla/Taktikfilm. */
 (function(){
   'use strict';
@@ -46255,11 +46255,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,300);});
   else{setTimeout(apply,0);setTimeout(apply,300);}
 })();
-/* === slut v917 TEST === */
+/* === slut v934 TEST === */
 
 
 
-/* === v917 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
+/* === v934 TEST: återställ lagerpanel i Taktikfilm-redigering på desktop ===
    Bas: v759. Endast synlighet/placering av befintlig lagerpanel i Taktikfilm-redigering.
    Rör inte objektknappen eller objektägaren. */
 (function(){
@@ -46308,10 +46308,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(apply,0);setTimeout(apply,400);});
   else{setTimeout(apply,0);setTimeout(apply,400);}
 })();
-/* === slut v917 TEST === */
+/* === slut v934 TEST === */
 
 
-/* === v917 TEST: Taktiktavla formationsval applicerar även spelform ===
+/* === v934 TEST: Taktiktavla formationsval applicerar även spelform ===
    Bas: v770. Endast snabbformationsrutan i Taktiktavla på desktop. */
 (function(){
   'use strict';
@@ -46353,7 +46353,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
 })();
-/* === slut v917 TEST === */
+/* === slut v934 TEST === */
 
 
 /* === v846 TEST: robust Ny film från taktiktavla + synlig modal från Taktiktavla-listan ===
@@ -49487,7 +49487,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function setVersion931(){try{
-    var VERSION='Version 2 test v931';
+    var VERSION='Version 2 test v934';
     document.title='Taktiktavla';
     var ids=['version','app-version','version-label','app-version-label','ver','build-version'];
     ids.forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
@@ -49498,35 +49498,70 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v931 TEST === */
 
 
-/* === v933-tavla-ipad-ritrad-single-source-order ===
-   Bas: v931. Slutlig källnära radordning efter äldre v236/v239/v248/v252 och objektmodulen. */
+/* === v934-tavla-ipad-ritrad-order-taktikfilm-isolation ===
+   Bas: v933/v931. Behåller v933:s Tavla-ordning men isolerar den helt från Taktikfilm.
+   Orsak: v933:s slutnormalisering kunde köras i Taktikfilm eftersom #tt252-ipad-rita-row finns kvar i DOM,
+   och flyttade då #tt747-object-btn från Taktikfilm-raden. */
 (function(){
-  if(window.__tt933TavlaIpadRitRowOrder)return;
-  window.__tt933TavlaIpadRitRowOrder=true;
-  function isTavlaLike933(){
+  if(window.__tt934TavlaIpadRitRowOrder)return;
+  window.__tt934TavlaIpadRitRowOrder=true;
+  function activePanel934(){
     try{
-      if(document.body.classList.contains('fullscreen-portrait'))return false;
-      if(document.querySelector('.tab.on[data-panel="taktik"]'))return false;
+      var tab=document.querySelector('.tab.on[data-panel]');
+      if(tab)return String(tab.getAttribute('data-panel')||'');
+      var p=document.querySelector('.panel.on');
+      if(p&&p.id)return String(p.id).replace(/^panel-/,'');
+    }catch(e){}
+    return '';
+  }
+  function isTaktikfilm934(){
+    try{
+      if(activePanel934()==='taktik')return true;
       var pt=document.getElementById('panel-taktik');
-      if(pt&&pt.classList.contains('on'))return false;
-      return !!(document.body.classList.contains('tt718-tavla-active')||document.body.classList.contains('tt719-tavla-active')||document.body.classList.contains('tt733-tavla-active')||document.body.classList.contains('tt745-snabb-active')||document.getElementById('tt252-ipad-rita-row'));
+      if(pt&&pt.classList.contains('on'))return true;
+      if(document.body.classList.contains('tt688-taktikfilm-editor-active'))return true;
+      if(document.body.classList.contains('tt763-taktik-object-active'))return true;
+      if(document.body.classList.contains('tt764-taktik-object-fullscreen'))return true;
+      if(document.body.classList.contains('tt248-taktik-active'))return true;
+      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
+      if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null)return true;
+    }catch(e){}
+    return false;
+  }
+  function isTavlaOrSnabb934(){
+    try{
+      if(isTaktikfilm934())return false;
+      if(document.body.classList.contains('fullscreen-portrait'))return false;
+      var panel=activePanel934();
+      if(panel && panel!=='saves' && panel!=='snabb')return false;
+      return !!(
+        panel==='saves' ||
+        panel==='snabb' ||
+        document.body.classList.contains('tt718-tavla-active') ||
+        document.body.classList.contains('tt719-tavla-active') ||
+        document.body.classList.contains('tt733-tavla-active') ||
+        document.body.classList.contains('tt745-snabb-active') ||
+        document.body.classList.contains('tt756-snabb-object-active')
+      );
     }catch(e){return false;}
   }
-  function row933(){
+  function row934(){
     try{
       var r=document.getElementById('tt252-ipad-rita-row');
-      if(r && getComputedStyle(r).display!=='none')return r;
+      if(r && getComputedStyle(r).display!=='none' && !r.closest('#taktikbar'))return r;
       var z=document.getElementById('btn-zone');
-      if(z&&z.parentNode)return z.parentNode;
+      if(z&&z.parentNode&&!z.closest('#taktikbar'))return z.parentNode;
     }catch(e){}
     return null;
   }
-  function activeOpt933(){try{if(mode==='arrow')return 'arrow-options';if(mode==='freehand')return 'freehand-options';if(mode==='zone')return 'zone-options';}catch(e){}return null;}
-  function apply933(){
+  function activeOpt934(){try{if(mode==='arrow')return 'arrow-options';if(mode==='freehand')return 'freehand-options';if(mode==='zone')return 'zone-options';}catch(e){}return null;}
+  function apply934(){
     try{
-      if(!isTavlaLike933())return;
-      var row=row933(); if(!row)return;
-      var active=activeOpt933();
+      if(!isTavlaOrSnabb934())return;
+      var row=row934(); if(!row)return;
+      var obj=document.getElementById('tt747-object-btn');
+      if(obj && obj.closest && obj.closest('#taktikbar'))return;
+      var active=activeOpt934();
       var order=['tt236-rita-move','btn-arrow'];
       if(active==='arrow-options')order.push('arrow-options');
       order.push('btn-freehand');
@@ -49541,13 +49576,23 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       });
     }catch(e){}
   }
-  function schedule933(){apply933();setTimeout(apply933,0);setTimeout(apply933,40);setTimeout(apply933,120);}
-  var oldSetMode933=typeof setMode==='function'?setMode:null;
-  if(oldSetMode933 && !oldSetMode933.__tt933Wrapped){var wrapped=function(){var r=oldSetMode933.apply(this,arguments);schedule933();return r;};wrapped.__tt933Wrapped=true;setMode=wrapped;window.setMode=wrapped;}
-  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}setTimeout(schedule933,0);},true);
-  window.addEventListener('resize',function(){setTimeout(schedule933,80);});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule933);else schedule933();
-  setTimeout(schedule933,300);setTimeout(schedule933,1000);
-  window.tt933ApplyTavlaIpadRitRowOrder=apply933;
+  function schedule934(){
+    if(!isTavlaOrSnabb934())return;
+    apply934();setTimeout(apply934,0);setTimeout(apply934,40);setTimeout(apply934,120);
+  }
+  var oldSetMode934=typeof setMode==='function'?setMode:null;
+  if(oldSetMode934 && !oldSetMode934.__tt934Wrapped){
+    var wrapped=function(){var r=oldSetMode934.apply(this,arguments);schedule934();return r;};
+    wrapped.__tt934Wrapped=true;setMode=wrapped;window.setMode=wrapped;
+  }
+  document.addEventListener('click',function(ev){
+    try{if(!isTavlaOrSnabb934())return;if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}
+    setTimeout(schedule934,0);
+  },true);
+  window.addEventListener('resize',function(){setTimeout(schedule934,80);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule934);else schedule934();
+  setTimeout(schedule934,300);setTimeout(schedule934,1000);
+  window.tt933ApplyTavlaIpadRitRowOrder=function(){return;};
+  window.tt934ApplyTavlaIpadRitRowOrder=apply934;
 })();
-/* === slut v933-tavla-ipad-ritrad-single-source-order === */
+/* === slut v934-tavla-ipad-ritrad-order-taktikfilm-isolation === */
