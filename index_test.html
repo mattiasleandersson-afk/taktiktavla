@@ -8191,3 +8191,191 @@
 })();
 </script>
 <!-- === slut v942 TEST === -->
+
+
+<!-- === v947 TEST: Taktikfilm/Lager state-cleanup + robust lagerborttagning ===
+  Bas: v946 TEST.
+  Syfte:
+  1) När man lämnar Taktikfilm efter Lagerarbete ska Taktiktavla/Snabbtavla få tillbaka sina ritvalspaneler.
+  2) Ta bort lager ska även ta bort lagret ur Taktikfilm-stegens snapshots, annars kunde lager med objekt komma tillbaka.
+  Begränsning: index-only. Ingen Supabase, ingen app.js, ingen observer, ingen timer-loop.
+-->
+<style id="tt947-taktikfilm-layer-state-cleanup-css">
+  /* Säkerhetsnät: om Taktikfilms touch-ritvalsägare råkar ligga kvar när Tavla/Snabbtavla är aktiv
+     ska den inte fortsätta dölja de vanliga ritvalspanelerna. */
+  body.tt947-board-draw-owner:not(.tt688-taktikfilm-editor-active):not(.tt743-mobile-taktikfilm-active):not(.fullscreen-portrait) #arrow-options,
+  body.tt947-board-draw-owner:not(.tt688-taktikfilm-editor-active):not(.tt743-mobile-taktikfilm-active):not(.fullscreen-portrait) #freehand-options,
+  body.tt947-board-draw-owner:not(.tt688-taktikfilm-editor-active):not(.tt743-mobile-taktikfilm-active):not(.fullscreen-portrait) #zone-options{
+    width:auto !important;
+    height:auto !important;
+    max-width:min(420px, calc(100vw - 16px)) !important;
+    max-height:none !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    pointer-events:auto !important;
+  }
+</style>
+<script id="tt947-taktikfilm-layer-state-cleanup-js">
+(function(){
+  'use strict';
+  if(window.__tt947TaktikfilmLayerStateCleanup)return;
+  window.__tt947TaktikfilmLayerStateCleanup=true;
+
+  var OPTION_IDS=['arrow-options','freehand-options','zone-options'];
+  var OPTION_BY_MODE={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
+  var transientClasses=[
+    'tt681-taktikfilm-ritval-owner','tt666-taktik-desktop-layout',
+    'tt834-tf-touch-owner','tt834-tf-touch-options-open',
+    'tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen',
+    'tt822-ipad-taktikfilm-layer-context','tt823-ipad-taktikfilm-edit-touch',
+    'tt642-layer-panel-mobile-open'
+  ];
+
+  function byId(id){return document.getElementById(id);}
+  function visible(el){try{if(!el)return false;var cs=getComputedStyle(el);var r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>2&&r.height>2;}catch(e){return !!el;}}
+  function activePanel(){try{var t=document.querySelector('.tab.on[data-panel]');if(t)return String(t.getAttribute('data-panel')||'');}catch(e){} try{var p=document.querySelector('.panel.on');if(p&&p.id)return String(p.id).replace(/^panel-/,'');}catch(e){} return '';}
+  function currentMode(){try{if(typeof mode!=='undefined'&&mode)return String(mode);}catch(e){} try{return String(window.mode||'');}catch(e){} return '';}
+  function isTaktikLive(){try{if(activePanel()==='taktik'&&(document.body.classList.contains('tt688-taktikfilm-editor-active')||document.body.classList.contains('tt743-mobile-taktikfilm-active')||visible(byId('taktikbar'))))return true;}catch(e){} try{if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)return true;}catch(e){} try{if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null&&activePanel()==='taktik')return true;}catch(e){} return false;}
+  function isBoardLive(){try{if(document.body.classList.contains('tt733-tavla-active')||document.body.classList.contains('tt756-snabb-object-active'))return true;}catch(e){} var p=activePanel(); if(p==='saves'||p==='formations')return true; try{if(document.querySelector('.tab.on[data-panel="saves"],.tab.on[data-panel="formations"]'))return true;}catch(e){} return false;}
+
+  function restoreBoardDrawOptions(){
+    if(!document.body)return;
+    if(!isBoardLive()||isTaktikLive()){document.body.classList.remove('tt947-board-draw-owner');return;}
+    document.body.classList.add('tt947-board-draw-owner');
+    try{transientClasses.forEach(function(c){document.body.classList.remove(c);});}catch(e){}
+    try{var touch=byId('tt834-tf-touch-options');if(touch)touch.style.display='none';}catch(e){}
+    var pitch=byId('pitch-wrapper')||document.body;
+    var activeId=OPTION_BY_MODE[currentMode()]||null;
+    OPTION_IDS.forEach(function(id){
+      var el=byId(id); if(!el)return;
+      try{
+        el.classList.remove('tt681-active-option','tt674-taktik-options','tt679-active-option','tt678-active-option','tt676-active-option','tt677-active-option','tt291-active-option','tt238-rita-options','tt252-active-option');
+        if(pitch&&el.parentNode!==pitch)pitch.appendChild(el);
+        ['visibility','opacity','width','height','maxWidth','maxHeight','pointerEvents','transform','left','bottom'].forEach(function(k){el.style.removeProperty(k);});
+        el.style.position='absolute';
+        el.style.top='8px';
+        el.style.right='8px';
+        el.style.zIndex=(id==='arrow-options')?'5':'6';
+        el.style.display=(activeId===id)?'flex':'none';
+      }catch(e){}
+    });
+  }
+
+  function arrFromGlobal(name){try{if(name==='tacticObjects')return Array.isArray(window.tacticObjects)?window.tacticObjects:[];return Array.isArray(window[name])?window[name]:[];}catch(e){return [];}}
+  function setGlobalArr(name,val){
+    val=Array.isArray(val)?val:[];
+    try{window[name]=val;}catch(e){}
+    try{if(name==='arrows')arrows=val;else if(name==='labels')labels=val;else if(name==='freehandPaths')freehandPaths=val;else if(name==='zones')zones=val;else if(name==='tacticObjects')window.tacticObjects=val;}catch(e){}
+  }
+  function countInBundle(obj,layerId){
+    var n=0; obj=obj||{};
+    ['arrows','labels','freehandPaths','zones','tacticObjects'].forEach(function(name){
+      var arr=Array.isArray(obj[name])?obj[name]:[];
+      for(var i=0;i<arr.length;i++){if(((arr[i]&&arr[i].layerId)||'layer-1')===layerId)n++;}
+    });
+    return n;
+  }
+  function removeLayerFromBundle(obj,layerId){
+    var removed=0; if(!obj)return 0;
+    ['arrows','labels','freehandPaths','zones','tacticObjects'].forEach(function(name){
+      var arr=Array.isArray(obj[name])?obj[name]:[];
+      var before=arr.length;
+      obj[name]=arr.filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;});
+      removed+=before-obj[name].length;
+    });
+    try{
+      var fl=obj.freeLayers;
+      if(fl&&Array.isArray(fl.layers)){
+        fl.layers=fl.layers.filter(function(l){return l&&l.id!==layerId;});
+        if(fl.activeId===layerId)fl.activeId=(fl.layers[0]&&fl.layers[0].id)||'layer-1';
+      }
+    }catch(e){}
+    return removed;
+  }
+  function removeLayerFromGlobals(layerId){
+    var removed=0;
+    ['arrows','labels','freehandPaths','zones','tacticObjects'].forEach(function(name){
+      var arr=arrFromGlobal(name); var before=arr.length;
+      var next=arr.filter(function(o){return ((o&&o.layerId)||'layer-1')!==layerId;});
+      setGlobalArr(name,next); removed+=before-next.length;
+    });
+    try{if(window.selectedId)window.selectedId=null; selectedId=null;}catch(e){}
+    try{if(window.__tt638LastSelectedLayerObjectId)window.__tt638LastSelectedLayerObjectId=null;}catch(e){}
+    return removed;
+  }
+  function currentTaktik(){
+    try{if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null&&Array.isArray(window.taktikFilmer)&&window.taktikFilmer[editingTaktikIdx])return window.taktikFilmer[editingTaktikIdx];}catch(e){}
+    try{if(typeof taktikFilmer!=='undefined'&&typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null&&Array.isArray(taktikFilmer)&&taktikFilmer[editingTaktikIdx])return taktikFilmer[editingTaktikIdx];}catch(e){}
+    return null;
+  }
+  function countLayerInFilmOrGlobals(layerId){
+    var tk=currentTaktik(); var n=0;
+    if(tk&&Array.isArray(tk.steps)){for(var i=0;i<tk.steps.length;i++)n+=countInBundle(tk.steps[i],layerId);}
+    return Math.max(n,countInBundle(window,layerId));
+  }
+  function removeLayerFromFilm(layerId){
+    var tk=currentTaktik(); var removed=0;
+    if(tk&&Array.isArray(tk.steps)){
+      for(var i=0;i<tk.steps.length;i++){removed+=removeLayerFromBundle(tk.steps[i],layerId);}
+    }
+    return removed;
+  }
+  function normalizeLayerStateAfterDelete(layerId){
+    var st=window.__tt630FreeLayerState;
+    if(st&&Array.isArray(st.layers)){
+      st.layers=st.layers.filter(function(l){return l&&l.id!==layerId;});
+      if(!st.layers.length)st.layers=[{id:'layer-1',name:'Lager 1',visible:true,locked:false}];
+      if(st.activeId===layerId)st.activeId=(st.layers[0]&&st.layers[0].id)||'layer-1';
+      var max=0; st.layers.forEach(function(l){var m=String(l.id||'').match(/layer-(\d+)/); if(m)max=Math.max(max,parseInt(m[1],10)||0);});
+      st.nextNum=Math.max(st.nextNum||1,max+1,st.layers.length+1);
+    }
+  }
+  function interceptLayerDelete(ev){
+    var btn=null;
+    try{btn=ev.target&&ev.target.closest&&ev.target.closest('#tt616-layer-panel button[data-tt630-action="delete"]');}catch(e){}
+    if(!btn||btn.dataset.tt947Passthrough==='1')return;
+    var row=btn.closest&&btn.closest('[data-tt630-layer-id]'); if(!row)return;
+    var layerId=row.getAttribute('data-tt630-layer-id')||'layer-1';
+    var st=window.__tt630FreeLayerState;
+    if(!st||!Array.isArray(st.layers))return;
+    if(st.layers.length<2)return;
+
+    var layerName=layerId;
+    try{var layer=st.layers.filter(function(l){return l&&l.id===layerId;})[0]; if(layer&&layer.name)layerName=layer.name;}catch(e){}
+    var count=countLayerInFilmOrGlobals(layerId);
+    var inFilm=!!currentTaktik();
+    var msg=count>0
+      ? 'Ta bort lagret "'+layerName+'" och dess '+count+' objekt'+(inFilm?' från hela filmen':'')+'?'
+      : 'Ta bort det tomma lagret "'+layerName+'"?';
+    if(!confirm(msg)){
+      ev.preventDefault(); ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
+      try{if(typeof window.tt631RefreshFreeLayerPanel==='function')window.tt631RefreshFreeLayerPanel();}catch(e){}
+      return false;
+    }
+
+    ev.preventDefault(); ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();
+    try{if(inFilm&&typeof saveTaktikUndo==='function')saveTaktikUndo();else if(typeof saveUndo==='function')saveUndo();}catch(e){}
+    removeLayerFromGlobals(layerId);
+    if(inFilm)removeLayerFromFilm(layerId);
+    normalizeLayerStateAfterDelete(layerId);
+    try{if(typeof render==='function')render();}catch(e){}
+    try{if(typeof window.tt631RefreshFreeLayerPanel==='function')window.tt631RefreshFreeLayerPanel();}catch(e){}
+    try{if(typeof showToast==='function')showToast('Lager borttaget');}catch(e){}
+    return false;
+  }
+
+  function scheduleRestore(){setTimeout(restoreBoardDrawOptions,0);setTimeout(restoreBoardDrawOptions,80);setTimeout(restoreBoardDrawOptions,220);}
+  ['click','touchend','pointerup','keyup','resize','orientationchange','pageshow'].forEach(function(evt){
+    try{window.addEventListener(evt,scheduleRestore,true);document.addEventListener(evt,scheduleRestore,true);}catch(e){}
+  });
+  document.addEventListener('click',interceptLayerDelete,true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scheduleRestore,{once:true}); else scheduleRestore();
+
+  function setVersion(){try{document.title='Taktiktavla TEST v947 layer state cleanup';}catch(e){}
+    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v947 TEST';}catch(e){}
+    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='947 TEST';});}catch(e){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion,{once:true});else setVersion();
+})();
+</script>
+<!-- === slut v947 TEST === -->
