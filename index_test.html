@@ -3053,7 +3053,7 @@
 }
 </style>
 
-<script src="app_test.js?v=940-layer-button-up-viewport-menus"></script>
+<script src="app_test.js?v=941-taktikfilm-hidden-topbar-locked"></script>
 
 <script>
 (function(){
@@ -6511,6 +6511,142 @@
 
 <!-- v927: v917 sidework-panel borttagen. -->
 
+
+
+
+<!-- === v941 TEST: Taktikfilm låst redigeringsläge + dold huvudmeny === -->
+<style id="tt941-taktikfilm-hidden-topbar-css">
+  /* v941: när en Taktikfilm faktiskt är öppnad/redigeras ska huvudmenyn inte ta plats
+     och användaren ska tillbaka via Avsluta innan byte till annan huvudfunktion.
+     Filbiblioteket för Taktikfilm lämnas öppet med huvudmeny synlig så man inte fastnar. */
+  body.tt941-taktikfilm-locked:not(.fullscreen-portrait) #topbar{
+    display:none!important;
+  }
+  body.tt941-taktikfilm-locked:not(.fullscreen-portrait) #pitch-wrapper{
+    min-height:0!important;
+  }
+</style>
+<script id="tt941-taktikfilm-hidden-topbar-script">
+(function(){
+  if(window.__tt941TaktikfilmHiddenTopbarLockedInstalled)return;
+  window.__tt941TaktikfilmHiddenTopbarLockedInstalled=true;
+
+  function byId(id){return document.getElementById(id);}
+  function visible(el){
+    try{
+      if(!el)return false;
+      var cs=getComputedStyle(el);
+      if(cs.display==='none'||cs.visibility==='hidden'||cs.opacity==='0')return false;
+      var r=el.getBoundingClientRect();
+      return r.width>0&&r.height>0;
+    }catch(e){return false;}
+  }
+  function taktikPanelActive(){
+    try{
+      if(document.querySelector('.tab.on[data-panel="taktik"]'))return true;
+      var p=byId('panel-taktik');
+      return !!(p&&p.classList.contains('on'));
+    }catch(e){return false;}
+  }
+  function filmIsOpen(){
+    try{if(typeof playback!=='undefined'&&playback)return true;}catch(e){}
+    try{if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)return true;}catch(e){}
+    try{if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null)return true;}catch(e){}
+    try{if(visible(byId('taktikbar')))return true;}catch(e){}
+    try{
+      var edit=byId('edit-taktik-ui');
+      if(edit&&visible(edit)){
+        var title=byId('edit-taktik-title-lbl');
+        var txt=String(title&&title.textContent||'');
+        if(txt.trim())return true;
+      }
+    }catch(e){}
+    try{if(visible(byId('rec-ui')))return true;}catch(e){}
+    return false;
+  }
+  function locked(){
+    return !!(taktikPanelActive()&&filmIsOpen()&&!document.body.classList.contains('fullscreen-portrait'));
+  }
+  function apply(){
+    var on=locked();
+    document.body.classList.toggle('tt941-taktikfilm-locked',on);
+    try{
+      var tb=byId('topbar');
+      if(tb)tb.setAttribute('aria-hidden',on?'true':'false');
+    }catch(e){}
+  }
+
+  function softMessage(){
+    try{
+      if(typeof showToast==='function'){showToast('Avsluta Taktikfilm först.');return;}
+    }catch(e){}
+    try{console.log('v941: Avsluta Taktikfilm först.');}catch(e){}
+  }
+
+  document.addEventListener('click',function(ev){
+    try{
+      if(!locked())return;
+      var tab=ev.target&&ev.target.closest&&ev.target.closest('.tab[data-panel]');
+      if(tab&&tab.getAttribute('data-panel')!=='taktik'){
+        ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+        softMessage();
+        apply();
+      }
+    }catch(e){}
+  },true);
+
+  document.addEventListener('touchstart',function(ev){
+    try{
+      if(!locked())return;
+      var tab=ev.target&&ev.target.closest&&ev.target.closest('.tab[data-panel]');
+      if(tab&&tab.getAttribute('data-panel')!=='taktik'){
+        ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+        softMessage();
+        apply();
+      }
+    }catch(e){}
+  },{capture:true,passive:false});
+
+  ['click','touchend','pointerup','resize','orientationchange','fullscreenchange'].forEach(function(evt){
+    try{window.addEventListener(evt,function(){setTimeout(apply,0);setTimeout(apply,80);setTimeout(apply,300);},true);}catch(e){}
+  });
+  try{
+    var mo=new MutationObserver(function(){setTimeout(apply,0);setTimeout(apply,80);});
+    function startObserve(){
+      ['topbar','taktikbar','panel-taktik','edit-taktik-ui','rec-ui','bottompanel'].forEach(function(id){
+        var el=byId(id);
+        if(el)mo.observe(el,{attributes:true,attributeFilter:['class','style','aria-hidden'],childList:false,subtree:false});
+      });
+      mo.observe(document.body,{attributes:true,attributeFilter:['class']});
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startObserve,{once:true}); else startObserve();
+  }catch(e){}
+
+  ['startPlayback','openEditTaktik','stopPlayback','exitEditTaktik'].forEach(function(name){
+    try{
+      var fn=window[name];
+      if(typeof fn==='function'&&!fn._tt941Wrapped){
+        window[name]=function(){
+          var r=fn.apply(this,arguments);
+          setTimeout(apply,0);setTimeout(apply,80);setTimeout(apply,300);
+          return r;
+        };
+        window[name]._tt941Wrapped=true;
+      }
+    }catch(e){}
+  });
+
+  function setVersion(){
+    try{document.title='Taktiktavla TEST v941 taktikfilm dold huvudmeny';}catch(e){}
+    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v941 TEST';}catch(e){}
+    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='941 TEST';});}catch(e){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion();apply();},{once:true});
+  else{setVersion();apply();}
+  setTimeout(apply,500);setTimeout(apply,1200);
+})();
+</script>
+<!-- === slut v941 TEST === -->
 
 </body>
 </html>
