@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v892 hastighetskurva</title>
+<title>Taktiktavla TEST v925 ritverktyg ren object-index</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -2371,7 +2371,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v924 ritverktyg jämförelsediagnos</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v925 ritverktyg ren object-index</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -3053,7 +3053,7 @@
 }
 </style>
 
-<script src="app_test.js?v=924-ritverktyg-jamforelsediagnos"></script>
+<script src="app_test.js?v=925-ritverktyg-ren-object-index"></script>
 
 <script>
 (function(){
@@ -6508,216 +6508,14 @@
 </script>
 
 
-<script id="tt912-sidework-counter-panel">
-(function(){
-  if(window.__tt912PanelInstalled)return;
-  window.__tt912PanelInstalled=true;
-  function diag(){
-    if(!window.__tt912SideworkDiag){
-      var started=Date.now();
-      window.__tt912SideworkDiag={started:started,counters:{},reset:function(){this.started=Date.now();this.counters={};},mark:function(name){this.counters[name]=(this.counters[name]||0)+1;},report:function(){return makeReport();}};
-      window.__tt912Count=function(name){try{window.__tt912SideworkDiag.mark(name);}catch(e){}};
-    }
-    return window.__tt912SideworkDiag;
-  }
-  function mode(){
-    try{
-      if(document.body&&document.body.classList.contains('fullscreen-portrait'))return 'Taktikfilm fullscreen';
-      if(document.body&&(document.body.classList.contains('tt248-taktik-active')||document.body.classList.contains('tt291-taktik-active')))return 'Taktikfilm redigering';
-      if(document.querySelector('.tab.on[data-panel="matches"]'))return 'Matcher';
-      if(document.querySelector('.tab.on[data-panel="saves"]'))return 'Taktiktavla';
-      if(document.querySelector('.tab.on[data-panel="formations"]'))return 'Snabbtavla/formations';
-    }catch(e){}
-    return 'okänt';
-  }
-  function makeReport(){
-    var d=diag(), secs=Math.max(0.1,(Date.now()-d.started)/1000), arr=[];
-    Object.keys(d.counters||{}).forEach(function(k){arr.push([k,d.counters[k],Math.round(d.counters[k]*60/secs)]);});
-    arr.sort(function(a,b){return b[1]-a[1];});
-    var lines=[];
-    lines.push('Taktiktavla sidework-counter v917 object-deferred-sleep + visual-coalesce');
-    lines.push('Bas: v911 TEST');
-    lines.push('Tid: '+new Date().toISOString());
-    lines.push('Läge: '+mode());
-    lines.push('Mättid: '+secs.toFixed(1)+' s');
-    lines.push('');
-    lines.push('Anrop sedan nollställning:');
-    if(!arr.length)lines.push('  inga fångade');
-    arr.slice(0,24).forEach(function(r){lines.push('  '+r[1]+' × '+r[0]+'  (~'+r[2]+'/min)');});
-    lines.push('');
-    lines.push('Obs: v917 räknar utvalda funktionsanrop, fördröjer objektknappens sidoarbete under aktiv Taktikfilm-visual-frame och behåller v915:s visuella coalesce. Ingen DOM-räkning.');
-    return lines.join('\n');
-  }
-  function ensurePanel(){
-    if(document.getElementById('tt912-sidework-panel'))return;
-    var box=document.createElement('div');
-    box.id='tt912-sidework-panel';
-    box.style.cssText='position:fixed;left:8px;bottom:8px;z-index:2147483647;background:rgba(7,18,11,.94);color:#dff6e6;border:1px solid #2d4a35;border-radius:10px;padding:8px;font:12px system-ui,sans-serif;max-width:min(420px,calc(100vw - 16px));box-shadow:0 6px 20px rgba(0,0,0,.35)';
-    box.innerHTML='<div style="font-weight:800;color:#4ae87a;margin-bottom:5px">v917 sidework (bakgrund)</div><div id="tt912-sidework-short" style="white-space:pre-wrap;max-height:110px;overflow:auto;margin-bottom:6px"></div><button id="tt912-reset" type="button">Nollställ</button> <button id="tt912-copy" type="button">Kopiera</button> <button id="tt912-hide" type="button">Dölj</button>';
-    document.body.appendChild(box);
-    document.getElementById('tt912-reset').addEventListener('click',function(){diag().reset();update();});
-    document.getElementById('tt912-copy').addEventListener('click',function(){var txt=makeReport();try{navigator.clipboard.writeText(txt);}catch(e){};});
-    document.getElementById('tt912-hide').addEventListener('click',function(){box.style.display='none';showMini();});
-  }
-  function showMini(){
-    if(document.getElementById('tt912-mini'))return;
-    var b=document.createElement('button');
-    b.id='tt912-mini';b.type='button';b.textContent='917';
-    b.style.cssText='position:fixed;left:8px;bottom:8px;z-index:2147483647;border:1px solid #2d4a35;background:#07120b;color:#4ae87a;border-radius:999px;padding:6px 8px;font:700 12px system-ui,sans-serif';
-    b.onclick=function(){var box=document.getElementById('tt912-sidework-panel');if(box)box.style.display='block';b.remove();};
-    document.body.appendChild(b);
-  }
-  function update(){
-    try{
-      ensurePanel();
-      var d=diag(), secs=Math.max(0.1,(Date.now()-d.started)/1000), keys=Object.keys(d.counters||{}).sort(function(a,b){return (d.counters[b]||0)-(d.counters[a]||0);});
-      var text='Läge: '+mode()+'\n'+keys.slice(0,6).map(function(k){return k+': '+d.counters[k]+' (~'+Math.round(d.counters[k]*60/secs)+'/min)';}).join('\n');
-      if(!keys.length)text+='\ninga fångade anrop';
-      var el=document.getElementById('tt912-sidework-short');if(el)el.textContent=text;
-    }catch(e){}
-  }
-  function start(){diag();ensurePanel();update();setInterval(update,1000);} 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-})();
+
+<!-- v925: v917 sidework-/diagnospanel borttagen för rent känslotest. -->
+
+
+
+<script id="tt925-title-final">
+(function(){function t(){try{document.title='Taktiktavla TEST v925 ritverktyg ren object-index';}catch(e){}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',t,{once:true});else t();setTimeout(t,600);setTimeout(t,1800);})();
 </script>
-
-
-<script id="tt924-draw-tools-compare-diagnosis">
-(function(){
-  'use strict';
-  if(window.__tt924DrawCompareInstalled)return;
-  window.__tt924DrawCompareInstalled=true;
-  var started=Date.now();
-  var counters={};
-  var events=[];
-  var maxEvents=180;
-  var lastSig={};
-  function now(){return ((Date.now()-started)/1000).toFixed(1)+'s';}
-  function byId(id){return document.getElementById(id);}
-  function shortEl(el){try{if(!el)return 'okänt';var s=(el.tagName||'').toLowerCase();if(el.id)s+='#'+el.id;var txt=(el.textContent||'').trim().replace(/\s+/g,' ');if(txt)s+=' text="'+txt.slice(0,28)+'"';return s;}catch(e){return 'okänt';}}
-  function mode(){
-    try{
-      var b=document.body;
-      if(b&&b.classList.contains('fullscreen-portrait'))return 'fullscreen';
-      if(b&&(b.classList.contains('tt248-taktik-active')||b.classList.contains('tt291-taktik-active')))return 'Taktikfilm';
-      if(document.querySelector('.tab.on[data-panel="saves"]')||b.classList.contains('tt733-tavla-active')||b.classList.contains('tt718-tavla-active')||b.classList.contains('tt719-tavla-active'))return 'Taktiktavla';
-      if(document.querySelector('.tab.on[data-panel="formations"]')||b.classList.contains('tt745-snabb-active')||b.classList.contains('tt756-snabb-object-active'))return 'Snabbtavla';
-      if(document.querySelector('.tab.on[data-panel="matches"]'))return 'Matcher';
-    }catch(e){}
-    return 'okänt';
-  }
-  function bodyFlags(){try{return Array.from(document.body.classList).filter(function(c){return /^tt(236|238|239|248|252|291|718|719|733|745|747|756|834)/.test(c)||c==='fullscreen-portrait';}).join(' ');}catch(e){return '';}}
-  function toolNameFromTarget(t){
-    try{
-      var el=t&&t.closest&&t.closest('button,#arrow-options,#freehand-options,#zone-options,#tt747-object-btn,#tt747-object-panel,#tt252-ipad-rita-row');
-      if(!el)return '';
-      if(el.id==='btn-arrow')return 'pil';
-      if(el.id==='btn-freehand')return 'frihand';
-      if(el.id==='btn-zone')return 'zon/fyrkant';
-      if(el.id==='btn-text')return 'text';
-      if(el.id==='tt747-object-btn')return 'kon/objekt';
-      if(el.id)return el.id;
-      return shortEl(el);
-    }catch(e){return '';}
-  }
-  function snapshot(){
-    var ids=['tt252-ipad-rita-row','btn-arrow','arrow-options','btn-freehand','freehand-options','btn-zone','zone-options','tt747-object-btn','tt747-object-panel','tt236-rita-move','btn-text'];
-    return ids.map(function(id){
-      var el=byId(id);
-      if(!el)return id+':-';
-      var parent=el.parentNode?(el.parentNode.id||el.parentNode.tagName||'parent'):'';
-      var idx='';
-      try{idx=Array.prototype.indexOf.call(el.parentNode.children,el);}catch(e){}
-      var cs={display:'',visibility:''};
-      try{cs=getComputedStyle(el);}catch(e){}
-      var r={left:0,top:0,width:0,height:0};
-      try{r=el.getBoundingClientRect();}catch(e){}
-      return id+'@'+parent+'#'+idx+' '+cs.display+'/'+cs.visibility+' '+Math.round(r.left)+','+Math.round(r.top)+','+Math.round(r.width)+'x'+Math.round(r.height)+' '+(el.className||'').toString().replace(/\s+/g,'.');
-    }).join(' | ');
-  }
-  function addEvent(label,force){
-    try{
-      var sig=snapshot();
-      if(!force && lastSig[label]===sig)return;
-      lastSig[label]=sig;
-      events.push(now()+' | '+mode()+' | '+label+' | '+sig+' | body: '+bodyFlags());
-      if(events.length>maxEvents)events.shift();
-    }catch(e){}
-  }
-  function count(name){counters[name]=(counters[name]||0)+1;}
-  window.__tt924Count=function(name){try{count(name+' ['+mode()+']');}catch(e){}};
-  function reset(){started=Date.now();counters={};events=[];lastSig={};addEvent('reset',true);update();}
-  function report(){
-    var secs=Math.max(0.1,(Date.now()-started)/1000);
-    var arr=Object.keys(counters).map(function(k){return [k,counters[k],Math.round(counters[k]*60/secs)];}).sort(function(a,b){return b[1]-a[1];});
-    var lines=[];
-    lines.push('Taktiktavla ritverktyg jämförelsediagnos v924');
-    lines.push('Bas: v917 TEST');
-    lines.push('Tid: '+new Date().toISOString());
-    lines.push('Aktuellt läge: '+mode());
-    lines.push('Mättid: '+secs.toFixed(1)+' s');
-    lines.push('Bodyflaggor: '+bodyFlags());
-    lines.push('');
-    lines.push('Funktionsanrop per läge sedan nollställning:');
-    if(!arr.length)lines.push('  inga fångade');
-    arr.slice(0,60).forEach(function(r){lines.push('  '+r[1]+' × '+r[0]+'  (~'+r[2]+'/min)');});
-    lines.push('');
-    lines.push('Senaste verktygs-/rad-händelser:');
-    if(!events.length)lines.push('  inga händelser');
-    events.slice(-80).forEach(function(e){lines.push('  '+e);});
-    lines.push('');
-    lines.push('Instruktion: Nollställ, tryck samma ritverktyg i Snabbtavla och Taktiktavla, kopiera. Ingen fix, ingen DOM-bred räkning.');
-    return lines.join('\n');
-  }
-  function ensurePanel(){
-    if(byId('tt924-panel'))return;
-    var box=document.createElement('div');
-    box.id='tt924-panel';
-    box.style.cssText='position:fixed;right:8px;bottom:8px;z-index:2147483647;background:rgba(18,12,35,.95);color:#eee7ff;border:1px solid #6d5dbb;border-radius:10px;padding:8px;font:12px system-ui,sans-serif;max-width:min(460px,calc(100vw - 16px));box-shadow:0 6px 20px rgba(0,0,0,.35)';
-    box.innerHTML='<div style="font-weight:800;color:#cdbdff;margin-bottom:5px">v924 rit-jämförelse</div><div id="tt924-short" style="white-space:pre-wrap;max-height:120px;overflow:auto;margin-bottom:6px"></div><button id="tt924-reset" type="button">Nollställ</button> <button id="tt924-copy" type="button">Kopiera</button> <button id="tt924-hide" type="button">Dölj</button>';
-    document.body.appendChild(box);
-    byId('tt924-reset').addEventListener('click',function(){reset();});
-    byId('tt924-copy').addEventListener('click',function(){var txt=report();try{navigator.clipboard.writeText(txt);}catch(e){};addEvent('copy',true);update();});
-    byId('tt924-hide').addEventListener('click',function(){box.style.display='none';showMini();});
-  }
-  function showMini(){
-    if(byId('tt924-mini'))return;
-    var b=document.createElement('button');
-    b.id='tt924-mini';b.type='button';b.textContent='924 rit';
-    b.style.cssText='position:fixed;right:8px;bottom:8px;z-index:2147483647;border:1px solid #6d5dbb;background:#120c23;color:#cdbdff;border-radius:999px;padding:6px 8px;font:700 12px system-ui,sans-serif';
-    b.onclick=function(){var box=byId('tt924-panel');if(box)box.style.display='block';b.remove();};
-    document.body.appendChild(b);
-  }
-  function update(){
-    try{
-      ensurePanel();
-      var secs=Math.max(0.1,(Date.now()-started)/1000);
-      var keys=Object.keys(counters).sort(function(a,b){return (counters[b]||0)-(counters[a]||0);});
-      var text='Läge: '+mode()+'\n'+keys.slice(0,8).map(function(k){return k+': '+counters[k]+' (~'+Math.round(counters[k]*60/secs)+'/min)';}).join('\n');
-      if(!keys.length)text+='\ninga fångade anrop';
-      var el=byId('tt924-short');if(el)el.textContent=text;
-    }catch(e){}
-  }
-  function maybeToolEvent(ev){
-    try{
-      var t=ev.target;
-      if(t&&t.closest&&t.closest('#tt924-panel,#tt924-mini,#tt912-sidework-panel,#tt912-mini'))return;
-      var name=toolNameFromTarget(t);
-      if(!name)return;
-      count('event.'+ev.type+'.'+name+' ['+mode()+']');
-      addEvent(ev.type+' '+name,true);
-      setTimeout(function(){addEvent(ev.type+' '+name+' +80',false);update();},80);
-      setTimeout(function(){addEvent(ev.type+' '+name+' +350',false);update();},350);
-    }catch(e){}
-  }
-  ['pointerdown','pointerup','touchend','click'].forEach(function(ev){document.addEventListener(ev,maybeToolEvent,true);});
-  function start(){ensurePanel();reset();setInterval(update,1000);} 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  try{window.tt924DrawCompare={report:report,reset:reset};}catch(e){}
-})();
-</script>
-<!-- === v924 TEST: ritverktyg jämförelsediagnos Snabbtavla vs Taktiktavla. Ingen fix. === -->
-
 </body>
 </html>
 
@@ -8178,7 +7976,7 @@
 <!-- === v898 TEST: versionslabel för ren Taktikfilm-listfix + V2-hotfixar === -->
 <script>
 (function(){
-  function setTitle(){try{document.title='Taktiktavla TEST v924 ritverktyg jämförelsediagnos';}catch(e){}}
+  function setTitle(){try{document.title='Taktiktavla TEST v911 matcher-only utan animationstapp';}catch(e){}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setTitle,{once:true});else setTitle();
   setTimeout(setTitle,500);
 })();
