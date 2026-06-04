@@ -2347,6 +2347,37 @@
     overflow:hidden !important;
   }
 </style>
+
+<style id="tt944-taktikfilm-step-list-margins-css">
+  /*
+    v944 TEST: endast marginal/padding i Taktikfilmens steglista.
+    Syfte: sista steget ska inte klippas i botten/sidorna när topbaren är dold.
+    Ingen JS, ingen meny-/ritlogik.
+  */
+  body.tt688-taktikfilm-editor-active #edit-taktik-steps{
+    box-sizing:border-box !important;
+    width:100% !important;
+    max-width:100% !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    padding:4px 8px calc(20px + env(safe-area-inset-bottom, 0px)) 8px !important;
+    scroll-padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body.tt688-taktikfilm-editor-active #edit-taktik-steps .row{
+    box-sizing:border-box !important;
+    max-width:100% !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+  }
+  body.tt688-taktikfilm-editor-active #edit-taktik-steps .row:last-child{
+    margin-bottom:calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body.fullscreen-portrait.tt743-mobile-taktikfilm-fullscreen #edit-taktik-steps{
+    padding-bottom:calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+    scroll-padding-bottom:calc(32px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+</style>
+
 </head>
 <body>
 
@@ -2392,7 +2423,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v943 taktikfilm css-only hidden topbar</span>
+  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v944 taktikfilm step list margins</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -3074,7 +3105,7 @@
 }
 </style>
 
-<script src="app_test.js?v=943-taktikfilm-css-only-hidden-topbar"></script>
+<script src="app_test.js?v=944-taktikfilm-step-list-margins"></script>
 
 <script>
 (function(){
