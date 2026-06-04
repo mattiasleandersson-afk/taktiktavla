@@ -26308,8 +26308,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
     // Exakt Tavla-ordning enligt helskärmsraden, men utan rörelsepil och utan dagsljus.
     // v938: kon/objektknappen måste ingå i samma grundordning som övriga Tavla-knappar.
+    // v954: flytta inte om samma fysiska knappar vid varje sync/klick.
+    // appendChild på ett befintligt barn triggar remove/add och gjorde att ritval/kon blinkade.
     [move,arrow,free,zone,objectBtn,text,clear,undo,reset].forEach(function(b){
-      if(b)bar.appendChild(b);
+      if(b && b.parentNode!==bar)bar.appendChild(b);
     });
 
     // Rörelsepil finns kvar för Taktikfilm, men ska inte synas på Tavla.
@@ -26320,7 +26322,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       mv.setAttribute("aria-label","Rörelsebana");
       if(isTaktikActive236()){
         mv.style.removeProperty("display");
-        bar.appendChild(mv);
+        if(mv.parentNode!==bar)bar.appendChild(mv);
       }else{
         // På Tavla ska rörelsepilens knapp inte synas alls, men funktionen lämnas orörd för Taktikfilm.
         mv.style.setProperty("display","none","important");
@@ -26430,18 +26432,23 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     document.head.appendChild(st);
   }
 
+  function isAnyFullscreen238(){
+    try{return document.body.classList.contains("fullscreen-portrait") || document.body.classList.contains("tt758-object-fullscreen") || document.body.classList.contains("tt764-taktik-object-fullscreen");}
+    catch(e){return false;}
+  }
+
   function moveOptionsIntoRita238(){
     try{
-      if(document.body.classList.contains("fullscreen-portrait"))return;
+      if(isAnyFullscreen238())return;
       if(document.querySelector('.tab.on[data-panel="taktik"]') || (document.getElementById('panel-taktik')&&document.getElementById('panel-taktik').classList.contains('on')))return;
       var bar=ritaBar238();
       if(!bar)return;
       bar.classList.add("tt238-rita-scrollbar");
+      // v954: v238 får bara märka/styla. Den får inte längre flytta ritvalspanelerna.
+      // v291 äger fysisk placering/visning av arrow/freehand/zone-options.
       ["arrow-options","freehand-options","zone-options"].forEach(function(id){
         var el=document.getElementById(id);
-        if(!el)return;
-        el.classList.add("tt238-rita-options");
-        if(el.parentNode!==bar)bar.appendChild(el);
+        if(el)el.classList.add("tt238-rita-options");
       });
     }catch(e){}
   }
@@ -26462,9 +26469,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function apply238(){
     setVersion238();
     injectStyle238();
-    if(typeof window.tt236ApplyTavlaRitaToolbar==="function"){
-      try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
-    }
+    // v954: kalla inte om v236 här. v236 kör egen init/sync och upprepade korsanrop
+    // flyttade samma knappar flera gånger per klick.
     moveOptionsIntoRita238();
   }
 
@@ -26539,29 +26545,25 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     document.head.appendChild(st);
   }
 
+  function isAnyFullscreen239(){
+    try{return document.body.classList.contains("fullscreen-portrait") || document.body.classList.contains("tt758-object-fullscreen") || document.body.classList.contains("tt764-taktik-object-fullscreen");}
+    catch(e){return false;}
+  }
+
   function moveOptionsNextToTool239(){
     try{
       setVersion239();
-      if(document.body.classList.contains("fullscreen-portrait"))return;
+      if(isAnyFullscreen239())return;
       if(document.querySelector('.tab.on[data-panel="taktik"]') || (document.getElementById('panel-taktik')&&document.getElementById('panel-taktik').classList.contains('on')))return;
       var bar=ritaBar239();
       if(!bar)return;
       bar.classList.add("tt238-rita-scrollbar");
-
-      var pairs=[
-        ["arrow-options","btn-arrow"],
-        ["freehand-options","btn-freehand"],
-        ["zone-options","btn-zone"]
-      ];
-
-      // Sätt bakifrån så ordningen blir: pil + pilval, frihand + frihandsval, zon + zonval.
-      for(var i=pairs.length-1;i>=0;i--){
-        var opt=document.getElementById(pairs[i][0]);
-        var btn=document.getElementById(pairs[i][1]);
-        if(!opt||!btn)continue;
-        opt.classList.add("tt238-rita-options");
-        putAfter239(opt,btn);
-      }
+      // v954: v239 får inte längre flytta valpanelerna bredvid knapparna.
+      // Det var den konkreta DOM-kedjan i diagnosen: moveOptionsNextToTool239 -> sync248/schedule252.
+      ["arrow-options","freehand-options","zone-options"].forEach(function(id){
+        var el=document.getElementById(id);
+        if(el)el.classList.add("tt238-rita-options");
+      });
     }catch(e){}
   }
 
@@ -26581,9 +26583,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function apply239(){
     setVersion239();
     injectStyle239();
-    if(typeof window.tt236ApplyTavlaRitaToolbar==="function"){
-      try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
-    }
+    // v954: inget korsanrop till v236 här.
     moveOptionsNextToTool239();
   }
 
@@ -26673,6 +26673,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return null;
   }
 
+  function isAnyFullscreen248(){
+    try{return document.body.classList.contains('fullscreen-portrait') || document.body.classList.contains('tt758-object-fullscreen') || document.body.classList.contains('tt764-taktik-object-fullscreen');}
+    catch(e){return false;}
+  }
+
   function injectStyle248(){
     if(document.getElementById('tt248-always-open-style'))return;
     var st=document.createElement('style');
@@ -26681,6 +26686,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       'body:not(.fullscreen-portrait) .tt248-rita-menu-button,body:not(.fullscreen-portrait) [data-tt248-rita-button="1"],body:not(.fullscreen-portrait) button[title="Rita"],body:not(.fullscreen-portrait) button[aria-label="Rita"]{display:none!important}',
       'body:not(.fullscreen-portrait) .tt248-tavla-rita-row{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:4px!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;max-width:100%!important;scrollbar-width:thin!important;padding-bottom:2px!important}',
       'body:not(.fullscreen-portrait).tt248-taktik-active .tt248-tavla-rita-row{display:none!important}',
+      'body.tt758-object-fullscreen .tt248-tavla-rita-row,body.tt764-taktik-object-fullscreen .tt248-tavla-rita-row{display:none!important}',
       'body:not(.fullscreen-portrait):not(.tt248-taktik-active) #tt236-rita-move,',
       'body:not(.fullscreen-portrait):not(.tt248-taktik-active) #btn-arrow,',
       'body:not(.fullscreen-portrait):not(.tt248-taktik-active) #btn-freehand,',
@@ -26738,13 +26744,20 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       setVersion248();
       injectStyle248();
 
-      // Låt de fungerande 236/239-byggblocken skapa/flytta knapparna först.
-      if(typeof window.tt236ApplyTavlaRitaToolbar==='function'){
-        try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
+      var fs954=isAnyFullscreen248();
+      var taktik=isTaktikActive248();
+      document.body.classList.toggle('tt248-taktik-active',!!taktik);
+
+      // v954: i helskärm och Taktikfilm ska v248 inte starta hela gamla
+      // kedjan v236 -> v239 -> v248 -> v252. Den kedjan syntes i diagnosen
+      // som upprepade appendChild/insertBefore och gav hopp/blink.
+      if(fs954){
+        var fsBar=ritaBar248();
+        if(fsBar)hide248(fsBar);
+        return;
       }
-      if(typeof window.tt239MoveNormalTavlaOptionsNextToTool==='function'){
-        try{window.tt239MoveNormalTavlaOptionsNextToTool();}catch(e){}
-      }
+
+      // v954: v236/v239 kör egen init. v248 ska inte kalla dem igen på varje klick.
 
       var taktik=isTaktikActive248();
       document.body.classList.toggle('tt248-taktik-active',!!taktik);
@@ -26900,9 +26913,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return false;
   }
 
+  function isAnyFullscreen252(){
+    try{return document.body.classList.contains('fullscreen-portrait') || document.body.classList.contains('tt758-object-fullscreen') || document.body.classList.contains('tt764-taktik-object-fullscreen');}
+    catch(e){return false;}
+  }
+
   function isIpadLike252(){
     try{
-      if(document.body.classList.contains('fullscreen-portrait'))return false;
+      if(isAnyFullscreen252())return false;
       var w=Math.max(window.innerWidth||0,document.documentElement.clientWidth||0);
       var h=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
       var minSide=Math.min(w,h),maxSide=Math.max(w,h);
@@ -26977,15 +26995,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       setVersion252();
       injectStyle252();
 
-      if(typeof window.tt248AlwaysOpenRitaRowNoToggle==='function'){
-        try{window.tt248AlwaysOpenRitaRowNoToggle();}catch(e){}
-      }
+      // v954: kalla inte v248 här. Det skapade en korssync-loop där v252 -> v248 -> v236/v239
+      // flyttade samma knappar/paneler flera gånger efter varje klick.
 
       var useIpad=isIpadLike252();
       var taktik=isTaktikActive252();
       // v291: den separata Tavla-raden ska bara äga ritvalen i vanligt Tavla-läge.
       // I Taktikfilm och helskärm styrs panelerna centralt och får inte flyttas in i den gömda raden.
-      if(taktik || document.body.classList.contains('fullscreen-portrait'))useIpad=false;
+      if(taktik || isAnyFullscreen252())useIpad=false;
       document.body.classList.toggle('tt252-ipad-layout',!!useIpad);
 
       var ipadRow=getOrCreateIpadRow252();
@@ -27002,11 +27019,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           currentOriginalParent252(el);
           if(el.parentNode!==ipadRow)ipadRow.appendChild(el);
         });
+        // v954: v252 flyttar inte längre arrow/freehand/zone-options.
+        // v291 är ensam ägare av ritvalspanelernas fysiska placering.
         opts.forEach(function(id){
           var el=document.getElementById(id);
-          if(!el)return;
-          currentOriginalParent252(el);
-          if(activeOpt===id&&el.parentNode!==ipadRow)ipadRow.appendChild(el);
+          if(el)el.classList.add('tt238-rita-options');
         });
         ipadRow.style.setProperty('display',taktik?'none':'flex','important');
       }else{
@@ -28333,6 +28350,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         OPTION_IDS.forEach(function(id){
           var el=document.getElementById(id); if(!el)return;
           if(el.parentNode===plane && row)row.appendChild(el);
+          // v954: även i normalraden behåller panelerna normal rad-styling,
+          // men fysisk flytt/visning ägs bara här.
+          el.classList.add('tt238-rita-options');
           if(matcher || taktik || fs || !activeOpt)setPanelVisible291(el,false);
           else setPanelVisible291(el,id===activeOpt);
         });
@@ -46148,11 +46168,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v939 taktikfilm-object-no-steal';}catch(e){}
+    try{document.title='Taktiktavla TEST v954 ritvals-korssync-fix';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='939 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='954 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
       if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';
@@ -49503,4 +49523,4 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 /* === v939 TEST: Taktikfilm object no-steal efter v938 Tavla-fix === */
-(function(){try{document.title='Taktiktavla TEST v939 taktikfilm-object-no-steal';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';}catch(e){}})();
+(function(){try{document.title='Taktiktavla TEST v954 ritvals-korssync-fix';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';}catch(e){}})();
