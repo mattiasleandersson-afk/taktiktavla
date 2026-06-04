@@ -26893,7 +26893,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function toolIds252(){
-    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
+    // v932: objekt-/konknappen skapades efter v252 och saknades här.
+    // När v252 appendChild:ar alla kända knappar lämnades okända knappar kvar först i raden.
+    // Därför ska tt747-object-btn ägas i samma ordning som övriga ritknappar på iPad.
+    return ['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
   }
   function optionIds252(){return ['arrow-options','freehand-options','zone-options'];}
 
@@ -45729,7 +45732,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!b)return;
     try{
       var row=activeRitaRow();
-      var ref=row?(row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone')):null;
+      var ref=null;
+      if(row){
+        var zoneOpt=row.querySelector('#zone-options');
+        var zoneBtn=row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone');
+        // v932: om zon/fyrkant-valen ligger öppna i samma iPad-rad ska objektknappen ligga efter dem,
+        // inte mellan zonknappen och dess val. Annars används zonknappen som stabil referens.
+        ref=(zoneOpt&&zoneOpt.parentNode===row)?zoneOpt:zoneBtn;
+      }
       b.classList.remove('tt751-object-ready','tt749-object-ready');
       if(row && ref){
         if(b.parentNode!==row || b.previousElementSibling!==ref){
@@ -46111,7 +46121,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
+    try{document.title='Taktiktavla TEST v932 tavla ipad ritrad single owner';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -46315,7 +46325,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       box.dataset.tt771ButtonApply='1';
       box.addEventListener('click',function(ev){var btn=ev.target&&ev.target.closest?ev.target.closest('button.btn'):null; if(!btn||!box.contains(btn))return; ev.preventDefault();ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation(); var fmt=parseInt((byId('tt205-qf-format')||{}).value,10)||((typeof format!=='undefined'&&format)||11); applyFormationLocal(fmt,(btn.textContent||'').trim());},true);
     }
-    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
+    try{document.title='Taktiktavla TEST v932 tavla ipad ritrad single owner';}catch(e){}
   }
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
