@@ -26298,7 +26298,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var arrow=prepExistingTool236("btn-arrow","fs-tb-arrow","↗","Pil");
     var free=prepExistingTool236("btn-freehand","fs-tb-freehand","✎","Rita fritt");
     var zone=prepExistingTool236("btn-zone","fs-tb-zone","▭","Zon");
-    var objectBtn=ensureObjectToolButton236();
+    // v939: Tavla-radens gamla ägare får inte stjäla den gemensamma konknappen
+    // från Taktikfilm. I Taktikfilm ägs knappen av #taktikbar via objektmodulen.
+    var objectBtn=isTaktikActive236()?null:ensureObjectToolButton236();
     var text=prepExistingTool236("btn-text","fs-tb-text","T","Text");
     var clear=makeRitaButton236("tt236-rita-clear","🧽","Sudda/rensa ritningar",clearDrawingsOnly236);
     var undo=makeRitaButton236("tt236-rita-undo","↶","Ångra",function(){try{if(typeof doUndo==="function")doUndo();}catch(e){}});
@@ -26760,6 +26762,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       toolIds248().forEach(function(id){
         var el=document.getElementById(id);
         if(!el)return;
+        // v939: i Taktikfilm ska #tt747-object-btn styras av objektmodulen/taktikbar,
+        // inte av Tavla-radens gömda radsynk. Annars blinkar den vid verktygsbyte.
+        if(taktik && id==='tt747-object-btn')return;
         if(taktik)hide248(el);
         else show248(el,'inline-flex');
       });
@@ -27007,6 +27012,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       }else{
         // På dator/mobil lämnas 248/251-layouten som den var.
         ids.concat(opts).forEach(function(id){
+          // v939: vid Taktikfilm ska objektknappen inte återställas av iPad-raden.
+          // Om den behöver flyttas gör objektmodulen det till #taktikbar.
+          if(taktik && id==='tt747-object-btn')return;
           var el=document.getElementById(id), par=el?originalParents252[id]:null;
           if(el&&par&&el.parentNode===ipadRow)par.appendChild(el);
         });
@@ -45845,11 +45853,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       if(isTaktikfilmContext914()){
         var n=Date.now();
-        if((n-tt917LastTaktikfilmObjectSchedule)<240){
-          try{window.__tt912Count&&window.__tt912Count('app.tt747.coalesceSchedule917');}catch(_e){}
-          tt917DeferObjectSchedule();
-          return;
-        }
+        // v939: under Taktikfilm-verktygsbyte behöver knappen kunna återplaceras direkt.
+        // Behåll defer bara under faktisk animation/visual-frame ovanför; coalesca inte vanlig toolbar-synk.
         tt917LastTaktikfilmObjectSchedule=n;
       }
     }catch(e){}
@@ -46143,14 +46148,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v938 object-button-in-core-ritrad';}catch(e){}
+    try{document.title='Taktiktavla TEST v939 taktikfilm-object-no-steal';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='938 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='939 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v938 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';
     }catch(e){}
   }
 
@@ -49497,5 +49502,5 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v936 TEST === */
 
 
-/* === v938 TEST: objektknapp in i gamla kärn-ritraden === */
-(function(){try{document.title='Taktiktavla TEST v938 object-button-in-core-ritrad';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v938 TEST';}catch(e){}})();
+/* === v939 TEST: Taktikfilm object no-steal efter v938 Tavla-fix === */
+(function(){try{document.title='Taktiktavla TEST v939 taktikfilm-object-no-steal';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';}catch(e){}})();
