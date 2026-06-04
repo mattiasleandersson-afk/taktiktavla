@@ -1,16 +1,17 @@
 
-/* === v914 TEST: Taktikfilm object observer sleep ===
-   Ingen MutationObserver och ingen RAF-wrapper. Räknar bara utvalda funktionsanrop. */
+/* === v925 TEST: ren test utan synlig diagnos ===
+   Bygger från v917. Sidework-/diagnospanelen är borttagen; kvarvarande interna räknaranrop görs till no-op. */
 (function(){
-  if(window.__tt912SideworkDiag)return;
-  var started=Date.now();
+  if(window.__tt925NoVisibleDiag)return;
+  window.__tt925NoVisibleDiag=true;
+  window.__tt912Count=function(){};
   window.__tt912SideworkDiag={
-    started:started,
+    started:Date.now(),
     counters:{},
     reset:function(){this.started=Date.now();this.counters={};},
-    mark:function(name){this.counters[name]=(this.counters[name]||0)+1;}
+    mark:function(){},
+    report:function(){return 'v925: diagnospanel borttagen';}
   };
-  window.__tt912Count=function(name){try{window.__tt912SideworkDiag.mark(name);}catch(e){}};
 })();
 
 /* v846 TEST: Taktiktavla→Taktikfilm-modalfix + v845/v843 kon-/pinne-context-reset. */
@@ -26346,7 +26347,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function apply236(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt236.apply236');}catch(e){}
     setVersion236();
     injectStyle236();
     renameFormationToTavla236();
@@ -26450,7 +26450,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function apply238(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt238.apply238');}catch(e){}
     setVersion238();
     injectStyle238();
     if(typeof window.tt236ApplyTavlaRitaToolbar==="function"){
@@ -26570,7 +26569,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function apply239(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt239.apply239');}catch(e){}
     setVersion239();
     injectStyle239();
     if(typeof window.tt236ApplyTavlaRitaToolbar==="function"){
@@ -26657,7 +26655,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function optionIds248(){return ['arrow-options','freehand-options','zone-options'];}
 
   function activeOptionId248(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt248.activeOptionId248');}catch(e){}
     try{
       if(mode==='arrow')return 'arrow-options';
       if(mode==='freehand')return 'freehand-options';
@@ -26705,7 +26702,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function markAndHideRitaButtons248(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt248.markAndHideRitaButtons248');}catch(e){}
     try{
       var bar=ritaBar248();
       var nodes=document.querySelectorAll('button,.btn,[role="button"],.tab,a,span,label,div');
@@ -26728,7 +26724,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function sync248(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt248.sync248');}catch(e){}
     try{
       setVersion248();
       injectStyle248();
@@ -26778,7 +26773,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function schedule248(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt248.schedule248');}catch(e){}
     sync248();
     setTimeout(sync248,0);
     setTimeout(sync248,60);
@@ -26797,7 +26791,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     window.setMode=wrappedSetMode248;
   }
 
-  document.addEventListener('click',function(ev){try{window.__tt924Count&&window.__tt924Count('app.tt248.clickListener');}catch(_e){}try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}setTimeout(schedule248,0);},true);
+  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}setTimeout(schedule248,0);},true);
   window.addEventListener('resize',function(){setTimeout(schedule248,80);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule248);
   else schedule248();
@@ -26913,7 +26907,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function optionIds252(){return ['arrow-options','freehand-options','zone-options'];}
 
   function getOrCreateIpadRow252(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt252.getOrCreateIpadRow252');}catch(e){}
     var tb=document.getElementById('topbar');
     if(!tb)return null;
     var row=document.getElementById('tt252-ipad-rita-row');
@@ -26945,7 +26938,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function activeOptionId252(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt252.activeOptionId252');}catch(e){}
     try{
       if(mode==='arrow')return 'arrow-options';
       if(mode==='freehand')return 'freehand-options';
@@ -26968,7 +26960,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function moveIntoIpadRow252(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt252.moveIntoIpadRow252');}catch(e){}
     try{
       setVersion252();
       injectStyle252();
@@ -26992,17 +26983,36 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var activeOpt=activeOptionId252();
 
       if(useIpad){
-        ids.forEach(function(id){
+        /* v925: låt iPad-raden vara kanonisk även när Taktiktavla aktiverar ritverktyg.
+           Tidigare flyttade v252 bara de gamla verktygsknapparna, medan tt747-objektknappen
+           flyttades av en separat kedja. Då kunde konen ligga först i raden tills tt747 hann
+           flytta tillbaka den. Alla ritval ligger nu kvar i en fast ordning; deras befintliga
+           display/aktiv-klass avgör om de syns. */
+        var canonical=[
+          'tt236-rita-move',
+          'btn-arrow','arrow-options',
+          'btn-freehand','freehand-options',
+          'btn-zone','zone-options',
+          'tt747-object-btn',
+          'btn-text',
+          'tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'
+        ];
+        var prev=null;
+        canonical.forEach(function(id){
           var el=document.getElementById(id);
           if(!el)return;
           currentOriginalParent252(el);
-          if(el.parentNode!==ipadRow)ipadRow.appendChild(el);
-        });
-        opts.forEach(function(id){
-          var el=document.getElementById(id);
-          if(!el)return;
-          currentOriginalParent252(el);
-          if(activeOpt===id&&el.parentNode!==ipadRow)ipadRow.appendChild(el);
+          if(el.parentNode!==ipadRow){
+            if(prev && prev.nextSibling)ipadRow.insertBefore(el,prev.nextSibling);
+            else if(prev)ipadRow.appendChild(el);
+            else ipadRow.insertBefore(el,ipadRow.firstChild);
+          }else if(prev){
+            var n=prev.nextSibling;
+            if(n!==el)ipadRow.insertBefore(el,n);
+          }else{
+            if(ipadRow.firstElementChild!==el)ipadRow.insertBefore(el,ipadRow.firstChild);
+          }
+          prev=el;
         });
         ipadRow.style.setProperty('display',taktik?'none':'flex','important');
       }else{
@@ -27017,7 +27027,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function schedule252(){
-    try{window.__tt924Count&&window.__tt924Count('app.tt252.schedule252');}catch(e){}
     moveIntoIpadRow252();
     setTimeout(moveIntoIpadRow252,0);
     setTimeout(moveIntoIpadRow252,80);
@@ -27035,7 +27044,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     window.setMode=wrappedSetMode252;
   }
 
-  document.addEventListener('click',function(ev){try{window.__tt924Count&&window.__tt924Count('app.tt252.clickListener');}catch(_e){}try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}setTimeout(schedule252,0);},true);
+  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}setTimeout(schedule252,0);},true);
   window.addEventListener('resize',function(){setTimeout(schedule252,120);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule252);
   else schedule252();
@@ -45749,6 +45758,15 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       var row=activeRitaRow();
       var ref=row?(row.querySelector('#btn-tb-zone')||row.querySelector('#fs-tb-zone')||row.querySelector('#btn-zone')):null;
+      /* v925: i Taktiktavla/Snabbtavla på iPad ägs raden av tt252.
+         Där ska objektknappen ligga efter zonens ritval, inte direkt efter zonknappen.
+         Annars hoppar konen före ritvalen när form/fyrkant öppnas. */
+      try{
+        if(row && row.id==='tt252-ipad-rita-row'){
+          var zoneOpt=row.querySelector('#zone-options');
+          if(zoneOpt)ref=zoneOpt;
+        }
+      }catch(_e){}
       b.classList.remove('tt751-object-ready','tt749-object-ready');
       if(row && ref){
         if(b.parentNode!==row || b.previousElementSibling!==ref){
@@ -49344,4 +49362,10 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* v913 TEST: v912 counter + objektknappsplacering pausas under Taktikfilm-animation. */
 
 
-/* === v924 TEST: ritverktyg jämförelsediagnos. Endast funktionsräknare, ingen fix. === */
+/* === v925-test-version-label === */
+(function(){
+  function setV925(){try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='Version 2 test v925 ritverktyg ren object-index';});}catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setV925,{once:true});else setV925();
+  setTimeout(setV925,500);setTimeout(setV925,1500);
+})();
+/* === slut v925-test-version-label === */
