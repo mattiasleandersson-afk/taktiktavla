@@ -1,6 +1,6 @@
 
-/* === v929 TEST: tavla ritning object-sleep ===
-   Bygger från v927. Behåller v917:s Taktikfilm-fixar och pausar objektknappens sidoarbete under aktiv ritning i Tavla/Snabbtavla. */
+/* === v930 TEST: ritstart/autospar-diagnos, byggd från v927 clean no panels ===
+   Behåller v917:s Taktikfilm-fixar men stänger av sidework-räkning/panel. */
 (function(){
   window.__tt912Count=function(){};
 })();
@@ -45796,57 +45796,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }
   }catch(e){}
 
-  /* v929: pausa objektknappens placering under aktiv ritning i Tavla/Snabbtavla.
-     Syfte: inte låta objektknappens body-observer/scheduler reagera på varje SVG-ändring
-     medan användaren ritar penna/pil/form. Rör inte Taktikfilm-animationen. */
-  var tt929TavlaDrawBlockUntil=0;
-  var tt929TavlaDrawReconnectTimer=0;
-  function tt929Now(){return Date.now?Date.now():(new Date()).getTime();}
-  function tt929IsBoardLikeContext(){
-    try{
-      var b=document.body;
-      return !!(b && (b.classList.contains('tt733-tavla-active') || b.classList.contains('tt756-snabb-object-active') || b.classList.contains('tt745-snabb-active')));
-    }catch(e){return false;}
-  }
-  function tt929IsToolUiTarget(t){
-    try{
-      return !!(t && t.closest && t.closest('#tt252-ipad-rita-row,#tt747-object-panel,#tt747-size-panel,.tt236-rita-tool,.tt238-rita-options,#topbar,.tab,#tt616-layer-panel'));
-    }catch(e){return false;}
-  }
-  function tt929IsDrawSurfaceTarget(t){
-    try{
-      if(!t || tt929IsToolUiTarget(t))return false;
-      return !!(t.closest && t.closest('#pitch-wrapper,svg,#tavla,#board,#field'));
-    }catch(e){return false;}
-  }
-  function tt929MarkTavlaDrawing(ms){
-    try{
-      if(!tt929IsBoardLikeContext())return;
-      var n=tt929Now();
-      tt929TavlaDrawBlockUntil=Math.max(tt929TavlaDrawBlockUntil,n+(ms||900));
-    }catch(e){}
-  }
-  function tt929TavlaDrawingActive(){
-    try{return tt929IsBoardLikeContext() && tt929Now()<tt929TavlaDrawBlockUntil;}catch(e){return false;}
-  }
-  try{
-    ['pointerdown','mousedown','touchstart'].forEach(function(evt){
-      window.addEventListener(evt,function(ev){
-        if(tt929IsDrawSurfaceTarget(ev.target))tt929MarkTavlaDrawing(1200);
-      },true);
-    });
-    ['pointermove','mousemove','touchmove'].forEach(function(evt){
-      window.addEventListener(evt,function(ev){
-        if(tt929IsDrawSurfaceTarget(ev.target))tt929MarkTavlaDrawing(900);
-      },true);
-    });
-    ['pointerup','mouseup','touchend','touchcancel'].forEach(function(evt){
-      window.addEventListener(evt,function(){
-        if(tt929TavlaDrawingActive())tt929MarkTavlaDrawing(700);
-      },true);
-    });
-  }catch(e){}
-
   var tt917DeferredObjectScheduleTimer=0;
   var tt917LastTaktikfilmObjectSchedule=0;
   function tt917RecentVisualFrameActive(){
@@ -45862,10 +45811,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     }catch(e){}
   }
   function scheduleObjectButtonPlacement(){
-    if(tt929TavlaDrawingActive()){
-      tt917DeferObjectSchedule();
-      return;
-    }
     if(isTaktikfilmAnimatingForObject916() || tt917RecentVisualFrameActive()){
       try{window.__tt912Count&&window.__tt912Count('app.tt747.skipBeforeSchedule917');}catch(e){}
       tt917DeferObjectSchedule();
@@ -46166,21 +46111,20 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v929 tavla-ritning-object-sleep';}catch(e){}
+    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='929 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='917 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v929 TEST';
+      if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v917 TEST';
     }catch(e){}
   }
 
   try{
     var placementEvents=['pointerdown','mousedown','touchstart','click','touchend','keyup','resize','orientationchange'];
     placementEvents.forEach(function(evt){window.addEventListener(evt,function(){
-      if(tt929TavlaDrawingActive())return;
       if(isTaktikfilmAnimatingForObject916()){
         try{window.__tt912Count&&window.__tt912Count('app.tt747.eventSkipDuringAnimation917');}catch(e){}
         return;
@@ -46191,13 +46135,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       var moConnected914=false;
       var reconnectTimer914=0;
       var moBtn=new MutationObserver(function(){
-        if(tt929TavlaDrawingActive() || isTaktikfilmAnimatingForObject916()){
-          try{if(isTaktikfilmAnimatingForObject916())window.__tt912Count&&window.__tt912Count('app.tt747.moSleepDuringAnimation917');}catch(e){}
+        if(isTaktikfilmAnimatingForObject916()){
+          try{window.__tt912Count&&window.__tt912Count('app.tt747.moSleepDuringAnimation917');}catch(e){}
           try{moBtn.disconnect();moConnected914=false;}catch(e){}
           if(!reconnectTimer914){
             reconnectTimer914=setTimeout(function retryReconnect914(){
               reconnectTimer914=0;
-              if(tt929TavlaDrawingActive() || isTaktikfilmAnimatingForObject916()){
+              if(isTaktikfilmAnimatingForObject916()){
                 reconnectTimer914=setTimeout(retryReconnect914,450);
                 return;
               }
@@ -46371,7 +46315,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       box.dataset.tt771ButtonApply='1';
       box.addEventListener('click',function(ev){var btn=ev.target&&ev.target.closest?ev.target.closest('button.btn'):null; if(!btn||!box.contains(btn))return; ev.preventDefault();ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation(); var fmt=parseInt((byId('tt205-qf-format')||{}).value,10)||((typeof format!=='undefined'&&format)||11); applyFormationLocal(fmt,(btn.textContent||'').trim());},true);
     }
-    try{document.title='Taktiktavla TEST v929 tavla-ritning-object-sleep';}catch(e){}
+    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
   }
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
