@@ -49561,3 +49561,227 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    - v291 behandlar även tt758/tt764 objekt-fullscreen som fullscreen vid ritvalsplacering.
    Ingen lager-radering, ingen indexändring, ingen ny observer/timer.
 */
+
+/* === v956 TEST: Tavla/Snabbtavla knappnära ritval ===
+   Bas: v955 från v954/v939.
+   Syfte:
+   - Behåll v954/v955:s stopp av blink-/korssync-loop.
+   - Lägg ritvalen för Tavla/Snabbtavla som en lugn dropdown direkt under aktiv knapp,
+     i stället för bredvid planen eller i en gammal/dold ritrad.
+   - Taktikfilm lämnas i fred och använder sina befintliga ägare.
+   - Ingen lager-radering, ingen ny observer, ingen timer-loop. Bara korta schemalagda sync efter klick/setMode/resize/fullscreen.
+*/
+(function(){
+  if(window.__tt956TavlaButtonAnchorDrawOptions)return;
+  window.__tt956TavlaButtonAnchorDrawOptions=true;
+
+  var OPTION_IDS=['arrow-options','freehand-options','zone-options'];
+  var TOOL_TO_OPTION={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
+  var TOOL_TO_BUTTON={
+    arrow:['btn-arrow','fs-tb-arrow'],
+    freehand:['btn-freehand','fs-tb-freehand'],
+    zone:['btn-zone','fs-tb-zone']
+  };
+
+  function setVersion956(){
+    try{
+      document.title='Taktiktavla TEST v956 tavla knappnära ritval';
+      var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
+      if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v956 TEST';
+    }catch(e){}
+  }
+
+  function visible956(el){
+    try{
+      if(!el)return false;
+      var st=getComputedStyle(el);
+      if(st.display==='none'||st.visibility==='hidden')return false;
+      var r=el.getBoundingClientRect();
+      return r.width>0 && r.height>0;
+    }catch(e){return !!el;}
+  }
+
+  function panelVisible956(id){
+    try{
+      var p=document.getElementById(id);
+      return !!(p && p.classList.contains('on') && visible956(p));
+    }catch(e){return false;}
+  }
+
+  function isTaktikActuallyVisible956(){
+    try{
+      if(panelVisible956('panel-taktik'))return true;
+      var tab=document.querySelector('.tab.on[data-panel="taktik"]');
+      if(tab && panelVisible956('panel-taktik'))return true;
+      return false;
+    }catch(e){return false;}
+  }
+
+  function isTavlaContext956(){
+    try{
+      if(isTaktikActuallyVisible956())return false;
+      if(panelVisible956('panel-saves') || panelVisible956('panel-formations'))return true;
+      var tab=document.querySelector('.tab.on[data-panel="saves"],.tab.on[data-panel="formations"]');
+      if(tab)return true;
+      // I fullscreen kan panelens display vara specialstyrd, men Tavla-body-klasserna finns kvar.
+      if(document.body && (
+        document.body.classList.contains('tt718-tavla-active') ||
+        document.body.classList.contains('tt719-tavla-active') ||
+        document.body.classList.contains('tt722-tavla-active') ||
+        document.body.classList.contains('tt733-tavla-active')
+      ))return true;
+    }catch(e){}
+    return false;
+  }
+
+  function activeMode956(){
+    try{return String(mode||'');}catch(e){return '';}
+  }
+  function activeOptionId956(){return TOOL_TO_OPTION[activeMode956()]||null;}
+
+  function optionHost956(){
+    var h=document.getElementById('tt956-tavla-draw-options-host');
+    if(h)return h;
+    h=document.createElement('div');
+    h.id='tt956-tavla-draw-options-host';
+    h.setAttribute('aria-hidden','true');
+    document.body.appendChild(h);
+    return h;
+  }
+
+  function injectStyle956(){
+    if(document.getElementById('tt956-tavla-draw-options-style'))return;
+    var st=document.createElement('style');
+    st.id='tt956-tavla-draw-options-style';
+    st.textContent=[
+      '#tt956-tavla-draw-options-host{display:none;position:fixed;left:0;top:0;z-index:16000;max-width:min(92vw,360px);box-sizing:border-box;pointer-events:none}',
+      '#tt956-tavla-draw-options-host.tt956-open{display:flex!important}',
+      '#tt956-tavla-draw-options-host #arrow-options,#tt956-tavla-draw-options-host #freehand-options,#tt956-tavla-draw-options-host #zone-options{position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;z-index:auto!important;margin:0!important;width:max-content!important;max-width:min(92vw,360px)!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;box-sizing:border-box!important;background:rgba(17,26,20,.96)!important;border:1px solid #2d4a35!important;border-radius:8px!important;padding:3px 5px!important;box-shadow:0 4px 14px rgba(0,0,0,.35)!important;gap:4px!important;align-items:center!important;pointer-events:auto!important;white-space:nowrap!important}',
+      '#tt956-tavla-draw-options-host #arrow-options:not(.tt956-active-option),#tt956-tavla-draw-options-host #freehand-options:not(.tt956-active-option),#tt956-tavla-draw-options-host #zone-options:not(.tt956-active-option){display:none!important}',
+      '#tt956-tavla-draw-options-host .tt956-active-option{display:flex!important}',
+      '#tt956-tavla-draw-options-host select,#tt956-tavla-draw-options-host button{min-height:26px!important;height:26px!important;font-size:.72rem!important;line-height:1!important;max-width:110px!important;padding:1px 4px!important;margin:0!important;border-radius:5px!important;pointer-events:auto!important;touch-action:auto!important}',
+      '#tt956-tavla-draw-options-host label,#tt956-tavla-draw-options-host span{font-size:.72rem!important;line-height:1!important;margin:0!important;padding:0!important}',
+      'body.tt956-tavla-options-owned #tt291-plan-draw-options{display:none!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function findActiveButton956(){
+    var m=activeMode956();
+    var ids=TOOL_TO_BUTTON[m]||[];
+    var best=null;
+    ids.forEach(function(id){
+      var el=document.getElementById(id);
+      if(el && visible956(el) && !best)best=el;
+    });
+    if(best)return best;
+    try{
+      var on=document.querySelector('.tt236-rita-tool.on,.tt236-rita-tool.active,#tt252-ipad-rita-row .on,#tt252-ipad-rita-row .active');
+      if(on && visible956(on))return on;
+    }catch(e){}
+    return null;
+  }
+
+  function hideAll956(){
+    try{
+      var h=document.getElementById('tt956-tavla-draw-options-host');
+      if(h){h.classList.remove('tt956-open');h.style.setProperty('display','none','important');}
+      document.body.classList.remove('tt956-tavla-options-owned');
+      OPTION_IDS.forEach(function(id){
+        var el=document.getElementById(id); if(!el)return;
+        el.classList.remove('tt956-active-option');
+        if(el.parentNode===h)el.style.setProperty('display','none','important');
+      });
+    }catch(e){}
+  }
+
+  function place956(){
+    try{
+      setVersion956();
+      injectStyle956();
+      var activeOpt=activeOptionId956();
+      if(!isTavlaContext956() || !activeOpt){hideAll956();return;}
+      var btn=findActiveButton956();
+      if(!btn){hideAll956();return;}
+      var host=optionHost956();
+      document.body.classList.add('tt956-tavla-options-owned');
+
+      OPTION_IDS.forEach(function(id){
+        var el=document.getElementById(id); if(!el)return;
+        if(el.parentNode!==host)host.appendChild(el);
+        el.classList.toggle('tt956-active-option',id===activeOpt);
+        if(id===activeOpt)el.style.setProperty('display','flex','important');
+        else el.style.setProperty('display','none','important');
+      });
+
+      host.classList.add('tt956-open');
+      host.style.setProperty('display','flex','important');
+
+      var r=btn.getBoundingClientRect();
+      var gap=6;
+      var left=Math.round(r.left);
+      var top=Math.round(r.bottom+gap);
+      host.style.left='0px';
+      host.style.top='0px';
+      host.style.maxWidth='min(92vw,360px)';
+      // Mät efter att panelen syns.
+      var hr=host.getBoundingClientRect();
+      var maxLeft=Math.max(4,(window.innerWidth||document.documentElement.clientWidth||0)-hr.width-4);
+      if(left>maxLeft)left=maxLeft;
+      if(left<4)left=4;
+      var maxTop=Math.max(4,(window.innerHeight||document.documentElement.clientHeight||0)-hr.height-4);
+      if(top>maxTop)top=Math.max(4,Math.round(r.top-hr.height-gap));
+      if(top<4)top=4;
+      host.style.left=left+'px';
+      host.style.top=top+'px';
+    }catch(e){}
+  }
+
+  function schedule956(){
+    place956();
+    setTimeout(place956,0);
+    setTimeout(place956,80);
+    setTimeout(place956,220);
+  }
+
+  var oldSetMode956=typeof setMode==='function'?setMode:null;
+  if(oldSetMode956 && !oldSetMode956.__tt956Wrapped){
+    var wrappedSetMode956=function(){
+      var res=oldSetMode956.apply(this,arguments);
+      schedule956();
+      return res;
+    };
+    wrappedSetMode956.__tt956Wrapped=true;
+    setMode=wrappedSetMode956;
+    window.setMode=wrappedSetMode956;
+  }
+
+  OPTION_IDS.forEach(function(id){
+    var bind=function(){
+      var el=document.getElementById(id); if(!el || el.dataset.tt956Bound)return;
+      el.dataset.tt956Bound='1';
+      ['pointerdown','mousedown','touchstart','click'].forEach(function(type){
+        el.addEventListener(type,function(ev){try{ev.stopPropagation();}catch(e){}},{capture:true,passive:true});
+      });
+      ['change','input'].forEach(function(type){el.addEventListener(type,function(){setTimeout(schedule956,0);},false);});
+    };
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);
+    else bind();
+  });
+
+  document.addEventListener('click',function(ev){
+    try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}
+    setTimeout(schedule956,0);
+  },true);
+  window.addEventListener('resize',function(){setTimeout(schedule956,80);});
+  document.addEventListener('fullscreenchange',schedule956);
+  document.addEventListener('webkitfullscreenchange',schedule956);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule956);
+  else schedule956();
+  setTimeout(schedule956,300);
+  setTimeout(schedule956,1000);
+  setTimeout(setVersion956,1800);
+
+  window.tt956PlaceTavlaDrawOptions=place956;
+})();
+/* === slut v956 TEST === */
