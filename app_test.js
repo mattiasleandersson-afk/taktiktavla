@@ -26639,12 +26639,16 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function isTaktikActive248(){
     try{
+      // v955: gamla editing/playback-flaggor kan ligga kvar efter Taktikfilm.
+      // De får inte gömma/flytta Tavlans ritrad när panelen inte är Taktikfilm.
+      if(document.body && document.body.classList.contains('tt764-taktik-object-fullscreen'))return true;
       if(document.querySelector('.tab.on[data-panel="taktik"]'))return true;
       var p=document.getElementById('panel-taktik');
-      if(p&&p.classList.contains('on'))return true;
-      if(typeof playback!=='undefined'&&playback)return true;
-      if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)return true;
-      if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null)return true;
+      var on=!!(p&&p.classList.contains('on'));
+      var visible=on;
+      try{visible=on && getComputedStyle(p).display!=='none' && getComputedStyle(p).visibility!=='hidden';}catch(e){}
+      if(visible)return true;
+      if(typeof playback!=='undefined'&&playback&&visible)return true;
     }catch(e){}
     return false;
   }
@@ -26903,12 +26907,15 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function isTaktikActive252(){
     try{
+      // v955: samma snävare Taktikfilm-bedömning som v248/v291.
+      if(document.body && document.body.classList.contains('tt764-taktik-object-fullscreen'))return true;
       if(document.querySelector('.tab.on[data-panel="taktik"]'))return true;
       var p=document.getElementById('panel-taktik');
-      if(p&&p.classList.contains('on'))return true;
-      if(typeof playback!=='undefined'&&playback)return true;
-      if(typeof isEditingTaktik!=='undefined'&&isEditingTaktik)return true;
-      if(typeof editingTaktikIdx!=='undefined'&&editingTaktikIdx!==null)return true;
+      var on=!!(p&&p.classList.contains('on'));
+      var visible=on;
+      try{visible=on && getComputedStyle(p).display!=='none' && getComputedStyle(p).visibility!=='hidden';}catch(e){}
+      if(visible)return true;
+      if(typeof playback!=='undefined'&&playback&&visible)return true;
     }catch(e){}
     return false;
   }
@@ -28213,12 +28220,18 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function isTaktikActive291(){
     try{
-      if(document.querySelector('.tab.on[data-panel="taktik"]'))return true;
+      // v955: layoutägaren får inte lita på gamla Taktikfilm-flaggor som kan
+      // hänga kvar efter att man lämnat Taktikfilm. Annars tror Tavlan att
+      // den fortfarande är Taktikfilm och ritvalen hamnar bredvid planen/hidden.
+      if(document.body && document.body.classList.contains('tt764-taktik-object-fullscreen'))return true;
+      var tab=document.querySelector('.tab.on[data-panel="taktik"]');
       var p=document.getElementById('panel-taktik');
-      if(p && p.classList.contains('on'))return true;
-      if(typeof playback!=='undefined' && playback)return true;
-      if(typeof isEditingTaktik!=='undefined' && isEditingTaktik)return true;
-      if(typeof editingTaktikIdx!=='undefined' && editingTaktikIdx!==null)return true;
+      var panelOn=!!(p && p.classList.contains('on'));
+      var panelVisible=panelOn;
+      try{panelVisible=panelOn && getComputedStyle(p).display!=='none' && getComputedStyle(p).visibility!=='hidden';}catch(e){}
+      if(tab || panelVisible)return true;
+      // playback räknas bara när Taktikfilm-panelen faktiskt är aktiv/synlig.
+      if(typeof playback!=='undefined' && playback && panelVisible)return true;
     }catch(e){}
     return false;
   }
@@ -28270,10 +28283,26 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function normalRow291(){
-    return document.getElementById('tt252-ipad-rita-row') ||
-           document.querySelector('.tt248-tavla-rita-row') ||
-           (document.getElementById('btn-arrow') && document.getElementById('btn-arrow').parentNode) ||
-           document.getElementById('topbar') || document.body;
+    // v955: välj inte automatiskt #tt252-ipad-rita-row. Den raden finns ofta
+    // kvar i DOM men är dold när iPad-layout/fullscreen inte ska äga Tavlan.
+    // Om v291 lägger ritvalen där blir resultatet att valen hamnar fel eller försvinner.
+    try{
+      var ip=document.getElementById('tt252-ipad-rita-row');
+      if(ip && document.body && document.body.classList.contains('tt252-ipad-layout')){
+        var st=getComputedStyle(ip);
+        if(st.display!=='none' && st.visibility!=='hidden')return ip;
+      }
+    }catch(e){}
+    var row=document.querySelector('.tt248-tavla-rita-row');
+    try{
+      if(row){
+        var rs=getComputedStyle(row);
+        if(rs.display!=='none' && rs.visibility!=='hidden')return row;
+      }
+    }catch(e){ if(row)return row; }
+    var a=document.getElementById('btn-arrow');
+    if(a && a.parentNode && a.parentNode.id!=='tt252-ipad-rita-row')return a.parentNode;
+    return document.getElementById('topbar') || document.body;
   }
 
   function setPanelVisible291(el,show){
@@ -28328,7 +28357,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       }
 
       var taktik=isTaktikActive291();
-      var fs=document.body.classList.contains('fullscreen-portrait');
+      var fs=document.body.classList.contains('fullscreen-portrait') || document.body.classList.contains('tt758-object-fullscreen') || document.body.classList.contains('tt764-taktik-object-fullscreen');
       var matcher=isMatcherActive291();
       var activeOpt=activeOptionId291();
       var planeMode=(fs || taktik) && !matcher && !!activeOpt;
@@ -49524,3 +49553,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* === v939 TEST: Taktikfilm object no-steal efter v938 Tavla-fix === */
 (function(){try{document.title='Taktiktavla TEST v954 ritvals-korssync-fix';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';}catch(e){}})();
+
+/* === v955-test-tavla-options-context-owner-fix ===
+   Bas: v954 från v939.
+   - Snävar in Taktikfilm-detektering i v248/v252/v291 så gamla editing-flaggor inte lurar Tavlan efter Taktikfilm.
+   - v291 väljer inte längre dold #tt252-ipad-rita-row som normal ägare för ritval.
+   - v291 behandlar även tt758/tt764 objekt-fullscreen som fullscreen vid ritvalsplacering.
+   Ingen lager-radering, ingen indexändring, ingen ny observer/timer.
+*/
