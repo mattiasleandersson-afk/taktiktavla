@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v946 step list spacer only</title>
+<title>Taktiktavla TEST v963 DIAG READONLY step list spacer only</title>
 <link rel="stylesheet" href="styles.css">
 
 
@@ -3098,7 +3098,177 @@
 }
 </style>
 
+
+<script id="tt963-diag-pre-draw-runtime-readonly">
+(function(){
+  if(window.__tt963DiagPreInstalled)return;
+  window.__tt963DiagPreInstalled=true;
+  var logs=[]; window.__tt963DiagLogs=logs;
+  var seq=0, MAX=3500;
+  function safe(fn,fb){try{return fn();}catch(e){return fb;}}
+  function shortStack(){
+    try{return (new Error()).stack.split('\n').slice(2,7).map(function(x){return x.trim().replace(location.origin,'');}).join(' | ');}catch(e){return ''}
+  }
+  function desc(el){
+    try{
+      if(!el)return 'null';
+      if(el===window)return 'window';
+      if(el===document)return 'document';
+      var s=(el.tagName||'node').toLowerCase();
+      if(el.id)s+='#'+el.id;
+      if(el.className && typeof el.className==='string')s+='.'+el.className.trim().replace(/\s+/g,'.');
+      return s;
+    }catch(e){return '?'}
+  }
+  function visible(el){
+    try{if(!el)return false; var cs=getComputedStyle(el); var r=el.getBoundingClientRect(); return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;}catch(e){return false}
+  }
+  function panelState(){
+    var ids=['panel-saves','panel-formations','panel-taktik','panel-matches','panel-roster','panel-stats'];
+    return ids.map(function(id){var el=document.getElementById(id); if(!el)return id+':missing'; return id+':'+(el.classList.contains('on')?'on':'off')+','+(visible(el)?'vis':'hid');}).join(' ');
+  }
+  function opt(id){
+    var el=document.getElementById(id);
+    if(!el)return id+':missing';
+    var p=el.parentElement, cs=safe(function(){return getComputedStyle(el)},{}), r=safe(function(){return el.getBoundingClientRect()},{left:0,top:0,width:0,height:0});
+    return id+' p='+(p?(p.id||p.tagName):'null')+' d='+(cs.display||'')+' v='+(cs.visibility||'')+' pos='+(cs.position||'')+' rect='+Math.round(r.left)+','+Math.round(r.top)+','+Math.round(r.width)+','+Math.round(r.height)+' cls='+(el.className||'');
+  }
+  function activeTab(){
+    var t=document.querySelector('.tab.on,[data-panel].on');
+    return t?((t.getAttribute('data-panel')||t.id||t.textContent||'').trim()):'none';
+  }
+  function bodyMini(){
+    return Array.prototype.slice.call(document.body?document.body.classList:[]).filter(function(c){return /tt(186|187|188|236|238|248|252|291|616|642|688|718|719|722|733|758|764|816|931|956|957|962)|fullscreen|taktik|saves|formation|layer/i.test(c);}).join(' ');
+  }
+  function modeState(){
+    return 'mode='+safe(function(){return window.mode},'?')+
+      ' freehandDrawing='+safe(function(){return window.freehandDrawing},'?')+
+      ' freehandCurrent='+(safe(function(){return !!window.freehandCurrent},'?'))+
+      ' paths='+safe(function(){return window.freehandPaths&&window.freehandPaths.length},'?');
+  }
+  function env(){return 'tab='+activeTab()+' '+modeState()+' panels=['+panelState()+'] body=['+bodyMini()+'] '+opt('arrow-options')+' || '+opt('freehand-options')+' || '+opt('zone-options');}
+  function log(msg){
+    var line='['+(++seq)+' '+new Date().toLocaleTimeString('sv-SE',{hour12:false})+'.'+String(Date.now()%1000).padStart(3,'0')+'] '+msg+' | '+env();
+    logs.push(line); if(logs.length>MAX)logs.shift();
+    try{console.log('TT963 '+line);}catch(e){}
+  }
+  window.__tt963DiagLog=log;
+  window.__tt963DiagEnv=env;
+  window.__tt963DiagDesc=desc;
+  var proto=EventTarget && EventTarget.prototype;
+  if(proto && !proto.__tt963Wrapped){
+    proto.__tt963Wrapped=true;
+    var origAdd=proto.addEventListener, origRemove=proto.removeEventListener;
+    var map=new WeakMap();
+    var interesting={touchstart:1,touchmove:1,touchend:1,mousedown:1,mousemove:1,mouseup:1,pointerdown:1,pointermove:1,pointerup:1,click:1};
+    function isKeyTarget(t){
+      try{
+        if(t===window||t===document)return true;
+        var id=t&&t.id||'';
+        if(id==='pitch-svg'||id==='pitch'||id==='pitch-wrapper')return true;
+        if(/^btn-|^fs-tb-|^tt747|^tt236|^tt252|^tt953|^tt963/.test(id))return true;
+        return false;
+      }catch(e){return false}
+    }
+    function eventHitsKey(ev){
+      try{
+        var t=ev.target;
+        return !!(t && (t.closest && t.closest('#pitch-svg,#pitch,#pitch-wrapper,#btn-arrow,#btn-freehand,#btn-zone,#btn-text,#tt747-object-btn,#fs-tb-arrow,#fs-tb-freehand,#fs-tb-zone,#fs-tb-text,.tab,#panel-saves,#panel-formations,#panel-taktik')));
+      }catch(e){return false}
+    }
+    proto.addEventListener=function(type, listener, opts){
+      if(!listener || !interesting[type])return origAdd.call(this,type,listener,opts);
+      var target=this;
+      var shouldTrack=isKeyTarget(target);
+      var rec=map.get(listener); if(!rec){rec={}; map.set(listener,rec);} 
+      var key=type+'::'+desc(target);
+      if(!rec[key]){
+        var addStack=shortStack();
+        rec[key]=function(ev){
+          var hit=eventHitsKey(ev)||isKeyTarget(target);
+          if(hit && (type!=='mousemove'&&type!=='touchmove'&&type!=='pointermove')) log('EV.before '+type+' listenerTarget='+desc(target)+' eventTarget='+desc(ev&&ev.target)+' addStack='+addStack);
+          var r=listener.apply(this,arguments);
+          if(hit && (type==='touchstart'||type==='mousedown'||type==='pointerdown'||type==='click'||type==='touchend'||type==='mouseup'||type==='pointerup')) setTimeout(function(){log('EV.after0 '+type+' listenerTarget='+desc(target)+' eventTarget='+desc(ev&&ev.target));},0);
+          return r;
+        };
+        if(shouldTrack) log('ADD '+type+' target='+desc(target)+' stack='+addStack);
+      }
+      return origAdd.call(this,type,rec[key],opts);
+    };
+    proto.removeEventListener=function(type, listener, opts){
+      var rec=listener&&map.get(listener); var key=type+'::'+desc(this); var wrapped=rec&&rec[key];
+      return origRemove.call(this,type,wrapped||listener,opts);
+    };
+  }
+  log('TT963 pre-diagnos installerad före app_test.js');
+})();
+</script>
+
 <script src="app_test.js?v=939-test-taktikfilm-object-no-steal"></script>
+
+<script id="tt963-diag-post-draw-runtime-readonly">
+(function(){
+  if(window.__tt963DiagPostInstalled)return;
+  window.__tt963DiagPostInstalled=true;
+  var log=window.__tt963DiagLog||function(){};
+  function safe(fn,fb){try{return fn();}catch(e){return fb;}}
+  function wrap(name){
+    try{
+      var fn=window[name];
+      if(typeof fn!=='function' || fn.__tt963Wrapped)return;
+      function wrapped(){
+        log('CALL.before '+name+' args='+Array.prototype.slice.call(arguments).map(function(a){return String(a).slice(0,40);}).join(','));
+        var r=fn.apply(this,arguments);
+        if(name==='setMode' || name==='renderFreehandPreview' || name==='render'){
+          setTimeout(function(){log('CALL.after0 '+name);},0);
+        }
+        return r;
+      }
+      wrapped.__tt963Wrapped=true;
+      window[name]=wrapped;
+      log('WRAP '+name);
+    }catch(e){log('WRAP.fail '+name+' '+(e&&e.message));}
+  }
+  ['setMode','render','renderFreehandPreview','renderFreehandPreviewV931','tt631RefreshLayerPanelSoon','tt956ShowBoardOptions','tt958ShowBoardOptions','tt962NormalizeVisibleBoardPanelRuntime'].forEach(wrap);
+  function addPanel(){
+    if(document.getElementById('tt963-diag-panel'))return;
+    var css=document.createElement('style');
+    css.id='tt963-diag-css';
+    css.textContent='#tt963-diag-panel{position:fixed;left:10px;bottom:10px;z-index:2147483647;background:#111;color:#eee;border:1px solid #666;border-radius:8px;padding:8px;font:12px system-ui;max-width:92vw}#tt963-diag-panel button{margin:2px;padding:6px 8px;border-radius:6px;border:1px solid #777;background:#222;color:#fff}#tt963-diag-panel textarea{width:86vw;height:28vh;background:#050505;color:#eee;font:11px monospace;display:none}';
+    document.head.appendChild(css);
+    var p=document.createElement('div'); p.id='tt963-diag-panel';
+    p.innerHTML='<div><b>DIAG v963</b> ritmotor-start</div><button id="tt963-copy">Kopiera logg</button><button id="tt963-mark">Markera nu</button><button id="tt963-show">Visa/dölj</button><textarea id="tt963-text"></textarea>';
+    document.body.appendChild(p);
+    var ta=document.getElementById('tt963-text');
+    function txt(){return 'TT963 draw runtime entry trace\nUA: '+navigator.userAgent+'\nURL: '+location.href+'\n\n'+(window.__tt963DiagLogs||[]).join('\n');}
+    document.getElementById('tt963-copy').onclick=function(){ta.value=txt();ta.style.display='block';ta.select();try{navigator.clipboard.writeText(ta.value);}catch(e){document.execCommand('copy');}};
+    document.getElementById('tt963-show').onclick=function(){ta.value=txt();ta.style.display=ta.style.display==='block'?'none':'block';};
+    document.getElementById('tt963-mark').onclick=function(){log('MANUAL MARK från användare');};
+  }
+  function observe(){
+    try{
+      var mo=new MutationObserver(function(ms){
+        ms.forEach(function(m){
+          var t=m.target;
+          var id=t&&t.id;
+          if(id==='arrow-options'||id==='freehand-options'||id==='zone-options'||id==='tt747-object-btn'||id==='pitch-svg'||id==='panel-saves'||id==='panel-formations'||id==='panel-taktik' || t===document.body){
+            log('MUT '+(id||'body')+' type='+m.type+' attr='+(m.attributeName||'')+' old='+(m.oldValue||'').slice(0,90));
+          } else if(m.type==='childList'){
+            var added=Array.prototype.slice.call(m.addedNodes||[]).map(function(n){return n.id?('#'+n.id):(n.tagName||'node')}).join(',');
+            var rem=Array.prototype.slice.call(m.removedNodes||[]).map(function(n){return n.id?('#'+n.id):(n.tagName||'node')}).join(',');
+            if((added+rem).match(/arrow-options|freehand-options|zone-options|tt747-object-btn|btn-arrow|btn-freehand|btn-zone/)) log('MUT.child target='+(t.id||t.tagName)+' added='+added+' removed='+rem);
+          }
+        });
+      });
+      mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeOldValue:true,attributeFilter:['class','style']});
+      log('MutationObserver diag aktiv');
+    }catch(e){log('MutationObserver fail '+(e&&e.message));}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){addPanel();observe();log('DOMContentLoaded post');});
+  else {addPanel();observe();log('post-diagnos installerad efter app_test.js');}
+})();
+</script>
+
 
 <script>
 (function(){
@@ -8182,153 +8352,12 @@
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
   }catch(e){}
 
-  function setVersion(){try{document.title='Taktiktavla TEST v953 DIAG ritval trace READONLY';}catch(e){}
-    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v953 DIAG';}catch(e){}
-    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='953 DIAG';});}catch(e){}
+  function setVersion(){try{document.title='Taktiktavla TEST v945 rollback v943 after margin fail';}catch(e){}
+    try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v942 TEST';}catch(e){}
+    try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='940 TEST';});}catch(e){}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion();schedule();},{once:true});
   else{setVersion();schedule();}
 })();
 </script>
 <!-- === slut v942 TEST === -->
-
-
-<!-- === v953 DIAG READONLY: ritval/toolbar trace, byggd från v946-index. Ändrar inte appbeteende. === -->
-<style id="tt953-draw-options-diag-css">
-  #tt953-diag-toggle{position:fixed;left:6px;bottom:6px;z-index:2147483647;font:12px Arial,sans-serif;padding:5px 7px;border-radius:8px;border:1px solid #4ae87a;background:rgba(17,26,20,.96);color:#eaffef;box-shadow:0 2px 10px rgba(0,0,0,.35)}
-  #tt953-diag-panel{display:none;position:fixed;left:6px;right:6px;bottom:40px;z-index:2147483647;max-height:42vh;overflow:auto;padding:8px;border:1px solid #4ae87a;border-radius:10px;background:rgba(10,16,12,.98);color:#eaffef;font:11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;box-shadow:0 4px 18px rgba(0,0,0,.5);white-space:pre-wrap;overscroll-behavior:contain}
-  #tt953-diag-panel.tt953-open{display:block!important}
-  #tt953-diag-actions{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
-  #tt953-diag-actions button{font:12px Arial,sans-serif;padding:4px 7px;border-radius:7px;border:1px solid #4ae87a;background:#1e2e22;color:#eaffef}
-  #tt953-diag-status{opacity:.85;font:11px Arial,sans-serif}
-</style>
-<script id="tt953-draw-options-trace-readonly-js">
-(function(){
-  'use strict';
-  if(window.__tt953DrawOptionsTraceInstalled)return;
-  window.__tt953DrawOptionsTraceInstalled=true;
-
-  var WATCH_IDS={
-    'arrow-options':1,'freehand-options':1,'zone-options':1,
-    'btn-arrow':1,'btn-freehand':1,'btn-zone':1,'btn-text':1,'btn-movement':1,
-    'tt747-object-btn':1,'tt834-tf-touch-options':1,
-    'tt291-plan-draw-options':1,'tt667-draw-options-slot':1,
-    'tt236-rita-row':1,'tt252-ipad-rita-row':1,'taktikbar':1,
-    'panel-saves':1,'panel-formations':1,'panel-taktik':1
-  };
-  var OPTION_IDS=['arrow-options','freehand-options','zone-options'];
-  var TOOL_IDS=['btn-arrow','btn-freehand','btn-zone','btn-text','btn-movement','tt747-object-btn'];
-  var logs=[];
-  var maxLogs=260;
-  var seq=0;
-  var lastSignature={};
-  var lastEvent='start';
-  var internal=false;
-
-  function now(){try{return new Date().toLocaleTimeString('sv-SE',{hour12:false})+'.'+String(Date.now()%1000).padStart(3,'0');}catch(e){return String(Date.now());}}
-  function idOf(n){try{return n&&n.id?n.id:(n&&n.tagName?n.tagName.toLowerCase():'');}catch(e){return '';}}
-  function nodeLabel(n){try{if(!n)return 'null';var s=n.tagName?n.tagName.toLowerCase():String(n.nodeName||'node');if(n.id)s+='#'+n.id;if(n.className&&typeof n.className==='string'){var c=n.className.trim().split(/\s+/).slice(0,3).join('.');if(c)s+='.'+c;}return s;}catch(e){return 'node?';}}
-  function isWatchedNode(n){try{return !!(n && n.nodeType===1 && n.id && WATCH_IDS[n.id]);}catch(e){return false;}}
-  function containsWatched(n){try{if(!n||n.nodeType!==1)return false;if(isWatchedNode(n))return true;return !!(n.querySelector&&n.querySelector('#'+Object.keys(WATCH_IDS).join(',#')));}catch(e){return false;}}
-  function cleanStack(){try{var st=(new Error()).stack||'';return st.split('\n').slice(3,8).map(function(x){return x.replace(location.href.split('#')[0],'index').trim();}).join(' | ');}catch(e){return '';}}
-  function activePanel(){try{var t=document.querySelector('.tab.on[data-panel]');if(t)return t.getAttribute('data-panel')||'';var ps=['saves','formations','taktik','matches','squad','stats'];for(var i=0;i<ps.length;i++){var p=document.getElementById('panel-'+ps[i]);if(p&&p.classList.contains('on'))return ps[i];}}catch(e){}return '';}
-  function modeNow(){try{return String((typeof mode!=='undefined'&&mode)||window.mode||'');}catch(e){return String(window.mode||'');}}
-  function bodyFlags(){try{return Array.from(document.body.classList).filter(function(c){return /tt|fullscreen|taktik|fs|mobile|ipad|rita|draw|layer|v66/.test(c);}).slice(0,18).join(' ');}catch(e){return '';}}
-  function rectOf(el){try{var r=el.getBoundingClientRect();return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)].join(',');}catch(e){return '?';}}
-  function summaryFor(id){try{var el=document.getElementById(id);if(!el)return id+':missing';var cs=getComputedStyle(el);return id+' p='+idOf(el.parentNode)+' d='+cs.display+' v='+cs.visibility+' pos='+cs.position+' rect='+rectOf(el)+' cls='+String(el.className||'').trim();}catch(e){return id+':err';}}
-  function snapshot(){return OPTION_IDS.map(summaryFor).join(' || ');}
-  function log(kind,msg,force){
-    try{
-      var key=kind+'|'+msg+'|'+snapshot()+'|'+activePanel()+'|'+modeNow()+'|'+bodyFlags();
-      if(!force && lastSignature[key] && Date.now()-lastSignature[key]<180)return;
-      lastSignature[key]=Date.now();
-      var row='['+(++seq)+' '+now()+'] '+kind+' '+msg+' | panel='+activePanel()+' mode='+modeNow()+' last='+lastEvent+' | body='+bodyFlags()+' | '+snapshot();
-      logs.push(row);
-      if(logs.length>maxLogs)logs.shift();
-      try{console.log('TT953',row);}catch(e){}
-      renderPanel();
-    }catch(e){}
-  }
-  function renderPanel(){try{var pre=document.getElementById('tt953-diag-content');if(pre)pre.textContent=logs.slice(-90).join('\n');}catch(e){}}
-  function copyLogs(){
-    var txt='TT953 ritvalsdiagnos\nUA: '+navigator.userAgent+'\nURL: '+location.href+'\n\n'+logs.join('\n');
-    function ok(){try{var s=document.getElementById('tt953-diag-status');if(s)s.textContent='Kopierat '+logs.length+' rader';}catch(e){}}
-    try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(ok,function(){fallback();});return;}}catch(e){}
-    fallback();
-    function fallback(){try{var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();ok();}catch(e){prompt('Kopiera diagnoslogg:',txt);}}
-  }
-  function installUi(){try{
-    if(document.getElementById('tt953-diag-toggle'))return;
-    var b=document.createElement('button');b.id='tt953-diag-toggle';b.type='button';b.textContent='DIAG';
-    var p=document.createElement('div');p.id='tt953-diag-panel';
-    p.innerHTML='<div id="tt953-diag-actions"><button type="button" id="tt953-copy">Kopiera logg</button><button type="button" id="tt953-mark">Markera nuläge</button><button type="button" id="tt953-clear">Rensa</button><span id="tt953-diag-status">v953 READONLY</span></div><div id="tt953-diag-content"></div>';
-    document.body.appendChild(p);document.body.appendChild(b);
-    b.addEventListener('click',function(e){e.preventDefault();p.classList.toggle('tt953-open');renderPanel();},true);
-    document.getElementById('tt953-copy').addEventListener('click',function(e){e.preventDefault();copyLogs();},true);
-    document.getElementById('tt953-mark').addEventListener('click',function(e){e.preventDefault();log('MARK','manual',true);},true);
-    document.getElementById('tt953-clear').addEventListener('click',function(e){e.preventDefault();logs=[];seq=0;renderPanel();},true);
-  }catch(e){}}
-
-  function patchDomMoves(){try{
-    if(window.__tt953DomMovePatched)return; window.__tt953DomMovePatched=true;
-    var ap=Element.prototype.appendChild, ib=Element.prototype.insertBefore, rc=Element.prototype.replaceChild;
-    Element.prototype.appendChild=function(child){
-      if(!internal && containsWatched(child)){log('DOM.appendChild',nodeLabel(child)+' -> '+nodeLabel(this)+' stack='+cleanStack(),true);}
-      return ap.apply(this,arguments);
-    };
-    Element.prototype.insertBefore=function(child,before){
-      if(!internal && containsWatched(child)){log('DOM.insertBefore',nodeLabel(child)+' -> '+nodeLabel(this)+' before '+nodeLabel(before)+' stack='+cleanStack(),true);}
-      return ib.apply(this,arguments);
-    };
-    Element.prototype.replaceChild=function(n,o){
-      if(!internal && (containsWatched(n)||containsWatched(o))){log('DOM.replaceChild',nodeLabel(o)+' -> '+nodeLabel(n)+' in '+nodeLabel(this)+' stack='+cleanStack(),true);}
-      return rc.apply(this,arguments);
-    };
-  }catch(e){log('DIAGERR','patchDomMoves '+e,true);}}
-
-  function patchSetMode(){try{
-    if(typeof window.setMode==='function' && !window.setMode.__tt953Wrapped){
-      var old=window.setMode;
-      window.setMode=function(m){log('CALL.setMode','arg='+m+' before='+modeNow()+' stack='+cleanStack(),true);var r=old.apply(this,arguments);setTimeout(function(){log('AFTER.setMode','arg='+m,true);},0);setTimeout(function(){log('AFTER.setMode+120','arg='+m,true);},120);return r;};
-      window.setMode.__tt953Wrapped=true;
-      log('DIAG','setMode wrapped',true);
-    }else{log('DIAG','setMode not found/wrapped',true);}
-  }catch(e){log('DIAGERR','patchSetMode '+e,true);}}
-
-  function observe(){try{
-    OPTION_IDS.concat(TOOL_IDS).forEach(function(id){var el=document.getElementById(id);if(!el)return;
-      var mo=new MutationObserver(function(ms){ms.forEach(function(m){
-        if(m.type==='attributes')log('MUT.attr',id+' '+m.attributeName+'="'+(el.getAttribute(m.attributeName)||'')+'" stack?');
-        else log('MUT.child',id+' childList');
-      });});
-      mo.observe(el,{attributes:true,attributeFilter:['style','class','hidden','aria-hidden'],childList:true,subtree:false});
-    });
-    var bmo=new MutationObserver(function(ms){ms.forEach(function(m){log('MUT.body','class="'+document.body.className+'"');});});
-    bmo.observe(document.body,{attributes:true,attributeFilter:['class']});
-    var pmo=new MutationObserver(function(ms){ms.forEach(function(m){
-      if(containsWatched(m.target)||Array.from(m.addedNodes||[]).some(containsWatched)||Array.from(m.removedNodes||[]).some(containsWatched)){
-        log('MUT.tree','target='+nodeLabel(m.target)+' added='+Array.from(m.addedNodes||[]).map(nodeLabel).join(',')+' removed='+Array.from(m.removedNodes||[]).map(nodeLabel).join(','));
-      }
-    });});
-    pmo.observe(document.body,{childList:true,subtree:true});
-    log('DIAG','observers installed',true);
-  }catch(e){log('DIAGERR','observe '+e,true);}}
-
-  function recordEvent(ev){try{
-    var t=ev.target&&ev.target.closest?ev.target.closest('button,[id],.tab,select,#pitch-svg,#pitch-wrapper'):ev.target;
-    lastEvent=ev.type+':'+nodeLabel(t);
-    if(ev.type==='click'||ev.type==='pointerdown'||ev.type==='touchstart'){
-      if(isWatchedNode(t)|| (t&&t.closest&&t.closest('#arrow-options,#freehand-options,#zone-options,#taktikbar,#tt236-rita-row,#tt252-ipad-rita-row'))){
-        log('EVENT',lastEvent,true);
-      }
-    }
-  }catch(e){}
-  }
-  ['pointerdown','touchstart','click','change','input'].forEach(function(evt){try{document.addEventListener(evt,recordEvent,true);window.addEventListener(evt,recordEvent,true);}catch(e){}});
-  ['resize','orientationchange','fullscreenchange','pageshow'].forEach(function(evt){try{window.addEventListener(evt,function(){lastEvent=evt;log('EVENT',evt,true);},true);}catch(e){}});
-
-  function init(){internal=true;installUi();internal=false;patchDomMoves();patchSetMode();observe();log('DIAG','v953 READONLY start',true);setTimeout(function(){log('DIAG+500','settled',true);},500);setTimeout(function(){log('DIAG+1500','settled',true);},1500);}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-})();
-</script>
-<!-- === slut v953 DIAG READONLY === -->
