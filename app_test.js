@@ -26163,18 +26163,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function isTaktikActive236(){
     try{
-      // v958: gamla redigeringsflaggor (isEditingTaktik/editingTaktikIdx/playback) kan ligga kvar
-      // efter att man lämnat Taktikfilm. De får inte lura Tavla/Snabbtavla att Taktikfilm
-      // fortfarande äger ritverktygen. Bedöm därför bara faktisk synlig Taktikfilm-panel
-      // eller Taktikfilm-fullscreen.
-      if(document.body && document.body.classList.contains('tt764-taktik-object-fullscreen'))return true;
       var tab=document.querySelector('.tab.on[data-panel="taktik"]');
-      var p=document.getElementById('panel-taktik');
-      if(tab && p){
-        var st=getComputedStyle(p);
-        if(p.classList.contains('on') && st.display!=='none' && st.visibility!=='hidden')return true;
-      }
-      return false;
+      return !!(tab || playback || isEditingTaktik || editingTaktikIdx!==null);
     }catch(e){return false;}
   }
 
@@ -26301,15 +26291,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function placeRitaTools236(){
-    // v958: i fullscreen ska den gamla Tavla-raden inte flytta de fysiska
-    // verktygsknapparna alls. Fullscreen har egen topprad (#fs-top-tools).
-    try{
-      if(document.body && (
-        document.body.classList.contains('fullscreen-portrait') ||
-        document.body.classList.contains('tt758-object-fullscreen') ||
-        document.body.classList.contains('tt764-taktik-object-fullscreen')
-      ))return;
-    }catch(e){}
     var bar=drawToolsParent236();
     if(!bar)return;
 
@@ -28364,14 +28345,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       setVersion291();
       injectStyle291();
       updateMobileTop291();
-      // v959: när v958/v959:s Tavla/Snabbtavla-ägare är aktiv får v291 inte
-      // flytta eller gömma ritvalspanelerna efteråt.
-      if(document.body && (document.body.classList.contains('tt958-board-options-owned')||document.body.classList.contains('tt959-board-options-owned'))){
-        document.body.classList.remove('tt291-plane-options','tt291-taktik-active');
-        var oldPlane959=document.getElementById('tt291-plan-draw-options');
-        if(oldPlane959)oldPlane959.style.setProperty('display','none','important');
-        return;
-      }
 
       // v679: i Taktikfilm desktop äger indexets v679-script ritvalsplaceringen.
       // Den gamla v291-panelen ska då inte flytta eller gömma arrow/freehand/zone-options.
@@ -49729,11 +49702,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       setVersion956();
       injectStyle956();
-      // v959: v956 får inte stjäla ritvalen när den nya Tavla/Snabbtavla-ägaren är aktiv.
-      if(document.body && (document.body.classList.contains('tt958-board-options-owned')||document.body.classList.contains('tt959-board-options-owned'))){
-        hideAll956();
-        return;
-      }
       var activeOpt=activeOptionId956();
       if(!isTavlaContext956() || !activeOpt){hideAll956();return;}
       var btn=findActiveButton956();
@@ -49856,12 +49824,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function refreshBoardTools957(){try{
     if(!isBoard957())return;
     clearStaleTaktikOwners957();
-    // v958: i fullscreen ska gamla Tavla-/iPad-rader inte flytta verktygen.
-    // De orsakade konhopp i Taktiktavla fullscreen.
-    if(!isFullscreen957()){
-      if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar();
-      if(typeof window.tt252IpadOwnRitaRow==='function')window.tt252IpadOwnRitaRow();
-    }
+    // Låt de befintliga ägarna göra sin sak, men först efter panelbytet är klart.
+    if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar();
+    if(typeof window.tt252IpadOwnRitaRow==='function')window.tt252IpadOwnRitaRow();
     if(typeof window.tt956PlaceTavlaDrawOptions==='function')window.tt956PlaceTavlaDrawOptions();
   }catch(e){} }
 
@@ -49917,190 +49882,56 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === slut v957 TEST === */
 
 
-/* === v959 TEST: Tavla/Snabbtavla ritval single owner efter Taktikfilm ===
-   Bas: v957 från v956/v955/v954/v939.
-   Syfte:
-   - Behåll v957:s enhetliga ritmotor och v954:s stoppade blink-loop.
-   - Efter Taktikfilm -> Tavla/Snabbtavla: visa ritval med egen sen ägare även om gamla Taktikfilm-flaggor hänger kvar.
-   - I Tavla-fullscreen: stoppa gamla Tavla/iPad-rader från att flytta kon/ritknappar och placera ritvalen under aktiv fullscreen-knapp.
-   - Ingen lager-radering, ingen ny observer, ingen lång timer-loop.
-*/
+/* === v960 DIAG READONLY: after-film draw state trace ===
+   Bas: v957 (senaste bättre tavla-runtime innan v958/v959 blev tyngre).
+   Syfte: logga varför ritval inte visas efter Taktikfilm -> Tavla/Snabbtavla.
+   Ändrar inte ritlogik, flyttar inte ritval, ändrar inte lager/data. */
 (function(){
-  if(window.__tt958BoardAfterFilmFullscreenFix)return;
-  window.__tt958BoardAfterFilmFullscreenFix=true;
-
-  var OPTION_IDS=['arrow-options','freehand-options','zone-options'];
-  var TOOL_TO_OPTION={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
-  var TOOL_BUTTONS={
-    arrow:['fs-tb-arrow','btn-arrow'],
-    freehand:['fs-tb-freehand','btn-freehand'],
-    zone:['fs-tb-zone','btn-zone']
-  };
-
-  function setVersion958(){try{
-    document.title='Taktiktavla TEST v959 tavla ritval single owner';
-    var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v959 TEST';
+  if(window.__tt960AfterFilmDrawStateDiag)return;
+  window.__tt960AfterFilmDrawStateDiag=true;
+  var LOG=[];
+  var MAX=900;
+  var lastEvent='init';
+  function now(){try{return new Date().toLocaleTimeString('sv-SE',{hour12:false})+'.'+String(Date.now()%1000).padStart(3,'0');}catch(e){return String(Date.now());}}
+  function shortEl(el){try{if(!el)return 'null';var s=String(el.tagName||'').toLowerCase();if(el.id)s+='#'+el.id; if(el.className&&typeof el.className==='string')s+='.'+el.className.trim().replace(/\s+/g,'.');return s;}catch(e){return 'el?';}}
+  function vis(el){try{if(!el)return false;var st=getComputedStyle(el);var r=el.getBoundingClientRect();return st.display!=='none'&&st.visibility!=='hidden'&&r.width>0&&r.height>0;}catch(e){return !!el;}}
+  function panel(id){try{var p=document.getElementById(id);if(!p)return id+':missing';var st=getComputedStyle(p),r=p.getBoundingClientRect();return id+':cls='+(p.classList.contains('on')?'on':'off')+',disp='+st.display+',vis='+st.visibility+',rect='+Math.round(r.left)+','+Math.round(r.top)+','+Math.round(r.width)+','+Math.round(r.height)+',visible='+vis(p);}catch(e){return id+':err';}}
+  function opt(id){try{var el=document.getElementById(id);if(!el)return id+':missing';var st=getComputedStyle(el),r=el.getBoundingClientRect();return id+':p='+shortEl(el.parentNode)+',styleDisp='+(el.style&&el.style.display||'')+',disp='+st.display+',vis='+st.visibility+',rect='+Math.round(r.left)+','+Math.round(r.top)+','+Math.round(r.width)+','+Math.round(r.height)+',cls='+(el.className||'');}catch(e){return id+':err';}}
+  function state(reason){try{
+    var tab=document.querySelector('.tab.on');
+    var modeTxt=''; try{modeTxt=String(mode||'');}catch(e){modeTxt='mode?';}
+    return 'reason='+reason+' last='+lastEvent+' mode='+modeTxt+' tab='+shortEl(tab)+' tabPanel='+(tab?tab.getAttribute('data-panel'):'')+' body='+((document.body&&document.body.className)||'')+' || '+panel('panel-formations')+' || '+panel('panel-saves')+' || '+panel('panel-taktik')+' || '+opt('arrow-options')+' || '+opt('freehand-options')+' || '+opt('zone-options')+' || activeBtn='+shortEl(document.querySelector('.tt236-rita-tool.on,.tt236-rita-tool.active,#fs-top-tools .on,#fs-top-tools .active'));
+  }catch(e){return 'state err '+(e&&e.message||e);}}
+  function log(reason){try{LOG.push('['+LOG.length+' '+now()+'] '+state(reason)); if(LOG.length>MAX)LOG.shift();}catch(e){}}
+  function makePanel(){try{
+    if(document.getElementById('tt960-diag-panel'))return;
+    var st=document.createElement('style');st.id='tt960-diag-style';st.textContent='#tt960-diag-panel{position:fixed;left:8px;bottom:8px;z-index:99999;background:#111;color:#fff;border:1px solid #777;border-radius:8px;padding:6px;font:12px system-ui;max-width:92vw}#tt960-diag-panel button{font:12px system-ui;margin:2px;padding:4px 7px}';document.head.appendChild(st);
+    var p=document.createElement('div');p.id='tt960-diag-panel';
+    var b=document.createElement('button');b.textContent='DIAG v960';
+    var c=document.createElement('button');c.textContent='Kopiera logg';
+    var m=document.createElement('span');m.id='tt960-diag-count';m.textContent=' 0';
+    b.onclick=function(){log('manual');m.textContent=' '+LOG.length;};
+    c.onclick=function(){try{log('copy');var txt='TT960 after-film draw-state diag\nUA: '+navigator.userAgent+'\nURL: '+location.href+'\n\n'+LOG.join('\n');navigator.clipboard.writeText(txt).then(function(){c.textContent='Kopierad';setTimeout(function(){c.textContent='Kopiera logg';},1200);},function(){alert(txt);});}catch(e){alert(LOG.join('\n'));}};
+    p.appendChild(b);p.appendChild(c);p.appendChild(m);document.body.appendChild(p);
   }catch(e){}}
-
-  function visible958(el){try{if(!el)return false;var st=getComputedStyle(el);if(st.display==='none'||st.visibility==='hidden'||st.opacity==='0')return false;var r=el.getBoundingClientRect();return r.width>0&&r.height>0;}catch(e){return !!el;}}
-  function activeMode958(){try{return String(mode||'');}catch(e){return '';}}
-  function activeOpt958(){return TOOL_TO_OPTION[activeMode958()]||null;}
-  function isFs958(){try{return document.body.classList.contains('fullscreen-portrait')||document.body.classList.contains('tt758-object-fullscreen');}catch(e){return false;}}
-  function panelVisible958(id){try{var p=document.getElementById(id);if(!p)return false;var st=getComputedStyle(p);return p.classList.contains('on') && st.display!=='none' && st.visibility!=='hidden';}catch(e){return false;}}
-  function activeTabPanel958(){try{var t=document.querySelector('.tab.on');return t?t.getAttribute('data-panel')||'':'';}catch(e){return '';}}
-  function isBoard958(){try{
-    // v959: efter Taktikfilm kan .tab.on fortfarande peka på taktik en stund.
-    // Därför måste faktisk synlig Tavla/Snabbtavla-panel vinna över gammal flik-state.
-    var savesVisible=panelVisible958('panel-saves');
-    var formationsVisible=panelVisible958('panel-formations');
-    if(savesVisible||formationsVisible)return true;
-
-    var taktikVisible=false;
-    try{
-      var tp=document.getElementById('panel-taktik');
-      if(tp&&tp.classList.contains('on')){
-        var ts=getComputedStyle(tp);
-        taktikVisible=ts.display!=='none'&&ts.visibility!=='hidden';
-      }
-    }catch(e){}
-
-    var tab=activeTabPanel958();
-    if((tab==='saves'||tab==='formations')&&!taktikVisible)return true;
-    if(isFs958() && document.body && (document.body.classList.contains('tt718-tavla-active')||document.body.classList.contains('tt719-tavla-active')||document.body.classList.contains('tt722-tavla-active')||document.body.classList.contains('tt733-tavla-active')) && !document.body.classList.contains('tt764-taktik-object-fullscreen'))return true;
-    if(tab==='taktik' && taktikVisible)return false;
-    if(document.body && (document.body.classList.contains('tt186-saves-open')||document.body.classList.contains('tt187-saves-open')||document.body.classList.contains('tt188-saves-ios-open')))return true;
+  function mark(ev){try{lastEvent=(ev.type||'?')+':'+shortEl(ev.target); if(ev.target&&ev.target.closest&&ev.target.closest('.tab,#btn-arrow,#btn-freehand,#btn-zone,#btn-text,#tt747-object-btn,#fs-tb-arrow,#fs-tb-freehand,#fs-tb-zone,#fs-tb-text,#taktikbar,#edit-taktik-steps,#tt616-layer-panel,#tt642-layer-mobile-toggle')){log('event '+lastEvent);setTimeout(function(){log('event+80 '+lastEvent);},80);setTimeout(function(){log('event+260 '+lastEvent);},260);}}catch(e){}}
+  ['click','touchstart','pointerdown'].forEach(function(t){document.addEventListener(t,mark,{capture:true,passive:true});});
+  var oldSet=typeof setMode==='function'?setMode:null;
+  if(oldSet&&!oldSet.__tt960DiagWrapped){
+    var wrapped=function(){log('before setMode '+arguments[0]);var res=oldSet.apply(this,arguments);log('after setMode '+arguments[0]);setTimeout(function(){log('setMode+120 '+arguments[0]);}.bind(null,arguments[0]),120);return res;};
+    wrapped.__tt960DiagWrapped=true;setMode=wrapped;try{window.setMode=wrapped;}catch(e){}
+  }
+  var oldSwitch=typeof switchWorkspacePanel==='function'?switchWorkspacePanel:null;
+  if(oldSwitch&&!oldSwitch.__tt960DiagWrapped){
+    var sw=function(){log('before switch '+arguments[0]);var res=oldSwitch.apply(this,arguments);log('after switch '+arguments[0]);setTimeout(function(){log('switch+120 '+arguments[0]);}.bind(null,arguments[0]),120);setTimeout(function(){log('switch+500 '+arguments[0]);}.bind(null,arguments[0]),500);return res;};
+    sw.__tt960DiagWrapped=true;switchWorkspacePanel=sw;try{window.switchWorkspacePanel=sw;}catch(e){}
+  }
+  try{
+    var mo=new MutationObserver(function(ms){try{var hit=false;ms.forEach(function(m){var t=m.target;if(t===document.body|| (t&&t.id&&/^(arrow-options|freehand-options|zone-options|tt956-tavla-draw-options-host|tt291-plan-draw-options)$/.test(t.id)))hit=true;});if(hit)log('mutation');}catch(e){}});
+    mo.observe(document.body,{attributes:true,attributeFilter:['class','style'],subtree:true,childList:true});
   }catch(e){}
-    return false;
-  }
-
-  function host958(){
-    var h=document.getElementById('tt958-board-draw-options-host');
-    if(h)return h;
-    h=document.createElement('div');
-    h.id='tt958-board-draw-options-host';
-    h.setAttribute('aria-hidden','true');
-    document.body.appendChild(h);
-    return h;
-  }
-
-  function injectStyle958(){
-    if(document.getElementById('tt958-board-draw-options-style'))return;
-    var st=document.createElement('style');
-    st.id='tt958-board-draw-options-style';
-    st.textContent=[
-      '#tt958-board-draw-options-host{display:none;visibility:hidden;position:fixed;left:0;top:0;z-index:22000;max-width:min(94vw,380px);box-sizing:border-box;pointer-events:none}',
-      '#tt958-board-draw-options-host.tt958-open{display:flex!important;visibility:visible!important}',
-      '#tt958-board-draw-options-host #arrow-options,#tt958-board-draw-options-host #freehand-options,#tt958-board-draw-options-host #zone-options{position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;z-index:auto!important;margin:0!important;width:max-content!important;max-width:min(94vw,380px)!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;box-sizing:border-box!important;background:rgba(17,26,20,.97)!important;border:1px solid #2d4a35!important;border-radius:8px!important;padding:3px 5px!important;box-shadow:0 4px 14px rgba(0,0,0,.35)!important;gap:4px!important;align-items:center!important;pointer-events:auto!important;white-space:nowrap!important}',
-      '#tt958-board-draw-options-host #arrow-options:not(.tt958-active-option),#tt958-board-draw-options-host #freehand-options:not(.tt958-active-option),#tt958-board-draw-options-host #zone-options:not(.tt958-active-option){display:none!important}',
-      '#tt958-board-draw-options-host .tt958-active-option{display:flex!important}',
-      '#tt958-board-draw-options-host select,#tt958-board-draw-options-host button{min-height:26px!important;height:26px!important;font-size:.72rem!important;line-height:1!important;max-width:116px!important;padding:1px 4px!important;margin:0!important;border-radius:5px!important;pointer-events:auto!important;touch-action:auto!important}',
-      '#tt958-board-draw-options-host label,#tt958-board-draw-options-host span{font-size:.72rem!important;line-height:1!important;margin:0!important;padding:0!important}',
-      'body.tt958-board-options-owned #tt291-plan-draw-options{display:none!important}',
-      'body.tt958-board-options-owned #tt956-tavla-draw-options-host{display:none!important}',
-      'body.fullscreen-portrait.tt958-board-options-owned .tt248-tavla-rita-row,body.tt758-object-fullscreen.tt958-board-options-owned .tt248-tavla-rita-row{display:none!important}'
-    ].join('\n');
-    document.head.appendChild(st);
-  }
-
-  function findButton958(){
-    var m=activeMode958();
-    var ids=TOOL_BUTTONS[m]||[];
-    for(var i=0;i<ids.length;i++){
-      var b=document.getElementById(ids[i]);
-      if(b&&visible958(b))return b;
-    }
-    try{
-      var on=document.querySelector('#fs-top-tools .on,#fs-top-tools .active,.tt236-rita-tool.on,.tt236-rita-tool.active');
-      if(on&&visible958(on))return on;
-    }catch(e){}
-    return null;
-  }
-
-  function hide958(){try{
-    var h=document.getElementById('tt958-board-draw-options-host');
-    if(h){h.classList.remove('tt958-open');h.style.setProperty('display','none','important');h.style.setProperty('visibility','hidden','important');}
-    document.body.classList.remove('tt958-board-options-owned','tt959-board-options-owned');
-    OPTION_IDS.forEach(function(id){var el=document.getElementById(id);if(!el)return;el.classList.remove('tt958-active-option');if(h&&el.parentNode===h)el.style.setProperty('display','none','important');});
-  }catch(e){}}
-
-  function clearStaleFilm958(){try{
-    if(!isBoard958())return;
-    document.body.classList.remove('tt248-taktik-active','tt291-taktik-active','tt291-plane-options','tt956-tavla-options-owned','tt688-taktikfilm-editor-active','tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen','tt764-taktik-object-fullscreen');
-  }catch(e){}}
-
-  function place958(){try{
-    setVersion958();
-    injectStyle958();
-    clearStaleFilm958();
-    var active=activeOpt958();
-    if(!isBoard958()||!active){hide958();return;}
-    var btn=findButton958();
-    if(!btn){hide958();return;}
-    var h=host958();
-    document.body.classList.add('tt958-board-options-owned','tt959-board-options-owned');
-    OPTION_IDS.forEach(function(id){
-      var el=document.getElementById(id);if(!el)return;
-      if(el.parentNode!==h)h.appendChild(el);
-      var on=id===active;
-      el.classList.toggle('tt958-active-option',on);
-      el.style.setProperty('display',on?'flex':'none','important');
-    });
-    h.classList.add('tt958-open');
-    h.style.setProperty('display','flex','important');
-    h.style.setProperty('visibility','hidden','important');
-    var r=btn.getBoundingClientRect(),gap=6;
-    h.style.left='0px';h.style.top='0px';
-    var hr=h.getBoundingClientRect();
-    var vw=window.innerWidth||document.documentElement.clientWidth||0;
-    var vh=window.innerHeight||document.documentElement.clientHeight||0;
-    var left=Math.round(r.left);
-    var top=Math.round(r.bottom+gap);
-    if(left+hr.width>vw-4)left=Math.max(4,vw-hr.width-4);
-    if(left<4)left=4;
-    if(top+hr.height>vh-4)top=Math.max(4,Math.round(r.top-hr.height-gap));
-    if(top<4)top=4;
-    h.style.left=left+'px';
-    h.style.top=top+'px';
-    h.style.setProperty('visibility','visible','important');
-  }catch(e){}}
-
-  function schedule958(){
-    place958();
-    setTimeout(place958,20);
-    setTimeout(place958,140);
-    setTimeout(place958,320);
-  }
-
-  // Ersätt publik refresh så v957:s eventkedja inte fortsätter flytta gamla rader i fullscreen.
-  window.tt957RefreshBoardDrawRuntime=function(){try{clearStaleFilm958();schedule958();}catch(e){}};
-
-  var oldSetMode958=typeof setMode==='function'?setMode:null;
-  if(oldSetMode958&&!oldSetMode958.__tt958Wrapped){
-    var wrappedSetMode958=function(){var res=oldSetMode958.apply(this,arguments);schedule958();return res;};
-    wrappedSetMode958.__tt958Wrapped=true;
-    setMode=wrappedSetMode958;try{window.setMode=wrappedSetMode958;}catch(e){}
-  }
-
-  var oldSwitch958=typeof switchWorkspacePanel==='function'?switchWorkspacePanel:null;
-  if(oldSwitch958&&!oldSwitch958.__tt958Wrapped){
-    var wrappedSwitch958=function(){var res=oldSwitch958.apply(this,arguments);setTimeout(schedule958,40);setTimeout(schedule958,220);return res;};
-    wrappedSwitch958.__tt958Wrapped=true;
-    switchWorkspacePanel=wrappedSwitch958;try{window.switchWorkspacePanel=wrappedSwitch958;}catch(e){}
-  }
-
-  ['click','touchstart','pointerdown'].forEach(function(type){document.addEventListener(type,function(ev){try{
-    if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;
-    if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.tab,[data-panel],#btn-arrow,#btn-freehand,#btn-zone,#fs-tb-arrow,#fs-tb-freehand,#fs-tb-zone,#tt747-object-btn'))schedule958();
-  }catch(e){}}, {capture:true,passive:true});});
-  window.addEventListener('resize',function(){setTimeout(schedule958,120);});
-  document.addEventListener('fullscreenchange',schedule958);
-  document.addEventListener('webkitfullscreenchange',schedule958);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule958);
-  else schedule958();
-  setTimeout(schedule958,600);
-  setTimeout(setVersion958,1500);
-
-  window.tt958PlaceBoardDrawOptions=place958;
+  function setVersion(){try{document.title='Taktiktavla TEST v960 DIAG after-film draw state';var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – DIAG v960 after-film ritval';}catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){makePanel();setVersion();log('DOMContentLoaded');});else{makePanel();setVersion();log('loaded');}
+  setTimeout(function(){makePanel();setVersion();log('boot+700');},700);
 })();
-/* === slut v959 TEST === */
+/* === slut v960 DIAG READONLY === */
