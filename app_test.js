@@ -49797,148 +49797,119 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v965 TEST === */
 
-/* === v966 TEST: återställ ritrad efter fullscreen + stabil kon i Tavla fullscreen ===
-   Bas: v965.
+
+/* v967 TEST rollback: exakt återgång till v965 efter misslyckad v966 fullscreen-fix. Ingen funktionsändring utöver fil/version för säker bas. */
+
+/* === v968 TEST: endast återställ normal ritrad efter fullscreen ===
+   Bas: v967/v965.
    Syfte:
-   - Efter Snabbtavla/Taktiktavla fullscreen kunde vanliga ritraden vara dold tills nästa klick.
-   - I Taktiktavla fullscreen kunde konknappen blinka/försvinna kort vid ritvalsbyte när tt747
-     tog bort ready-klassen innan den återplacerades.
-   - Rör inte v964:s fungerande ritvalsvisning eller själva ritmotorn. */
+   - v966 stoppas. Den rörde fullscreen/setMode/kon och bröt ritval/verktyg.
+   - Den här fixen gör bara en sak: när man har lämnat Snabbtavla/Taktiktavla fullscreen
+     ska den vanliga ritraden synas direkt, utan första extra klick på planen.
+   - Rör inte fullscreenens verktyg, ritvalens placering, konknappen eller ritmotorn. */
 (function(){
   'use strict';
-  if(window.__tt966FullscreenReturnConeStability)return;
-  window.__tt966FullscreenReturnConeStability=true;
+  if(window.__tt968FullscreenReturnRowOnly)return;
+  window.__tt968FullscreenReturnRowOnly=true;
 
-  function setVersion966(){try{
-    document.title='Taktiktavla TEST v966 fullscreen retur kon';
+  var wasFs968=false;
+  var restoreTimer968=0;
+
+  function setVersion968(){try{
+    document.title='Taktiktavla TEST v968 fullscreen retur ritrad';
     var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v966 TEST';
+    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v968 TEST';
   }catch(e){}}
 
-  function isBoardPanel966(){try{
-    var saves=document.getElementById('panel-saves');
-    var forms=document.getElementById('panel-formations');
-    if(saves && saves.classList.contains('on'))return true;
-    if(forms && forms.classList.contains('on'))return true;
-    return document.body.classList.contains('tt733-tavla-active') || document.body.classList.contains('tt718-tavla-active') || document.body.classList.contains('tt719-tavla-active') || document.body.classList.contains('tt722-tavla-active') || document.body.classList.contains('tt756-snabb-object-active');
+  function isFs968(){try{return !!(document.body&&document.body.classList&&document.body.classList.contains('fullscreen-portrait'));}catch(e){return false;}}
+  function visiblePanel968(id){try{
+    var p=document.getElementById(id);
+    if(!p||!p.classList.contains('on'))return false;
+    var st=getComputedStyle(p);
+    if(st.display==='none'||st.visibility==='hidden')return false;
+    var r=p.getBoundingClientRect();
+    return r.width>2&&r.height>2;
+  }catch(e){return false;}}
+  function isBoard968(){try{
+    if(visiblePanel968('panel-saves')||visiblePanel968('panel-formations'))return true;
+    var b=document.body.classList;
+    return b.contains('tt733-tavla-active')||b.contains('tt718-tavla-active')||b.contains('tt719-tavla-active')||b.contains('tt722-tavla-active')||b.contains('tt745-snabb-active')||b.contains('tt756-snabb-object-active');
   }catch(e){return false;}}
 
-  function isFullscreen966(){try{return document.body.classList.contains('fullscreen-portrait');}catch(e){return false;}}
-
-  function injectStyle966(){try{
-    if(document.getElementById('tt966-fullscreen-return-style'))return;
+  function injectStyle968(){try{
+    if(document.getElementById('tt968-fullscreen-return-row-style'))return;
     var st=document.createElement('style');
-    st.id='tt966-fullscreen-return-style';
+    st.id='tt968-fullscreen-return-row-style';
     st.textContent=[
-      /* I fullscreen ska konen inte hinna döljas under samma frame som tt747 flyttar/markerar om den. */
-      'body.fullscreen-portrait.tt758-object-fullscreen #fs-top-tools #tt747-object-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important}',
-      'body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important}',
-      /* När fullscreen har stängts ska normal Tavla-/Snabbtavla-rad inte ärva dold fs-state. */
-      'body:not(.fullscreen-portrait).tt966-board-return-restoring #tt252-ipad-rita-row,body:not(.fullscreen-portrait).tt966-board-return-restoring .tt248-tavla-rita-row{visibility:visible!important;opacity:1!important}'
+      'body:not(.fullscreen-portrait).tt968-board-return-row #tt252-ipad-rita-row,body:not(.fullscreen-portrait).tt968-board-return-row .tt248-tavla-rita-row{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}',
+      'body:not(.fullscreen-portrait).tt968-board-return-row #tt236-rita-move,body:not(.fullscreen-portrait).tt968-board-return-row #btn-arrow,body:not(.fullscreen-portrait).tt968-board-return-row #btn-freehand,body:not(.fullscreen-portrait).tt968-board-return-row #btn-zone,body:not(.fullscreen-portrait).tt968-board-return-row #btn-text,body:not(.fullscreen-portrait).tt968-board-return-row #tt747-object-btn{visibility:visible!important;opacity:1!important}'
     ].join('\n');
     document.head.appendChild(st);
   }catch(e){}}
 
-  var returnTimer966=0;
-  function restoreBoardToolbar966(reason){try{
-    setVersion966();
-    injectStyle966();
-    if(isFullscreen966() || !isBoardPanel966())return;
-    document.body.classList.add('tt966-board-return-restoring');
+  function restoreRow968(reason){try{
+    setVersion968();
+    injectStyle968();
+    if(isFs968()||!isBoard968())return;
+    document.body.classList.add('tt968-board-return-row');
 
-    ['btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-move','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset','tt747-object-btn'].forEach(function(id){
-      var el=document.getElementById(id);
-      if(!el)return;
-      el.style.removeProperty('visibility');
-      el.style.removeProperty('opacity');
-      if(id!=='btn-movement')el.style.removeProperty('display');
-    });
-
+    // Använd bara befintliga, bekräftat fungerande synkfunktioner från v954/v965.
+    // Kör inte tt964PlaceBoardDrawOptions här, eftersom v964:s ritval redan fungerar
+    // och fullscreen-returen bara behöver väcka ritraden.
     try{if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar();}catch(e){}
     try{if(typeof window.tt965NormalizeBoardToolbarOrder==='function')window.tt965NormalizeBoardToolbarOrder();}catch(e){}
-    try{if(typeof window.tt964PlaceBoardDrawOptions==='function')window.tt964PlaceBoardDrawOptions();}catch(e){}
 
-    clearTimeout(returnTimer966);
-    returnTimer966=setTimeout(function(){try{
-      try{if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar();}catch(e){}
-      try{if(typeof window.tt965NormalizeBoardToolbarOrder==='function')window.tt965NormalizeBoardToolbarOrder();}catch(e){}
-      try{if(typeof window.tt964PlaceBoardDrawOptions==='function')window.tt964PlaceBoardDrawOptions();}catch(e){}
-      document.body.classList.remove('tt966-board-return-restoring');
-    }catch(e){}},180);
-  }catch(e){}}
-
-  function stabilizeFullscreenCone966(){try{
-    injectStyle966();
-    if(!isFullscreen966() || !document.body.classList.contains('tt758-object-fullscreen'))return;
-    var b=document.getElementById('tt747-object-btn');
-    var row=document.getElementById('fs-top-tools');
-    var ref=document.getElementById('fs-tb-zone');
-    if(!b || !row || !ref)return;
-    if(b.parentNode!==row || b.previousElementSibling!==ref){
-      row.insertBefore(b,ref.nextSibling);
-    }
-    b.classList.add('tt751-object-ready');
-    b.classList.remove('tt749-object-ready');
-    b.style.setProperty('display','inline-flex','important');
-    b.style.setProperty('visibility','visible','important');
-    b.style.setProperty('opacity','1','important');
-  }catch(e){}}
-
-  var oldSetMode966=typeof setMode==='function'?setMode:null;
-  if(oldSetMode966 && !oldSetMode966.__tt966Wrapped){
-    var wrappedSetMode966=function(){
-      var wasFs=isFullscreen966();
-      var res=oldSetMode966.apply(this,arguments);
-      if(wasFs){
-        stabilizeFullscreenCone966();
-        requestAnimationFrame(stabilizeFullscreenCone966);
-        setTimeout(stabilizeFullscreenCone966,90);
-      }else{
-        setTimeout(function(){restoreBoardToolbar966('setMode');},0);
+    clearTimeout(restoreTimer968);
+    restoreTimer968=setTimeout(function(){try{
+      if(!isFs968()&&isBoard968()){
+        try{if(typeof window.tt965NormalizeBoardToolbarOrder==='function')window.tt965NormalizeBoardToolbarOrder();}catch(e){}
       }
+      document.body.classList.remove('tt968-board-return-row');
+    }catch(e){}},220);
+  }catch(e){}}
+
+  function checkTransition968(reason){try{
+    var fs=isFs968();
+    if(wasFs968&&!fs){
+      requestAnimationFrame(function(){restoreRow968(reason||'fs-exit');});
+      setTimeout(function(){restoreRow968((reason||'fs-exit')+'-late');},160);
+    }
+    wasFs968=fs;
+  }catch(e){}}
+
+  // Startläge och transitions. Vi wrappar INTE setMode och rör INTE fullscreenverktygen.
+  wasFs968=isFs968();
+  var oldExit968=typeof exitFullscreenPortrait==='function'?exitFullscreenPortrait:null;
+  if(oldExit968 && !oldExit968.__tt968Wrapped){
+    var wrappedExit968=function(){
+      wasFs968=true;
+      var res=oldExit968.apply(this,arguments);
+      requestAnimationFrame(function(){restoreRow968('exitFullscreenPortrait');});
+      setTimeout(function(){restoreRow968('exitFullscreenPortrait-late');},170);
       return res;
     };
-    wrappedSetMode966.__tt966Wrapped=true;
-    setMode=wrappedSetMode966;
-    window.setMode=wrappedSetMode966;
+    wrappedExit968.__tt968Wrapped=true;
+    exitFullscreenPortrait=wrappedExit968;
+    window.exitFullscreenPortrait=wrappedExit968;
   }
 
-  var oldExit966=typeof exitFullscreenPortrait==='function'?exitFullscreenPortrait:null;
-  if(oldExit966 && !oldExit966.__tt966Wrapped){
-    var wrappedExit966=function(){
-      var res=oldExit966.apply(this,arguments);
-      setTimeout(function(){restoreBoardToolbar966('exit');},0);
-      setTimeout(function(){restoreBoardToolbar966('exit-late');},160);
-      return res;
-    };
-    wrappedExit966.__tt966Wrapped=true;
-    exitFullscreenPortrait=wrappedExit966;
-    window.exitFullscreenPortrait=wrappedExit966;
-  }
-
-  ['fullscreenchange','webkitfullscreenchange'].forEach(function(type){
-    document.addEventListener(type,function(){setTimeout(function(){
-      if(isFullscreen966())stabilizeFullscreenCone966();
-      else restoreBoardToolbar966(type);
-    },80);},true);
+  ['fullscreenchange','webkitfullscreenchange','resize','orientationchange'].forEach(function(type){
+    window.addEventListener(type,function(){setTimeout(function(){checkTransition968(type);},40);},true);
+    document.addEventListener(type,function(){setTimeout(function(){checkTransition968(type);},40);},true);
   });
 
   document.addEventListener('click',function(ev){try{
     var t=ev&&ev.target;
     if(t&&t.closest&&t.closest('#fs-restore-btn')){
-      setTimeout(function(){restoreBoardToolbar966('restore-click');},40);
-      setTimeout(function(){restoreBoardToolbar966('restore-click-late');},220);
-    }
-    if(t&&t.closest&&t.closest('#fs-top-tools button')){
-      setTimeout(stabilizeFullscreenCone966,0);
-      setTimeout(stabilizeFullscreenCone966,90);
+      wasFs968=true;
+      setTimeout(function(){restoreRow968('restore-click');},80);
+      setTimeout(function(){restoreRow968('restore-click-late');},220);
     }
   }catch(e){}},true);
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion966();injectStyle966();});
-  else {setVersion966();injectStyle966();}
-  setTimeout(setVersion966,900);
-  window.tt966RestoreBoardToolbar=restoreBoardToolbar966;
-  window.tt966StabilizeFullscreenCone=stabilizeFullscreenCone966;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion968();injectStyle968();wasFs968=isFs968();},{once:true});
+  else {setVersion968();injectStyle968();wasFs968=isFs968();}
+  setTimeout(setVersion968,900);
+  window.tt968RestoreBoardRowAfterFullscreen=restoreRow968;
 })();
-/* === slut v966 TEST === */
+/* === slut v968 TEST === */
