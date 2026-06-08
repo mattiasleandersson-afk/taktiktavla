@@ -49800,116 +49800,111 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 /* v967 TEST rollback: exakt återgång till v965 efter misslyckad v966 fullscreen-fix. Ingen funktionsändring utöver fil/version för säker bas. */
 
-/* === v968 TEST: endast återställ normal ritrad efter fullscreen ===
-   Bas: v967/v965.
+
+/* === v969 TEST: persistent normal ritrad efter fullscreen-retur ===
+   Bas: v967/v965. Bygger inte på v966/v968.
    Syfte:
-   - v966 stoppas. Den rörde fullscreen/setMode/kon och bröt ritval/verktyg.
-   - Den här fixen gör bara en sak: när man har lämnat Snabbtavla/Taktiktavla fullscreen
-     ska den vanliga ritraden synas direkt, utan första extra klick på planen.
-   - Rör inte fullscreenens verktyg, ritvalens placering, konknappen eller ritmotorn. */
+   - v968 missade returen: ritraden syntes inte efter Snabbtavla/Taktiktavla fullscreen.
+   - Den här versionen försöker inte styra fullscreen alls.
+   - I vanligt Tavla/Snabbtavla-läge får en enkel, persistent body-klass hålla normal ritrad synlig
+     tills användaren lämnar Tavla/Snabbtavla eller går in i fullscreen/Taktikfilm.
+   - Rör inte ritvalens v964-placering, konknappen eller ritmotorn. */
 (function(){
   'use strict';
-  if(window.__tt968FullscreenReturnRowOnly)return;
-  window.__tt968FullscreenReturnRowOnly=true;
+  if(window.__tt969BoardRowPersistentAfterFullscreen)return;
+  window.__tt969BoardRowPersistentAfterFullscreen=true;
 
-  var wasFs968=false;
-  var restoreTimer968=0;
+  var pending969=0;
 
-  function setVersion968(){try{
-    document.title='Taktiktavla TEST v968 fullscreen retur ritrad';
+  function setVersion969(){try{
+    document.title='Taktiktavla TEST v969 ritrad efter fullscreen';
     var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v968 TEST';
+    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v969 TEST';
   }catch(e){}}
 
-  function isFs968(){try{return !!(document.body&&document.body.classList&&document.body.classList.contains('fullscreen-portrait'));}catch(e){return false;}}
-  function visiblePanel968(id){try{
+  function isFs969(){try{return !!document.body.classList.contains('fullscreen-portrait');}catch(e){return false;}}
+  function panelVisible969(id){try{
     var p=document.getElementById(id);
     if(!p||!p.classList.contains('on'))return false;
     var st=getComputedStyle(p);
-    if(st.display==='none'||st.visibility==='hidden')return false;
+    if(st.display==='none'||st.visibility==='hidden'||st.opacity==='0')return false;
     var r=p.getBoundingClientRect();
     return r.width>2&&r.height>2;
   }catch(e){return false;}}
-  function isBoard968(){try{
-    if(visiblePanel968('panel-saves')||visiblePanel968('panel-formations'))return true;
+  function isTaktik969(){try{
+    if(panelVisible969('panel-taktik'))return true;
     var b=document.body.classList;
-    return b.contains('tt733-tavla-active')||b.contains('tt718-tavla-active')||b.contains('tt719-tavla-active')||b.contains('tt722-tavla-active')||b.contains('tt745-snabb-active')||b.contains('tt756-snabb-object-active');
+    return b.contains('tt688-taktikfilm-editor-active')||b.contains('tt743-mobile-taktikfilm-active')||b.contains('tt743-mobile-taktikfilm-fullscreen')||b.contains('v66-taktik-fs');
+  }catch(e){return false;}}
+  function isBoard969(){try{
+    if(panelVisible969('panel-saves')||panelVisible969('panel-formations'))return true;
+    var b=document.body.classList;
+    return b.contains('tt733-tavla-active')||b.contains('tt718-tavla-active')||b.contains('tt719-tavla-active')||b.contains('tt722-tavla-active')||b.contains('tt186-saves-open')||b.contains('tt187-saves-open')||b.contains('tt188-saves-ios-open')||b.contains('tt745-snabb-active')||b.contains('tt756-snabb-object-active');
   }catch(e){return false;}}
 
-  function injectStyle968(){try{
-    if(document.getElementById('tt968-fullscreen-return-row-style'))return;
+  function injectStyle969(){try{
+    if(document.getElementById('tt969-board-row-persistent-style'))return;
     var st=document.createElement('style');
-    st.id='tt968-fullscreen-return-row-style';
+    st.id='tt969-board-row-persistent-style';
     st.textContent=[
-      'body:not(.fullscreen-portrait).tt968-board-return-row #tt252-ipad-rita-row,body:not(.fullscreen-portrait).tt968-board-return-row .tt248-tavla-rita-row{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}',
-      'body:not(.fullscreen-portrait).tt968-board-return-row #tt236-rita-move,body:not(.fullscreen-portrait).tt968-board-return-row #btn-arrow,body:not(.fullscreen-portrait).tt968-board-return-row #btn-freehand,body:not(.fullscreen-portrait).tt968-board-return-row #btn-zone,body:not(.fullscreen-portrait).tt968-board-return-row #btn-text,body:not(.fullscreen-portrait).tt968-board-return-row #tt747-object-btn{visibility:visible!important;opacity:1!important}'
+      'body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #topbar{display:block!important;visibility:visible!important;opacity:1!important;height:auto!important;min-height:0!important;max-height:none!important;pointer-events:auto!important;overflow:visible!important}',
+      'body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt252-ipad-rita-row,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) .tt248-tavla-rita-row{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}',
+      'body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt236-rita-move,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #btn-arrow,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #btn-freehand,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #btn-zone,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt747-object-btn,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #btn-text,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt236-rita-clear,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt236-rita-undo,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt236-rita-reset{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}'
     ].join('\n');
     document.head.appendChild(st);
   }catch(e){}}
 
-  function restoreRow968(reason){try{
-    setVersion968();
-    injectStyle968();
-    if(isFs968()||!isBoard968())return;
-    document.body.classList.add('tt968-board-return-row');
+  function normalize969(reason){try{
+    setVersion969();
+    injectStyle969();
+    var active=isBoard969()&&!isFs969()&&!isTaktik969();
+    document.body.classList.toggle('tt969-board-normal-row',!!active);
+    if(!active)return;
 
-    // Använd bara befintliga, bekräftat fungerande synkfunktioner från v954/v965.
-    // Kör inte tt964PlaceBoardDrawOptions här, eftersom v964:s ritval redan fungerar
-    // och fullscreen-returen bara behöver väcka ritraden.
-    try{if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar();}catch(e){}
-    try{if(typeof window.tt965NormalizeBoardToolbarOrder==='function')window.tt965NormalizeBoardToolbarOrder();}catch(e){}
+    // Om äldre radsynk råkat lämna Taktikfilm-gömklass efter fullscreen, nollställ bara i faktiskt Tavla/Snabbtavla.
+    document.body.classList.remove('tt248-taktik-active');
+    document.body.classList.remove('tt291-taktik-active');
 
-    clearTimeout(restoreTimer968);
-    restoreTimer968=setTimeout(function(){try{
-      if(!isFs968()&&isBoard968()){
-        try{if(typeof window.tt965NormalizeBoardToolbarOrder==='function')window.tt965NormalizeBoardToolbarOrder();}catch(e){}
-      }
-      document.body.classList.remove('tt968-board-return-row');
-    }catch(e){}},220);
+    // Återanvänd befintliga stabila byggare. Ingen egen flytt av ritvalen här.
+    try{ if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar(); }catch(e){}
+    try{ if(typeof window.tt248AlwaysOpenRitaRowNoToggle==='function')window.tt248AlwaysOpenRitaRowNoToggle(); }catch(e){}
+    try{ if(typeof window.tt252IpadOwnRitaRow==='function')window.tt252IpadOwnRitaRow(); }catch(e){}
+    try{ if(typeof window.tt965NormalizeBoardToolbarOrder==='function')window.tt965NormalizeBoardToolbarOrder(); }catch(e){}
+    // v964 äger ritvalens placering. Körs bara efter lägesbyte, inte under ritning.
+    try{ if(typeof window.tt964PlaceBoardDrawOptions==='function')window.tt964PlaceBoardDrawOptions(); }catch(e){}
   }catch(e){}}
 
-  function checkTransition968(reason){try{
-    var fs=isFs968();
-    if(wasFs968&&!fs){
-      requestAnimationFrame(function(){restoreRow968(reason||'fs-exit');});
-      setTimeout(function(){restoreRow968((reason||'fs-exit')+'-late');},160);
-    }
-    wasFs968=fs;
-  }catch(e){}}
-
-  // Startläge och transitions. Vi wrappar INTE setMode och rör INTE fullscreenverktygen.
-  wasFs968=isFs968();
-  var oldExit968=typeof exitFullscreenPortrait==='function'?exitFullscreenPortrait:null;
-  if(oldExit968 && !oldExit968.__tt968Wrapped){
-    var wrappedExit968=function(){
-      wasFs968=true;
-      var res=oldExit968.apply(this,arguments);
-      requestAnimationFrame(function(){restoreRow968('exitFullscreenPortrait');});
-      setTimeout(function(){restoreRow968('exitFullscreenPortrait-late');},170);
-      return res;
-    };
-    wrappedExit968.__tt968Wrapped=true;
-    exitFullscreenPortrait=wrappedExit968;
-    window.exitFullscreenPortrait=wrappedExit968;
+  function schedule969(delay){
+    clearTimeout(pending969);
+    pending969=setTimeout(function(){normalize969('scheduled');},typeof delay==='number'?delay:80);
+  }
+  function burst969(){
+    schedule969(40);
+    setTimeout(function(){normalize969('late-1');},180);
+    setTimeout(function(){normalize969('late-2');},420);
   }
 
+  // Viktigt: inga lyssnare på själva planen/ritning. Bara meny, fullscreen-retur och vybyte.
   ['fullscreenchange','webkitfullscreenchange','resize','orientationchange'].forEach(function(type){
-    window.addEventListener(type,function(){setTimeout(function(){checkTransition968(type);},40);},true);
-    document.addEventListener(type,function(){setTimeout(function(){checkTransition968(type);},40);},true);
+    window.addEventListener(type,burst969,true);
+    document.addEventListener(type,burst969,true);
   });
-
   document.addEventListener('click',function(ev){try{
     var t=ev&&ev.target;
-    if(t&&t.closest&&t.closest('#fs-restore-btn')){
-      wasFs968=true;
-      setTimeout(function(){restoreRow968('restore-click');},80);
-      setTimeout(function(){restoreRow968('restore-click-late');},220);
-    }
+    if(!t||!t.closest)return;
+    if(t.closest('#pitch-svg,.pitch-svg,svg'))return;
+    if(t.closest('#fs-restore-btn,.tab,#topbar,button'))burst969();
+  }catch(e){}},true);
+  document.addEventListener('touchend',function(ev){try{
+    var t=ev&&ev.target;
+    if(!t||!t.closest)return;
+    if(t.closest('#pitch-svg,.pitch-svg,svg'))return;
+    if(t.closest('#fs-restore-btn,.tab,#topbar,button'))burst969();
   }catch(e){}},true);
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion968();injectStyle968();wasFs968=isFs968();},{once:true});
-  else {setVersion968();injectStyle968();wasFs968=isFs968();}
-  setTimeout(setVersion968,900);
-  window.tt968RestoreBoardRowAfterFullscreen=restoreRow968;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){burst969();},{once:true});
+  else burst969();
+  setTimeout(setVersion969,900);
+  window.tt969NormalizeBoardRowAfterFullscreen=normalize969;
 })();
-/* === slut v968 TEST === */
+/* === slut v969 TEST === */
