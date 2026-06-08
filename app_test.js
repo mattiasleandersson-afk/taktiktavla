@@ -49908,3 +49908,129 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt969NormalizeBoardRowAfterFullscreen=normalize969;
 })();
 /* === slut v969 TEST === */
+
+
+/* === v970 TEST: stabil kon i Taktiktavla + lättare Tavla-sync ===
+   Bas: v969 / v965.
+   Smal följdfix:
+   - v969 fungerar igen med ritrad efter fullscreen.
+   - Kvar: konen blinkar/försvinner i Taktiktavla/fullscreen vid ritvalsbyte.
+   - Kvar: Taktiktavla kan kännas seg efter en stund.
+   Åtgärd:
+   - Låt CSS hålla konknappen synlig även under objektmodulens korta omklassning.
+   - Kör inte ny ritvalsplacering eller toolbar-normalisering medan frihandsritning är aktiv.
+   - Bevara v964/v965/v969:s fungerande ritval och fullscreen-retur. */
+(function(){
+  'use strict';
+  if(window.__tt970ConeStabilityLightBoardSync)return;
+  window.__tt970ConeStabilityLightBoardSync=true;
+
+  function setVersion970(){try{
+    document.title='Taktiktavla TEST v970 kon stabil + lätt sync';
+    var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
+    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v970 TEST';
+  }catch(e){}}
+
+  function isBoard970(){try{
+    var body=document.body&&document.body.classList;
+    if(!body)return false;
+    if(body.contains('tt688-taktikfilm-editor-active')||body.contains('tt743-mobile-taktikfilm-active')||body.contains('tt743-mobile-taktikfilm-fullscreen')||body.contains('tt763-taktik-object-active')||body.contains('tt764-taktik-object-fullscreen'))return false;
+    var ps=document.getElementById('panel-saves');
+    var pf=document.getElementById('panel-formations');
+    var pson=ps&&ps.classList.contains('on');
+    var pfon=pf&&pf.classList.contains('on');
+    return !!(pson||pfon||body.contains('tt733-tavla-active')||body.contains('tt718-tavla-active')||body.contains('tt719-tavla-active')||body.contains('tt745-snabb-active')||body.contains('tt756-snabb-object-active')||body.contains('tt758-object-fullscreen')||body.contains('tt745-snabb-fullscreen'));
+  }catch(e){return false;}}
+
+  function isDrawing970(){try{
+    return !!((typeof freehandDrawing!=='undefined'&&freehandDrawing) || (typeof freehandCurrent!=='undefined'&&freehandCurrent));
+  }catch(e){return false;}}
+
+  function injectStyle970(){try{
+    if(document.getElementById('tt970-cone-stability-style'))return;
+    var st=document.createElement('style');
+    st.id='tt970-cone-stability-style';
+    st.textContent=[
+      /* v747 tar kort bort tt751-object-ready innan den sätter tillbaka den. Den gamla CSS:en gömde då konen. */
+      'body.tt970-board-active #tt747-object-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}',
+      'body.tt970-board-active.fullscreen-portrait #tt747-object-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important}',
+      'body.tt970-board-active #tt747-object-btn .tt748-cone-icon{display:inline-flex!important;visibility:visible!important;opacity:1!important}',
+      'body.tt970-board-active #tt747-object-btn svg{display:block!important;visibility:visible!important;opacity:1!important}',
+      /* Under aktiv frihand: undvik visuella hopp/reflow från toolbar/konens korta klassväxling. */
+      'body.tt970-board-drawing-active #tt747-object-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;transform:none!important}',
+      'body.tt970-board-drawing-active #tt964-board-draw-options-host{pointer-events:auto!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }catch(e){}}
+
+  function mark970(){try{
+    injectStyle970();
+    setVersion970();
+    var board=isBoard970();
+    document.body.classList.toggle('tt970-board-active',board);
+    document.body.classList.toggle('tt970-board-drawing-active',board&&isDrawing970());
+  }catch(e){}}
+
+  var old964=window.tt964PlaceBoardDrawOptions;
+  if(typeof old964==='function' && !old964.__tt970Wrapped){
+    var wrapped964=function(){
+      try{mark970(); if(isBoard970()&&isDrawing970())return;}
+      catch(e){}
+      return old964.apply(this,arguments);
+    };
+    wrapped964.__tt970Wrapped=true;
+    window.tt964PlaceBoardDrawOptions=wrapped964;
+  }
+
+  var old965=window.tt965NormalizeBoardToolbarOrder;
+  if(typeof old965==='function' && !old965.__tt970Wrapped){
+    var wrapped965=function(){
+      try{mark970(); if(isBoard970()&&isDrawing970())return;}
+      catch(e){}
+      return old965.apply(this,arguments);
+    };
+    wrapped965.__tt970Wrapped=true;
+    window.tt965NormalizeBoardToolbarOrder=wrapped965;
+  }
+
+  var old969=window.tt969NormalizeBoardRowAfterFullscreen;
+  if(typeof old969==='function' && !old969.__tt970Wrapped){
+    var wrapped969=function(){
+      try{mark970(); if(isBoard970()&&isDrawing970())return;}
+      catch(e){}
+      return old969.apply(this,arguments);
+    };
+    wrapped969.__tt970Wrapped=true;
+    window.tt969NormalizeBoardRowAfterFullscreen=wrapped969;
+  }
+
+  // Låg kostnad: bara markera board/drawing-state. Ingen DOM-flytt här.
+  ['pointerdown','touchstart','mousedown'].forEach(function(type){
+    document.addEventListener(type,function(ev){try{
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#pitch-svg,.pitch-svg,svg')){
+        mark970();
+        if(isBoard970())document.body.classList.add('tt970-board-drawing-active');
+      }
+    }catch(e){}},{capture:true,passive:true});
+  });
+  ['pointerup','pointercancel','touchend','touchcancel','mouseup'].forEach(function(type){
+    window.addEventListener(type,function(){try{
+      setTimeout(function(){mark970();document.body.classList.remove('tt970-board-drawing-active');},80);
+    }catch(e){}},true);
+  });
+
+  ['fullscreenchange','webkitfullscreenchange','resize','orientationchange'].forEach(function(type){
+    window.addEventListener(type,function(){setTimeout(mark970,80);},true);
+    document.addEventListener(type,function(){setTimeout(mark970,80);},true);
+  });
+  document.addEventListener('click',function(ev){try{
+    var t=ev&&ev.target;
+    if(t&&t.closest&&t.closest('button,.tab,#topbar,#tt964-board-draw-options-host'))setTimeout(mark970,30);
+  }catch(e){}},true);
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){mark970();},{once:true});
+  else mark970();
+  setTimeout(mark970,300);
+  setTimeout(setVersion970,900);
+})();
+/* === slut v970 TEST === */
