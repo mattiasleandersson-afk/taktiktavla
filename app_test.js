@@ -49796,3 +49796,149 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt965NormalizeBoardToolbarOrder=normalizeOrder965;
 })();
 /* === slut v965 TEST === */
+
+/* === v966 TEST: återställ ritrad efter fullscreen + stabil kon i Tavla fullscreen ===
+   Bas: v965.
+   Syfte:
+   - Efter Snabbtavla/Taktiktavla fullscreen kunde vanliga ritraden vara dold tills nästa klick.
+   - I Taktiktavla fullscreen kunde konknappen blinka/försvinna kort vid ritvalsbyte när tt747
+     tog bort ready-klassen innan den återplacerades.
+   - Rör inte v964:s fungerande ritvalsvisning eller själva ritmotorn. */
+(function(){
+  'use strict';
+  if(window.__tt966FullscreenReturnConeStability)return;
+  window.__tt966FullscreenReturnConeStability=true;
+
+  function setVersion966(){try{
+    document.title='Taktiktavla TEST v966 fullscreen retur kon';
+    var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
+    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v966 TEST';
+  }catch(e){}}
+
+  function isBoardPanel966(){try{
+    var saves=document.getElementById('panel-saves');
+    var forms=document.getElementById('panel-formations');
+    if(saves && saves.classList.contains('on'))return true;
+    if(forms && forms.classList.contains('on'))return true;
+    return document.body.classList.contains('tt733-tavla-active') || document.body.classList.contains('tt718-tavla-active') || document.body.classList.contains('tt719-tavla-active') || document.body.classList.contains('tt722-tavla-active') || document.body.classList.contains('tt756-snabb-object-active');
+  }catch(e){return false;}}
+
+  function isFullscreen966(){try{return document.body.classList.contains('fullscreen-portrait');}catch(e){return false;}}
+
+  function injectStyle966(){try{
+    if(document.getElementById('tt966-fullscreen-return-style'))return;
+    var st=document.createElement('style');
+    st.id='tt966-fullscreen-return-style';
+    st.textContent=[
+      /* I fullscreen ska konen inte hinna döljas under samma frame som tt747 flyttar/markerar om den. */
+      'body.fullscreen-portrait.tt758-object-fullscreen #fs-top-tools #tt747-object-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important}',
+      'body.fullscreen-portrait.tt758-object-fullscreen #tt747-object-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important}',
+      /* När fullscreen har stängts ska normal Tavla-/Snabbtavla-rad inte ärva dold fs-state. */
+      'body:not(.fullscreen-portrait).tt966-board-return-restoring #tt252-ipad-rita-row,body:not(.fullscreen-portrait).tt966-board-return-restoring .tt248-tavla-rita-row{visibility:visible!important;opacity:1!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }catch(e){}}
+
+  var returnTimer966=0;
+  function restoreBoardToolbar966(reason){try{
+    setVersion966();
+    injectStyle966();
+    if(isFullscreen966() || !isBoardPanel966())return;
+    document.body.classList.add('tt966-board-return-restoring');
+
+    ['btn-arrow','btn-freehand','btn-zone','btn-text','tt236-rita-move','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset','tt747-object-btn'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el)return;
+      el.style.removeProperty('visibility');
+      el.style.removeProperty('opacity');
+      if(id!=='btn-movement')el.style.removeProperty('display');
+    });
+
+    try{if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar();}catch(e){}
+    try{if(typeof window.tt965NormalizeBoardToolbarOrder==='function')window.tt965NormalizeBoardToolbarOrder();}catch(e){}
+    try{if(typeof window.tt964PlaceBoardDrawOptions==='function')window.tt964PlaceBoardDrawOptions();}catch(e){}
+
+    clearTimeout(returnTimer966);
+    returnTimer966=setTimeout(function(){try{
+      try{if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar();}catch(e){}
+      try{if(typeof window.tt965NormalizeBoardToolbarOrder==='function')window.tt965NormalizeBoardToolbarOrder();}catch(e){}
+      try{if(typeof window.tt964PlaceBoardDrawOptions==='function')window.tt964PlaceBoardDrawOptions();}catch(e){}
+      document.body.classList.remove('tt966-board-return-restoring');
+    }catch(e){}},180);
+  }catch(e){}}
+
+  function stabilizeFullscreenCone966(){try{
+    injectStyle966();
+    if(!isFullscreen966() || !document.body.classList.contains('tt758-object-fullscreen'))return;
+    var b=document.getElementById('tt747-object-btn');
+    var row=document.getElementById('fs-top-tools');
+    var ref=document.getElementById('fs-tb-zone');
+    if(!b || !row || !ref)return;
+    if(b.parentNode!==row || b.previousElementSibling!==ref){
+      row.insertBefore(b,ref.nextSibling);
+    }
+    b.classList.add('tt751-object-ready');
+    b.classList.remove('tt749-object-ready');
+    b.style.setProperty('display','inline-flex','important');
+    b.style.setProperty('visibility','visible','important');
+    b.style.setProperty('opacity','1','important');
+  }catch(e){}}
+
+  var oldSetMode966=typeof setMode==='function'?setMode:null;
+  if(oldSetMode966 && !oldSetMode966.__tt966Wrapped){
+    var wrappedSetMode966=function(){
+      var wasFs=isFullscreen966();
+      var res=oldSetMode966.apply(this,arguments);
+      if(wasFs){
+        stabilizeFullscreenCone966();
+        requestAnimationFrame(stabilizeFullscreenCone966);
+        setTimeout(stabilizeFullscreenCone966,90);
+      }else{
+        setTimeout(function(){restoreBoardToolbar966('setMode');},0);
+      }
+      return res;
+    };
+    wrappedSetMode966.__tt966Wrapped=true;
+    setMode=wrappedSetMode966;
+    window.setMode=wrappedSetMode966;
+  }
+
+  var oldExit966=typeof exitFullscreenPortrait==='function'?exitFullscreenPortrait:null;
+  if(oldExit966 && !oldExit966.__tt966Wrapped){
+    var wrappedExit966=function(){
+      var res=oldExit966.apply(this,arguments);
+      setTimeout(function(){restoreBoardToolbar966('exit');},0);
+      setTimeout(function(){restoreBoardToolbar966('exit-late');},160);
+      return res;
+    };
+    wrappedExit966.__tt966Wrapped=true;
+    exitFullscreenPortrait=wrappedExit966;
+    window.exitFullscreenPortrait=wrappedExit966;
+  }
+
+  ['fullscreenchange','webkitfullscreenchange'].forEach(function(type){
+    document.addEventListener(type,function(){setTimeout(function(){
+      if(isFullscreen966())stabilizeFullscreenCone966();
+      else restoreBoardToolbar966(type);
+    },80);},true);
+  });
+
+  document.addEventListener('click',function(ev){try{
+    var t=ev&&ev.target;
+    if(t&&t.closest&&t.closest('#fs-restore-btn')){
+      setTimeout(function(){restoreBoardToolbar966('restore-click');},40);
+      setTimeout(function(){restoreBoardToolbar966('restore-click-late');},220);
+    }
+    if(t&&t.closest&&t.closest('#fs-top-tools button')){
+      setTimeout(stabilizeFullscreenCone966,0);
+      setTimeout(stabilizeFullscreenCone966,90);
+    }
+  }catch(e){}},true);
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion966();injectStyle966();});
+  else {setVersion966();injectStyle966();}
+  setTimeout(setVersion966,900);
+  window.tt966RestoreBoardToolbar=restoreBoardToolbar966;
+  window.tt966StabilizeFullscreenCone=stabilizeFullscreenCone966;
+})();
+/* === slut v966 TEST === */
