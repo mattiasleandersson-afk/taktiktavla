@@ -26310,8 +26310,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     // v938: kon/objektknappen måste ingå i samma grundordning som övriga Tavla-knappar.
     // v954: flytta inte om samma fysiska knappar vid varje sync/klick.
     // appendChild på ett befintligt barn triggar remove/add och gjorde att ritval/kon blinkade.
-    [move,arrow,free,zone,objectBtn,text,clear,undo,reset].forEach(function(b){
+    var tt965Order236=[move,arrow,free,zone,objectBtn,text,clear,undo,reset].filter(Boolean);
+    tt965Order236.forEach(function(b){
       if(b && b.parentNode!==bar)bar.appendChild(b);
+    });
+    // v965: om en tidigare rad redan har flyttat knapparna till samma parent men i fel ordning
+    // räckte v954-optimeringen inte. Rätta ordningen bara här, inte under själva ritningen.
+    tt965Order236.forEach(function(b){
+      if(b && b.parentNode===bar && bar.lastChild!==b)bar.appendChild(b);
     });
 
     // Rörelsepil finns kvar för Taktikfilm, men ska inte synas på Tavla.
@@ -26370,7 +26376,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   document.addEventListener("click",function(ev){
     try{
-      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row,#pitch-svg,.pitch-svg,svg'))return;
     }catch(e){}
     setTimeout(function(){
       setVersion236();
@@ -26479,7 +26485,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   document.addEventListener("click",function(ev){
     try{
-      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row,#pitch-svg,.pitch-svg,svg'))return;
     }catch(e){}
     setTimeout(apply238,20);
   },true);
@@ -26592,7 +26598,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   document.addEventListener("click",function(ev){
     try{
-      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row,#pitch-svg,.pitch-svg,svg'))return;
     }catch(e){}
     setTimeout(apply239,20);
   },true);
@@ -26817,7 +26823,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     window.setMode=wrappedSetMode248;
   }
 
-  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}setTimeout(schedule248,0);},true);
+  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#pitch-svg,.pitch-svg,svg'))return;}catch(e){}setTimeout(schedule248,0);},true);
   window.addEventListener('resize',function(){setTimeout(schedule248,80);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule248);
   else schedule248();
@@ -27058,7 +27064,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     window.setMode=wrappedSetMode252;
   }
 
-  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}setTimeout(schedule252,0);},true);
+  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#pitch-svg,.pitch-svg,svg'))return;}catch(e){}setTimeout(schedule252,0);},true);
   window.addEventListener('resize',function(){setTimeout(schedule252,120);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule252);
   else schedule252();
@@ -49438,6 +49444,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function canStartFallback931(){
     try{
+      if(window.__tt965DisableTavlaFreehandFallback || window.__tt957DisableTavlaFreehandFallback)return false;
       if(!isTavla931() || !isFreehandMode931())return false;
       if(typeof freehandDrawing!=='undefined' && freehandDrawing)return false;
       if(typeof freehandCurrent!=='undefined' && freehandCurrent)return false;
@@ -49709,3 +49716,83 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt964PlaceBoardDrawOptions=place964;
 })();
 /* === slut v964 TEST === */
+
+
+/* === v965 TEST: Tavla ritning mjukare + iPhone ikonordning ===
+   Bas: v964.
+   Syfte:
+   - v964 fick ritvalen att fungera, men Taktiktavla kunde fortfarande hamna i segt läge.
+   - Logikfel: v931-fallbacken var inte faktiskt avstängd; den kunde fortfarande starta en extra frihandsväg.
+   - Gamla klick-synkar körde även efter klick/touch på planen och kunde göra nästa streck trögt.
+   - På iPhone kunde knappar hamna i fel ordning eftersom v954 inte rättade ordning när samma parent redan användes. */
+(function(){
+  'use strict';
+  if(window.__tt965BoardSmoothOrderFix)return;
+  window.__tt965BoardSmoothOrderFix=true;
+  window.__tt965DisableTavlaFreehandFallback=true;
+  window.__tt957DisableTavlaFreehandFallback=true;
+
+  function setVersion965(){try{
+    document.title='Taktiktavla TEST v965 ritning ikonordning';
+    var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
+    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v965 TEST';
+  }catch(e){}}
+
+  function isDrawing965(){try{
+    return !!((typeof freehandDrawing!=='undefined'&&freehandDrawing) || (typeof freehandCurrent!=='undefined'&&freehandCurrent));
+  }catch(e){return false;}}
+
+  function isTaktik965(){try{
+    var p=document.getElementById('panel-taktik');
+    return !!(p&&p.classList.contains('on')) || document.body.classList.contains('tt688-taktikfilm-editor-active') || document.body.classList.contains('tt743-mobile-taktikfilm-active') || document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen');
+  }catch(e){return false;}}
+
+  function visible965(el){try{
+    if(!el)return false;
+    var st=getComputedStyle(el);
+    if(st.display==='none'||st.visibility==='hidden')return false;
+    var r=el.getBoundingClientRect();
+    return r.width>2&&r.height>2;
+  }catch(e){return !!el;}}
+
+  function boardRow965(){try{
+    var row=document.getElementById('tt252-ipad-rita-row');
+    if(row&&visible965(row))return row;
+    var ids=['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text'];
+    for(var i=0;i<ids.length;i++){
+      var el=document.getElementById(ids[i]);
+      if(el&&el.parentNode&&visible965(el.parentNode))return el.parentNode;
+    }
+  }catch(e){}
+    return null;
+  }
+
+  function normalizeOrder965(){try{
+    setVersion965();
+    if(isDrawing965()||isTaktik965())return;
+    var row=boardRow965();
+    if(!row)return;
+    var order=['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
+    var nodes=[];
+    order.forEach(function(id){var el=document.getElementById(id);if(el)nodes.push(el);});
+    nodes.forEach(function(el){if(el.parentNode!==row)row.appendChild(el);});
+    nodes.forEach(function(el){if(el.parentNode===row && row.lastChild!==el)row.appendChild(el);});
+  }catch(e){}}
+
+  var pending=0;
+  function schedule965(delay){
+    clearTimeout(pending);
+    pending=setTimeout(normalizeOrder965,typeof delay==='number'?delay:60);
+  }
+
+  document.addEventListener('click',function(ev){try{
+    if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#pitch-svg,.pitch-svg,svg,#tt964-board-draw-options-host,#arrow-options,#freehand-options,#zone-options'))return;
+    if(ev&&ev.target&&ev.target.closest&&ev.target.closest('button,.tab,#topbar'))schedule965(80);
+  }catch(e){}},true);
+  ['resize','orientationchange','fullscreenchange','webkitfullscreenchange'].forEach(function(type){window.addEventListener(type,function(){schedule965(120);},true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){schedule965(120);}); else schedule965(120);
+  setTimeout(normalizeOrder965,500);
+  setTimeout(setVersion965,900);
+  window.tt965NormalizeBoardToolbarOrder=normalizeOrder965;
+})();
+/* === slut v965 TEST === */
