@@ -49909,128 +49909,183 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 })();
 /* === slut v969 TEST === */
 
-
-/* === v970 TEST: stabil kon i Taktiktavla + lättare Tavla-sync ===
-   Bas: v969 / v965.
-   Smal följdfix:
-   - v969 fungerar igen med ritrad efter fullscreen.
-   - Kvar: konen blinkar/försvinner i Taktiktavla/fullscreen vid ritvalsbyte.
-   - Kvar: Taktiktavla kan kännas seg efter en stund.
-   Åtgärd:
-   - Låt CSS hålla konknappen synlig även under objektmodulens korta omklassning.
-   - Kör inte ny ritvalsplacering eller toolbar-normalisering medan frihandsritning är aktiv.
-   - Bevara v964/v965/v969:s fungerande ritval och fullscreen-retur. */
+/* === v973 DIAG READONLY: kon/fullscreen/seghet-spårning från v971/v969 ===
+   Bas: v971/v969.
+   Syfte: mäta utan fixlogik.
+   Loggar endast snävt:
+   - tt747-object-btn class/style/parent
+   - body class för Tavla/fullscreen/ritrad
+   - pitch-svg childList-bursts
+   - setMode och v964/v965/v969-körningar
+   - pointer/touch på plan för att se om UI-sync kör nära ritning. */
 (function(){
   'use strict';
-  if(window.__tt970ConeStabilityLightBoardSync)return;
-  window.__tt970ConeStabilityLightBoardSync=true;
+  if(window.__tt973DiagConeFullscreenLag)return;
+  window.__tt973DiagConeFullscreenLag=true;
 
-  function setVersion970(){try{
-    document.title='Taktiktavla TEST v970 kon stabil + lätt sync';
-    var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v970 TEST';
+  var START=Date.now();
+  var LOG_MAX=900;
+  var log=[];
+  var counts={};
+  var last={};
+  var lastPointerTs=0;
+  var lastMode='';
+  var pitchMutBurst=0;
+  var pitchBurstTimer=0;
+
+  function now(){try{return performance.now();}catch(e){return Date.now()-START;}}
+  function inc(k){counts[k]=(counts[k]||0)+1;}
+  function safeTxt(s,n){s=String(s==null?'':s);return s.length>(n||180)?s.slice(0,n||180)+'…':s;}
+  function cls(el){try{return el&&el.className!=null?String(el.className):'';}catch(e){return '';}}
+  function parentId(el){try{return el&&el.parentNode?(el.parentNode.id||el.parentNode.className||el.parentNode.tagName):'none';}catch(e){return 'err';}}
+  function disp(el){try{if(!el)return 'none';var st=getComputedStyle(el);var r=el.getBoundingClientRect();return 'd='+st.display+' v='+st.visibility+' op='+st.opacity+' rect='+Math.round(r.left)+','+Math.round(r.top)+','+Math.round(r.width)+','+Math.round(r.height);}catch(e){return 'err';}}
+  function modeVal(){try{return typeof mode==='string'?mode:'?';}catch(e){return '?';}}
+  function drawVal(){try{return 'freehandDrawing='+(typeof freehandDrawing==='undefined'?'?':!!freehandDrawing)+' freehandCurrent='+(typeof freehandCurrent==='undefined'?'?':!!freehandCurrent);}catch(e){return 'drawerr';}}
+  function bodyBits(){try{
+    var b=document.body&&document.body.classList;if(!b)return '';
+    var keys=['fullscreen-portrait','tt758-object-fullscreen','tt745-snabb-fullscreen','tt742-mobile-board-fullscreen','tt764-taktik-object-fullscreen','tt733-tavla-active','tt718-tavla-active','tt719-tavla-active','tt722-tavla-active','tt186-saves-open','tt187-saves-open','tt188-saves-ios-open','tt756-snabb-object-active','tt969-board-normal-row','tt964-board-options-owned','tt291-taktik-active','tt248-taktik-active','tt688-taktikfilm-editor-active','tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen'];
+    return keys.filter(function(k){return b.contains(k);}).join(' ');
+  }catch(e){return '';}}
+  function panels(){try{
+    return ['panel-saves','panel-formations','panel-taktik'].map(function(id){
+      var p=document.getElementById(id); if(!p)return id+':missing';
+      var st=getComputedStyle(p), r=p.getBoundingClientRect();
+      return id+':'+(p.classList.contains('on')?'on':'off')+','+st.display+','+st.visibility+','+Math.round(r.width)+'x'+Math.round(r.height);
+    }).join(' | ');
+  }catch(e){return 'panelerr';}}
+  function optState(){try{
+    return ['arrow-options','freehand-options','zone-options'].map(function(id){var el=document.getElementById(id);return id+' p='+parentId(el)+' '+disp(el)+' cls='+safeTxt(cls(el),90);}).join(' || ');
+  }catch(e){return 'opterr';}}
+  function coneState(){try{var b=document.getElementById('tt747-object-btn');return 'cone p='+parentId(b)+' '+disp(b)+' cls='+safeTxt(cls(b),140)+' style='+(b&&b.getAttribute?safeTxt(b.getAttribute('style')||'',100):'');}catch(e){return 'coneerr';}}
+  function snapshot(extra){
+    return 'mode='+modeVal()+' '+drawVal()+' body=['+bodyBits()+'] panels=['+panels()+'] '+coneState()+' opts=['+optState()+']'+(extra?' '+extra:'');
+  }
+  function add(tag,extra){try{
+    inc(tag);
+    var line='['+Math.round(now())+'ms] '+tag+' | '+snapshot(extra||'');
+    log.push(line); if(log.length>LOG_MAX)log.shift();
+    updateBtnSoon();
   }catch(e){}}
 
-  function isBoard970(){try{
-    var body=document.body&&document.body.classList;
-    if(!body)return false;
-    if(body.contains('tt688-taktikfilm-editor-active')||body.contains('tt743-mobile-taktikfilm-active')||body.contains('tt743-mobile-taktikfilm-fullscreen')||body.contains('tt763-taktik-object-active')||body.contains('tt764-taktik-object-fullscreen'))return false;
-    var ps=document.getElementById('panel-saves');
-    var pf=document.getElementById('panel-formations');
-    var pson=ps&&ps.classList.contains('on');
-    var pfon=pf&&pf.classList.contains('on');
-    return !!(pson||pfon||body.contains('tt733-tavla-active')||body.contains('tt718-tavla-active')||body.contains('tt719-tavla-active')||body.contains('tt745-snabb-active')||body.contains('tt756-snabb-object-active')||body.contains('tt758-object-fullscreen')||body.contains('tt745-snabb-fullscreen'));
-  }catch(e){return false;}}
-
-  function isDrawing970(){try{
-    return !!((typeof freehandDrawing!=='undefined'&&freehandDrawing) || (typeof freehandCurrent!=='undefined'&&freehandCurrent));
-  }catch(e){return false;}}
-
-  function injectStyle970(){try{
-    if(document.getElementById('tt970-cone-stability-style'))return;
+  var updatePending=0;
+  function updateBtnSoon(){
+    if(updatePending)return;
+    updatePending=setTimeout(function(){updatePending=0;updateBtn();},250);
+  }
+  function recentCounts(){
+    var keys=Object.keys(counts).sort();
+    return keys.map(function(k){return k+':'+counts[k];}).join('  ');
+  }
+  function ensureBox(){try{
+    var box=document.getElementById('tt973-diag-box');
+    if(box)return box;
     var st=document.createElement('style');
-    st.id='tt970-cone-stability-style';
-    st.textContent=[
-      /* v747 tar kort bort tt751-object-ready innan den sätter tillbaka den. Den gamla CSS:en gömde då konen. */
-      'body.tt970-board-active #tt747-object-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}',
-      'body.tt970-board-active.fullscreen-portrait #tt747-object-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important}',
-      'body.tt970-board-active #tt747-object-btn .tt748-cone-icon{display:inline-flex!important;visibility:visible!important;opacity:1!important}',
-      'body.tt970-board-active #tt747-object-btn svg{display:block!important;visibility:visible!important;opacity:1!important}',
-      /* Under aktiv frihand: undvik visuella hopp/reflow från toolbar/konens korta klassväxling. */
-      'body.tt970-board-drawing-active #tt747-object-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;transform:none!important}',
-      'body.tt970-board-drawing-active #tt964-board-draw-options-host{pointer-events:auto!important}'
-    ].join('\n');
+    st.id='tt973-diag-style';
+    st.textContent='#tt973-diag-box{position:fixed;left:8px;bottom:8px;z-index:2147483000;background:rgba(10,18,14,.94);color:#d9ffe8;border:1px solid rgba(74,232,122,.55);border-radius:10px;padding:6px 8px;font:11px/1.25 system-ui,-apple-system,BlinkMacSystemFont,sans-serif;max-width:min(92vw,520px);box-shadow:0 8px 24px rgba(0,0,0,.35)}#tt973-diag-box button{margin:2px 4px 0 0;padding:3px 7px;border-radius:7px;border:1px solid rgba(74,232,122,.55);background:#102015;color:#d9ffe8;font-weight:800;font-size:11px}#tt973-diag-line{white-space:normal;max-height:44px;overflow:hidden}';
     document.head.appendChild(st);
+    box=document.createElement('div');
+    box.id='tt973-diag-box';
+    box.innerHTML='<div><b>DIAG v973</b> <span id="tt973-diag-mini"></span></div><div id="tt973-diag-line"></div><button id="tt973-mark">Markera nu</button><button id="tt973-copy">Kopiera logg</button>';
+    document.body.appendChild(box);
+    document.getElementById('tt973-mark').addEventListener('click',function(){add('MARK','manual');});
+    document.getElementById('tt973-copy').addEventListener('click',function(){
+      var txt='TT973 kon/fullscreen/seghet diag\nUA: '+navigator.userAgent+'\nURL: '+location.href+'\n\nCOUNTS\n'+recentCounts()+'\n\nLOG\n'+log.join('\n');
+      function done(){var line=document.getElementById('tt973-diag-line'); if(line)line.textContent='Logg kopierad: '+log.length+' rader';}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){prompt('Kopiera logg:',txt);});}
+      else prompt('Kopiera logg:',txt);
+    });
+    return box;
+  }catch(e){return null;}}
+  function updateBtn(){try{
+    ensureBox();
+    var mini=document.getElementById('tt973-diag-mini');
+    if(mini)mini.textContent=' mode='+modeVal()+' coneReady='+(document.getElementById('tt747-object-btn')&&document.getElementById('tt747-object-btn').classList.contains('tt751-object-ready')?'ja':'nej');
+    var line=document.getElementById('tt973-diag-line');
+    if(line)line.textContent=recentCounts();
   }catch(e){}}
 
-  function mark970(){try{
-    injectStyle970();
-    setVersion970();
-    var board=isBoard970();
-    document.body.classList.toggle('tt970-board-active',board);
-    document.body.classList.toggle('tt970-board-drawing-active',board&&isDrawing970());
+  function wrapFn(name,label){try{
+    var fn=window[name];
+    if(typeof fn!=='function'||fn.__tt973Wrapped)return;
+    var w=function(){
+      var dt=Math.round(now()-lastPointerTs);
+      add(label||name,'args='+arguments.length+' afterPointerMs='+dt);
+      return fn.apply(this,arguments);
+    };
+    w.__tt973Wrapped=true;
+    window[name]=w;
+    if(name==='setMode')try{setMode=w;}catch(e){}
   }catch(e){}}
 
-  var old964=window.tt964PlaceBoardDrawOptions;
-  if(typeof old964==='function' && !old964.__tt970Wrapped){
-    var wrapped964=function(){
-      try{mark970(); if(isBoard970()&&isDrawing970())return;}
-      catch(e){}
-      return old964.apply(this,arguments);
-    };
-    wrapped964.__tt970Wrapped=true;
-    window.tt964PlaceBoardDrawOptions=wrapped964;
-  }
+  function installObservers(){try{
+    var body=document.body;
+    if(body&&!body.__tt973Obs){
+      body.__tt973Obs=true;
+      new MutationObserver(function(muts){
+        var c=body.className||'';
+        if(last.bodyClass!==c){last.bodyClass=c;add('MUT body.class');}
+      }).observe(body,{attributes:true,attributeFilter:['class']});
+    }
+    var cone=document.getElementById('tt747-object-btn');
+    if(cone&&!cone.__tt973Obs){
+      cone.__tt973Obs=true;
+      last.coneClass=cone.className||''; last.coneStyle=cone.getAttribute('style')||''; last.coneParent=parentId(cone);
+      new MutationObserver(function(muts){
+        var c=cone.className||'', s=cone.getAttribute('style')||'', p=parentId(cone);
+        if(c!==last.coneClass){last.coneClass=c;add('MUT cone.class');}
+        if(s!==last.coneStyle){last.coneStyle=s;add('MUT cone.style');}
+        if(p!==last.coneParent){last.coneParent=p;add('MUT cone.parent');}
+      }).observe(cone,{attributes:true,attributeFilter:['class','style'],childList:false});
+    }
+    var svg=document.getElementById('pitch-svg')||document.querySelector('svg');
+    if(svg&&!svg.__tt973Obs){
+      svg.__tt973Obs=true;
+      new MutationObserver(function(muts){
+        pitchMutBurst+=muts.length;
+        clearTimeout(pitchBurstTimer);
+        pitchBurstTimer=setTimeout(function(){
+          if(pitchMutBurst){add('MUT pitch.childList','burst='+pitchMutBurst); pitchMutBurst=0;}
+        },120);
+      }).observe(svg,{childList:true,subtree:false});
+    }
+  }catch(e){} }
 
-  var old965=window.tt965NormalizeBoardToolbarOrder;
-  if(typeof old965==='function' && !old965.__tt970Wrapped){
-    var wrapped965=function(){
-      try{mark970(); if(isBoard970()&&isDrawing970())return;}
-      catch(e){}
-      return old965.apply(this,arguments);
-    };
-    wrapped965.__tt970Wrapped=true;
-    window.tt965NormalizeBoardToolbarOrder=wrapped965;
-  }
-
-  var old969=window.tt969NormalizeBoardRowAfterFullscreen;
-  if(typeof old969==='function' && !old969.__tt970Wrapped){
-    var wrapped969=function(){
-      try{mark970(); if(isBoard970()&&isDrawing970())return;}
-      catch(e){}
-      return old969.apply(this,arguments);
-    };
-    wrapped969.__tt970Wrapped=true;
-    window.tt969NormalizeBoardRowAfterFullscreen=wrapped969;
-  }
-
-  // Låg kostnad: bara markera board/drawing-state. Ingen DOM-flytt här.
-  ['pointerdown','touchstart','mousedown'].forEach(function(type){
-    document.addEventListener(type,function(ev){try{
-      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#pitch-svg,.pitch-svg,svg')){
-        mark970();
-        if(isBoard970())document.body.classList.add('tt970-board-drawing-active');
-      }
-    }catch(e){}},{capture:true,passive:true});
-  });
-  ['pointerup','pointercancel','touchend','touchcancel','mouseup'].forEach(function(type){
-    window.addEventListener(type,function(){try{
-      setTimeout(function(){mark970();document.body.classList.remove('tt970-board-drawing-active');},80);
+  function installEvents(){try{
+    document.addEventListener('pointerdown',function(ev){try{
+      if(ev.target&&ev.target.closest&&ev.target.closest('#pitch-svg,svg,.pitch-svg')){lastPointerTs=now();add('PTR down pitch','target='+(ev.target.id||ev.target.className||ev.target.tagName));}
     }catch(e){}},true);
-  });
+    document.addEventListener('pointerup',function(ev){try{
+      if(ev.target&&ev.target.closest&&ev.target.closest('#pitch-svg,svg,.pitch-svg'))add('PTR up pitch','durSinceDownMs='+Math.round(now()-lastPointerTs));
+    }catch(e){}},true);
+    document.addEventListener('click',function(ev){try{
+      var t=ev.target;if(!t||!t.closest)return;
+      if(t.closest('#btn-arrow,#btn-freehand,#btn-zone,#tt747-object-btn,#fs-tb-arrow,#fs-tb-freehand,#fs-tb-zone,#topbar,.tab'))add('CLICK tool/topbar','target='+(t.id||t.className||t.tagName));
+    }catch(e){}},true);
+    ['fullscreenchange','webkitfullscreenchange','resize','orientationchange'].forEach(function(type){
+      window.addEventListener(type,function(){add('EV '+type); setTimeout(installObservers,80);},true);
+      document.addEventListener(type,function(){add('EVdoc '+type); setTimeout(installObservers,80);},true);
+    });
+  }catch(e){} }
 
-  ['fullscreenchange','webkitfullscreenchange','resize','orientationchange'].forEach(function(type){
-    window.addEventListener(type,function(){setTimeout(mark970,80);},true);
-    document.addEventListener(type,function(){setTimeout(mark970,80);},true);
-  });
-  document.addEventListener('click',function(ev){try{
-    var t=ev&&ev.target;
-    if(t&&t.closest&&t.closest('button,.tab,#topbar,#tt964-board-draw-options-host'))setTimeout(mark970,30);
-  }catch(e){}},true);
+  function pulse(){try{
+    var m=modeVal();
+    if(m!==lastMode){lastMode=m;add('MODE seen','changed');}
+    installObservers();
+    updateBtnSoon();
+  }catch(e){} }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){mark970();},{once:true});
-  else mark970();
-  setTimeout(mark970,300);
-  setTimeout(setVersion970,900);
+  function init(){try{
+    ensureBox();
+    wrapFn('setMode','CALL setMode');
+    wrapFn('tt964PlaceBoardDrawOptions','CALL tt964PlaceBoardDrawOptions');
+    wrapFn('tt965NormalizeBoardToolbarOrder','CALL tt965NormalizeBoardToolbarOrder');
+    wrapFn('tt969NormalizeBoardRowAfterFullscreen','CALL tt969NormalizeBoardRowAfterFullscreen');
+    installObservers();
+    installEvents();
+    add('INIT','v973 readonly');
+    setInterval(pulse,1000);
+  }catch(e){} }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
 })();
-/* === slut v970 TEST === */
+/* === slut v973 DIAG READONLY === */
