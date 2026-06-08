@@ -26308,16 +26308,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
     // Exakt Tavla-ordning enligt helskärmsraden, men utan rörelsepil och utan dagsljus.
     // v938: kon/objektknappen måste ingå i samma grundordning som övriga Tavla-knappar.
-    // v954: flytta inte om samma fysiska knappar vid varje sync/klick.
-    // appendChild på ett befintligt barn triggar remove/add och gjorde att ritval/kon blinkade.
-    var tt965Order236=[move,arrow,free,zone,objectBtn,text,clear,undo,reset].filter(Boolean);
-    tt965Order236.forEach(function(b){
-      if(b && b.parentNode!==bar)bar.appendChild(b);
-    });
-    // v965: om en tidigare rad redan har flyttat knapparna till samma parent men i fel ordning
-    // räckte v954-optimeringen inte. Rätta ordningen bara här, inte under själva ritningen.
-    tt965Order236.forEach(function(b){
-      if(b && b.parentNode===bar && bar.lastChild!==b)bar.appendChild(b);
+    [move,arrow,free,zone,objectBtn,text,clear,undo,reset].forEach(function(b){
+      if(b)bar.appendChild(b);
     });
 
     // Rörelsepil finns kvar för Taktikfilm, men ska inte synas på Tavla.
@@ -26328,7 +26320,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       mv.setAttribute("aria-label","Rörelsebana");
       if(isTaktikActive236()){
         mv.style.removeProperty("display");
-        if(mv.parentNode!==bar)bar.appendChild(mv);
+        bar.appendChild(mv);
       }else{
         // På Tavla ska rörelsepilens knapp inte synas alls, men funktionen lämnas orörd för Taktikfilm.
         mv.style.setProperty("display","none","important");
@@ -26376,7 +26368,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   document.addEventListener("click",function(ev){
     try{
-      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row,#pitch-svg,.pitch-svg,svg'))return;
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
     }catch(e){}
     setTimeout(function(){
       setVersion236();
@@ -26438,23 +26430,18 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     document.head.appendChild(st);
   }
 
-  function isAnyFullscreen238(){
-    try{return document.body.classList.contains("fullscreen-portrait") || document.body.classList.contains("tt758-object-fullscreen") || document.body.classList.contains("tt764-taktik-object-fullscreen");}
-    catch(e){return false;}
-  }
-
   function moveOptionsIntoRita238(){
     try{
-      if(isAnyFullscreen238())return;
+      if(document.body.classList.contains("fullscreen-portrait"))return;
       if(document.querySelector('.tab.on[data-panel="taktik"]') || (document.getElementById('panel-taktik')&&document.getElementById('panel-taktik').classList.contains('on')))return;
       var bar=ritaBar238();
       if(!bar)return;
       bar.classList.add("tt238-rita-scrollbar");
-      // v954: v238 får bara märka/styla. Den får inte längre flytta ritvalspanelerna.
-      // v291 äger fysisk placering/visning av arrow/freehand/zone-options.
       ["arrow-options","freehand-options","zone-options"].forEach(function(id){
         var el=document.getElementById(id);
-        if(el)el.classList.add("tt238-rita-options");
+        if(!el)return;
+        el.classList.add("tt238-rita-options");
+        if(el.parentNode!==bar)bar.appendChild(el);
       });
     }catch(e){}
   }
@@ -26475,8 +26462,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function apply238(){
     setVersion238();
     injectStyle238();
-    // v954: kalla inte om v236 här. v236 kör egen init/sync och upprepade korsanrop
-    // flyttade samma knappar flera gånger per klick.
+    if(typeof window.tt236ApplyTavlaRitaToolbar==="function"){
+      try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
+    }
     moveOptionsIntoRita238();
   }
 
@@ -26485,7 +26473,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   document.addEventListener("click",function(ev){
     try{
-      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row,#pitch-svg,.pitch-svg,svg'))return;
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
     }catch(e){}
     setTimeout(apply238,20);
   },true);
@@ -26551,25 +26539,29 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     document.head.appendChild(st);
   }
 
-  function isAnyFullscreen239(){
-    try{return document.body.classList.contains("fullscreen-portrait") || document.body.classList.contains("tt758-object-fullscreen") || document.body.classList.contains("tt764-taktik-object-fullscreen");}
-    catch(e){return false;}
-  }
-
   function moveOptionsNextToTool239(){
     try{
       setVersion239();
-      if(isAnyFullscreen239())return;
+      if(document.body.classList.contains("fullscreen-portrait"))return;
       if(document.querySelector('.tab.on[data-panel="taktik"]') || (document.getElementById('panel-taktik')&&document.getElementById('panel-taktik').classList.contains('on')))return;
       var bar=ritaBar239();
       if(!bar)return;
       bar.classList.add("tt238-rita-scrollbar");
-      // v954: v239 får inte längre flytta valpanelerna bredvid knapparna.
-      // Det var den konkreta DOM-kedjan i diagnosen: moveOptionsNextToTool239 -> sync248/schedule252.
-      ["arrow-options","freehand-options","zone-options"].forEach(function(id){
-        var el=document.getElementById(id);
-        if(el)el.classList.add("tt238-rita-options");
-      });
+
+      var pairs=[
+        ["arrow-options","btn-arrow"],
+        ["freehand-options","btn-freehand"],
+        ["zone-options","btn-zone"]
+      ];
+
+      // Sätt bakifrån så ordningen blir: pil + pilval, frihand + frihandsval, zon + zonval.
+      for(var i=pairs.length-1;i>=0;i--){
+        var opt=document.getElementById(pairs[i][0]);
+        var btn=document.getElementById(pairs[i][1]);
+        if(!opt||!btn)continue;
+        opt.classList.add("tt238-rita-options");
+        putAfter239(opt,btn);
+      }
     }catch(e){}
   }
 
@@ -26589,7 +26581,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function apply239(){
     setVersion239();
     injectStyle239();
-    // v954: inget korsanrop till v236 här.
+    if(typeof window.tt236ApplyTavlaRitaToolbar==="function"){
+      try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
+    }
     moveOptionsNextToTool239();
   }
 
@@ -26598,7 +26592,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   document.addEventListener("click",function(ev){
     try{
-      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row,#pitch-svg,.pitch-svg,svg'))return;
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#tt252-ipad-rita-row'))return;
     }catch(e){}
     setTimeout(apply239,20);
   },true);
@@ -26679,11 +26673,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return null;
   }
 
-  function isAnyFullscreen248(){
-    try{return document.body.classList.contains('fullscreen-portrait') || document.body.classList.contains('tt758-object-fullscreen') || document.body.classList.contains('tt764-taktik-object-fullscreen');}
-    catch(e){return false;}
-  }
-
   function injectStyle248(){
     if(document.getElementById('tt248-always-open-style'))return;
     var st=document.createElement('style');
@@ -26692,7 +26681,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       'body:not(.fullscreen-portrait) .tt248-rita-menu-button,body:not(.fullscreen-portrait) [data-tt248-rita-button="1"],body:not(.fullscreen-portrait) button[title="Rita"],body:not(.fullscreen-portrait) button[aria-label="Rita"]{display:none!important}',
       'body:not(.fullscreen-portrait) .tt248-tavla-rita-row{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:4px!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;max-width:100%!important;scrollbar-width:thin!important;padding-bottom:2px!important}',
       'body:not(.fullscreen-portrait).tt248-taktik-active .tt248-tavla-rita-row{display:none!important}',
-      'body.tt758-object-fullscreen .tt248-tavla-rita-row,body.tt764-taktik-object-fullscreen .tt248-tavla-rita-row{display:none!important}',
       'body:not(.fullscreen-portrait):not(.tt248-taktik-active) #tt236-rita-move,',
       'body:not(.fullscreen-portrait):not(.tt248-taktik-active) #btn-arrow,',
       'body:not(.fullscreen-portrait):not(.tt248-taktik-active) #btn-freehand,',
@@ -26750,20 +26738,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       setVersion248();
       injectStyle248();
 
-      var fs954=isAnyFullscreen248();
-      var taktik=isTaktikActive248();
-      document.body.classList.toggle('tt248-taktik-active',!!taktik);
-
-      // v954: i helskärm och Taktikfilm ska v248 inte starta hela gamla
-      // kedjan v236 -> v239 -> v248 -> v252. Den kedjan syntes i diagnosen
-      // som upprepade appendChild/insertBefore och gav hopp/blink.
-      if(fs954){
-        var fsBar=ritaBar248();
-        if(fsBar)hide248(fsBar);
-        return;
+      // Låt de fungerande 236/239-byggblocken skapa/flytta knapparna först.
+      if(typeof window.tt236ApplyTavlaRitaToolbar==='function'){
+        try{window.tt236ApplyTavlaRitaToolbar();}catch(e){}
       }
-
-      // v954: v236/v239 kör egen init. v248 ska inte kalla dem igen på varje klick.
+      if(typeof window.tt239MoveNormalTavlaOptionsNextToTool==='function'){
+        try{window.tt239MoveNormalTavlaOptionsNextToTool();}catch(e){}
+      }
 
       var taktik=isTaktikActive248();
       document.body.classList.toggle('tt248-taktik-active',!!taktik);
@@ -26823,7 +26804,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     window.setMode=wrappedSetMode248;
   }
 
-  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#pitch-svg,.pitch-svg,svg'))return;}catch(e){}setTimeout(schedule248,0);},true);
+  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}setTimeout(schedule248,0);},true);
   window.addEventListener('resize',function(){setTimeout(schedule248,80);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule248);
   else schedule248();
@@ -26919,14 +26900,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return false;
   }
 
-  function isAnyFullscreen252(){
-    try{return document.body.classList.contains('fullscreen-portrait') || document.body.classList.contains('tt758-object-fullscreen') || document.body.classList.contains('tt764-taktik-object-fullscreen');}
-    catch(e){return false;}
-  }
-
   function isIpadLike252(){
     try{
-      if(isAnyFullscreen252())return false;
+      if(document.body.classList.contains('fullscreen-portrait'))return false;
       var w=Math.max(window.innerWidth||0,document.documentElement.clientWidth||0);
       var h=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
       var minSide=Math.min(w,h),maxSide=Math.max(w,h);
@@ -27001,14 +26977,15 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       setVersion252();
       injectStyle252();
 
-      // v954: kalla inte v248 här. Det skapade en korssync-loop där v252 -> v248 -> v236/v239
-      // flyttade samma knappar/paneler flera gånger efter varje klick.
+      if(typeof window.tt248AlwaysOpenRitaRowNoToggle==='function'){
+        try{window.tt248AlwaysOpenRitaRowNoToggle();}catch(e){}
+      }
 
       var useIpad=isIpadLike252();
       var taktik=isTaktikActive252();
       // v291: den separata Tavla-raden ska bara äga ritvalen i vanligt Tavla-läge.
       // I Taktikfilm och helskärm styrs panelerna centralt och får inte flyttas in i den gömda raden.
-      if(taktik || isAnyFullscreen252())useIpad=false;
+      if(taktik || document.body.classList.contains('fullscreen-portrait'))useIpad=false;
       document.body.classList.toggle('tt252-ipad-layout',!!useIpad);
 
       var ipadRow=getOrCreateIpadRow252();
@@ -27025,11 +27002,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           currentOriginalParent252(el);
           if(el.parentNode!==ipadRow)ipadRow.appendChild(el);
         });
-        // v954: v252 flyttar inte längre arrow/freehand/zone-options.
-        // v291 är ensam ägare av ritvalspanelernas fysiska placering.
         opts.forEach(function(id){
           var el=document.getElementById(id);
-          if(el)el.classList.add('tt238-rita-options');
+          if(!el)return;
+          currentOriginalParent252(el);
+          if(activeOpt===id&&el.parentNode!==ipadRow)ipadRow.appendChild(el);
         });
         ipadRow.style.setProperty('display',taktik?'none':'flex','important');
       }else{
@@ -27064,7 +27041,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     window.setMode=wrappedSetMode252;
   }
 
-  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options,#pitch-svg,.pitch-svg,svg'))return;}catch(e){}setTimeout(schedule252,0);},true);
+  document.addEventListener('click',function(ev){try{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#arrow-options,#freehand-options,#zone-options'))return;}catch(e){}setTimeout(schedule252,0);},true);
   window.addEventListener('resize',function(){setTimeout(schedule252,120);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule252);
   else schedule252();
@@ -28356,9 +28333,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         OPTION_IDS.forEach(function(id){
           var el=document.getElementById(id); if(!el)return;
           if(el.parentNode===plane && row)row.appendChild(el);
-          // v954: även i normalraden behåller panelerna normal rad-styling,
-          // men fysisk flytt/visning ägs bara här.
-          el.classList.add('tt238-rita-options');
           if(matcher || taktik || fs || !activeOpt)setPanelVisible291(el,false);
           else setPanelVisible291(el,id===activeOpt);
         });
@@ -46174,11 +46148,11 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v954 ritvals-korssync-fix';}catch(e){}
+    try{document.title='Taktiktavla TEST v939 taktikfilm-object-no-steal';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
-        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='954 TEST';
+        if(/^(v?\d+|\d+\s*TEST|\d+ TEST)$/i.test(t))el.textContent='939 TEST';
       });
       var banner=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
       if(banner)banner.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';
@@ -49444,7 +49418,6 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function canStartFallback931(){
     try{
-      if(window.__tt965DisableTavlaFreehandFallback || window.__tt957DisableTavlaFreehandFallback)return false;
       if(!isTavla931() || !isFreehandMode931())return false;
       if(typeof freehandDrawing!=='undefined' && freehandDrawing)return false;
       if(typeof freehandCurrent!=='undefined' && freehandCurrent)return false;
@@ -49530,381 +49503,288 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
 
 /* === v939 TEST: Taktikfilm object no-steal efter v938 Tavla-fix === */
-(function(){try{document.title='Taktiktavla TEST v954 ritvals-korssync-fix';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';}catch(e){}})();
+(function(){try{document.title='Taktiktavla TEST v939 taktikfilm-object-no-steal';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';}catch(e){}})();
 
-/* === v964 TEST: ren Tavla/Snabbtavla ritvalsägare från v954 ===
-   Bas: v954.
-   Syfte:
-   - Behålla v954:s stopp av gamla blink-/korssync-loopen.
-   - Inte bygga vidare på v956-v963 där tt956-host/v291 började konkurrera.
-   - Stänga av v931-fallbacken så Taktiktavla inte startar den hackiga frihandsvägen.
-   - Låta en enda, enkel board-ägare visa pil/frihand/zon-val under aktiv knapp.
-   - Köra endast vid verktygs-/panelbyte, inte under själva ritningen. */
+
+/* === v976 TEST: isolated board toolbar shell v1 ===
+   Bas: v939 ren appfil + v946/v945-index.
+   Mål: bryt beroendet mellan Tavla/Snabbtavla och gamla flyttade ritverktygs-DOM:en.
+   - Skapar NYA fysiska knappar för Tavla/Snabbtavla normal och fullscreen.
+   - Skapar NYA egna ritvalspaneler för Tavla/Snabbtavla.
+   - Gamla #btn-arrow/#arrow-options osv lämnas kvar för befintlig kärnlogik/Taktikfilm,
+     men döljs i Tavla/Snabbtavla när v976-ägaren är aktiv.
+   - Nya val synkar både globala ritvariabler och de gamla select-värdena, så befintliga
+     ritfunktioner fortsätter använda samma data.
+   - Rör inte Taktikfilmens verktygsrad eller Taktikfilm fullscreen.
+*/
 (function(){
-  'use strict';
-  if(window.__tt964CleanBoardDrawOwner)return;
-  window.__tt964CleanBoardDrawOwner=true;
+  if(window.__tt976IsolatedBoardToolbarV1)return;
+  window.__tt976IsolatedBoardToolbarV1=true;
 
-  // v931-fallbacken var avsedd som snabbstart, men i test beter sig Taktiktavla
-  // som en sämre/hackigare ritväg när den öppnas direkt. Funktionen läser denna
-  // flagga dynamiskt, så den kan stängas av även här i slutet av filen.
-  window.__tt957DisableTavlaFreehandFallback=true;
+  var BOARD_PANELS={formations:true,saves:true};
+  var MODES={move:'Flytta',arrow:'Pil',freehand:'Rita fritt',zone:'Zon',text:'Text'};
+  var lastMode=null;
 
-  var TOOL_TO_OPTION={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
-  var TOOL_BUTTONS={
-    arrow:['fs-tb-arrow','btn-arrow'],
-    freehand:['fs-tb-freehand','btn-freehand'],
-    zone:['fs-tb-zone','btn-zone']
-  };
-
-  function setVersion964(){try{
-    document.title='Taktiktavla TEST v964 ren tavla ritvalsägare';
-    var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v964 TEST';
-  }catch(e){}}
-
-  function visible964(el){try{
+  function byId(id){return document.getElementById(id);}
+  function isVisible(el){
     if(!el)return false;
-    var st=getComputedStyle(el);
-    if(st.display==='none'||st.visibility==='hidden')return false;
+    var cs=getComputedStyle(el);
+    if(cs.display==='none'||cs.visibility==='hidden')return false;
     var r=el.getBoundingClientRect();
-    return r.width>2&&r.height>2;
-  }catch(e){return !!el;}}
-
-  function panelVisible964(id){
-    var p=document.getElementById(id);
-    return !!(p && p.classList.contains('on') && visible964(p));
+    return r.width>0&&r.height>0;
+  }
+  function activePanel(){
+    var ids=['panel-formations','panel-saves','panel-taktik','panel-lag','panel-roster','panel-stats'];
+    for(var i=0;i<ids.length;i++){
+      var p=byId(ids[i]);
+      if(p && p.classList.contains('on') && isVisible(p))return ids[i].replace('panel-','');
+    }
+    var t=document.querySelector('.tab.on[data-panel]');
+    return t?t.getAttribute('data-panel'):'';
+  }
+  function isTaktikContext(){
+    if(document.body.classList.contains('v66-taktik-fs'))return true;
+    if(document.body.classList.contains('tt688-taktikfilm-editor-active'))return true;
+    if(document.body.classList.contains('tt743-mobile-taktikfilm-active'))return true;
+    var p=byId('panel-taktik');
+    return !!(p&&p.classList.contains('on')&&isVisible(p));
+  }
+  function isBoardContext(){
+    if(isTaktikContext())return false;
+    var p=activePanel();
+    return !!BOARD_PANELS[p] || document.body.classList.contains('tt733-tavla-active') || document.body.classList.contains('tt718-tavla-active');
+  }
+  function isBoardFullscreen(){
+    return document.body.classList.contains('fullscreen-portrait') && isBoardContext() && !document.body.classList.contains('v66-taktik-fs');
   }
 
-  function boardContext964(){
+  function setVersion976(){
     try{
-      // Faktiskt synlig board-panel vinner. En gammal aktiv Taktikfilm-flik får
-      // inte blockera Tavla/Snabbtavla efter retur från film.
-      if(panelVisible964('panel-saves') || panelVisible964('panel-formations'))return true;
-      if(document.body.classList.contains('fullscreen-portrait')){
-        if(document.body.classList.contains('v66-taktik-fs') || document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen'))return false;
-        if(document.body.classList.contains('tt758-object-fullscreen') || document.body.classList.contains('tt745-snabb-fullscreen') || document.body.classList.contains('tt742-mobile-board-fullscreen'))return true;
-      }
-      return false;
-    }catch(e){return false;}
+      document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
+        var t=(s.textContent||'').trim();
+        if(/Version 2 test|^v?\d+|v3\./i.test(t))s.textContent='v976 TEST isolerad tavla-ritrad';
+      });
+    }catch(e){}
   }
 
-  function activeMode964(){try{return typeof mode==='string'?mode:'';}catch(e){return '';}}
-  function activeOptionId964(){return TOOL_TO_OPTION[activeMode964()]||null;}
+  function injectStyle(){
+    if(byId('tt976-isolated-board-toolbar-style'))return;
+    var st=document.createElement('style');
+    st.id='tt976-isolated-board-toolbar-style';
+    st.textContent=[
+      '#tt976-board-toolbar{display:none;gap:4px;align-items:center;flex-wrap:nowrap;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;background:var(--bg,#0e1710);border-top:1px solid #1a3020;border-bottom:1px solid #1a3020;padding:4px 8px;position:relative;z-index:80;box-sizing:border-box;max-width:100%}',
+      'body.tt976-board-owner:not(.fullscreen-portrait) #tt976-board-toolbar{display:flex!important}',
+      '#tt976-board-toolbar .tt976-btn,#tt976-board-fs-toolbar .tt976-btn{min-width:34px;width:34px;height:32px;padding:4px 7px;box-sizing:border-box;font-size:.85rem;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border:1px solid #2d4a35;border-radius:6px;background:#1e2e22;color:#edf5ee;font-family:Arial Narrow,Arial,sans-serif;font-weight:800;cursor:pointer;touch-action:manipulation}',
+      '#tt976-board-toolbar .tt976-btn.on,#tt976-board-fs-toolbar .tt976-btn.on{border-color:#4ae87a!important;color:#4ae87a!important;background:rgba(74,232,122,.10)!important}',
+      '#tt976-board-toolbar .tt976-clear,#tt976-board-toolbar .tt976-reset,#tt976-board-fs-toolbar .tt976-clear,#tt976-board-fs-toolbar .tt976-reset{color:#e8c84a;border-color:#e8c84a}',
+      '#tt976-board-toolbar .tt976-undo,#tt976-board-fs-toolbar .tt976-undo{color:#4ae87a;border-color:#4ae87a}',
+      '#tt976-board-toolbar .tt976-options-host{display:none;position:absolute;top:42px;left:8px;z-index:5000;background:rgba(14,23,16,.98);border:1px solid #3a6b46;border-radius:8px;padding:5px;gap:5px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.45);max-width:calc(100vw - 20px);overflow-x:auto;white-space:nowrap}',
+      '#tt976-board-toolbar .tt976-options-host.on{display:flex!important}',
+      '#tt976-board-toolbar .tt976-options-host select,#tt976-board-fs-toolbar .tt976-options-host select{height:30px;min-height:30px;background:#1e2e22;color:#edf5ee;border:1px solid #2d4a35;border-radius:5px;padding:3px 6px;font-size:.72rem;font-family:Arial Narrow,Arial,sans-serif;max-width:130px}',
+      '#tt976-board-fs-toolbar{display:none;gap:4px;align-items:center;position:fixed;left:50%;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom));z-index:10050;background:rgba(14,23,16,.94);border:1px solid #3a6b46;border-radius:12px;padding:5px 7px;box-shadow:0 4px 20px rgba(0,0,0,.45);max-width:calc(100vw - 16px);overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch}',
+      'body.tt976-board-owner.fullscreen-portrait:not(.v66-taktik-fs) #tt976-board-fs-toolbar{display:flex!important}',
+      '#tt976-board-fs-toolbar .tt976-options-host{display:none;position:absolute;left:6px;bottom:44px;z-index:10060;background:rgba(14,23,16,.98);border:1px solid #3a6b46;border-radius:8px;padding:5px;gap:5px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.45);max-width:calc(100vw - 28px);overflow-x:auto;white-space:nowrap}',
+      '#tt976-board-fs-toolbar .tt976-options-host.on{display:flex!important}',
+      'body.tt976-board-owner:not(.v66-taktik-fs) #btn-arrow,body.tt976-board-owner:not(.v66-taktik-fs) #btn-freehand,body.tt976-board-owner:not(.v66-taktik-fs) #btn-zone,body.tt976-board-owner:not(.v66-taktik-fs) #btn-text,body.tt976-board-owner:not(.v66-taktik-fs) #btn-movement,body.tt976-board-owner:not(.v66-taktik-fs) #tt236-rita-move,body.tt976-board-owner:not(.v66-taktik-fs) #tt236-rita-clear,body.tt976-board-owner:not(.v66-taktik-fs) #tt236-rita-undo,body.tt976-board-owner:not(.v66-taktik-fs) #tt236-rita-reset,body.tt976-board-owner:not(.v66-taktik-fs) #tt252-ipad-rita-row{display:none!important}',
+      'body.tt976-board-owner.fullscreen-portrait:not(.v66-taktik-fs) #fs-tb-arrow,body.tt976-board-owner.fullscreen-portrait:not(.v66-taktik-fs) #fs-tb-freehand,body.tt976-board-owner.fullscreen-portrait:not(.v66-taktik-fs) #fs-tb-zone,body.tt976-board-owner.fullscreen-portrait:not(.v66-taktik-fs) #fs-tb-text,body.tt976-board-owner.fullscreen-portrait:not(.v66-taktik-fs) #fs-tb-movement{display:none!important}',
+      'body.tt976-board-owner:not(.v66-taktik-fs) #arrow-options,body.tt976-board-owner:not(.v66-taktik-fs) #freehand-options,body.tt976-board-owner:not(.v66-taktik-fs) #zone-options{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}',
+      '@media(max-width:760px){#tt976-board-toolbar .tt976-btn,#tt976-board-fs-toolbar .tt976-btn{min-width:32px;width:32px;height:30px;padding:3px 6px;font-size:.8rem}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
 
-  function host964(){
-    var h=document.getElementById('tt964-board-draw-options-host');
-    if(h)return h;
-    h=document.createElement('div');
-    h.id='tt964-board-draw-options-host';
-    document.body.appendChild(h);
+  function mkBtn(cls,txt,title,handler){
+    var b=document.createElement('button');
+    b.type='button';
+    b.className='tt976-btn '+(cls||'');
+    b.textContent=txt;
+    b.title=title||'';
+    b.setAttribute('aria-label',title||txt);
+    b.addEventListener('click',function(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      try{handler&&handler(ev,b);}catch(e){}
+      syncState();
+      positionOptions();
+    },{passive:false});
+    return b;
+  }
+  function mkSelect(id,opts,onchange){
+    var s=document.createElement('select');
+    s.dataset.tt976Select=id;
+    opts.forEach(function(o){var opt=document.createElement('option');opt.value=o[0];opt.textContent=o[1];if(o[2])opt.selected=true;s.appendChild(opt);});
+    s.addEventListener('change',function(ev){
+      ev.stopPropagation();
+      onchange(s.value);
+      syncOldSelect(id,s.value);
+    },true);
+    return s;
+  }
+  function syncOldSelect(id,val){
+    try{
+      var old=byId(id);
+      if(!old)return;
+      old.value=val;
+      old.dispatchEvent(new Event('change',{bubbles:true}));
+      old.dispatchEvent(new Event('input',{bubbles:true}));
+    }catch(e){}
+  }
+  function readOld(id,fallback){var el=byId(id);return el&&el.value?el.value:fallback;}
+
+  function buildOptionHost(modeName){
+    var h=document.createElement('div');
+    h.className='tt976-options-host tt976-options-'+modeName;
+    h.dataset.mode=modeName;
+    if(modeName==='arrow'){
+      h.appendChild(mkSelect('arrow-color-sel',[["#ffdd44","■ Gul",true],["#e84a4a","■ Röd"],["#4ae8e8","■ Blå"],["#4ae87a","■ Grön"],["#fff","■ Vit"],["#000","■ Svart"]],function(v){try{arrowColor=v;}catch(e){}}));
+      h.appendChild(mkSelect('arrow-type-sel',[["solid","— Hel",true],["dashed","‥ Streckad"]],function(v){try{arrowType=v;}catch(e){}}));
+      h.appendChild(mkSelect('arrow-head-sel',[["arrow","➔ Pil",true],["line","━ Linje"]],function(v){try{arrowHeadType=v||'arrow';}catch(e){}}));
+      h.appendChild(mkSelect('arrow-width-sel',[["2","Tunn"],["3","Normal",true],["5","Tjock"]],function(v){try{arrowWidth=parseInt(v,10)||3;}catch(e){}}));
+    }else if(modeName==='freehand'){
+      h.appendChild(mkSelect('freehand-color-sel',[["#ffdd44","■ Gul",true],["#e84a4a","■ Röd"],["#4ae8e8","■ Blå"],["#4ae87a","■ Grön"],["#fff","■ Vit"],["#000","■ Svart"]],function(v){try{freehandColor=v;}catch(e){}}));
+      h.appendChild(mkSelect('freehand-width-sel',[["2","Tunn"],["4","Normal",true],["7","Tjock"]],function(v){try{freehandWidth=parseInt(v,10)||4;}catch(e){}}));
+    }else if(modeName==='zone'){
+      h.appendChild(mkSelect('zone-shape-sel',[["rect","▭ Rektangel",true],["circle","○ Cirkel/oval"],["tri-up","△ Triangel upp"],["tri-down","▽ Triangel ned"],["tri-left","◁ Triangel vänster"],["tri-right","▷ Triangel höger"]],function(v){try{zoneShapeType=v;}catch(e){}}));
+      h.appendChild(mkSelect('zone-color-sel',[["rgba(232,76,76,0.25)","■ Röd",true],["rgba(74,232,122,0.25)","■ Grön"],["rgba(74,232,232,0.25)","■ Blå"],["rgba(232,200,74,0.25)","■ Gul"],["rgba(160,120,255,0.25)","■ Lila"],["rgba(0,0,0,0.25)","■ Svart"]],function(v){try{zoneColor=v;}catch(e){}}));
+      h.appendChild(mkSelect('zone-fill-sel',[["solid","■ Fylld",true],["none","□ Ingen"],["h","☰ Horisontell"],["v","☰ Vertikal"],["diag","╱ Diagonal /"],["diag2","╲ Diagonal \\\""],["cross","╳ Kryss"],["grid","▦ Rutnät"],["dots","⁙ Prickar"]],function(v){try{zoneFillType=v||'solid';}catch(e){}}));
+    }
+    ['pointerdown','touchstart','mousedown','click'].forEach(function(t){h.addEventListener(t,function(ev){ev.stopPropagation();},{capture:true,passive:true});});
     return h;
   }
 
-  function injectStyle964(){
-    if(document.getElementById('tt964-board-draw-options-style'))return;
-    var st=document.createElement('style');
-    st.id='tt964-board-draw-options-style';
-    st.textContent=[
-      '#tt964-board-draw-options-host{display:none;position:fixed;left:0;top:0;z-index:17000;max-width:min(92vw,360px);box-sizing:border-box;pointer-events:none;visibility:visible!important}',
-      '#tt964-board-draw-options-host.tt964-open{display:flex!important;visibility:visible!important}',
-      '#tt964-board-draw-options-host #arrow-options,#tt964-board-draw-options-host #freehand-options,#tt964-board-draw-options-host #zone-options{position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;transform:none!important;z-index:auto!important;margin:0!important;width:max-content!important;max-width:min(92vw,360px)!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;box-sizing:border-box!important;background:rgba(17,26,20,.98)!important;border:1px solid #2d4a35!important;border-radius:8px!important;padding:3px 5px!important;box-shadow:0 4px 14px rgba(0,0,0,.35)!important;gap:4px!important;align-items:center!important;pointer-events:auto!important;white-space:nowrap!important;visibility:visible!important;opacity:1!important}',
-      '#tt964-board-draw-options-host #arrow-options:not(.tt964-active-option),#tt964-board-draw-options-host #freehand-options:not(.tt964-active-option),#tt964-board-draw-options-host #zone-options:not(.tt964-active-option){display:none!important}',
-      '#tt964-board-draw-options-host .tt964-active-option{display:flex!important;visibility:visible!important;opacity:1!important}',
-      '#tt964-board-draw-options-host select,#tt964-board-draw-options-host button{min-height:26px!important;height:26px!important;font-size:.72rem!important;line-height:1!important;max-width:110px!important;padding:1px 4px!important;margin:0!important;border-radius:5px!important;pointer-events:auto!important;touch-action:auto!important}',
-      '#tt964-board-draw-options-host label,#tt964-board-draw-options-host span{font-size:.72rem!important;line-height:1!important;margin:0!important;padding:0!important}',
-      'body.tt964-board-options-owned #tt291-plan-draw-options{display:none!important;visibility:hidden!important;pointer-events:none!important}'
-    ].join('\n');
-    document.head.appendChild(st);
-  }
-
-  function findButton964(){
-    var m=activeMode964();
-    var ids=TOOL_BUTTONS[m]||[];
-    for(var i=0;i<ids.length;i++){
-      var b=document.getElementById(ids[i]);
-      if(b && visible964(b))return b;
-    }
-    return null;
-  }
-
-  function hide964(){try{
-    var h=document.getElementById('tt964-board-draw-options-host');
-    if(h){h.classList.remove('tt964-open');h.style.setProperty('display','none','important');}
-    document.body.classList.remove('tt964-board-options-owned');
-    ['arrow-options','freehand-options','zone-options'].forEach(function(id){
-      var el=document.getElementById(id); if(!el)return;
-      el.classList.remove('tt964-active-option');
-      el.style.removeProperty('visibility');
-      el.style.removeProperty('opacity');
+  function syncOptionSelects(root){
+    if(!root)return;
+    root.querySelectorAll('select[data-tt976-select]').forEach(function(s){
+      var id=s.dataset.tt976Select;
+      var val=readOld(id,s.value);
+      s.value=val;
     });
-  }catch(e){}}
+  }
 
-  function place964(){try{
-    setVersion964();
-    injectStyle964();
-    var optId=activeOptionId964();
-    if(!boardContext964() || !optId){hide964();return;}
-    var btn=findButton964();
-    if(!btn){hide964();return;}
-    var h=host964();
-    document.body.classList.add('tt964-board-options-owned');
+  function buildToolbar(id,fs){
+    if(byId(id))return byId(id);
+    var bar=document.createElement('div');
+    bar.id=id;
+    bar.className=fs?'tt976-board-fs':'tt976-board-normal';
+    bar.appendChild(mkBtn('tt976-move','✋','Flytta spelare/boll',function(){setBoardMode('move');}));
+    bar.appendChild(mkBtn('tt976-arrow','↗','Pil',function(){setBoardMode('arrow');}));
+    bar.appendChild(mkBtn('tt976-freehand','✎','Rita fritt',function(){setBoardMode('freehand');}));
+    bar.appendChild(mkBtn('tt976-zone','▭','Zon',function(){setBoardMode('zone');}));
+    bar.appendChild(mkBtn('tt976-object','▵','Objekt: kon/pinne',function(){delegateObjectClick();}));
+    bar.appendChild(mkBtn('tt976-text','T','Text',function(){setBoardMode('text');}));
+    bar.appendChild(mkBtn('tt976-clear','🧽','Sudda/rensa ritningar',function(){clearBoardDrawings();}));
+    bar.appendChild(mkBtn('tt976-undo','↶','Ångra',function(){try{if(typeof doUndo==='function')doUndo();}catch(e){} }));
+    bar.appendChild(mkBtn('tt976-reset','↻','Återställ tavlan',function(){resetBoard();}));
+    bar.appendChild(buildOptionHost('arrow'));
+    bar.appendChild(buildOptionHost('freehand'));
+    bar.appendChild(buildOptionHost('zone'));
+    return bar;
+  }
 
-    ['arrow-options','freehand-options','zone-options'].forEach(function(id){
-      var el=document.getElementById(id); if(!el)return;
-      if(el.parentNode!==h)h.appendChild(el);
-      var active=id===optId;
-      el.classList.toggle('tt964-active-option',active);
-      el.classList.remove('tt291-active-option');
-      if(active){
-        el.style.setProperty('display','flex','important');
-        el.style.setProperty('visibility','visible','important');
-        el.style.setProperty('opacity','1','important');
-      }else{
-        el.style.setProperty('display','none','important');
+  function ensureToolbars(){
+    var n=buildToolbar('tt976-board-toolbar',false);
+    if(!n.parentNode){
+      var top=byId('topbar');
+      if(top&&top.parentNode)top.parentNode.insertBefore(n,top.nextSibling);
+      else document.body.appendChild(n);
+    }
+    var f=buildToolbar('tt976-board-fs-toolbar',true);
+    if(!f.parentNode)document.body.appendChild(f);
+    syncOptionSelects(n);syncOptionSelects(f);
+  }
+
+  function setBoardMode(m){
+    lastMode=m;
+    try{if(typeof setMode==='function')setMode(m);}catch(e){try{mode=m;}catch(e2){}}
+    syncState();
+    positionOptions();
+  }
+  function clearBoardDrawings(){
+    try{if(typeof saveUndo==='function')saveUndo();}catch(e){}
+    try{arrows=[];labels=[];freehandPaths=[];zones=[];movementPaths=[];}catch(e){}
+    try{selectedId=null;arrowStart=null;arrowCurrent=null;freehandCurrent=null;freehandDrawing=false;zoneStart=null;zonePreview=null;movementCurrent=null;}catch(e){}
+    try{if(typeof setMode==='function')setMode('move');}catch(e){}
+    try{if(typeof render==='function')render();}catch(e){}
+    try{showToast('Ritningar rensade');}catch(e){}
+  }
+  function resetBoard(){
+    try{if(typeof window.tt231ResetFullscreenBoard==='function'){window.tt231ResetFullscreenBoard();return;}}catch(e){}
+    try{if(typeof clearCoachboardToFormation==='function')clearCoachboardToFormation();}catch(e){}
+  }
+  function delegateObjectClick(){
+    try{
+      var old=byId('tt747-object-btn');
+      if(old){old.click();return;}
+    }catch(e){}
+    try{showToast('Objektverktyget är inte klart ännu');}catch(e){}
+  }
+
+  function currentMode(){try{return mode||lastMode||'move';}catch(e){return lastMode||'move';}}
+  function activeToolbar(){return isBoardFullscreen()?byId('tt976-board-fs-toolbar'):byId('tt976-board-toolbar');}
+  function syncState(){
+    var m=currentMode();
+    ['tt976-board-toolbar','tt976-board-fs-toolbar'].forEach(function(id){
+      var bar=byId(id);if(!bar)return;
+      bar.querySelectorAll('.tt976-btn').forEach(function(b){b.classList.remove('on');});
+      var cls=m==='arrow'?'tt976-arrow':m==='freehand'?'tt976-freehand':m==='zone'?'tt976-zone':m==='text'?'tt976-text':m==='move'?'tt976-move':'';
+      if(cls){var b=bar.querySelector('.'+cls);if(b)b.classList.add('on');}
+      bar.querySelectorAll('.tt976-options-host').forEach(function(h){h.classList.remove('on');});
+      if(m==='arrow'||m==='freehand'||m==='zone'){
+        var h=bar.querySelector('.tt976-options-'+m);if(h)h.classList.add('on');
       }
     });
-
-    h.classList.add('tt964-open');
-    h.style.setProperty('display','flex','important');
-    h.style.setProperty('visibility','visible','important');
-
-    var r=btn.getBoundingClientRect();
-    var hw=h.offsetWidth||180;
-    var hh=h.offsetHeight||36;
-    var left=Math.max(6,Math.min(window.innerWidth-hw-6,r.left));
-    var top=Math.max(6,Math.min(window.innerHeight-hh-6,r.bottom+6));
-    h.style.left=Math.round(left)+'px';
-    h.style.top=Math.round(top)+'px';
-  }catch(e){}}
-
-  var pending=0;
-  function schedule964(){
-    if(pending)cancelAnimationFrame(pending);
-    pending=requestAnimationFrame(function(){pending=0;place964();});
-    // v291 kör fortfarande gamla privata 0/90/230-scheman vid setMode. Kör därför
-    // en enda sen placering efter verktygsbyte, men bara efter själva klicket – inte under ritning.
-    setTimeout(place964,260);
+  }
+  function positionOptions(){
+    var bar=activeToolbar(); if(!bar)return;
+    var m=currentMode();
+    var h=bar.querySelector('.tt976-options-'+m); if(!h)return;
+    var btn=bar.querySelector('.tt976-'+m); if(!btn)return;
+    try{
+      if(isBoardFullscreen()){
+        h.style.left=Math.max(6,Math.min(btn.offsetLeft,bar.clientWidth-h.offsetWidth-6))+'px';
+      }else{
+        h.style.left=Math.max(8,Math.min(btn.offsetLeft,bar.clientWidth-h.offsetWidth-8))+'px';
+      }
+    }catch(e){}
   }
 
-  var oldSetMode964=typeof setMode==='function'?setMode:null;
-  if(oldSetMode964 && !oldSetMode964.__tt964Wrapped){
-    var wrappedSetMode964=function(){
-      var res=oldSetMode964.apply(this,arguments);
-      schedule964();
+  var oldSetMode=typeof setMode==='function'?setMode:null;
+  if(oldSetMode&&!oldSetMode.__tt976Wrapped){
+    var wrapped=function(){
+      var res=oldSetMode.apply(this,arguments);
+      if(isBoardContext()){
+        lastMode=arguments[0]||lastMode;
+        syncState();
+        setTimeout(positionOptions,0);
+      }
       return res;
     };
-    wrappedSetMode964.__tt964Wrapped=true;
-    setMode=wrappedSetMode964;
-    window.setMode=wrappedSetMode964;
+    wrapped.__tt976Wrapped=true;
+    setMode=wrapped; window.setMode=wrapped;
   }
 
+  function apply(){
+    try{
+      setVersion976(); injectStyle(); ensureToolbars();
+      var board=isBoardContext();
+      document.body.classList.toggle('tt976-board-owner',!!board);
+      if(board){syncState();positionOptions();}
+    }catch(e){}
+  }
+
+  // Bara lätta lägestriggers. Ingen listener på själva ritdraget.
   document.addEventListener('click',function(ev){
     try{
-      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#tt964-board-draw-options-host'))return;
-      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#btn-arrow,#btn-freehand,#btn-zone,#fs-tb-arrow,#fs-tb-freehand,#fs-tb-zone,.tab'))setTimeout(schedule964,0);
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#pitch-svg'))return;
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#tt976-board-toolbar,#tt976-board-fs-toolbar'))return;
     }catch(e){}
+    setTimeout(apply,0);
+    setTimeout(apply,80);
   },true);
-
-  ['fullscreenchange','webkitfullscreenchange','resize','orientationchange'].forEach(function(type){
-    window.addEventListener(type,function(){setTimeout(schedule964,80);},true);
-  });
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(schedule964,0);});
-  else setTimeout(schedule964,0);
-  setTimeout(setVersion964,800);
-  window.tt964PlaceBoardDrawOptions=place964;
+  window.addEventListener('resize',function(){setTimeout(apply,120);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply); else apply();
+  setTimeout(apply,300);
+  setTimeout(apply,1000);
+  window.tt976ApplyIsolatedBoardToolbar=apply;
 })();
-/* === slut v964 TEST === */
-
-
-/* === v965 TEST: Tavla ritning mjukare + iPhone ikonordning ===
-   Bas: v964.
-   Syfte:
-   - v964 fick ritvalen att fungera, men Taktiktavla kunde fortfarande hamna i segt läge.
-   - Logikfel: v931-fallbacken var inte faktiskt avstängd; den kunde fortfarande starta en extra frihandsväg.
-   - Gamla klick-synkar körde även efter klick/touch på planen och kunde göra nästa streck trögt.
-   - På iPhone kunde knappar hamna i fel ordning eftersom v954 inte rättade ordning när samma parent redan användes. */
-(function(){
-  'use strict';
-  if(window.__tt965BoardSmoothOrderFix)return;
-  window.__tt965BoardSmoothOrderFix=true;
-  window.__tt965DisableTavlaFreehandFallback=true;
-  window.__tt957DisableTavlaFreehandFallback=true;
-
-  function setVersion965(){try{
-    document.title='Taktiktavla TEST v965 ritning ikonordning';
-    var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v965 TEST';
-  }catch(e){}}
-
-  function isDrawing965(){try{
-    return !!((typeof freehandDrawing!=='undefined'&&freehandDrawing) || (typeof freehandCurrent!=='undefined'&&freehandCurrent));
-  }catch(e){return false;}}
-
-  function isTaktik965(){try{
-    var p=document.getElementById('panel-taktik');
-    return !!(p&&p.classList.contains('on')) || document.body.classList.contains('tt688-taktikfilm-editor-active') || document.body.classList.contains('tt743-mobile-taktikfilm-active') || document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen');
-  }catch(e){return false;}}
-
-  function visible965(el){try{
-    if(!el)return false;
-    var st=getComputedStyle(el);
-    if(st.display==='none'||st.visibility==='hidden')return false;
-    var r=el.getBoundingClientRect();
-    return r.width>2&&r.height>2;
-  }catch(e){return !!el;}}
-
-  function boardRow965(){try{
-    var row=document.getElementById('tt252-ipad-rita-row');
-    if(row&&visible965(row))return row;
-    var ids=['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text'];
-    for(var i=0;i<ids.length;i++){
-      var el=document.getElementById(ids[i]);
-      if(el&&el.parentNode&&visible965(el.parentNode))return el.parentNode;
-    }
-  }catch(e){}
-    return null;
-  }
-
-  function normalizeOrder965(){try{
-    setVersion965();
-    if(isDrawing965()||isTaktik965())return;
-    var row=boardRow965();
-    if(!row)return;
-    var order=['tt236-rita-move','btn-arrow','btn-freehand','btn-zone','tt747-object-btn','btn-text','tt236-rita-clear','tt236-rita-undo','tt236-rita-reset'];
-    var nodes=[];
-    order.forEach(function(id){var el=document.getElementById(id);if(el)nodes.push(el);});
-    nodes.forEach(function(el){if(el.parentNode!==row)row.appendChild(el);});
-    nodes.forEach(function(el){if(el.parentNode===row && row.lastChild!==el)row.appendChild(el);});
-  }catch(e){}}
-
-  var pending=0;
-  function schedule965(delay){
-    clearTimeout(pending);
-    pending=setTimeout(normalizeOrder965,typeof delay==='number'?delay:60);
-  }
-
-  document.addEventListener('click',function(ev){try{
-    if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#pitch-svg,.pitch-svg,svg,#tt964-board-draw-options-host,#arrow-options,#freehand-options,#zone-options'))return;
-    if(ev&&ev.target&&ev.target.closest&&ev.target.closest('button,.tab,#topbar'))schedule965(80);
-  }catch(e){}},true);
-  ['resize','orientationchange','fullscreenchange','webkitfullscreenchange'].forEach(function(type){window.addEventListener(type,function(){schedule965(120);},true);});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){schedule965(120);}); else schedule965(120);
-  setTimeout(normalizeOrder965,500);
-  setTimeout(setVersion965,900);
-  window.tt965NormalizeBoardToolbarOrder=normalizeOrder965;
-})();
-/* === slut v965 TEST === */
-
-
-/* v967 TEST rollback: exakt återgång till v965 efter misslyckad v966 fullscreen-fix. Ingen funktionsändring utöver fil/version för säker bas. */
-
-
-/* === v969 TEST: persistent normal ritrad efter fullscreen-retur ===
-   Bas: v967/v965. Bygger inte på v966/v968.
-   Syfte:
-   - v968 missade returen: ritraden syntes inte efter Snabbtavla/Taktiktavla fullscreen.
-   - Den här versionen försöker inte styra fullscreen alls.
-   - I vanligt Tavla/Snabbtavla-läge får en enkel, persistent body-klass hålla normal ritrad synlig
-     tills användaren lämnar Tavla/Snabbtavla eller går in i fullscreen/Taktikfilm.
-   - Rör inte ritvalens v964-placering, konknappen eller ritmotorn. */
-(function(){
-  'use strict';
-  if(window.__tt969BoardRowPersistentAfterFullscreen)return;
-  window.__tt969BoardRowPersistentAfterFullscreen=true;
-
-  var pending969=0;
-
-  function setVersion969(){try{
-    document.title='Taktiktavla TEST v969 ritrad efter fullscreen';
-    var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
-    if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v969 TEST';
-  }catch(e){}}
-
-  function isFs969(){try{return !!document.body.classList.contains('fullscreen-portrait');}catch(e){return false;}}
-  function panelVisible969(id){try{
-    var p=document.getElementById(id);
-    if(!p||!p.classList.contains('on'))return false;
-    var st=getComputedStyle(p);
-    if(st.display==='none'||st.visibility==='hidden'||st.opacity==='0')return false;
-    var r=p.getBoundingClientRect();
-    return r.width>2&&r.height>2;
-  }catch(e){return false;}}
-  function isTaktik969(){try{
-    if(panelVisible969('panel-taktik'))return true;
-    var b=document.body.classList;
-    return b.contains('tt688-taktikfilm-editor-active')||b.contains('tt743-mobile-taktikfilm-active')||b.contains('tt743-mobile-taktikfilm-fullscreen')||b.contains('v66-taktik-fs');
-  }catch(e){return false;}}
-  function isBoard969(){try{
-    if(panelVisible969('panel-saves')||panelVisible969('panel-formations'))return true;
-    var b=document.body.classList;
-    return b.contains('tt733-tavla-active')||b.contains('tt718-tavla-active')||b.contains('tt719-tavla-active')||b.contains('tt722-tavla-active')||b.contains('tt186-saves-open')||b.contains('tt187-saves-open')||b.contains('tt188-saves-ios-open')||b.contains('tt745-snabb-active')||b.contains('tt756-snabb-object-active');
-  }catch(e){return false;}}
-
-  function injectStyle969(){try{
-    if(document.getElementById('tt969-board-row-persistent-style'))return;
-    var st=document.createElement('style');
-    st.id='tt969-board-row-persistent-style';
-    st.textContent=[
-      'body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #topbar{display:block!important;visibility:visible!important;opacity:1!important;height:auto!important;min-height:0!important;max-height:none!important;pointer-events:auto!important;overflow:visible!important}',
-      'body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt252-ipad-rita-row,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) .tt248-tavla-rita-row{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}',
-      'body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt236-rita-move,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #btn-arrow,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #btn-freehand,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #btn-zone,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt747-object-btn,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #btn-text,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt236-rita-clear,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt236-rita-undo,body.tt969-board-normal-row:not(.fullscreen-portrait):not(.tt688-taktikfilm-editor-active) #tt236-rita-reset{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}'
-    ].join('\n');
-    document.head.appendChild(st);
-  }catch(e){}}
-
-  function normalize969(reason){try{
-    setVersion969();
-    injectStyle969();
-    var active=isBoard969()&&!isFs969()&&!isTaktik969();
-    document.body.classList.toggle('tt969-board-normal-row',!!active);
-    if(!active)return;
-
-    // Om äldre radsynk råkat lämna Taktikfilm-gömklass efter fullscreen, nollställ bara i faktiskt Tavla/Snabbtavla.
-    document.body.classList.remove('tt248-taktik-active');
-    document.body.classList.remove('tt291-taktik-active');
-
-    // Återanvänd befintliga stabila byggare. Ingen egen flytt av ritvalen här.
-    try{ if(typeof window.tt236ApplyTavlaRitaToolbar==='function')window.tt236ApplyTavlaRitaToolbar(); }catch(e){}
-    try{ if(typeof window.tt248AlwaysOpenRitaRowNoToggle==='function')window.tt248AlwaysOpenRitaRowNoToggle(); }catch(e){}
-    try{ if(typeof window.tt252IpadOwnRitaRow==='function')window.tt252IpadOwnRitaRow(); }catch(e){}
-    try{ if(typeof window.tt965NormalizeBoardToolbarOrder==='function')window.tt965NormalizeBoardToolbarOrder(); }catch(e){}
-    // v964 äger ritvalens placering. Körs bara efter lägesbyte, inte under ritning.
-    try{ if(typeof window.tt964PlaceBoardDrawOptions==='function')window.tt964PlaceBoardDrawOptions(); }catch(e){}
-  }catch(e){}}
-
-  function schedule969(delay){
-    clearTimeout(pending969);
-    pending969=setTimeout(function(){normalize969('scheduled');},typeof delay==='number'?delay:80);
-  }
-  function burst969(){
-    schedule969(40);
-    setTimeout(function(){normalize969('late-1');},180);
-    setTimeout(function(){normalize969('late-2');},420);
-  }
-
-  // Viktigt: inga lyssnare på själva planen/ritning. Bara meny, fullscreen-retur och vybyte.
-  ['fullscreenchange','webkitfullscreenchange','resize','orientationchange'].forEach(function(type){
-    window.addEventListener(type,burst969,true);
-    document.addEventListener(type,burst969,true);
-  });
-  document.addEventListener('click',function(ev){try{
-    var t=ev&&ev.target;
-    if(!t||!t.closest)return;
-    if(t.closest('#pitch-svg,.pitch-svg,svg'))return;
-    if(t.closest('#fs-restore-btn,.tab,#topbar,button'))burst969();
-  }catch(e){}},true);
-  document.addEventListener('touchend',function(ev){try{
-    var t=ev&&ev.target;
-    if(!t||!t.closest)return;
-    if(t.closest('#pitch-svg,.pitch-svg,svg'))return;
-    if(t.closest('#fs-restore-btn,.tab,#topbar,button'))burst969();
-  }catch(e){}},true);
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){burst969();},{once:true});
-  else burst969();
-  setTimeout(setVersion969,900);
-  window.tt969NormalizeBoardRowAfterFullscreen=normalize969;
-})();
-/* === slut v969 TEST === */
+/* === slut v976 TEST === */
