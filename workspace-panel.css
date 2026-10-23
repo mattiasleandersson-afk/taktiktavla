@@ -1,0 +1,54 @@
+#tt-workspace-tabs{position:fixed;top:var(--tt-workspace-top);left:8px;width:272px;display:flex;gap:4px;z-index:10100;padding:4px;box-sizing:border-box;background:#0e1710;border:1px solid #42694c;border-radius:8px}
+#tt-workspace-tabs[hidden]{display:none}
+#tt-workspace-tabs [role=tablist]{display:flex;flex:1;gap:4px}
+#tt-workspace-tabs button{background:#15251a;color:#edf5ee;border:1px solid #42694c;border-radius:5px;min-height:32px;padding:4px 10px;cursor:pointer;font:700 13px Arial,sans-serif}
+#tt-workspace-tabs [aria-selected=true]{background:#4ae87a;color:#0e1710}
+/* Repeated IDs intentionally outrank the older, context-specific layout rules. */
+body.tt-workspace #bottompanel#bottompanel#bottompanel{display:block!important;position:fixed!important;left:8px!important;top:calc(var(--tt-workspace-top) + 46px)!important;bottom:8px!important;width:272px!important;min-width:0!important;max-width:272px!important;height:auto!important;max-height:none!important;padding:0!important;margin:0!important;overflow:visible!important;background:transparent!important;border:0!important;pointer-events:none!important;transform:none!important}
+body.tt-workspace #pitch-wrapper#pitch-wrapper#pitch-wrapper{position:fixed!important;left:var(--tt-workspace-left)!important;right:8px!important;top:calc(var(--tt-workspace-top) + 46px)!important;bottom:8px!important;width:auto!important;height:auto!important;max-height:none!important;margin:0!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;transform:none!important}
+body.tt-workspace #pitch-svg#pitch-svg#pitch-svg{width:auto!important;height:auto!important;max-width:100%!important;max-height:100%!important;transform:none!important}
+body.tt-workspace #panel-saves#panel-saves#panel-saves,body.tt-workspace #tt-objects-menu#tt-objects-menu#tt-objects-menu,body.tt-workspace #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel,body.tt-workspace #edit-taktik-steps#edit-taktik-steps#edit-taktik-steps{position:fixed!important;left:8px!important;right:auto!important;top:calc(var(--tt-workspace-top) + 46px)!important;bottom:8px!important;width:272px!important;min-width:0!important;max-width:272px!important;min-width:0!important;max-width:272px!important;height:auto!important;min-height:0!important;max-height:none!important;box-sizing:border-box!important;margin:0!important;padding:8px!important;overflow:auto!important;transform:none!important;pointer-events:auto!important;background:#0e1710!important;border:1px solid #42694c!important;border-radius:8px!important}
+body.tt-workspace #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel{z-index:10095!important;visibility:visible!important}
+body.tt-workspace #panel-saves#panel-saves#panel-saves{align-content:flex-start!important}
+body.tt-workspace #tt-objects-menu#tt-objects-menu#tt-objects-menu{box-shadow:none!important}
+body.tt-workspace #tt-objects-menu > summary{padding:4px 0 12px}
+body.tt-workspace #panel-toggle-strip#panel-toggle-strip#panel-toggle-strip,body.tt-workspace #panel-show-btn#panel-show-btn#panel-show-btn,body.tt-workspace #tt642-layer-mobile-toggle#tt642-layer-mobile-toggle#tt642-layer-mobile-toggle{display:none!important}
+body.tt-workspace:not([data-workspace-tab=objects]) #tt-objects-menu#tt-objects-menu#tt-objects-menu,
+body.tt-workspace:not([data-workspace-tab=layers]) #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel,
+body.tt-workspace:not([data-workspace-tab=main]) #panel-saves#panel-saves#panel-saves,
+body.tt-workspace:not([data-workspace-tab=main]) #edit-taktik-steps#edit-taktik-steps#edit-taktik-steps,
+body.tt-workspace:not([data-workspace-tab=main]) #tt692-film-actions-bottom#tt692-film-actions-bottom#tt692-film-actions-bottom,
+body.tt-workspace-collapsed #tt-objects-menu#tt-objects-menu#tt-objects-menu,
+body.tt-workspace-collapsed #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel,
+body.tt-workspace-collapsed #panel-saves#panel-saves#panel-saves,
+body.tt-workspace-collapsed #edit-taktik-steps#edit-taktik-steps#edit-taktik-steps,
+body.tt-workspace-collapsed #tt692-film-actions-bottom#tt692-film-actions-bottom#tt692-film-actions-bottom{display:none!important}
+body.tt-workspace[data-workspace-tab=objects]:not(.tt-workspace-collapsed) #tt-objects-menu#tt-objects-menu#tt-objects-menu,
+body.tt-workspace[data-workspace-tab=layers]:not(.tt-workspace-collapsed) #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel{display:block!important}
+/* Existing film navigation stays above the pitch whichever tab is selected. */
+body.tt-workspace-film #edit-taktik-ui#edit-taktik-ui#edit-taktik-ui > div:first-child{position:fixed!important;left:288px!important;right:8px!important;top:var(--tt-workspace-top)!important;bottom:auto!important;width:auto!important;min-height:38px!important;display:flex!important;flex-wrap:nowrap!important;margin:0!important;padding:4px!important;box-sizing:border-box!important;pointer-events:auto!important}
+body.tt-workspace-film #edit-step-name-inp#edit-step-name-inp#edit-step-name-inp{flex:1!important;width:auto!important;order:0!important;margin:0!important}
+body.tt-workspace-film #edit-taktik-steps#edit-taktik-steps#edit-taktik-steps{top:calc(var(--tt-workspace-top) + 128px)!important;bottom:8px!important}
+body.tt-workspace-film #tt692-film-actions-bottom#tt692-film-actions-bottom#tt692-film-actions-bottom{left:8px!important;width:272px!important;top:calc(var(--tt-workspace-top) + 46px)!important;bottom:auto!important}
+
+body.tt-workspace #panel-saves#panel-saves#panel-saves > div{height:auto!important;min-height:100%!important;overflow:visible!important}
+body.tt-workspace #panel-saves#panel-saves#panel-saves .row.tt722-file-row{grid-template-columns:minmax(70px,1fr) repeat(6,19px)!important}
+body.tt-workspace #panel-saves#panel-saves#panel-saves .row.tt722-file-row .row-name{width:auto!important;max-width:100%!important;min-width:0!important}
+
+/* Respect the existing orientation toggle inside the shared desktop workspace. */
+body.tt-workspace.tt694-edit-landscape #pitch-svg#pitch-svg#pitch-svg{transform:rotate(90deg)!important;transform-origin:center center!important;width:var(--tt694-landscape-pitch-w,320px)!important;height:auto!important;max-width:none!important;max-height:none!important;flex:0 0 auto!important}
+/* Fullscreen film panels open on demand from the existing icon toolbar. */
+#tt-film-fs-layers[hidden]{display:none!important}
+#tt-film-fs-layers svg{width:20px;height:20px;pointer-events:none;display:block}
+#tt-film-fs-layers[aria-expanded=true]{color:#4ae87a;border-color:#4ae87a}
+body.tt-film-fs-panels:not(.tt-film-fs-layers-open) #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel{display:none!important;visibility:hidden!important;pointer-events:none!important}
+body.tt-film-fs-panels.tt-film-fs-layers-open #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel{display:block!important;visibility:visible!important;pointer-events:auto!important;position:fixed!important;left:auto!important;right:8px!important;top:100px!important;bottom:12px!important;width:min(260px,calc(100vw - 16px))!important;max-height:calc(100vh - 112px)!important;overflow:auto!important;z-index:10060!important}
+body.tt-film-fs-panels #tt642-layer-mobile-toggle#tt642-layer-mobile-toggle{display:none!important}
+
+#tt-film-fs-objects[hidden]{display:none!important}
+#tt-film-fs-objects[aria-expanded=true]{color:#4ae87a;border-color:#4ae87a}
+body.tt-film-fs-panels:not(.tt-film-fs-objects-open) #tt-objects-menu#tt-objects-menu#tt-objects-menu{display:none!important}
+body.tt-film-fs-panels.tt-film-fs-objects-open #tt-objects-menu#tt-objects-menu#tt-objects-menu{display:block!important;position:fixed!important;top:100px!important;bottom:auto!important;right:8px!important;left:auto!important;width:min(260px,calc(100vw - 16px))!important;max-height:calc(100vh - 112px)!important;overflow:auto!important;z-index:10060!important}
+
+/* Older fullscreen exit guards can leave this button inline-hidden. */
+body.tt-workspace-film #tt681-taktik-fs-btn#tt681-taktik-fs-btn,body.tt-workspace-film #tt668-taktik-fs-btn#tt668-taktik-fs-btn{display:inline-flex!important;visibility:visible!important;pointer-events:auto!important}

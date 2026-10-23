@@ -1,0 +1,9 @@
+.tt-motion-controls{padding:4px 6px 10px;margin-bottom:8px;border-bottom:1px solid #2d4a35;color:#b5cbbb;font:12px Arial,sans-serif}
+.tt-motion-controls label{display:flex;align-items:center;gap:5px}
+.tt-motion-controls select{min-width:0;flex:1;background:#15251a;color:#edf5ee;border:1px solid #42694c;border-radius:5px;padding:5px}
+.tt-motion-controls button{display:block;margin:7px auto 0;background:#15251a;color:#b5cbbb;border:1px solid #42694c;border-radius:8px;padding:5px 9px;cursor:pointer;font:inherit}
+.tt-motion-controls button[hidden]{display:none}
+.tt-motion-controls button[aria-pressed=true]{background:#235b36;color:#fff;border-color:#4ae87a}
+.tt-motion-controls :disabled{opacity:.5;cursor:default}
+/* Decorative camera must not become a changing pointer target during legacy UI refreshes. */
+#btn-play-all::before,#btn-play-all::after,#fs-play-all-btn::before,#fs-play-all-btn::after{pointer-events:none!important}
