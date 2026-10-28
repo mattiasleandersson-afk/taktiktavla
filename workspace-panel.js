@@ -27,7 +27,12 @@
       (document.body.classList.contains('v66-taktik-fs') ||
        document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen') ||
        (document.querySelector('.tab.on')?.dataset.panel === 'taktik' && typeof isEditingTaktik !== 'undefined' && isEditingTaktik));
-    if (active !== filmFullscreen) { fullscreenLayersOpen = false; fullscreenObjectsOpen = false; }
+    if (active !== filmFullscreen) {
+      fullscreenLayersOpen = false; fullscreenObjectsOpen = false;
+      // Do not carry an expanded overlay into the mobile editor.
+      const menu = byId('tt-objects-menu');
+      if (menu) menu.open = false;
+    }
     filmFullscreen = active;
     document.body.classList.toggle('tt-film-fs-panels', active);
     document.body.classList.toggle('tt-film-fs-layers-open', active && fullscreenLayersOpen);
@@ -136,7 +141,13 @@
     });
     // The Object heading also collapses the shared panel.
     document.addEventListener('click', event => {
-      if (document.body.classList.contains('tt-workspace') && event.target.closest('#tt-objects-menu > summary')) {
+      if (!event.target.closest('#tt-objects-menu > summary')) return;
+      if (filmFullscreen) {
+        event.preventDefault();
+        fullscreenObjectsOpen = false;
+        byId('tt-objects-menu').open = false;
+        fullscreenLayout();
+      } else if (document.body.classList.contains('tt-workspace')) {
         event.preventDefault(); choose('collapse');
       }
     }, true);

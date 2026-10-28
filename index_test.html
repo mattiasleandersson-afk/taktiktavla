@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Taktiktavla">
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
-<title>Taktiktavla TEST v963 DIAG READONLY step list spacer only</title>
-<link rel="stylesheet" href="styles_test.css?v=1bf1c4e42792">
+<title>Taktiktavla</title>
+<link rel="stylesheet" href="styles_test.css?v=20261028-panels">
 
 
 
@@ -1939,24 +1939,7 @@
 </style>
 
 
-<style id="tt619-left-version-visual-mask">
-  /* v630 TEST: visa testversion direkt även om äldre appdel hinner skriva 454/610 i samma vänstra span.
-     Ingen JS-loop: bara visuell mask på den lilla versionsetiketten. */
-  #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"],
-  span[style*="font-size:0.6rem"][style*="letter-spacing"]{
-    font-size:0 !important;
-    min-width:44px !important;
-    display:inline-block !important;
-  }
-  #topbar > div > span[style*="font-size:0.6rem"][style*="letter-spacing"]::after,
-  span[style*="font-size:0.6rem"][style*="letter-spacing"]::after{
-    content:"745 TEST" !important;
-    font-size:0.6rem !important;
-    color:#2d4a35 !important;
-    letter-spacing:0.5px !important;
-    white-space:nowrap !important;
-  }
-</style>
+
 
 
 <style id="tt666-taktikfilm-desktop-layout-css">
@@ -2416,7 +2399,7 @@
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:5px;overflow-x:auto;padding-bottom:4px">
   <h1>&#9917;</h1>
-  <span style="font-size:0.6rem;color:#2d4a35;letter-spacing:0.5px">Version 2 test v946 step list spacer only</span>
+  <span id="tt-release-label" style="font-size:0.6rem;color:#2d4a35">Version 2026-10-28</span>
   <select class="btn" id="fmt-sel">
     <option value="11">11v11</option>
     <option value="9">9v9</option>
@@ -3099,6 +3082,8 @@
 </style>
 
 
+
+
 <script id="tt963-diag-pre-draw-runtime-readonly">
 (function(){
   if(window.__tt963DiagPreInstalled)return;
@@ -3203,9 +3188,7 @@
   log('TT963 pre-diagnos installerad före app_test.js');
 })();
 </script>
-
-<script src="app_test.js?v=1bf1c4e42792"></script>
-
+<script src="app_test.js?v=20261028-panels"></script>
 <script id="tt963-diag-post-draw-runtime-readonly">
 (function(){
   if(window.__tt963DiagPostInstalled)return;
@@ -3230,21 +3213,8 @@
     }catch(e){log('WRAP.fail '+name+' '+(e&&e.message));}
   }
   ['setMode','render','renderFreehandPreview','renderFreehandPreviewV931','tt631RefreshLayerPanelSoon','tt956ShowBoardOptions','tt958ShowBoardOptions','tt962NormalizeVisibleBoardPanelRuntime'].forEach(wrap);
-  function addPanel(){
-    if(document.getElementById('tt963-diag-panel'))return;
-    var css=document.createElement('style');
-    css.id='tt963-diag-css';
-    css.textContent='#tt963-diag-panel{position:fixed;left:10px;bottom:10px;z-index:2147483647;background:#111;color:#eee;border:1px solid #666;border-radius:8px;padding:8px;font:12px system-ui;max-width:92vw}#tt963-diag-panel button{margin:2px;padding:6px 8px;border-radius:6px;border:1px solid #777;background:#222;color:#fff}#tt963-diag-panel textarea{width:86vw;height:28vh;background:#050505;color:#eee;font:11px monospace;display:none}';
-    document.head.appendChild(css);
-    var p=document.createElement('div'); p.id='tt963-diag-panel';
-    p.innerHTML='<div><b>DIAG v963</b> ritmotor-start</div><button id="tt963-copy">Kopiera logg</button><button id="tt963-mark">Markera nu</button><button id="tt963-show">Visa/dölj</button><textarea id="tt963-text"></textarea>';
-    document.body.appendChild(p);
-    var ta=document.getElementById('tt963-text');
-    function txt(){return 'TT963 draw runtime entry trace\nUA: '+navigator.userAgent+'\nURL: '+location.href+'\n\n'+(window.__tt963DiagLogs||[]).join('\n');}
-    document.getElementById('tt963-copy').onclick=function(){ta.value=txt();ta.style.display='block';ta.select();try{navigator.clipboard.writeText(ta.value);}catch(e){document.execCommand('copy');}};
-    document.getElementById('tt963-show').onclick=function(){ta.value=txt();ta.style.display=ta.style.display==='block'?'none':'block';};
-    document.getElementById('tt963-mark').onclick=function(){log('MANUAL MARK från användare');};
-  }
+  // Retain existing diagnostic event hooks; the obsolete visible panel is retired.
+  function addPanel(){}
   function observe(){
     try{
       var mo=new MutationObserver(function(ms){
@@ -3268,6 +3238,8 @@
   else {addPanel();observe();log('post-diagnos installerad efter app_test.js');}
 })();
 </script>
+
+
 
 
 <script>
@@ -4488,7 +4460,7 @@
     document.head.appendChild(st);
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});}catch(e){}
   }
   function restoreOptionsWhenInactive(){
@@ -4792,7 +4764,7 @@
     var on=isTavla();
     document.body.classList.toggle('tt733-tavla-active',on);
     if(on){setTop();normalizeRows();openLayer();}
-    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner'); if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v745 TEST';}catch(e){}
   }
   function schedule(){apply();setTimeout(apply,80);setTimeout(apply,250);}
@@ -4891,7 +4863,7 @@
   window.__tt739TavlaRitvalV708PrincipInstalled=true;
   function byId(id){return document.getElementById(id);}
   function setVersion(){
-    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='745 TEST';});
       var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');
@@ -4995,7 +4967,7 @@
     document.body.classList.toggle('tt742-mobile-tavla-active',!!(isMob && !fs && panel==='saves'));
     document.body.classList.toggle('tt742-mobile-board-fullscreen',!!(isMob && fs && !taktikfilm && isBoardPanel()));
     if(isMob)ensureButtonLabel();
-    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5205,7 +5177,7 @@
       taktikLayerOpen=false;
       document.body.classList.remove('tt743-mobile-taktikfilm-active','tt743-mobile-taktikfilm-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
   }
   function toggleFromButton(ev){
     if(!isTaktikfilmContext())return;
@@ -5319,7 +5291,7 @@
     if(on){
       try{document.body.classList.remove('tt642-layer-panel-mobile-open','tt741-board-fs-layer-toggle','tt741-fs-layers-collapsed');}catch(e){}
     }
-    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5397,7 +5369,7 @@
     }else{
       document.body.classList.remove('tt745-snabb-fullscreen');
     }
-    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5599,7 +5571,7 @@
     var idx=currentStepIndex();
     markEditList(idx);
     markPlayList();
-    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5768,7 +5740,7 @@
   }
   function apply(){
     patchControls();
-    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -5877,7 +5849,7 @@
         if(d)d.style.pointerEvents='auto';
       }
     }catch(e){}
-    try{document.title='Taktiktavla TEST v801 mobile lager ikonknapp';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -6064,7 +6036,7 @@
   });
   try{var mo=new MutationObserver(schedule);if(document.body)mo.observe(document.body,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});}catch(e){}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
-  try{document.title='Taktiktavla TEST v823 ipad taktikfilm edit direct tap';}catch(e){}
+  try{document.title='Taktiktavla';}catch(e){}
 })();
 </script>
 <!-- === slut v823 TEST === -->
@@ -6357,7 +6329,7 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){wrapSetMode();apply();});
   else {wrapSetMode();apply();}
   setTimeout(function(){wrapSetMode();apply();},400);
-  try{document.title='Taktiktavla TEST v834 taktikfilm ritval single touch menu';}catch(e){}
+  try{document.title='Taktiktavla';}catch(e){}
 })();
 </script>
 <!-- === slut v834 TEST === -->
@@ -6481,7 +6453,7 @@
   });
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);
   else schedule();
-  try{document.title='Taktiktavla TEST v836 object size panel clamp';}catch(e){}
+  try{document.title='Taktiktavla';}catch(e){}
 })();
 </script>
 <!-- === slut v836 === -->
@@ -6629,7 +6601,7 @@
   else {wrapToast();ensureBox();}
   setTimeout(wrapToast,300);
   setTimeout(wrapToast,1000);
-  try{document.title='Taktiktavla TEST v837 lineup save confirmation';}catch(e){}
+  try{document.title='Taktiktavla';}catch(e){}
 })();
 </script>
 <!-- === slut v837 === -->
@@ -7783,7 +7755,7 @@
   try{var mo=new MutationObserver(function(){setTimeout(cleanText,0);}); if(document.body)mo.observe(document.body,{childList:true,subtree:true,characterData:true});}catch(e){}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',modeGuard,{once:true});
   else modeGuard();
-  try{document.title='Taktiktavla TEST v823 ipad taktikfilm edit direct tap';}catch(e){}
+  try{document.title='Taktiktavla';}catch(e){}
 })();
 </script>
 <!-- === slut v821 TEST === -->
@@ -7966,7 +7938,7 @@
   });
   try{var mo=new MutationObserver(schedule); if(document.body)mo.observe(document.body,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});}catch(e){}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true}); else schedule();
-  try{document.title='Taktiktavla TEST v823 ipad taktikfilm edit direct tap';}catch(e){}
+  try{document.title='Taktiktavla';}catch(e){}
 })();
 </script>
 <!-- === slut v822 TEST === -->
@@ -8050,7 +8022,7 @@
   window.addEventListener('pointerup',suppress,true);
   window.addEventListener('touchend',suppress,true);
   window.addEventListener('click',suppress,true);
-  try{document.title='Taktiktavla TEST v834 taktikfilm ritval separat touchmeny';}catch(e){}
+  try{document.title='Taktiktavla';}catch(e){}
 })();
 </script>
 <!-- === slut v824 TEST === -->
@@ -8182,7 +8154,7 @@
   window.addEventListener('orientationchange',function(){setTimeout(sample,160);},{passive:true});
   window.addEventListener('fullscreenchange',function(){setTimeout(sample,120);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sample,{once:true});else sample();
-  try{document.title='Taktiktavla TEST v834 taktikfilm ritval separat touchmeny';}catch(e){}
+  try{document.title='Taktiktavla';}catch(e){}
 })();
 </script>
 <!-- === slut v826 TEST === -->
@@ -8191,7 +8163,7 @@
 <!-- === v898 TEST: versionslabel för ren Taktikfilm-listfix + V2-hotfixar === -->
 <script>
 (function(){
-  function setTitle(){try{document.title='Taktiktavla TEST v911 matcher-only utan animationstapp';}catch(e){}}
+  function setTitle(){try{document.title='Taktiktavla';}catch(e){}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setTitle,{once:true});else setTitle();
   setTimeout(setTitle,500);
 })();
@@ -8364,7 +8336,7 @@
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
   }catch(e){}
 
-  function setVersion(){try{document.title='Taktiktavla TEST v945 rollback v943 after margin fail';}catch(e){}
+  function setVersion(){try{document.title='Taktiktavla';}catch(e){}
     try{var b=byId('tt610-test-env-banner')||byId('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v942 TEST';}catch(e){}
     try{document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){s.textContent='940 TEST';});}catch(e){}
   }
@@ -8374,9 +8346,9 @@
 </script>
 <!-- === slut v942 TEST === -->
 
-<link rel="stylesheet" href="objects-menu.css?v=1bf1c4e42792">
-<script src="objects-menu.js?v=1bf1c4e42792"></script>
-<link rel="stylesheet" href="workspace-panel.css?v=1bf1c4e42792">
-<script src="workspace-panel.js?v=1bf1c4e42792"></script>
-<link rel="stylesheet" href="film-motion.css?v=1bf1c4e42792">
-<script src="film-motion.js?v=1bf1c4e42792"></script>
+<link rel="stylesheet" href="objects-menu.css?v=20261028-panels">
+<script src="objects-menu.js?v=20261028-panels"></script>
+<link rel="stylesheet" href="workspace-panel.css?v=20261028-panels">
+<script src="workspace-panel.js?v=20261028-panels"></script>
+<link rel="stylesheet" href="film-motion.css?v=20261028-panels">
+<script src="film-motion.js?v=20261028-panels"></script>

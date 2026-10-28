@@ -42084,14 +42084,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
     });
   }catch(e){}}
-  function addTestBadge585(){try{
-    if(document.getElementById('tt585-test-badge'))return;
-    var b=document.createElement('div');
-    b.id='tt585-test-badge';
-    b.textContent='TESTMILJÖ';
-    b.style.cssText='position:fixed;right:8px;bottom:8px;z-index:99999;background:#ffd36b;color:#07110a;border:1px solid #ffd36b;border-radius:999px;padding:5px 9px;font-family:Arial Narrow,Arial,sans-serif;font-weight:900;font-size:12px;letter-spacing:.4px;box-shadow:0 8px 20px rgba(0,0,0,.35);opacity:.9;pointer-events:none';
-    document.body.appendChild(b);
-  }catch(e){}}
+  function addTestBadge585(){ /* Retired visual test marker. */ }
   function tick(){setVersion585();addTestBadge585();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick();
   [0,250,800,1600,3200,6000].forEach(function(ms){setTimeout(tick,ms);});
@@ -42122,23 +42115,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       if(/^(v?\d+|v3\.|\d+ TEST|\d+\s*TEST)$/i.test(t))el.textContent=VERSION;
     });
   }catch(e){}}
-  function addStyle586(){try{
-    if(document.getElementById('tt610-test-env-style'))return;
-    var s=document.createElement('style');
-    s.id='tt610-test-env-style';
-    s.textContent='body{padding-top:36px!important}#tt610-test-env-banner{position:fixed;left:0;right:0;top:0;z-index:2147483647;background:#ffd36b;color:#07110a;border-bottom:2px solid #07110a;font-family:Arial Narrow,Arial,sans-serif;font-weight:900;text-align:center;letter-spacing:.8px;padding:7px 10px;font-size:14px;line-height:1.1;box-shadow:0 4px 16px rgba(0,0,0,.35);pointer-events:none}#tt585-test-badge{display:none!important}@media(max-width:520px){body{padding-top:38px!important}#tt610-test-env-banner{font-size:13px;padding:7px 6px}}';
-    document.head.appendChild(s);
-  }catch(e){}}
-  function addBanner586(){try{
-    addStyle586();
-    var b=document.getElementById('tt610-test-env-banner');
-    if(!b){
-      b=document.createElement('div');
-      b.id='tt610-test-env-banner';
-      document.body.appendChild(b);
-    }
-    b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v680 TEST';
-  }catch(e){}}
+  function addStyle586(){ /* Retired visual test marker. */ }
+  function addBanner586(){ /* Retired visual test marker. */ }
   function tick(){setVersion586();addBanner586();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',tick);else tick();
   [0,120,300,800,1600,3200,6000].forEach(function(ms){setTimeout(tick,ms);});
@@ -42722,7 +42700,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   function show(el,display){if(el)el.style.display=display||'';}
   function hide(el){if(el)el.style.display='none';}
   function setVersion(){
-    try{document.title='Taktiktavla TEST v688 editor state cleanup';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -43258,7 +43236,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
-    try{document.title='Taktiktavla TEST v689 stegknappar';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -43444,7 +43422,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
-    try{document.title='Taktiktavla TEST v692 filmrad under steglista';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -43684,7 +43662,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
-    try{document.title='Taktiktavla TEST v694 liggande redigering puts';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -43943,7 +43921,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
-    try{document.title='Taktiktavla TEST v696 fullscreen rent lager';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -44062,7 +44040,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
-    try{document.title='Taktiktavla TEST v697 fullscreen tangentstyrning';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -44161,7 +44139,7 @@ function afterConfirmedTaktikSave(result,onSaved){
     syncDesktopFullscreenRotateV523._tt698Wrapped=true;
   }
   function setVersion(){
-    try{document.title='Taktiktavla TEST v698 fullscreen rotationsikon';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -44311,7 +44289,7 @@ function afterConfirmedTaktikSave(result,onSaved){
       var d=document.querySelector('#tt616-layer-panel details');
       if(document.body.classList.contains('fullscreen-portrait') && d)d.open=true;
     }catch(e){}
-    try{document.title='Taktiktavla TEST v699 fullscreen puts';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -44460,7 +44438,7 @@ function afterConfirmedTaktikSave(result,onSaved){
       var d=document.querySelector('#tt616-layer-panel details');
       if(document.body.classList.contains('fullscreen-portrait') && d)d.open=true;
     }catch(e){}
-    try{document.title='Taktiktavla TEST v703 fullscreen lagerpanel radfix';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -44605,7 +44583,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
-    try{document.title='Taktiktavla TEST v718 tavla in-place puts';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -44739,7 +44717,7 @@ function afterConfirmedTaktikSave(result,onSaved){
       }catch(e){}
       try{if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();}catch(e){}
     }
-    try{document.title='Taktiktavla TEST v719 tavla lagerpanel puts';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -44882,7 +44860,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   function apply(){
     ensureCss();
     placeOpenMenus();
-    try{document.title='Taktiktavla TEST v720 tavla lagermeny skärmfix';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -45037,7 +45015,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
-    try{document.title='Taktiktavla TEST v722 tavla fillista ikoner synliga';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -45152,7 +45130,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
-    try{document.title='Taktiktavla TEST v723 tavla fillista ikoner närmare';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -45245,7 +45223,7 @@ function afterConfirmedTaktikSave(result,onSaved){
       try{var d=document.querySelector('#tt616-layer-panel details'); if(d)d.open=true;}catch(e){}
       try{if(window.tt631RefreshFreeLayerPanel)window.tt631RefreshFreeLayerPanel();}catch(e){}
     }
-    try{document.title='Taktiktavla TEST v740 fullscreen plan vänster';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -45388,7 +45366,7 @@ function afterConfirmedTaktikSave(result,onSaved){
     if(!on){
       document.body.classList.remove('tt741-fs-layers-collapsed');
     }
-    try{document.title='Taktiktavla TEST v745 matcher lager/bottenfix';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -46231,7 +46209,7 @@ function afterConfirmedTaktikSave(result,onSaved){
     if(!isNormalTavla())closeSizePanel();
     patchClearButton();
     syncPanel();
-    try{document.title='Taktiktavla TEST v954 ritvals-korssync-fix';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
         var t=(el.textContent||'').trim();
@@ -46436,7 +46414,7 @@ function afterConfirmedTaktikSave(result,onSaved){
       box.dataset.tt771ButtonApply='1';
       box.addEventListener('click',function(ev){var btn=ev.target&&ev.target.closest?ev.target.closest('button.btn'):null; if(!btn||!box.contains(btn))return; ev.preventDefault();ev.stopPropagation(); if(ev.stopImmediatePropagation)ev.stopImmediatePropagation(); var fmt=parseInt((byId('tt205-qf-format')||{}).value,10)||((typeof format!=='undefined'&&format)||11); applyFormationLocal(fmt,(btn.textContent||'').trim());},true);
     }
-    try{document.title='Taktiktavla TEST v917 object-deferred-sleep';}catch(e){}
+    try{document.title='Taktiktavla';}catch(e){}
   }
   ['click','touchend','change','input','resize','orientationchange'].forEach(function(evt){window.addEventListener(evt,function(){setTimeout(patch,0);setTimeout(patch,120);},true);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);setTimeout(patch,600);}); else {setTimeout(patch,0);setTimeout(patch,600);}
@@ -49594,7 +49572,7 @@ function afterConfirmedTaktikSave(result,onSaved){
 
 
 /* === v939 TEST: Taktikfilm object no-steal efter v938 Tavla-fix === */
-(function(){try{document.title='Taktiktavla TEST v954 ritvals-korssync-fix';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';}catch(e){}})();
+(function(){try{document.title='Taktiktavla';}catch(e){}try{var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v939 TEST';}catch(e){}})();
 
 /* === v964 TEST: ren Tavla/Snabbtavla ritvalsägare från v954 ===
    Bas: v954.
@@ -49622,7 +49600,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   };
 
   function setVersion964(){try{
-    document.title='Taktiktavla TEST v964 ren tavla ritvalsägare';
+    document.title='Taktiktavla';
     var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
     if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v964 TEST';
   }catch(e){}}
