@@ -45817,13 +45817,16 @@ function afterConfirmedTaktikSave(result,onSaved){
           ref=zOpt;
         }
       }
-      b.classList.remove('tt751-object-ready','tt749-object-ready');
+      // Keep a correctly placed button ready throughout ordinary UI refreshes.
+      // Removing this class first applies display:none, which needlessly tears
+      // down the icon's layout before the same button is marked ready again.
       if(row && ref){
         if(b.parentNode!==row || b.previousElementSibling!==ref){
           row.insertBefore(b,ref.nextSibling);
         }
         markButtonReady(b,row,ref);
       }else{
+        b.classList.remove('tt751-object-ready','tt749-object-ready');
         if(!b.parentNode)document.body.appendChild(b);
       }
     }catch(e){
