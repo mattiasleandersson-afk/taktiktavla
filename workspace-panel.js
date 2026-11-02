@@ -27,11 +27,19 @@
       (document.body.classList.contains('v66-taktik-fs') ||
        document.body.classList.contains('tt743-mobile-taktikfilm-fullscreen') ||
        (document.querySelector('.tab.on')?.dataset.panel === 'taktik' && typeof isEditingTaktik !== 'undefined' && isEditingTaktik));
+    const leavingFullscreen = filmFullscreen && !active;
     if (active !== filmFullscreen) {
       fullscreenLayersOpen = false; fullscreenObjectsOpen = false;
       // Do not carry an expanded overlay into the mobile editor.
       const menu = byId('tt-objects-menu');
       if (menu) menu.open = false;
+    }
+    // Mobile layer contents and touch handlers use the existing open state too.
+    // Keep it in step with the fullscreen icon, including closing on exit.
+    if (active || leavingFullscreen) {
+      const mobileOpen = active && fullscreenLayersOpen && matchMedia('(pointer:coarse)').matches;
+      document.body.classList.toggle('tt642-layer-panel-mobile-open', mobileOpen);
+      window.__tt821WantedIpadLayerOpen = mobileOpen;
     }
     filmFullscreen = active;
     document.body.classList.toggle('tt-film-fs-panels', active);

@@ -52,3 +52,6 @@ body.tt-film-fs-panels.tt-film-fs-objects-open #tt-objects-menu#tt-objects-menu#
 
 /* Older fullscreen exit guards can leave this button inline-hidden. */
 body.tt-workspace-film #tt681-taktik-fs-btn#tt681-taktik-fs-btn,body.tt-workspace-film #tt668-taktik-fs-btn#tt668-taktik-fs-btn{display:inline-flex!important;visibility:visible!important;pointer-events:auto!important}
+
+/* Film fullscreen must retain its exit control after rotating an iPad. */
+body.tt-film-fs-panels.fullscreen-portrait #fs-restore-btn{display:flex!important}

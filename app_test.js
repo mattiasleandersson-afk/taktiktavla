@@ -10686,8 +10686,12 @@ function tt76Clone(o){
 }
 
 function tt76IsPresentation(){
-  return document.body.classList.contains("fullscreen-portrait") ||
-         document.body.classList.contains("landscape");
+  if(document.body.classList.contains("fullscreen-portrait"))return true;
+  // The iPad film editor also uses landscape layout; orientation alone must
+  // not disable its editing tools. Fullscreen still remains presentation.
+  if(typeof isEditingTaktik!=="undefined" && isEditingTaktik &&
+     document.body.classList.contains("tt823-ipad-taktikfilm-edit-touch"))return false;
+  return document.body.classList.contains("landscape");
 }
 
 function tt76Current(){
