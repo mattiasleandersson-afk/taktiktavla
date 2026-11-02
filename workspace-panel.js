@@ -22,6 +22,80 @@
     else { selected = value; collapsed = false; }
     layout();
   }
+  let boardPanel, boardActive = false, boardObjects = false, boardLayers = false;
+  const panelHomes = new Map(), boardButtons = {};
+  function boardFullscreenLayout() {
+    const active = document.body.classList.contains('fullscreen-portrait') &&
+      document.querySelector('.tab.on')?.dataset.panel === 'saves';
+    if (active !== boardActive) { boardObjects = false; boardLayers = false; }
+    const leaving = boardActive && !active;
+    boardActive = active;
+    if (!boardPanel) {
+      boardPanel = document.createElement('aside'); boardPanel.id = 'tt-board-panel';
+      boardPanel.setAttribute('aria-label', 'Objekt och lager');
+      boardPanel.innerHTML = '<header><strong>Verktyg</strong><button type="button" data-section="close" aria-label="Stäng verktygspanelen">×</button></header>' +
+        ['objects','layers'].map((key,i) => `<section data-part="${key}"><button type="button" data-section="${key}" aria-expanded="false">${i?'Lager':'Objekt'} <span aria-hidden="true">▸</span></button><div data-content="${key}"></div></section>`).join('');
+      document.body.appendChild(boardPanel);
+      for (const key of ['objects','layers']) {
+        const b = document.createElement('button'); b.id = 'tt-board-'+key; b.type='button'; b.className='ls-btn';
+        b.textContent=key==='objects'?'⚽':''; b.dataset.section=key;
+        if(key==='layers')b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+        b.setAttribute('aria-label',key==='objects'?'Objekt':'Lager');
+        b.setAttribute('aria-controls','tt-board-panel');
+        boardButtons[key]=b;
+        byId('fs-top-tools')?.appendChild(b);
+        b.addEventListener('click', toggleBoardSection);
+      }
+      boardPanel.addEventListener('click',toggleBoardSection);
+    }
+    function toggleBoardSection(event) {
+      const key=event.target.closest('[data-section]')?.dataset.section;
+      if (!key) return;
+      event.preventDefault(); event.stopPropagation();
+      if(key==='close') {boardObjects=false;boardLayers=false;}
+      if(key==='objects')boardObjects=!boardObjects;
+      if(key==='layers')boardLayers=!boardLayers;
+      boardFullscreenLayout();
+    }
+    document.body.classList.toggle('tt-board-fullscreen',active);
+    const open=active&&(boardObjects||boardLayers);
+    document.body.classList.toggle('tt-board-panel-open',!!open);
+    boardPanel.hidden=!open;
+    for(const [key,id,expanded] of [['objects','tt-objects-menu',boardObjects],['layers','tt616-layer-panel',boardLayers]]) {
+      const button=boardButtons[key];
+      const toolbar=byId('fs-top-tools');if(toolbar&&button.parentNode!==toolbar)toolbar.appendChild(button);
+      if(button) {button.hidden=!active;button.setAttribute('aria-expanded',String(active&&expanded));}
+      const section=boardPanel.querySelector(`[data-part="${key}"]`);
+      section.classList.toggle('expanded',expanded);
+      const heading=section.querySelector('button'); heading.setAttribute('aria-expanded',String(expanded));
+      heading.querySelector('span').textContent=expanded?'▾':'▸';
+      const element=byId(id);
+      if(active&&element) {
+        if(!panelHomes.has(element)) {const home=document.createComment('Panel home');element.before(home);panelHomes.set(element,home);}
+        const container=section.querySelector('[data-content]');if(element.parentNode!==container)container.appendChild(element);
+        const details=key==='objects'?element:element.querySelector('details');
+        if(key==='layers'&&details&&!details.querySelector('summary')) {
+          const summary=document.createElement('summary');summary.dataset.sharedHeading='true';summary.hidden=true;summary.textContent='Lager';details.prepend(summary);
+        }
+        if(details)details.open=true;
+      }
+    }
+    if(active||leaving) {
+      document.body.classList.toggle('tt642-layer-panel-mobile-open',active&&boardLayers);
+      window.__tt821WantedIpadLayerOpen=active&&boardLayers;
+    }
+    if(leaving) for(const [element,home] of panelHomes) {if(home.parentNode)home.after(element);element.querySelector('summary[data-shared-heading]')?.remove();if(element.id==='tt-objects-menu')element.open=false;}
+    if(!active)return;
+    const below=innerWidth<650;
+    document.body.classList.toggle('tt-board-panel-below',below);
+    const reserve=open?(below?Math.min(340,Math.round(innerHeight*.42)):300):0;
+    const width=Math.max(100,innerWidth-64-(below?0:reserve));
+    const height=Math.max(100,innerHeight-160-(below?reserve:0));
+    const rotated=document.body.classList.contains('landscape')||document.body.classList.contains('tt523-fs-rotated-desktop');
+    const svgWidth=(rotated?Math.min(height,width*2/3):Math.min(width,height*2/3))-4;
+    setVar('--tt-board-reserve',reserve+'px');setVar('--tt-board-svg-width',svgWidth+'px');
+    setVar('--tt-board-rotation',rotated?(document.body.classList.contains('landscape')?'-90deg':'90deg'):'0deg');
+  }
   function fullscreenLayout() {
     const active = document.body.classList.contains('fullscreen-portrait') &&
       (document.body.classList.contains('v66-taktik-fs') ||
@@ -93,6 +167,7 @@
   function layout() {
     if (!nav) return false;
     fullscreenLayout();
+    boardFullscreenLayout();
     const panel = document.querySelector('.tab.on')?.dataset.panel;
     const editing = panel === 'taktik' && typeof isEditingTaktik !== 'undefined' && isEditingTaktik;
     const active = (panel === 'saves' || editing) && innerWidth >= 1024 && matchMedia('(pointer:fine)').matches
@@ -160,11 +235,13 @@
       }
     }, true);
     // App fullscreen is a body class, not necessarily browser fullscreen.
-    let wasFullscreen = document.body.classList.contains('fullscreen-portrait');
+    const viewState=()=>['fullscreen-portrait','landscape','tt523-fs-rotated-desktop'].map(c=>document.body.classList.contains(c)).join(':');
+    let wasFullscreen = viewState();
     new MutationObserver(() => {
-      const next = document.body.classList.contains('fullscreen-portrait');
+      const next = viewState();
       if (next !== wasFullscreen) { wasFullscreen = next; layout(); }
     }).observe(document.body, {attributes:true, attributeFilter:['class']});
+    window.addEventListener('resize',layout);
     layout();
   }
   window.TTWorkspace = { layout, choose };
