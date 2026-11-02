@@ -26308,7 +26308,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var zone=prepExistingTool236("btn-zone","fs-tb-zone","▭","Zon");
     // v939: Tavla-radens gamla ägare får inte stjäla den gemensamma konknappen
     // från Taktikfilm. I Taktikfilm ägs knappen av #taktikbar via objektmodulen.
-    var objectBtn=isTaktikActive236()?null:ensureObjectToolButton236();
+    // I helskärm äger objektmodulen knappen i helskärmens verktygsrad.
+    // Menyklick får inte flytta tillbaka den till den dolda vanliga raden.
+    var objectBtn=(isTaktikActive236() || document.body.classList.contains('fullscreen-portrait'))?null:ensureObjectToolButton236();
     var text=prepExistingTool236("btn-text","fs-tb-text","T","Text");
     var clear=makeRitaButton236("tt236-rita-clear","🧽","Sudda/rensa ritningar",clearDrawingsOnly236);
     var undo=makeRitaButton236("tt236-rita-undo","↶","Ångra",function(){try{if(typeof doUndo==="function")doUndo();}catch(e){}});
