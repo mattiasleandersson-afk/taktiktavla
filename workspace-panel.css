@@ -82,3 +82,58 @@ body.tt-board-fullscreen #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt
 #tt-board-layers svg{width:20px;height:20px;display:block;pointer-events:none}
 
 body.tt-board-fullscreen #tt-board-panel .tt616-layer-sub{display:none!important}
+
+/* An opened match lineup owns the workspace, not the saved-match list. */
+body.tt-lineup-layout #bottompanel#bottompanel,
+body.tt-lineup-layout #panel-toggle-strip,
+body.tt-lineup-layout #panel-show-btn,
+body.tt-lineup-layout #tt-objects-menu { display:none !important; }
+body.tt-lineup-layout #pitch-wrapper#pitch-wrapper {
+  position:fixed !important; top:var(--tt-lineup-top) !important;
+  left:12px !important; right:12px !important;
+  bottom:calc(var(--tt-lineup-bench-height) + 24px) !important;
+  width:auto !important; height:auto !important; margin:0 !important;
+  display:flex !important; visibility:visible !important;
+  align-items:center !important; justify-content:center !important;
+}
+body.tt-lineup-layout.tt-lineup-side #pitch-wrapper#pitch-wrapper { right:308px !important; bottom:16px !important; }
+body.tt-lineup-layout #pitch-svg#pitch-svg {
+  width:var(--tt-lineup-pitch-width) !important; height:var(--tt-lineup-pitch-height) !important;
+  max-width:none !important; max-height:none !important;
+  position:absolute !important; top:50% !important; left:50% !important; margin:0 !important;
+  transform:translate(-50%, -50%) rotate(var(--tt-lineup-rotation)) !important;
+  flex:none !important;
+}
+body.tt-lineup-layout #bench-bar#bench-bar {
+  position:fixed !important; top:auto !important; left:12px !important; right:12px !important; bottom:12px !important;
+  width:auto !important; height:var(--tt-lineup-bench-height) !important; max-height:none !important;
+  display:flex !important; flex-flow:row wrap !important; align-items:flex-start !important;
+  gap:10px !important; padding:12px !important; box-sizing:border-box !important;
+  border:1px solid #35543e !important; border-radius:12px !important;
+  background:#101e16 !important; overflow:auto !important; z-index:40 !important;
+  visibility:visible !important; opacity:1 !important; pointer-events:auto !important;
+}
+body.tt-lineup-layout.tt-lineup-side #bench-bar#bench-bar {
+  top:var(--tt-lineup-top) !important; left:auto !important; width:284px !important;
+  height:auto !important; bottom:16px !important; flex-flow:column nowrap !important;
+}
+body.tt-lineup-layout #bench-bar > div { min-width:0 !important; max-width:100% !important; }
+body.tt-lineup-layout #bench-bar > div:first-child { gap:8px !important; }
+body.tt-lineup-layout #bench-bar > div:first-child > div { flex-wrap:wrap !important; gap:6px !important; }
+body.tt-lineup-layout #bench-bar button { min-height:34px !important; font-size:13px !important; padding:6px 9px !important; }
+body.tt-lineup-layout #bench-bar .bench-label { font-size:14px !important; }
+body.tt-lineup-layout #bench-motstand-lbl { font-size:13px !important; white-space:normal !important; }
+body.tt-lineup-layout #bench-var-label { font-size:13px !important; }
+body.tt-lineup-layout #bench-players#bench-players {
+  display:flex !important; flex-wrap:wrap !important; align-content:flex-start !important;
+  gap:8px !important; visibility:visible !important; opacity:1 !important; pointer-events:auto !important;
+}
+body.tt-lineup-layout .bench-player { min-height:38px !important; padding:7px 10px !important; box-sizing:border-box !important; }
+body.tt-lineup-layout .bench-player .bench-name,
+body.tt-lineup-layout .bench-player .bench-nr { font-size:15px !important; }
+body.tt-lineup-layout.tt-lineup-side #bench-bar > div { width:100% !important; flex-shrink:0 !important; }
+body.tt-lineup-layout.tt-lineup-side .bench-player { width:100% !important; }
+body.tt-lineup-layout:not(.tt-lineup-side) #bench-bar > div:first-child {
+  flex:0 0 100% !important; flex-flow:row wrap !important; align-items:center !important;
+}
+body.tt-lineup-layout:not(.tt-lineup-side) #bench-bar > div:nth-child(2) { flex:1 1 70% !important; }

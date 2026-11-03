@@ -164,10 +164,34 @@
       if (details && !details.open) details.open = true;
     }
   }
+  // Match lineup uses the existing bench and pitch; no match data is changed.
+  function lineupLayout() {
+    const active = document.querySelector('.tab.on')?.dataset.panel === 'formations' &&
+      typeof matchRoster !== 'undefined' && matchRoster.length > 0 &&
+      byId('bench-bar')?.classList.contains('active') && !document.body.classList.contains('fullscreen-portrait');
+    document.body.classList.toggle('tt-lineup-layout', !!active);
+    if (!active) return;
+    const side = innerWidth >= 1100 && matchMedia('(pointer:fine)').matches;
+    document.body.classList.toggle('tt-lineup-side', side);
+    const top = Math.max(8, byId('topbar').getBoundingClientRect().bottom + 8);
+    const benchHeight = Math.min(220, Math.round(innerHeight * 0.27));
+    setVar('--tt-lineup-top', top + 'px');
+    setVar('--tt-lineup-bench-height', benchHeight + 'px');
+    const width = innerWidth - (side ? 320 : 24);
+    const height = innerHeight - top - (side ? 16 : benchHeight + 24);
+    const viewBox = byId('pitch-svg').viewBox.baseVal;
+    const ratio = viewBox.height / viewBox.width || 0.75;
+    const rotated = document.body.classList.contains('landscape') && !document.body.classList.contains('desktop');
+    const svgWidth = Math.max(1, (rotated ? Math.min(height, width / ratio) : Math.min(width, height / ratio)) - 4);
+    setVar('--tt-lineup-pitch-width', svgWidth + 'px');
+    setVar('--tt-lineup-pitch-height', svgWidth * ratio + 'px');
+    setVar('--tt-lineup-rotation', rotated ? '-90deg' : '0deg');
+  }
   function layout() {
     if (!nav) return false;
     fullscreenLayout();
     boardFullscreenLayout();
+    lineupLayout();
     const panel = document.querySelector('.tab.on')?.dataset.panel;
     const editing = panel === 'taktik' && typeof isEditingTaktik !== 'undefined' && isEditingTaktik;
     const active = (panel === 'saves' || editing) && innerWidth >= 1024 && matchMedia('(pointer:fine)').matches
@@ -241,6 +265,10 @@
       const next = viewState();
       if (next !== wasFullscreen) { wasFullscreen = next; layout(); }
     }).observe(document.body, {attributes:true, attributeFilter:['class']});
+    const lineupObserver = new MutationObserver(lineupLayout);
+    for (const element of [byId('bench-bar'), byId('pitch-svg'), ...document.querySelectorAll('.tab')]) {
+      if (element) lineupObserver.observe(element, {attributes:true, attributeFilter:['class','viewBox']});
+    }
     window.addEventListener('resize',layout);
     layout();
   }
