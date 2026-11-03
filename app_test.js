@@ -26956,6 +26956,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       row.id='tt252-ipad-rita-row';
       row.className='tt248-tavla-rita-row tt238-rita-scrollbar';
     }
+    if(row.parentNode && row.parentNode.classList.contains('tt-editor-draw-host'))return row;
     var topRow=tb.children[0]||null;
     var tabRow=tb.children[1]||null;
     // Lägg raden mellan översta kontrollraden och flikraden.
@@ -28242,6 +28243,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function activeOptionId291(){
+    if(window.TTWorkspace && window.TTWorkspace.drawControlsHidden())return null;
     try{return TOOL_TO_OPTION[mode]||null;}catch(e){return null;}
   }
 
@@ -49641,7 +49643,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function activeMode964(){try{return typeof mode==='string'?mode:'';}catch(e){return '';}}
-  function activeOptionId964(){return TOOL_TO_OPTION[activeMode964()]||null;}
+  function activeOptionId964(){if(window.TTWorkspace && window.TTWorkspace.drawControlsHidden())return null;return TOOL_TO_OPTION[activeMode964()]||null;}
 
   function host964(){
     var h=document.getElementById('tt964-board-draw-options-host');

@@ -191,3 +191,29 @@ body #tt-board-panel#tt-board-panel[hidden]{display:none!important;pointer-event
   body:not(.fullscreen-portrait):not(.tt-lineup-layout) #tt-objects-menu[open] fieldset{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center}
   body:not(.fullscreen-portrait):not(.tt-lineup-layout) #tt-objects-menu fieldset hr{grid-column:1/-1}
 }
+
+/* Four compact fullscreen choices; tools consume space only while expanded. */
+body.tt-board-fullscreen #tt-board-controls{left:8px;right:120px;width:auto;max-width:420px}
+body.tt-board-fullscreen #tt-board-controls button{font-size:13px;min-height:44px}
+body.tt-board-fullscreen #tt-board-controls svg{display:none}
+body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{top:60px!important;left:8px!important;right:8px!important}
+body.tt-board-fullscreen:not(.tt-board-draw-open) #fs-top-tools#fs-top-tools#fs-top-tools,
+body.tt-board-fullscreen:not(.tt-board-draw-open) #arrow-options#arrow-options#arrow-options,
+body.tt-board-fullscreen:not(.tt-board-draw-open) #freehand-options#freehand-options#freehand-options,
+body.tt-board-fullscreen:not(.tt-board-draw-open) #zone-options#zone-options#zone-options,
+body.tt-board-fullscreen:not(.tt-board-draw-open) #tt747-object-panel{display:none!important}
+@media(pointer:coarse){
+  body.tt-board-fullscreen #tt-board-controls{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px);right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 120px);width:auto}
+  body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 60px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px)!important;left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)!important}
+}
+
+#tt-editor-draw[hidden]{display:none!important}
+#tt-editor-draw{min-height:34px;font-size:13px}
+#tt-editor-draw[aria-expanded=true]{border-color:#4ae87a;color:#4ae87a}
+body.tt-editor-draw-closed .tt-editor-draw-host{display:none!important}
+body.tt-board-fullscreen #fs-restore-btn#fs-restore-btn{width:44px!important;font-size:24px!important}
+body.tt-board-fullscreen #tt-board-controls{right:60px}
+@media(pointer:coarse){
+  body.tt-board-fullscreen #tt-board-controls{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 60px)}
+  #tt-editor-draw{min-height:44px}
+}

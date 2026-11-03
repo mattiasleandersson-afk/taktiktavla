@@ -19,15 +19,16 @@
   };
   function choose(value) {
     if (value === 'collapse') collapsed = !collapsed;
-    else { selected = value; collapsed = false; }
+    else { collapsed = selected === value && !collapsed; selected = value; }
     layout();
   }
-  let boardPanel, boardControls, boardActive = false, boardObjects = false, boardLayers = false;
+  let editorDraw = true, editorDrawButton;
+  let boardPanel, boardControls, boardActive = false, boardDraw = false, boardObjects = false, boardLayers = false;
   const panelHomes = new Map(), boardButtons = {};
   function boardFullscreenLayout() {
     const active = document.body.classList.contains('fullscreen-portrait') &&
       document.querySelector('.tab.on')?.dataset.panel === 'saves';
-    if (active !== boardActive) { boardObjects = false; boardLayers = false; }
+    if (active !== boardActive) { boardDraw = false; boardObjects = false; boardLayers = false; }
     const leaving = boardActive && !active;
     boardActive = active;
     if (!boardPanel) {
@@ -39,12 +40,12 @@
       boardControls = document.createElement('nav'); boardControls.id = 'tt-board-controls';
       boardControls.setAttribute('aria-label', 'Fullskärmens paneler');
       document.body.appendChild(boardControls);
-      for (const key of ['objects','layers']) {
+      for (const key of ['draw','objects','layers']) {
         const b = document.createElement('button'); b.id = 'tt-board-'+key; b.type='button'; b.className='ls-btn';
-        b.textContent=key==='objects'?'Objekt':''; b.dataset.section=key;
+        b.textContent=key==='draw'?'Ritverktyg':key==='objects'?'Objekt':''; b.dataset.section=key;
         if(key==='layers')b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Lager</span>';
-        b.setAttribute('aria-label',key==='objects'?'Objekt':'Lager');
-        b.setAttribute('aria-controls','tt-board-panel');
+        b.setAttribute('aria-label',key==='draw'?'Ritverktyg':key==='objects'?'Objekt':'Lager');
+        b.setAttribute('aria-controls',key==='draw'?'fs-top-tools':'tt-board-panel');
         boardButtons[key]=b;
         boardControls.appendChild(b);
         b.addEventListener('click', toggleBoardSection);
@@ -56,15 +57,23 @@
       if (!key) return;
       event.preventDefault(); event.stopPropagation();
       if(key==='close') {boardObjects=false;boardLayers=false;}
+      if(key==='draw')boardDraw=!boardDraw;
       if(key==='objects')boardObjects=!boardObjects;
       if(key==='layers')boardLayers=!boardLayers;
       boardFullscreenLayout();
     }
     document.body.classList.toggle('tt-board-fullscreen',active);
+    document.body.classList.toggle('tt-board-draw-open',active&&boardDraw);
+    boardButtons.draw.setAttribute('aria-expanded',String(active&&boardDraw));
     const open=active&&(boardObjects||boardLayers);
     document.body.classList.toggle('tt-board-panel-open',!!open);
     boardPanel.hidden=!open;
     boardControls.hidden=!active;
+    const exitButton=byId('fs-restore-btn');
+    if(active&&exitButton){
+      if(!exitButton.dataset.originalText)exitButton.dataset.originalText=exitButton.textContent;
+      exitButton.textContent='⤢';exitButton.title='Lämna helskärm';exitButton.setAttribute('aria-label','Lämna helskärm');
+    }else if(leaving&&exitButton){exitButton.textContent=exitButton.dataset.originalText;exitButton.removeAttribute('aria-label');exitButton.removeAttribute('title');}
     for(const [key,id,expanded] of [['objects','tt-objects-menu',boardObjects],['layers','tt616-layer-panel',boardLayers]]) {
       const button=boardButtons[key];
       if(button.parentNode!==boardControls)boardControls.appendChild(button);
@@ -105,7 +114,7 @@
     const reserve=open?(below?Math.min(340,Math.round(screenHeight*.42)):300):0;
     const controlsRect=boardControls.getBoundingClientRect();
     const toolsRect=byId('fs-top-tools')?.getBoundingClientRect();
-    const top=touch ? Math.max(controlsRect.bottom,toolsRect?.bottom||0)+12 : (below?112:64);
+    const top=Math.max(controlsRect.bottom,boardDraw?(toolsRect?.bottom||0):0)+8;
     const safeLeft=touch ? parseFloat(getComputedStyle(boardControls).getPropertyValue('--tt-safe-left'))||0 : 0;
     const safeRight=touch ? parseFloat(getComputedStyle(boardControls).getPropertyValue('--tt-safe-right'))||0 : 0;
     const safeBottom=touch ? parseFloat(getComputedStyle(boardControls).getPropertyValue('--tt-safe-bottom'))||0 : 0;
@@ -210,11 +219,34 @@
     setVar('--tt-lineup-pitch-height', svgWidth * ratio + 'px');
     setVar('--tt-lineup-rotation', rotated ? '-90deg' : '0deg');
   }
+  function editorDrawingLayout() {
+    const active = !document.body.classList.contains('fullscreen-portrait') &&
+      ['saves','formations'].includes(document.querySelector('.tab.on')?.dataset.panel) &&
+      !(typeof matchRoster !== 'undefined' && matchRoster.length);
+    if(!editorDrawButton){
+      editorDrawButton=document.createElement('button');editorDrawButton.type='button';
+      editorDrawButton.id='tt-editor-draw';editorDrawButton.className='btn';editorDrawButton.textContent='Ritverktyg';
+      editorDrawButton.addEventListener('click',()=>{editorDraw=!editorDraw;layout();});
+      byId('topbar')?.firstElementChild?.appendChild(editorDrawButton);
+    }
+    const tabRow=document.querySelector('.tab[data-panel="saves"]')?.parentElement;
+    if(matchMedia('(pointer:coarse)').matches && tabRow && editorDrawButton.parentElement!==tabRow)tabRow.prepend(editorDrawButton);
+    editorDrawButton.hidden=!active;
+    editorDrawButton.setAttribute('aria-expanded',String(active&&editorDraw));
+    document.body.classList.toggle('tt-editor-draw-closed',active&&!editorDraw);
+    if(!active)return;
+    for(const row of document.querySelectorAll('.tt248-tavla-rita-row,.tt238-rita-scrollbar,#tt252-ipad-rita-row')) {
+      if(row.parentElement?.classList.contains('tt-editor-draw-host') || row.closest('#fs-top-tools,#taktikbar'))continue;
+      const host=document.createElement('div');host.className='tt-editor-draw-host';
+      row.before(host);host.appendChild(row);
+    }
+  }
   function layout() {
     if (!nav) return false;
     fullscreenLayout();
     boardFullscreenLayout();
     lineupLayout();
+    editorDrawingLayout();
     const panel = document.querySelector('.tab.on')?.dataset.panel;
     const editing = panel === 'taktik' && typeof isEditingTaktik !== 'undefined' && isEditingTaktik;
     const active = (panel === 'saves' || editing) && innerWidth >= 1024 && matchMedia('(pointer:fine)').matches
@@ -235,7 +267,7 @@
     document.body.classList.remove('tt-objects-docked');
     if (document.body.dataset.workspaceTab !== selected) document.body.dataset.workspaceTab = selected;
     const header = byId(editing ? 'taktikbar' : 'topbar');
-    const top = Math.max(editing ? 112 : 160, (header?.getBoundingClientRect().bottom || 0) + 8);
+    const top = Math.max(editing ? 112 : (editorDraw ? 160 : 80), (header?.getBoundingClientRect().bottom || 0) + 8);
     setVar('--tt-workspace-top', top + 'px');
     setVar('--tt-workspace-left', collapsed ? '8px' : '288px');
     const objectMenu = byId('tt-objects-menu');
@@ -299,7 +331,8 @@
     window.addEventListener('resize',layout);
     layout();
   }
-  window.TTWorkspace = { layout, choose };
+  window.TTWorkspace = { layout, choose, drawControlsHidden: () =>
+    (boardActive && !boardDraw) || document.body.classList.contains('tt-editor-draw-closed') };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
 })();
