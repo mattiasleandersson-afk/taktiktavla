@@ -57,7 +57,7 @@ body.tt-workspace-film #tt681-taktik-fs-btn#tt681-taktik-fs-btn,body.tt-workspac
 body.tt-film-fs-panels.fullscreen-portrait #fs-restore-btn{display:flex!important}
 
 /* Shared board fullscreen panel: independent sections, reserved pitch space. */
-#tt-board-panel{position:fixed;right:8px;top:100px;bottom:60px;width:284px;z-index:100110;background:#0e1710;color:#edf5ee;border:1px solid #42694c;border-radius:10px;padding:6px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px}
+#tt-board-panel{position:fixed;right:8px;top:var(--tt-board-top);bottom:16px;width:284px;z-index:100110;background:#0e1710;color:#edf5ee;border:1px solid #42694c;border-radius:10px;padding:6px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px}
 #tt-board-panel[hidden],#tt-board-objects[hidden],#tt-board-layers[hidden]{display:none!important}
 #tt-board-panel>header{display:flex;align-items:center;justify-content:space-between;padding:0 6px;font:700 14px Arial,sans-serif}
 #tt-board-panel button[data-section]{background:#15251a;color:#edf5ee;border:1px solid #42694c;border-radius:6px;min-height:40px;cursor:pointer;font:700 14px Arial,sans-serif;padding:6px 10px}
@@ -72,11 +72,11 @@ body.tt-board-fullscreen #tt-board-panel #tt-objects-menu>summary,
 body.tt-board-fullscreen #tt-board-panel #tt616-layer-panel>details>summary{display:none!important}
 body.tt-board-fullscreen #tt642-layer-mobile-toggle#tt642-layer-mobile-toggle,
 body.tt-board-fullscreen #tt741-fs-layer-toggle#tt741-fs-layer-toggle{display:none!important}
-body.tt-board-fullscreen #pitch-wrapper#pitch-wrapper#pitch-wrapper{position:fixed!important;left:48px!important;right:calc(16px + var(--tt-board-reserve))!important;top:100px!important;bottom:60px!important;width:auto!important;height:auto!important;max-height:none!important;margin:0!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;transform:none!important;overflow:hidden!important}
+body.tt-board-fullscreen #pitch-wrapper#pitch-wrapper#pitch-wrapper{position:fixed!important;left:48px!important;right:calc(16px + var(--tt-board-reserve))!important;top:var(--tt-board-top)!important;bottom:16px!important;width:auto!important;height:auto!important;max-height:none!important;margin:0!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;transform:none!important;overflow:hidden!important}
 body.tt-board-fullscreen #pitch-svg#pitch-svg#pitch-svg{width:var(--tt-board-svg-width)!important;height:calc(var(--tt-board-svg-width)*1.5)!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;flex:none!important;transform:rotate(var(--tt-board-rotation))!important;transform-origin:center!important}
 body.tt-board-fullscreen #fs-restore-btn{display:flex!important}
-body.tt-board-fullscreen.tt-board-panel-below #tt-board-panel{top:auto;left:8px;right:8px;bottom:60px;width:auto;height:var(--tt-board-reserve)}
-body.tt-board-fullscreen.tt-board-panel-below #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:16px!important;bottom:calc(60px + var(--tt-board-reserve))!important}
+body.tt-board-fullscreen.tt-board-panel-below #tt-board-panel{top:auto;left:8px;right:8px;bottom:16px;width:auto;height:var(--tt-board-reserve)}
+body.tt-board-fullscreen.tt-board-panel-below #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:16px!important;bottom:calc(16px + var(--tt-board-reserve))!important}
 /* The shared section heading replaces the older Details heading. */
 body.tt-board-fullscreen #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel summary{display:none!important}
 #tt-board-layers svg{width:20px;height:20px;display:block;pointer-events:none}
@@ -137,3 +137,22 @@ body.tt-lineup-layout:not(.tt-lineup-side) #bench-bar > div:first-child {
   flex:0 0 100% !important; flex-flow:row wrap !important; align-items:center !important;
 }
 body.tt-lineup-layout:not(.tt-lineup-side) #bench-bar > div:nth-child(2) { flex:1 1 70% !important; }
+
+/* Fullscreen board: panel navigation and Exit have their own space. */
+#tt-board-controls[hidden]{display:none!important}
+#tt-board-controls{position:fixed;top:8px;right:120px;width:200px;display:flex;gap:6px;z-index:100120;box-sizing:border-box}
+#tt-board-controls button{display:flex!important;align-items:center;justify-content:center;gap:6px;flex:1;min-width:0;width:auto!important;height:44px!important;margin:0!important;padding:8px!important;background:#15251a;color:#edf5ee;border:1px solid #42694c;border-radius:8px;font:700 14px Arial,sans-serif;cursor:pointer}
+#tt-board-controls button[aria-expanded=true]{background:#4ae87a;color:#0e1710;border-color:#4ae87a}
+body.tt-board-fullscreen #fs-restore-btn#fs-restore-btn{position:fixed!important;top:8px!important;right:8px!important;bottom:auto!important;left:auto!important;width:104px!important;height:44px!important;margin:0!important;transform:none!important;box-sizing:border-box!important;z-index:100120!important;align-items:center!important;justify-content:center!important;font-size:13px!important}
+body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{position:fixed!important;top:8px!important;left:8px!important;right:332px!important;bottom:auto!important;transform:none!important;width:auto!important;max-width:none!important;height:44px!important;min-height:0!important;box-sizing:border-box!important;display:flex!important;flex-flow:row nowrap!important;align-items:center!important;justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important;gap:4px!important;padding:3px!important;border-radius:8px!important}
+body.tt-board-fullscreen #tt-board-panel{background:#101e16;border-color:#35543e;border-radius:12px;padding:10px;gap:8px}
+body.tt-board-fullscreen #tt-board-panel button[data-section]{min-height:44px}
+@media(max-width:649px){
+  #tt-board-controls{left:8px;right:120px;width:auto}
+  body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{top:60px!important;right:8px!important}
+}
+/* Keep temporary drawing choices below the controls, including on a phone. */
+body.tt-board-fullscreen #arrow-options#arrow-options#arrow-options,
+body.tt-board-fullscreen #freehand-options#freehand-options#freehand-options,
+body.tt-board-fullscreen #zone-options#zone-options#zone-options{position:fixed!important;top:calc(var(--tt-board-top) - 8px)!important;left:8px!important;right:auto!important;bottom:auto!important;transform:none!important;max-width:calc(100vw - 16px)!important;box-sizing:border-box!important;z-index:100125!important}
+body.tt-board-fullscreen #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel .tt616-layer-sub{display:none!important}

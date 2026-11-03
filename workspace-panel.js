@@ -22,7 +22,7 @@
     else { selected = value; collapsed = false; }
     layout();
   }
-  let boardPanel, boardActive = false, boardObjects = false, boardLayers = false;
+  let boardPanel, boardControls, boardActive = false, boardObjects = false, boardLayers = false;
   const panelHomes = new Map(), boardButtons = {};
   function boardFullscreenLayout() {
     const active = document.body.classList.contains('fullscreen-portrait') &&
@@ -36,14 +36,17 @@
       boardPanel.innerHTML = '<header><strong>Verktyg</strong><button type="button" data-section="close" aria-label="Stäng verktygspanelen">×</button></header>' +
         ['objects','layers'].map((key,i) => `<section data-part="${key}"><button type="button" data-section="${key}" aria-expanded="false">${i?'Lager':'Objekt'} <span aria-hidden="true">▸</span></button><div data-content="${key}"></div></section>`).join('');
       document.body.appendChild(boardPanel);
+      boardControls = document.createElement('nav'); boardControls.id = 'tt-board-controls';
+      boardControls.setAttribute('aria-label', 'Fullskärmens paneler');
+      document.body.appendChild(boardControls);
       for (const key of ['objects','layers']) {
         const b = document.createElement('button'); b.id = 'tt-board-'+key; b.type='button'; b.className='ls-btn';
-        b.textContent=key==='objects'?'⚽':''; b.dataset.section=key;
-        if(key==='layers')b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+        b.textContent=key==='objects'?'Objekt':''; b.dataset.section=key;
+        if(key==='layers')b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Lager</span>';
         b.setAttribute('aria-label',key==='objects'?'Objekt':'Lager');
         b.setAttribute('aria-controls','tt-board-panel');
         boardButtons[key]=b;
-        byId('fs-top-tools')?.appendChild(b);
+        boardControls.appendChild(b);
         b.addEventListener('click', toggleBoardSection);
       }
       boardPanel.addEventListener('click',toggleBoardSection);
@@ -61,9 +64,10 @@
     const open=active&&(boardObjects||boardLayers);
     document.body.classList.toggle('tt-board-panel-open',!!open);
     boardPanel.hidden=!open;
+    boardControls.hidden=!active;
     for(const [key,id,expanded] of [['objects','tt-objects-menu',boardObjects],['layers','tt616-layer-panel',boardLayers]]) {
       const button=boardButtons[key];
-      const toolbar=byId('fs-top-tools');if(toolbar&&button.parentNode!==toolbar)toolbar.appendChild(button);
+      if(button.parentNode!==boardControls)boardControls.appendChild(button);
       if(button) {button.hidden=!active;button.setAttribute('aria-expanded',String(active&&expanded));}
       const section=boardPanel.querySelector(`[data-part="${key}"]`);
       section.classList.toggle('expanded',expanded);
@@ -90,7 +94,9 @@
     document.body.classList.toggle('tt-board-panel-below',below);
     const reserve=open?(below?Math.min(340,Math.round(innerHeight*.42)):300):0;
     const width=Math.max(100,innerWidth-64-(below?0:reserve));
-    const height=Math.max(100,innerHeight-160-(below?reserve:0));
+    const top=below?112:64;
+    setVar('--tt-board-top',top+'px');
+    const height=Math.max(100,innerHeight-top-16-(below?reserve:0));
     const rotated=document.body.classList.contains('landscape')||document.body.classList.contains('tt523-fs-rotated-desktop');
     const svgWidth=(rotated?Math.min(height,width*2/3):Math.min(width,height*2/3))-4;
     setVar('--tt-board-reserve',reserve+'px');setVar('--tt-board-svg-width',svgWidth+'px');
