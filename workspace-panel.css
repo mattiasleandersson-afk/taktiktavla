@@ -156,3 +156,38 @@ body.tt-board-fullscreen #arrow-options#arrow-options#arrow-options,
 body.tt-board-fullscreen #freehand-options#freehand-options#freehand-options,
 body.tt-board-fullscreen #zone-options#zone-options#zone-options{position:fixed!important;top:calc(var(--tt-board-top) - 8px)!important;left:8px!important;right:auto!important;bottom:auto!important;transform:none!important;max-width:calc(100vw - 16px)!important;box-sizing:border-box!important;z-index:100125!important}
 body.tt-board-fullscreen #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel .tt616-layer-sub{display:none!important}
+/* Hidden state wins over all legacy context-specific display rules. */
+body #tt-objects-menu#tt-objects-menu#tt-objects-menu#tt-objects-menu#tt-objects-menu[hidden],
+body #tt-board-controls#tt-board-controls[hidden],
+body #tt-board-panel#tt-board-panel[hidden]{display:none!important;pointer-events:none!important}
+@media(pointer:coarse){
+  body{--tt-safe-top:env(safe-area-inset-top,0px);--tt-safe-right:env(safe-area-inset-right,0px);--tt-safe-bottom:env(safe-area-inset-bottom,0px);--tt-safe-left:env(safe-area-inset-left,0px)}
+  body.tt-board-fullscreen #tt-board-controls{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 8px);right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 120px)}
+  body.tt-board-fullscreen #fs-restore-btn#fs-restore-btn{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 8px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px)!important}
+  body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 8px)!important;left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 332px)!important}
+  body.tt-board-fullscreen #tt-board-panel{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px);bottom:var(--tt-board-bottom)}
+  body.tt-board-fullscreen #pitch-wrapper#pitch-wrapper#pitch-wrapper{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 48px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 16px + var(--tt-board-reserve))!important;bottom:var(--tt-board-bottom)!important}
+  body.tt-board-fullscreen.tt-board-panel-below #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 16px)!important;bottom:calc(var(--tt-board-bottom) + var(--tt-board-reserve))!important}
+  body.tt-board-fullscreen.tt-board-panel-below #tt-board-panel{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)}
+  body:not(.fullscreen-portrait):not(.tt-lineup-layout) #tt-objects-menu#tt-objects-menu{
+    left:auto!important;right:calc(var(--tt-safe-right) + 8px)!important;bottom:calc(var(--tt-safe-bottom) + 8px)!important;top:auto!important;
+    width:120px!important;max-height:44dvh!important;background:#101e16!important;
+  }
+  body:not(.fullscreen-portrait):not(.tt-lineup-layout) #tt-objects-menu#tt-objects-menu[open]{left:calc(var(--tt-safe-left) + 8px)!important;width:auto!important}
+  body:not(.fullscreen-portrait) #tt-objects-menu summary{min-height:44px;box-sizing:border-box}
+}
+@media(pointer:coarse) and (max-width:649px){
+  body.tt-board-fullscreen #tt-board-controls{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px);width:auto}
+  body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 60px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px)!important}
+}
+@media(pointer:coarse){
+  body.tt-board-fullscreen.tt-board-panel-below #tt-board-panel{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px);bottom:var(--tt-board-bottom)}
+  body.tt-board-fullscreen #arrow-options#arrow-options#arrow-options,
+  body.tt-board-fullscreen #freehand-options#freehand-options#freehand-options,
+  body.tt-board-fullscreen #zone-options#zone-options#zone-options{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)!important;max-width:calc(100vw - var(--tt-safe-left) - var(--tt-safe-right) - 16px)!important}
+}
+@media(pointer:coarse) and (min-width:650px){
+  body:not(.fullscreen-portrait):not(.tt-lineup-layout) #tt-objects-menu#tt-objects-menu[open]{max-height:min(66dvh,560px)!important}
+  body:not(.fullscreen-portrait):not(.tt-lineup-layout) #tt-objects-menu[open] fieldset{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center}
+  body:not(.fullscreen-portrait):not(.tt-lineup-layout) #tt-objects-menu fieldset hr{grid-column:1/-1}
+}

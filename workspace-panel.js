@@ -90,13 +90,30 @@
     }
     if(leaving) for(const [element,home] of panelHomes) {if(home.parentNode)home.after(element);element.querySelector('summary[data-shared-heading]')?.remove();if(element.id==='tt-objects-menu')element.open=false;}
     if(!active)return;
-    const below=innerWidth<650;
+    const touch = matchMedia('(pointer:coarse)').matches;
+    const viewport = window.visualViewport;
+    const screenWidth = touch && viewport ? viewport.width : innerWidth;
+    const screenHeight = touch && viewport ? viewport.height : innerHeight;
+    if(touch) {
+      setVar('--tt-vv-top', (viewport?.offsetTop || 0) + 'px');
+      setVar('--tt-vv-left', (viewport?.offsetLeft || 0) + 'px');
+      setVar('--tt-vv-right', Math.max(0,innerWidth-screenWidth-(viewport?.offsetLeft||0)) + 'px');
+      setVar('--tt-vv-bottom', Math.max(0,innerHeight-screenHeight-(viewport?.offsetTop||0)) + 'px');
+    }
+    const below=screenWidth<650;
     document.body.classList.toggle('tt-board-panel-below',below);
-    const reserve=open?(below?Math.min(340,Math.round(innerHeight*.42)):300):0;
-    const width=Math.max(100,innerWidth-64-(below?0:reserve));
-    const top=below?112:64;
+    const reserve=open?(below?Math.min(340,Math.round(screenHeight*.42)):300):0;
+    const controlsRect=boardControls.getBoundingClientRect();
+    const toolsRect=byId('fs-top-tools')?.getBoundingClientRect();
+    const top=touch ? Math.max(controlsRect.bottom,toolsRect?.bottom||0)+12 : (below?112:64);
+    const safeLeft=touch ? parseFloat(getComputedStyle(boardControls).getPropertyValue('--tt-safe-left'))||0 : 0;
+    const safeRight=touch ? parseFloat(getComputedStyle(boardControls).getPropertyValue('--tt-safe-right'))||0 : 0;
+    const safeBottom=touch ? parseFloat(getComputedStyle(boardControls).getPropertyValue('--tt-safe-bottom'))||0 : 0;
+    setVar('--tt-board-bottom', (touch ? Math.max(16,innerHeight-screenHeight-(viewport?.offsetTop||0)+safeBottom+8) : 16) + 'px');
+    const width=Math.max(100,screenWidth-64-safeLeft-safeRight-(below?0:reserve));
     setVar('--tt-board-top',top+'px');
-    const height=Math.max(100,innerHeight-top-16-(below?reserve:0));
+    const bottom=parseFloat(document.body.style.getPropertyValue('--tt-board-bottom'))||16;
+    const height=Math.max(100,innerHeight-top-bottom-(below?reserve:0));
     const rotated=document.body.classList.contains('landscape')||document.body.classList.contains('tt523-fs-rotated-desktop');
     const svgWidth=(rotated?Math.min(height,width*2/3):Math.min(width,height*2/3))-4;
     setVar('--tt-board-reserve',reserve+'px');setVar('--tt-board-svg-width',svgWidth+'px');
@@ -275,6 +292,10 @@
     for (const element of [byId('bench-bar'), byId('pitch-svg'), ...document.querySelectorAll('.tab')]) {
       if (element) lineupObserver.observe(element, {attributes:true, attributeFilter:['class','viewBox']});
     }
+    const tabObserver = new MutationObserver(layout);
+    document.querySelectorAll('.tab').forEach(tab=>tabObserver.observe(tab,{attributes:true,attributeFilter:['class']}));
+    window.visualViewport?.addEventListener('resize',layout);
+    window.visualViewport?.addEventListener('scroll',layout);
     window.addEventListener('resize',layout);
     layout();
   }

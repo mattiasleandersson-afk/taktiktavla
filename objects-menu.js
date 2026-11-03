@@ -6,6 +6,7 @@
   let removal = null;
   let pendingRemoval = null;
   let menu;
+  let menuContext = null;
   let scheduled = false;
   const undoFilms = new WeakMap();
 
@@ -218,7 +219,14 @@
   function sync() {
     if (!menu) return;
     window.TTMotion?.sync();
-    const active = ['saves', 'formations'].includes(panelName()) || !!film();
+    const activeFilm = film();
+    const active = ['saves', 'formations'].includes(panelName()) || (!!activeFilm && !document.body.classList.contains('tt-v82-taktik-library'));
+    const nextContext = active ? panelName() + ':' + (activeFilm ? editingTaktikIdx : '') + ':' + document.body.classList.contains('fullscreen-portrait') : '';
+    if (nextContext !== menuContext) {
+      menu.open = false; removal = null; pendingRemoval = null;
+      menuContext = nextContext;
+    }
+    if (!active) menu.open = false;
     menu.hidden = !active;
     if (!active) {
       removal = null;
