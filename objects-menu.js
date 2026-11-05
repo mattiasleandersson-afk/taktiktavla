@@ -252,6 +252,21 @@
     localStorage.setItem(visualKey() + key, value);
     render(); sync();
   }
+  function orientPlayerLabels() {
+    const pitch = document.getElementById('pitch-svg');
+    if (!pitch) return;
+    // Read the actual pitch transform: editor and fullscreen rotate in opposite directions.
+    const matrix = new DOMMatrixReadOnly(getComputedStyle(pitch).transform);
+    const angle = Math.atan2(matrix.b, matrix.a);
+    const values = {
+      '--tt-player-counter-angle': (-angle * 180 / Math.PI) + 'deg',
+      '--tt-player-name-x': (Math.sin(angle) * 31) + 'px',
+      '--tt-player-name-y': ((Math.cos(angle) - 1) * 31) + 'px'
+    };
+    for (const [key,value] of Object.entries(values)) {
+      if (pitch.style.getPropertyValue(key) !== value) pitch.style.setProperty(key,value);
+    }
+  }
   function appearance() {
     if (!['saves', 'formations', 'taktik'].includes(panelName())) return;
     const jersey = localStorage.getItem(visualKey() + 'symbol') === 'jersey';
@@ -348,6 +363,7 @@
       select.dataset.format = String(format);
     }
     layout();
+    orientPlayerLabels();
   }
   function schedule() {
     if (scheduled) return;
@@ -423,8 +439,11 @@
     tabs.forEach(tab => observer.observe(tab, { attributes: true, attributeFilter: ['class'] }));
     // Exit handlers can stop the click before our listener and do not change
     // the selected tab. Observe the actual library/editor transition instead.
+    let orientation = '';
     let inLibrary = document.body.classList.contains('tt-v82-taktik-library');
     const libraryObserver = new MutationObserver(() => {
+      const nextOrientation = ['landscape','tt694-edit-landscape','tt523-fs-rotated-desktop','fullscreen-portrait'].map(c => document.body.classList.contains(c)).join(':');
+      if (nextOrientation !== orientation) { orientation = nextOrientation; schedule(); }
       const next = document.body.classList.contains('tt-v82-taktik-library');
       if (next !== inLibrary) { inLibrary = next; sync(); }
     });

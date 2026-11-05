@@ -32,3 +32,14 @@ body.tt-objects-docked:not(.fullscreen-portrait) #pitch-wrapper{left:var(--tt-ob
 #tt-use-layers-control{display:flex;align-items:center;gap:7px;padding:9px;font:700 13px Arial,sans-serif;color:#edf5ee;cursor:pointer}
 #tt-use-layers-control input{width:18px;height:18px;accent-color:#4ae87a}
 body.tt-simple-layers #tt616-layer-panel > :not(#tt-use-layers-control){display:none!important}
+
+/* Text remains upright relative to the screen, including legacy render updates. */
+body.tt-objects-appearance #pitch-svg .player-token .token-text,
+body.tt-objects-appearance #pitch-svg .player-token .tt-objects-shirt{
+  transform-box:fill-box;transform-origin:center;
+  transform:rotate(var(--tt-player-counter-angle,0deg))!important;
+}
+body.tt-objects-appearance #pitch-svg .player-token .tt-objects-name{
+  dominant-baseline:central;transform-box:fill-box;transform-origin:center;
+  transform:translate(var(--tt-player-name-x,0px),var(--tt-player-name-y,0px)) rotate(var(--tt-player-counter-angle,0deg))!important;
+}
