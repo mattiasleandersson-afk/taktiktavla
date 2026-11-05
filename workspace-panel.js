@@ -18,16 +18,26 @@
     if (document.body.style.getPropertyValue(key) !== value) document.body.style.setProperty(key, value);
   };
   function choose(value) {
+    if (document.body.classList.contains('tt-board-editor')) {
+      if(value==='objects'){boardObjects=!boardObjects;editorFiles=false;}
+      if(value==='layers'){boardLayers=!boardLayers;editorFiles=false;}
+      if(value==='main'){editorFiles=!editorFiles;boardObjects=false;boardLayers=false;}
+      if(value==='collapse'){editorFiles=false;boardObjects=false;boardLayers=false;}
+      layout();return;
+    }
     if (value === 'collapse') collapsed = !collapsed;
     else { collapsed = selected === value && !collapsed; selected = value; }
     layout();
   }
-  let editorDraw = true, editorDrawButton;
+  let editorDraw = true, editorDrawButton, editorFiles = true, boardContext = '';
   let boardPanel, boardControls, boardActive = false, boardDraw = false, boardObjects = false, boardLayers = false;
   const panelHomes = new Map(), boardButtons = {};
   function boardFullscreenLayout() {
-    const active = document.body.classList.contains('fullscreen-portrait') &&
-      document.querySelector('.tab.on')?.dataset.panel === 'saves';
+    const fullscreen = document.body.classList.contains('fullscreen-portrait');
+    const active = document.querySelector('.tab.on')?.dataset.panel === 'saves';
+    const nextContext = active ? (fullscreen ? 'fullscreen' : 'editor') : '';
+    if(nextContext!==boardContext){boardObjects=false;boardLayers=false;boardDraw=false;editorFiles=true;boardContext=nextContext;}
+    document.body.classList.toggle('tt-board-editor',active&&!fullscreen);
     if (active !== boardActive) { boardDraw = false; boardObjects = false; boardLayers = false; }
     const leaving = boardActive && !active;
     boardActive = active;
@@ -60,20 +70,20 @@
       if(key==='draw')boardDraw=!boardDraw;
       if(key==='objects')boardObjects=!boardObjects;
       if(key==='layers')boardLayers=!boardLayers;
-      boardFullscreenLayout();
+      layout();
     }
-    document.body.classList.toggle('tt-board-fullscreen',active);
+    document.body.classList.toggle('tt-board-fullscreen',active&&fullscreen);
     document.body.classList.toggle('tt-board-draw-open',active&&boardDraw);
     boardButtons.draw.setAttribute('aria-expanded',String(active&&boardDraw));
     const open=active&&(boardObjects||boardLayers);
     document.body.classList.toggle('tt-board-panel-open',!!open);
     boardPanel.hidden=!open;
-    boardControls.hidden=!active;
+    boardControls.hidden=!(active&&fullscreen);
     const exitButton=byId('fs-restore-btn');
-    if(active&&exitButton){
+    if(active&&fullscreen&&exitButton){
       if(!exitButton.dataset.originalText)exitButton.dataset.originalText=exitButton.textContent;
       exitButton.textContent='⤢';exitButton.title='Lämna helskärm';exitButton.setAttribute('aria-label','Lämna helskärm');
-    }else if(leaving&&exitButton){exitButton.textContent=exitButton.dataset.originalText;exitButton.removeAttribute('aria-label');exitButton.removeAttribute('title');}
+    }else if(exitButton?.dataset.originalText){exitButton.textContent=exitButton.dataset.originalText;exitButton.removeAttribute('aria-label');exitButton.removeAttribute('title');}
     for(const [key,id,expanded] of [['objects','tt-objects-menu',boardObjects],['layers','tt616-layer-panel',boardLayers]]) {
       const button=boardButtons[key];
       if(button.parentNode!==boardControls)boardControls.appendChild(button);
@@ -98,7 +108,7 @@
       window.__tt821WantedIpadLayerOpen=active&&boardLayers;
     }
     if(leaving) for(const [element,home] of panelHomes) {if(home.parentNode)home.after(element);element.querySelector('summary[data-shared-heading]')?.remove();if(element.id==='tt-objects-menu')element.open=false;}
-    if(!active)return;
+    if(!active||!fullscreen)return;
     const touch = matchMedia('(pointer:coarse)').matches;
     const viewport = window.visualViewport;
     const screenWidth = touch && viewport ? viewport.width : innerWidth;
@@ -226,11 +236,12 @@
     if(!editorDrawButton){
       editorDrawButton=document.createElement('button');editorDrawButton.type='button';
       editorDrawButton.id='tt-editor-draw';editorDrawButton.className='btn';editorDrawButton.textContent='Ritverktyg';
-      editorDrawButton.addEventListener('click',()=>{editorDraw=!editorDraw;layout();});
+      editorDrawButton.addEventListener('click',()=>{editorDraw=!editorDraw;layout();window.tt964PlaceBoardDrawOptions?.();});
       byId('topbar')?.firstElementChild?.appendChild(editorDrawButton);
     }
     const tabRow=document.querySelector('.tab[data-panel="saves"]')?.parentElement;
-    if(matchMedia('(pointer:coarse)').matches && tabRow && editorDrawButton.parentElement!==tabRow)tabRow.prepend(editorDrawButton);
+    if(!document.body.classList.contains('tt-board-editor') && matchMedia('(pointer:coarse)').matches && tabRow && editorDrawButton.parentElement!==tabRow)tabRow.prepend(editorDrawButton);
+    if(!document.body.classList.contains('tt-board-editor') && !matchMedia('(pointer:coarse)').matches && editorDrawButton.parentElement===nav)byId('topbar')?.firstElementChild?.appendChild(editorDrawButton);
     editorDrawButton.hidden=!active;
     editorDrawButton.setAttribute('aria-expanded',String(active&&editorDraw));
     document.body.classList.toggle('tt-editor-draw-closed',active&&!editorDraw);
@@ -241,12 +252,51 @@
       row.before(host);host.appendChild(row);
     }
   }
+  function editorBoardLayout() {
+    if(!document.body.classList.contains('tt-board-editor'))return false;
+    document.body.classList.remove('tt-workspace','tt-workspace-film','tt-workspace-collapsed','tt-objects-docked');
+    placeStepButton(false);context='';nav.hidden=false;byId('tt-objects-menu')?.classList.remove('docked');
+    if(editorDrawButton.parentNode!==nav)nav.prepend(editorDrawButton);
+    let fullscreenButton=byId('tt-editor-fullscreen');
+    if(!fullscreenButton){
+      fullscreenButton=document.createElement('button');fullscreenButton.id='tt-editor-fullscreen';fullscreenButton.type='button';
+      fullscreenButton.textContent='⤢';fullscreenButton.title='Öppna helskärm';fullscreenButton.setAttribute('aria-label','Öppna helskärm');
+      fullscreenButton.addEventListener('click',()=>byId('btn-fs-topbar')?.click());nav.appendChild(fullscreenButton);
+    }
+    nav.querySelector('[data-workspace="main"]').textContent='Tavlor';
+    for(const button of nav.querySelectorAll('[role="tab"]')){
+      const key=button.dataset.workspace;
+      button.setAttribute('aria-selected',String(key==='main'?editorFiles:key==='objects'?boardObjects:boardLayers));
+    }
+    document.body.classList.toggle('tt-editor-files-open',editorFiles);
+    const headerBottom=Math.max(byId('topbar').getBoundingClientRect().bottom,...Array.from(document.querySelectorAll('#topbar .tab[data-panel]')).map(el=>{const r=el.getBoundingClientRect();return r.width&&r.height?r.bottom:0;}));
+    setVar('--tt-editor-menu-top',Math.max(8,headerBottom+6)+'px');
+    const top=nav.getBoundingClientRect().bottom+8;
+    const below=innerWidth<650;
+    document.body.classList.toggle('tt-board-panel-below',below);
+    const open=editorFiles||boardObjects||boardLayers;
+    const reserve=open?(below?Math.min(340,Math.round(innerHeight*.38)):300):0;
+    setVar('--tt-board-reserve',reserve+'px');setVar('--tt-board-top',top+'px');
+    const style=getComputedStyle(document.body);
+    const safe=side=>parseFloat(style.getPropertyValue('--tt-safe-'+side))||0;
+    const bottom=Math.max(16,safe('bottom')+8);
+    setVar('--tt-board-bottom',bottom+'px');
+    const width=Math.max(100,innerWidth-32-safe('left')-safe('right')-(below?0:reserve));
+    const height=Math.max(100,innerHeight-top-bottom-(below?reserve:0));
+    const vb=byId('pitch-svg').viewBox.baseVal;const ratio=vb.height/vb.width||1.5;
+    const rotated=document.body.classList.contains('landscape');
+    const size=Math.max(1,(rotated?Math.min(height,width/ratio):Math.min(width,height/ratio))-4);
+    setVar('--tt-editor-svg-width',size+'px');setVar('--tt-editor-svg-height',size*ratio+'px');
+    setVar('--tt-editor-rotation',rotated?'-90deg':'0deg');
+    return true;
+  }
   function layout() {
     if (!nav) return false;
     fullscreenLayout();
     boardFullscreenLayout();
     lineupLayout();
     editorDrawingLayout();
+    if(editorBoardLayout())return true;
     const panel = document.querySelector('.tab.on')?.dataset.panel;
     const editing = panel === 'taktik' && typeof isEditingTaktik !== 'undefined' && isEditingTaktik;
     const active = (panel === 'saves' || editing) && innerWidth >= 1024 && matchMedia('(pointer:fine)').matches
@@ -324,6 +374,8 @@
     for (const element of [byId('bench-bar'), byId('pitch-svg'), ...document.querySelectorAll('.tab')]) {
       if (element) lineupObserver.observe(element, {attributes:true, attributeFilter:['class','viewBox']});
     }
+    const headerObserver = new ResizeObserver(layout);
+    [byId('topbar'),document.querySelector('.tab')?.parentElement].filter(Boolean).forEach(el=>headerObserver.observe(el));
     const tabObserver = new MutationObserver(layout);
     document.querySelectorAll('.tab').forEach(tab=>tabObserver.observe(tab,{attributes:true,attributeFilter:['class']}));
     window.visualViewport?.addEventListener('resize',layout);
@@ -332,7 +384,7 @@
     layout();
   }
   window.TTWorkspace = { layout, choose, drawControlsHidden: () =>
-    (boardActive && !boardDraw) || document.body.classList.contains('tt-editor-draw-closed') };
+    (document.body.classList.contains('tt-board-fullscreen') && !boardDraw) || document.body.classList.contains('tt-editor-draw-closed') };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
 })();

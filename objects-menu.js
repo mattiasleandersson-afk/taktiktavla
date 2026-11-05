@@ -20,7 +20,51 @@
     return !playback?.animating && (!tk || (!tt76IsReadOnly(tk) && !tt76IsPresentation()));
   }
   function extraBalls(step) { return (step.tacticObjects || []).filter(o => o.type === 'ball'); }
+  function stable(value) {
+    if (Array.isArray(value)) return value.map(stable);
+    if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map(k => [k, stable(value[k])]));
+    return value;
+  }
+  const equal = (a,b) => JSON.stringify(stable(a)) === JSON.stringify(stable(b));
+  function propagateObjects(tk, idx, before, after) {
+    for (const key of ['arrows','freehandPaths','zones','labels','tacticObjects']) {
+      const oldList = (before[key] || []).filter(o => o.type !== 'ball');
+      const newList = (after[key] || []).filter(o => o.type !== 'ball');
+      for (const id of new Set([...oldList,...newList].map(o => o.id))) {
+        const old = oldList.find(o => o.id === id), next = newList.find(o => o.id === id);
+        if (equal(old,next)) continue;
+        const layerId = (next || old).layerId || 'layer-1';
+        for (let i=idx+1;i<tk.steps.length;i++) {
+          const step = tk.steps[i];
+          const layer = step.freeLayers?.layers?.find(l => l.id === layerId);
+          if (layersEnabled() && layer?.locked) break;
+          if ((step.movementPaths || []).some(m => m.playerId === id)) break;
+          const list = step[key] || (step[key] = []);
+          const at = list.findIndex(o => o.id === id), current = list[at];
+          // A later deliberate edit, deletion or lock is a boundary.
+          if (old && !equal(current,old) && !equal(current,next)) break;
+          if (!old && current && !equal(current,next)) break;
+          if (next) { if (at < 0) list.push(clone(next)); else list[at] = clone(next); }
+          else if (at >= 0) list.splice(at,1);
+          if (layer && !next) layer.cleared = !['arrows','freehandPaths','zones','labels','tacticObjects'].some(k => (step[k] || []).some(o => (o.layerId || 'layer-1') === layerId));
+        }
+      }
+    }
+    for (const old of before.players || []) {
+      const next = (after.players || []).find(p => p.id === old.id);
+      if (!next) continue;
+      for (const key of ['name','number','squadPlayerId','truppId','squadId']) {
+        if (old[key] === next[key]) continue;
+        for (let i=idx+1;i<tk.steps.length;i++) {
+          const p = (tk.steps[i].players || []).find(p => p.id === old.id);
+          if (!p || (p[key] !== old[key] && p[key] !== next[key])) break;
+          if (next[key] === undefined) delete p[key]; else p[key] = next[key];
+        }
+      }
+    }
+  }
   function propagate(tk, idx, before, after) {
+    propagateObjects(tk, idx, before, after);
     const removed = new Set();
     function membership(key, oldList, newList, step) {
       const oldIds = new Set(oldList.map(p => p.id));
@@ -59,6 +103,47 @@
     render();
     sync();
   }
+  function layersEnabled() { return localStorage.getItem('tt-use-layers') !== 'off'; }
+  function syncLayerMode() {
+    const enabled = layersEnabled();
+    document.body.classList.toggle('tt-simple-layers', !enabled);
+    const panel = document.getElementById('tt616-layer-panel');
+    if (!panel) return;
+    let control = document.getElementById('tt-use-layers-control');
+    if (!control) {
+      control = document.createElement('label'); control.id = 'tt-use-layers-control';
+      control.innerHTML = '<input type="checkbox" id="tt-use-layers"> Använd lager';
+      panel.prepend(control);
+      control.querySelector('input').addEventListener('change', e => {
+        localStorage.setItem('tt-use-layers', e.target.checked ? 'on' : 'off');
+        syncLayerMode(); render();
+      });
+    }
+    control.querySelector('input').checked = enabled;
+  }
+  function applySetup() {
+    if (!editable()) return true;
+    const values = [...document.querySelectorAll('#modal-setup input[data-pid]')].map(input => ({
+      id: input.dataset.pid, number: Number.parseInt(input.value,10),
+      name: [...document.querySelectorAll('#modal-setup input[data-name]')].find(n => n.dataset.name === input.dataset.pid)?.value.trim() || ''
+    }));
+    const home = document.getElementById('home-color').value, away = document.getElementById('away-color').value;
+    change(() => {
+      homeColor = home; awayColor = away;
+      for (const v of values) {
+        const p = players.find(p => p.id === v.id);
+        if (!p) continue;
+        const number = Number.isFinite(v.number) ? v.number : p.number;
+        if (p.name !== v.name || p.number !== number) {
+          // Manual labels belong to this film/board, not the shared squad record.
+          delete p.squadPlayerId; delete p.truppId; delete p.squadId;
+          p.name = v.name; p.number = number;
+        }
+      }
+    });
+    document.getElementById('modal-setup').classList.add('hidden');
+    return true;
+  }
   function appendPlayer(team) {
     const members = players.filter(p => p.team === team);
     const used = new Set(members.map(p => Number(p.number)));
@@ -92,10 +177,12 @@
     });
   }
   function removePlayerId(id) {
+    const team = players.find(p => p.id === id)?.team;
     change(() => {
       players = players.filter(p => p.id !== id);
       movementPaths = movementPaths.filter(m => m.playerId !== id);
       delete matchAssignments[id];
+      if (team) buildSetupTeam(team);
     });
   }
   function removeLastPlayer(team) {
@@ -128,7 +215,8 @@
     if (!editable()) return;
     setMode('move');
     removal = removal === kind ? null : kind;
-    sync();
+    selectedId = null;
+    render(); sync();
   }
   // Intercept only deliberate removal, before canvas drag and selection handlers.
   window.addEventListener('pointerdown', event => {
@@ -219,6 +307,7 @@
   function sync() {
     if (!menu) return;
     window.TTMotion?.sync();
+    syncLayerMode();
     const activeFilm = film();
     const active = ['saves', 'formations'].includes(panelName()) || (!!activeFilm && !document.body.classList.contains('tt-v82-taktik-library'));
     const nextContext = active ? panelName() + ':' + (activeFilm ? editingTaktikIdx : '') + ':' + document.body.classList.contains('fullscreen-portrait') : '';
@@ -250,6 +339,7 @@
       : film() ? 'Tillägg och borttagning gäller även kommande steg.' : '';
     menu.querySelectorAll('[data-remove]').forEach(b => b.setAttribute('aria-pressed', String(removal === b.dataset.remove)));
     menu.querySelector('#tt-objects-symbol').value = localStorage.getItem(visualKey() + 'symbol') || 'circle';
+    menu.querySelector('#tt-objects-numbers').checked = localStorage.getItem(visualKey() + 'numbers') !== 'off';
     menu.querySelector('#tt-objects-names').checked = localStorage.getItem(visualKey() + 'names') !== 'off';
     const select = menu.querySelector('#tt-objects-formation');
     if (select.dataset.format !== String(format)) {
@@ -271,8 +361,10 @@
       ${[['home','Medspelare'],['away','Motspelare']].map(([team,name]) => `<div class="tt-objects-row"><span>${name}</span><button type="button" data-remove="${team}" aria-label="Ta bort ${name.toLowerCase()}">−</button><input type="number" min="0" max="1000" step="1" inputmode="numeric" data-count="${team}" aria-label="Antal ${name.toLowerCase()}" title="Antal ${name.toLowerCase()} (0–1000). Enter eller lämna rutan för att ändra."><button type="button" data-add="${team}" aria-label="Lägg till ${name.toLowerCase()}">+</button></div>`).join('')}
       <label>Formation <select id="tt-objects-formation"></select></label>
       <button type="button" id="tt-objects-lineup">Laguppställning / namn</button>
+      <button type="button" id="tt-objects-import">Importera från match</button>
       <label>Spelarsymbol <select id="tt-objects-symbol"><option value="circle">Cirkel</option><option value="jersey">Tröja</option></select></label>
       <label><input type="checkbox" id="tt-objects-names"> Visa namn</label>
+      <label><input type="checkbox" id="tt-objects-numbers"> Visa nummer</label>
       <hr><div class="tt-objects-row"><span>⚽ Bollar</span><button type="button" data-remove="ball" aria-label="Ta bort boll">−</button><output data-count="ball"></output><button type="button" data-add="ball" aria-label="Lägg till boll">+</button></div>
       <div class="tt-objects-row"><button type="button" data-tool="cone">🔺 Kon</button><button type="button" data-tool="pole">▌ Pinne</button></div>
       <button type="button" id="tt-objects-move">Flytta / avsluta verktyg</button>
@@ -285,6 +377,10 @@
       if (b.dataset.remove) chooseRemoval(b.dataset.remove);
       if (b.dataset.tool) { removal = null; ttSelectObjectTool(b.dataset.tool); }
       if (b.id === 'tt-objects-lineup') openSetup();
+      if (b.id === 'tt-objects-import' && editable()) {
+        if (film()) { tt76SaveCurrentStep({allowAutoCreate:false}); window.tt437OpenImportMatchToTaktikfilm(); }
+        else window.tt434OpenImportMatchToTavla();
+      }
       if (b.id === 'tt-objects-move') { removal = null; setMode('move'); sync(); }
     });
     menu.querySelectorAll('input[data-count]').forEach(input => {
@@ -308,6 +404,7 @@
       });
       input.addEventListener('blur', reset);
     });
+    menu.querySelector('#tt-objects-numbers').addEventListener('change', e => setAppearance('numbers', e.target.checked ? 'on' : 'off'));
     menu.querySelector('#tt-objects-symbol').addEventListener('change', e => setAppearance('symbol', e.target.value));
     menu.querySelector('#tt-objects-names').addEventListener('change', e => setAppearance('names', e.target.checked ? 'on' : 'off'));
     menu.querySelector('#tt-objects-formation').addEventListener('change', e => {
@@ -351,7 +448,7 @@
     }
     return originalUndo.apply(this, arguments);
   };
-  window.TTObjects = { addPlayer, removeLastPlayer, removeBall, propagate };
+  window.TTObjects = { layersEnabled, applySetup, addPlayer, removeLastPlayer, removeBall, propagate };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
 })();

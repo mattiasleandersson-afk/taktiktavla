@@ -28,3 +28,7 @@ body.tt-objects-docked:not(.fullscreen-portrait) #pitch-wrapper{left:var(--tt-ob
 #tt-objects-menu input[data-count]::-webkit-inner-spin-button,#tt-objects-menu input[data-count]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 #tt-objects-menu input[data-count]:focus{outline:2px solid #4ae87a;outline-offset:1px}
 @media(pointer:coarse){#tt-objects-menu input[data-count]{min-height:42px}}
+
+#tt-use-layers-control{display:flex;align-items:center;gap:7px;padding:9px;font:700 13px Arial,sans-serif;color:#edf5ee;cursor:pointer}
+#tt-use-layers-control input{width:18px;height:18px;accent-color:#4ae87a}
+body.tt-simple-layers #tt616-layer-panel > :not(#tt-use-layers-control){display:none!important}

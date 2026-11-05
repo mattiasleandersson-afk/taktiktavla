@@ -66,22 +66,22 @@ body.tt-film-fs-panels.fullscreen-portrait #fs-restore-btn{display:flex!importan
 #tt-board-panel>section>button{display:flex;justify-content:space-between;width:100%;flex-shrink:0;text-align:left}
 #tt-board-panel [data-content]{display:none;min-height:0;overflow:auto;overscroll-behavior:contain}
 #tt-board-panel .expanded>[data-content]{display:block}
-body.tt-board-fullscreen #tt-board-panel #tt-objects-menu#tt-objects-menu#tt-objects-menu,
-body.tt-board-fullscreen #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel{position:static!important;display:block!important;visibility:visible!important;pointer-events:auto!important;width:100%!important;min-width:0!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:4px!important;border:0!important;box-shadow:none!important;transform:none!important;overflow:visible!important;box-sizing:border-box!important}
-body.tt-board-fullscreen #tt-board-panel #tt-objects-menu>summary,
-body.tt-board-fullscreen #tt-board-panel #tt616-layer-panel>details>summary{display:none!important}
-body.tt-board-fullscreen #tt642-layer-mobile-toggle#tt642-layer-mobile-toggle,
-body.tt-board-fullscreen #tt741-fs-layer-toggle#tt741-fs-layer-toggle{display:none!important}
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel #tt-objects-menu#tt-objects-menu#tt-objects-menu,
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel{position:static!important;display:block!important;visibility:visible!important;pointer-events:auto!important;width:100%!important;min-width:0!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:4px!important;border:0!important;box-shadow:none!important;transform:none!important;overflow:visible!important;box-sizing:border-box!important}
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel #tt-objects-menu>summary,
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel #tt616-layer-panel>details>summary{display:none!important}
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt642-layer-mobile-toggle#tt642-layer-mobile-toggle,
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt741-fs-layer-toggle#tt741-fs-layer-toggle{display:none!important}
 body.tt-board-fullscreen #pitch-wrapper#pitch-wrapper#pitch-wrapper{position:fixed!important;left:48px!important;right:calc(16px + var(--tt-board-reserve))!important;top:var(--tt-board-top)!important;bottom:16px!important;width:auto!important;height:auto!important;max-height:none!important;margin:0!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;transform:none!important;overflow:hidden!important}
 body.tt-board-fullscreen #pitch-svg#pitch-svg#pitch-svg{width:var(--tt-board-svg-width)!important;height:calc(var(--tt-board-svg-width)*1.5)!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;flex:none!important;transform:rotate(var(--tt-board-rotation))!important;transform-origin:center!important}
 body.tt-board-fullscreen #fs-restore-btn{display:flex!important}
-body.tt-board-fullscreen.tt-board-panel-below #tt-board-panel{top:auto;left:8px;right:8px;bottom:16px;width:auto;height:var(--tt-board-reserve)}
+body:is(.tt-board-fullscreen,.tt-board-editor).tt-board-panel-below #tt-board-panel{top:auto;left:8px;right:8px;bottom:16px;width:auto;height:var(--tt-board-reserve)}
 body.tt-board-fullscreen.tt-board-panel-below #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:16px!important;bottom:calc(16px + var(--tt-board-reserve))!important}
 /* The shared section heading replaces the older Details heading. */
-body.tt-board-fullscreen #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel summary{display:none!important}
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel summary{display:none!important}
 #tt-board-layers svg{width:20px;height:20px;display:block;pointer-events:none}
 
-body.tt-board-fullscreen #tt-board-panel .tt616-layer-sub{display:none!important}
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel .tt616-layer-sub{display:none!important}
 
 /* An opened match lineup owns the workspace, not the saved-match list. */
 body.tt-lineup-layout #bottompanel#bottompanel,
@@ -145,8 +145,8 @@ body.tt-lineup-layout:not(.tt-lineup-side) #bench-bar > div:nth-child(2) { flex:
 #tt-board-controls button[aria-expanded=true]{background:#4ae87a;color:#0e1710;border-color:#4ae87a}
 body.tt-board-fullscreen #fs-restore-btn#fs-restore-btn{position:fixed!important;top:8px!important;right:8px!important;bottom:auto!important;left:auto!important;width:104px!important;height:44px!important;margin:0!important;transform:none!important;box-sizing:border-box!important;z-index:100120!important;align-items:center!important;justify-content:center!important;font-size:13px!important}
 body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{position:fixed!important;top:8px!important;left:8px!important;right:332px!important;bottom:auto!important;transform:none!important;width:auto!important;max-width:none!important;height:44px!important;min-height:0!important;box-sizing:border-box!important;display:flex!important;flex-flow:row nowrap!important;align-items:center!important;justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important;gap:4px!important;padding:3px!important;border-radius:8px!important}
-body.tt-board-fullscreen #tt-board-panel{background:#101e16;border-color:#35543e;border-radius:12px;padding:10px;gap:8px}
-body.tt-board-fullscreen #tt-board-panel button[data-section]{min-height:44px}
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel{background:#101e16;border-color:#35543e;border-radius:12px;padding:10px;gap:8px}
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel button[data-section]{min-height:44px}
 @media(max-width:649px){
   #tt-board-controls{left:8px;right:120px;width:auto}
   body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{top:60px!important;right:8px!important}
@@ -155,7 +155,7 @@ body.tt-board-fullscreen #tt-board-panel button[data-section]{min-height:44px}
 body.tt-board-fullscreen #arrow-options#arrow-options#arrow-options,
 body.tt-board-fullscreen #freehand-options#freehand-options#freehand-options,
 body.tt-board-fullscreen #zone-options#zone-options#zone-options{position:fixed!important;top:calc(var(--tt-board-top) - 8px)!important;left:8px!important;right:auto!important;bottom:auto!important;transform:none!important;max-width:calc(100vw - 16px)!important;box-sizing:border-box!important;z-index:100125!important}
-body.tt-board-fullscreen #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel .tt616-layer-sub{display:none!important}
+body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel .tt616-layer-sub{display:none!important}
 /* Hidden state wins over all legacy context-specific display rules. */
 body #tt-objects-menu#tt-objects-menu#tt-objects-menu#tt-objects-menu#tt-objects-menu[hidden],
 body #tt-board-controls#tt-board-controls[hidden],
@@ -165,10 +165,10 @@ body #tt-board-panel#tt-board-panel[hidden]{display:none!important;pointer-event
   body.tt-board-fullscreen #tt-board-controls{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 8px);right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 120px)}
   body.tt-board-fullscreen #fs-restore-btn#fs-restore-btn{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 8px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px)!important}
   body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 8px)!important;left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 332px)!important}
-  body.tt-board-fullscreen #tt-board-panel{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px);bottom:var(--tt-board-bottom)}
+  body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px);bottom:var(--tt-board-bottom)}
   body.tt-board-fullscreen #pitch-wrapper#pitch-wrapper#pitch-wrapper{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 48px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 16px + var(--tt-board-reserve))!important;bottom:var(--tt-board-bottom)!important}
   body.tt-board-fullscreen.tt-board-panel-below #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 16px)!important;bottom:calc(var(--tt-board-bottom) + var(--tt-board-reserve))!important}
-  body.tt-board-fullscreen.tt-board-panel-below #tt-board-panel{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)}
+  body:is(.tt-board-fullscreen,.tt-board-editor).tt-board-panel-below #tt-board-panel{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)}
   body:not(.fullscreen-portrait):not(.tt-lineup-layout) #tt-objects-menu#tt-objects-menu{
     left:auto!important;right:calc(var(--tt-safe-right) + 8px)!important;bottom:calc(var(--tt-safe-bottom) + 8px)!important;top:auto!important;
     width:120px!important;max-height:44dvh!important;background:#101e16!important;
@@ -181,7 +181,7 @@ body #tt-board-panel#tt-board-panel[hidden]{display:none!important;pointer-event
   body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 60px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px)!important}
 }
 @media(pointer:coarse){
-  body.tt-board-fullscreen.tt-board-panel-below #tt-board-panel{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px);bottom:var(--tt-board-bottom)}
+  body:is(.tt-board-fullscreen,.tt-board-editor).tt-board-panel-below #tt-board-panel{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px);bottom:var(--tt-board-bottom)}
   body.tt-board-fullscreen #arrow-options#arrow-options#arrow-options,
   body.tt-board-fullscreen #freehand-options#freehand-options#freehand-options,
   body.tt-board-fullscreen #zone-options#zone-options#zone-options{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)!important;max-width:calc(100vw - var(--tt-safe-left) - var(--tt-safe-right) - 16px)!important}
@@ -217,3 +217,44 @@ body.tt-board-fullscreen #tt-board-controls{right:60px}
   body.tt-board-fullscreen #tt-board-controls{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 60px)}
   #tt-editor-draw{min-height:44px}
 }
+
+/* Board editor uses the same independent sections as fullscreen. */
+body.tt-board-editor #tt-workspace-tabs{top:var(--tt-editor-menu-top);left:16px;right:16px;width:auto;max-width:620px;padding:0;background:transparent;border:0;gap:6px;align-items:center}
+body.tt-board-editor #tt-workspace-tabs button{min-height:44px;border-radius:8px;flex:1;white-space:nowrap;font-size:13px}
+body.tt-board-editor #tt-workspace-tabs [role=tablist]{display:contents}
+body.tt-board-editor #tt-editor-draw{order:0}
+body.tt-board-editor [data-workspace=objects]{order:1}
+body.tt-board-editor [data-workspace=layers]{order:2}
+body.tt-board-editor #tt-editor-fullscreen{order:3;flex:0 0 44px!important;font-size:24px!important}
+body.tt-board-editor [data-workspace=main]{order:4}
+body.tt-board-editor #tt-workspace-tabs [data-workspace=collapse]{display:none}
+body:not(.tt-board-editor) #tt-editor-fullscreen{display:none!important}
+body.tt-board-editor #tt-workspace-tabs #tt-editor-draw[aria-expanded=true]{background:#4ae87a;color:#0e1710}
+body.tt-board-editor #btn-fs-topbar,body.tt-board-editor #tt642-layer-mobile-toggle,
+body.tt-board-editor #panel-toggle-strip,body.tt-board-editor #panel-show-btn{display:none!important}
+body.tt-board-editor #bottompanel#bottompanel#bottompanel{display:block!important;position:static!important;height:0!important;min-height:0!important;padding:0!important;border:0!important}
+body.tt-board-editor #panel-saves#panel-saves#panel-saves{position:fixed!important;top:var(--tt-board-top)!important;right:8px!important;left:auto!important;bottom:16px!important;width:284px!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:auto!important;background:#101e16!important;border:1px solid #35543e!important;border-radius:12px!important;box-sizing:border-box!important;padding:8px!important;z-index:10100!important}
+body.tt-board-editor:not(.tt-editor-files-open) #panel-saves#panel-saves#panel-saves{display:none!important}
+body.tt-board-editor #panel-saves>div{min-height:0!important;height:auto!important}
+body.tt-board-editor #pitch-wrapper#pitch-wrapper#pitch-wrapper{position:fixed!important;left:16px!important;right:calc(16px + var(--tt-board-reserve))!important;top:var(--tt-board-top)!important;bottom:16px!important;width:auto!important;height:auto!important;max-height:none!important;margin:0!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;transform:none!important;overflow:hidden!important}
+body.tt-board-editor #pitch-svg#pitch-svg#pitch-svg{width:var(--tt-editor-svg-width)!important;height:var(--tt-editor-svg-height)!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;flex:none!important;transform:rotate(var(--tt-editor-rotation))!important;transform-origin:center!important}
+body.tt-board-editor.tt-board-panel-below #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:16px!important;bottom:calc(16px + var(--tt-board-reserve))!important}
+body.tt-board-editor.tt-board-panel-below #panel-saves#panel-saves#panel-saves{top:auto!important;left:8px!important;right:8px!important;width:auto!important;height:var(--tt-board-reserve)!important}
+body.tt-board-editor #tt-board-panel #tt-objects-menu#tt-objects-menu#tt-objects-menu{bottom:auto!important}
+@media(max-width:649px){body.tt-board-editor #tt-workspace-tabs{left:8px;right:8px;gap:4px}body.tt-board-editor #tt-workspace-tabs button{padding:4px;font-size:12px}}
+
+body.tt-editor-draw-closed #tt964-board-draw-options-host#tt964-board-draw-options-host,
+body.tt-editor-draw-closed #tt291-plan-draw-options#tt291-plan-draw-options{display:none!important}
+
+body.tt-board-editor .modal-bg{z-index:200000!important}
+body.tt-board-editor #panel-saves#panel-saves#panel-saves{min-width:0!important;max-width:284px!important}
+body.tt-board-editor.tt-board-panel-below #panel-saves#panel-saves#panel-saves{max-width:none!important}
+body.tt-board-editor #tt-board-panel .expanded>[data-content]{flex:1;overflow:hidden}
+body.tt-board-editor #tt-board-panel #tt-objects-menu#tt-objects-menu#tt-objects-menu,
+body.tt-board-editor #tt-board-panel #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel{height:100%!important;max-height:100%!important;overflow:auto!important}
+body.tt-board-editor #tt-board-panel #tt-objects-menu fieldset{display:flex;flex-direction:column;gap:10px;align-items:stretch}
+
+body.tt-board-editor #tt-workspace-tabs{left:calc(8px + var(--tt-safe-left,0px));right:calc(8px + var(--tt-safe-right,0px))}
+body.tt-board-editor #pitch-wrapper#pitch-wrapper#pitch-wrapper{left:calc(16px + var(--tt-safe-left,0px))!important;right:calc(16px + var(--tt-safe-right,0px) + var(--tt-board-reserve))!important;bottom:var(--tt-board-bottom)!important}
+body.tt-board-editor.tt-board-panel-below #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:calc(16px + var(--tt-safe-right,0px))!important;bottom:calc(var(--tt-board-bottom) + var(--tt-board-reserve))!important}
+body.tt-board-editor #panel-saves#panel-saves#panel-saves{right:calc(8px + var(--tt-safe-right,0px))!important;bottom:var(--tt-board-bottom)!important}

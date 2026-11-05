@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
 <title>Taktiktavla</title>
-<link rel="stylesheet" href="styles_test.css?v=20261103-compact-controls">
+<link rel="stylesheet" href="styles_test.css?v=20261105-film-objects">
 
 
 
@@ -3188,7 +3188,7 @@
   log('TT963 pre-diagnos installerad före app_test.js');
 })();
 </script>
-<script src="app_test.js?v=20261103-compact-controls"></script>
+<script src="app_test.js?v=20261105-film-objects"></script>
 <script id="tt963-diag-post-draw-runtime-readonly">
 (function(){
   if(window.__tt963DiagPostInstalled)return;
@@ -3416,6 +3416,7 @@
         scope:l.scope||'step',
         scopeStart:(typeof l.scopeStart==='number'?l.scopeStart:null)
       };
+      if(l && Object.prototype.hasOwnProperty.call(l,'cleared'))out.cleared=!!l.cleared;
       if(l && Object.prototype.hasOwnProperty.call(l,'tt656EyeOn'))out.tt656EyeOn=!!l.tt656EyeOn;
       return out;
     });
@@ -3472,15 +3473,18 @@
   };
 
   window.tt630GetActiveLayerId=function(){
+    if(window.TTObjects && !window.TTObjects.layersEnabled())return 'layer-1';
     return (state && state.activeId) || 'layer-1';
   };
 
   window.tt630IsLayerVisible=function(id){
+    if(window.TTObjects && !window.TTObjects.layersEnabled())return true;
     var layer=getLayer(id || 'layer-1');
     return !layer || layer.visible!==false;
   };
 
   window.tt630IsLayerLocked=function(id){
+    if(window.TTObjects && !window.TTObjects.layersEnabled())return false;
     var layer=getLayer(id || 'layer-1');
     return !!(layer && layer.locked);
   };
@@ -3504,9 +3508,12 @@
       if(ai!==bi)return bi-ai; // nedersta lager först, översta lager sist före spelare/boll
       return (a.__tt643DomOrder||0)-(b.__tt643DomOrder||0);
     });
-    nodes.forEach(function(n){
-      try{root.insertBefore(n,anchor||null);}catch(e){}
-    });
+    nodes=nodes.filter(function(n){return n.getAttribute('data-object-type')!=='ball';});
+    for(var j=nodes.length-1;j>=0;j--){
+      var n=nodes[j];
+      if(n.nextSibling!==anchor)root.insertBefore(n,anchor||null);
+      anchor=n;
+    }
   }
   window.tt643ApplyFreeLayerDomOrder=applyFreeLayerDomOrder;
 
@@ -8346,9 +8353,9 @@
 </script>
 <!-- === slut v942 TEST === -->
 
-<link rel="stylesheet" href="objects-menu.css?v=20261103-compact-controls">
-<script src="objects-menu.js?v=20261103-compact-controls"></script>
-<link rel="stylesheet" href="workspace-panel.css?v=20261103-compact-controls">
-<script src="workspace-panel.js?v=20261103-compact-controls"></script>
-<link rel="stylesheet" href="film-motion.css?v=20261103-compact-controls">
-<script src="film-motion.js?v=20261103-compact-controls"></script>
+<link rel="stylesheet" href="objects-menu.css?v=20261105-film-objects">
+<script src="objects-menu.js?v=20261105-film-objects"></script>
+<link rel="stylesheet" href="workspace-panel.css?v=20261105-film-objects">
+<script src="workspace-panel.js?v=20261105-film-objects"></script>
+<link rel="stylesheet" href="film-motion.css?v=20261105-film-objects">
+<script src="film-motion.js?v=20261105-film-objects"></script>

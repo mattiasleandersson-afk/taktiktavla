@@ -185,7 +185,12 @@ function tt649SyncLayerDeletion(layerId){
     try{snap=(typeof currentSnap==="function")?currentSnap():tk.steps[cur];}catch(e){snap=tk.steps[cur];}
     if(!snap)return;
     var meta=tt649EnsureLayerMetaInSnap(snap,layerId);
-    if(meta){meta.cleared=tt649CountCurrentLayerObjects(layerId)<1;}
+    if(meta){
+      meta.cleared=tt649CountCurrentLayerObjects(layerId)<1;
+      var liveMeta=window.__tt630FreeLayerState&&window.__tt630FreeLayerState.layers.find(function(l){return l.id===layerId;});
+      if(liveMeta)liveMeta.cleared=meta.cleared;
+    }
+    if(window.TTObjects)window.TTObjects.propagate(tk,cur,tk.steps[cur],snap);
     tk.steps[cur]=snap;
   }catch(e){}
 }
@@ -1050,7 +1055,7 @@ function addPlayer(team){if(window.TTObjects)return window.TTObjects.addPlayer(t
 function removePlayer(team){if(window.TTObjects)return window.TTObjects.removeLastPlayer(team);var tp=players.filter(function(p){return p.team===team;});if(tp.length<=0)return;var last=tp[tp.length-1];players=players.filter(function(p){return p.id!==last.id;});buildSetupTeam(team);render();}
 document.getElementById("btn-setup").addEventListener("click",openSetup);
 document.getElementById("setup-cancel").addEventListener("click",function(){document.getElementById("modal-setup").classList.add("hidden");});
-document.getElementById("setup-apply").addEventListener("click",function(){homeColor=document.getElementById("home-color").value;awayColor=document.getElementById("away-color").value;document.querySelectorAll("#modal-setup .num-cell input[data-pid]").forEach(function(inp){var p=players.find(function(x){return x.id===inp.getAttribute("data-pid");});if(p)p.number=parseInt(inp.value)||p.number;});document.querySelectorAll("#modal-setup .num-cell input[data-name]").forEach(function(inp){var p=players.find(function(x){return x.id===inp.getAttribute("data-name");});if(p)p.name=inp.value.trim();});document.getElementById("modal-setup").classList.add("hidden");render();});
+document.getElementById("setup-apply").addEventListener("click",function(){if(window.TTObjects && window.TTObjects.applySetup()){return;}homeColor=document.getElementById("home-color").value;awayColor=document.getElementById("away-color").value;document.querySelectorAll("#modal-setup .num-cell input[data-pid]").forEach(function(inp){var p=players.find(function(x){return x.id===inp.getAttribute("data-pid");});if(p)p.number=parseInt(inp.value)||p.number;});document.querySelectorAll("#modal-setup .num-cell input[data-name]").forEach(function(inp){var p=players.find(function(x){return x.id===inp.getAttribute("data-name");});if(p)p.name=inp.value.trim();});document.getElementById("modal-setup").classList.add("hidden");render();});
 document.querySelectorAll("[data-dm]").forEach(function(b){b.addEventListener("click",function(){displayMode=b.getAttribute("data-dm");document.querySelectorAll("[data-dm]").forEach(function(x){x.classList.toggle("on",x===b);});render();});});
 document.getElementById("home-color").addEventListener("input",function(e){var d=document.getElementById("dot-home");if(d)d.style.background=e.target.value;});
 document.getElementById("away-color").addEventListener("input",function(e){var d=document.getElementById("dot-away");if(d)d.style.background=e.target.value;});
@@ -15080,13 +15085,16 @@ function tt103InstallDesktopPlayerPriority(){
         p=(players||[]).find(function(x){return x.id===id;})||null;
       }
 
-      // Om klicket är på bollen men en spelare ligger under/nära: välj spelaren i stället.
+      // Ett direkt träffat objekt får företräde framför en närliggande spelare.
+      if(ev.target.closest && ev.target.closest(".ball-token,.tt747-object-g,.tt746-object-g"))return;
+
+      // Behåll äldre tolerans på tom planyta utanför filmredigering.
       if(!p && tt103IsBallTarget(ev.target)){
         p=tt103NearestPlayerAt(pt,24);
       }
 
       // Extra tolerans: om man klickar väldigt nära spelare, prioritera spelaren framför plan/boll.
-      if(!p && !tt103IsPlayerTarget(ev.target)){
+      if(!p && !isEditingTaktik && !tt103IsPlayerTarget(ev.target)){
         p=tt103NearestPlayerAt(pt,18);
       }
 
@@ -22373,11 +22381,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   function cleanNewStep(step){
     if(!step || typeof step!=="object")return step;
 
-    // Vanliga ritningar.
-    step.arrows=[];
-    step.labels=[];
-    step.freehandPaths=[];
-    step.zones=[];
+    // Vanliga objekt följer med, precis som spelare, koner och pinnar.
 
     // Rörelsepil hör till föregående steg, inte nya slutbilden.
     step.movementPaths=[];
@@ -38598,8 +38602,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
   forceCircleAtBoot433();
   setVersion433();
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){forceCircleAtBoot433();setVersion433();});
-  [0,50,150,350,800,1600,3000].forEach(function(ms){setTimeout(function(){forceCircleAtBoot433();setVersion433();},ms);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setVersion433();});
+  [0,50,150,350,800,1600,3000].forEach(function(ms){setTimeout(function(){setVersion433();},ms);});
 })();
 /* === slut v433-taktikfilm-default-circle-on-start === */
 
@@ -38946,6 +38950,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       try{if(playback)playback.tk=tk;}catch(e){}
       try{if(typeof window.tt415ApplyVisuals==='function')window.tt415ApplyVisuals();}catch(e){}
       try{if(typeof window.tt424SyncNow==='function')window.tt424SyncNow();}catch(e){}
+      if(typeof tt76MarkDirty==='function')tt76MarkDirty();
       closeModal437();setVersion437();
       try{showToast('Importerade '+n+' spelare till Taktikfilm från '+matchTitle437(m));}catch(e){}
     }catch(err){console.warn('tt437 import film',err);try{showToast('Kunde inte importera till Taktikfilm',false);}catch(e){}}
@@ -46002,7 +46007,7 @@ function afterConfirmedTaktikSave(result,onSaved){
     g.appendChild(shape);
     var hit=document.createElementNS(ns,'circle');
     hit.setAttribute('class','tt747-object-hit');
-    hit.setAttribute('cx','0');hit.setAttribute('cy','0');hit.setAttribute('r',Math.max(24,26*objectSize(o)));
+    hit.setAttribute('cx','0');hit.setAttribute('cy','0');hit.setAttribute('r',o.type==='ball'?Math.max(12,14*objectSize(o)):Math.max(14,22*objectSize(o)));
     g.appendChild(hit);
 
     function select(ev,openPanel){
@@ -46110,7 +46115,16 @@ function afterConfirmedTaktikSave(result,onSaved){
 
   function placeObjectFromEvent(ev,clientX,clientY){
     if(mode!=='object' || !isTavlaActive())return false;
-    try{if(ev.target && ev.target.closest && ev.target.closest('.tt747-object-g,.tt746-object-g'))return false;}catch(e){}
+    // Touch browsers may retarget an empty-pitch tap to a nearby clickable cone.
+    // Use the actual touch coordinates before deciding to select that object.
+    var touchPoint=svgPt(clientX,clientY);
+    try{
+      var targetObject=ev.target && ev.target.closest && ev.target.closest('.tt747-object-g,.tt746-object-g');
+      if(targetObject){
+        var existing=findObject(targetObject.getAttribute('data-id'));
+        if(existing && Math.hypot(touchPoint.x-existing.x,touchPoint.y-existing.y)<=Math.max(14,22*objectSize(existing)))return false;
+      }
+    }catch(e){}
     if(typeof tt634BlockIfActiveLayerLocked==='function' && tt634BlockIfActiveLayerLocked()){
       ev.preventDefault();ev.stopImmediatePropagation();
       return true;
@@ -48307,7 +48321,8 @@ function afterConfirmedTaktikSave(result,onSaved){
       var firstPlayerOrBall=svg.querySelector('.player-token,.ball-token');
       if(!firstPlayerOrBall)return;
       for(var i=0;i<objs.length;i++){
-        if(objs[i] && objs[i].parentNode===svg){
+        if(objs[i] && objs[i].parentNode===svg && objs[i].getAttribute("data-object-type")!=="ball" &&
+           !(objs[i].compareDocumentPosition(firstPlayerOrBall)&Node.DOCUMENT_POSITION_FOLLOWING)){
           svg.insertBefore(objs[i],firstPlayerOrBall);
         }
       }
