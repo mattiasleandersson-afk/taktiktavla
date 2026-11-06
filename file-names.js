@@ -73,6 +73,7 @@
     });
   }
   function attach(row,kind,item) {
+    window.TTShareStatus?.attach(row,kind,item);
     if (kind === 'match' && item.name && item.name !== [item.datum,item.motstand].filter(Boolean).join(' ')) {
       const name = document.createElement('div'); name.className = 'tt-match-file-title'; name.textContent = item.name; row.prepend(name);
     }

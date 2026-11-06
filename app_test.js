@@ -384,6 +384,11 @@ var svg=document.getElementById("pitch-svg");
 
 /* === Startup-safe tool functions === */
 function svgPt(cx,cy){
+  // Editor presentation can rotate independently of the old fullscreen flags.
+  if(document.body.classList.contains('tt-board-editor')){
+    var matrix=svg.getScreenCTM();
+    if(matrix){var point=new DOMPoint(cx,cy).matrixTransform(matrix.inverse());return {x:point.x,y:point.y};}
+  }
   var r=svg.getBoundingClientRect();
   var vb=svg.getAttribute("viewBox")||("0 0 "+W+" "+H);
   var vbParts=vb.split(" ").map(Number);
@@ -32934,6 +32939,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       return loadSharesForFormation364(s.id);
     }).then(function(shares){
       modal._tt364ExistingShares=shares||[];
+      window.TTShareStatus?.refresh('board');
       return loadMyTeams364().then(function(teams){renderTeamRows364(teams||[],shares||[]);});
     }).catch(function(err){
       status.textContent='Kunde inte spara delning: '+String(err&&err.message||err);
@@ -33583,6 +33589,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
       renderTeamRows371(pair[0]||[],pair[1]||[]);
       var m=document.getElementById('tt371-taktikfilm-share-modal');
       if(m){m._tt371Teams=pair[0]||[];m._tt371Shares=(pair[1]||[]).map(team371);}
+      window.TTShareStatus?.refresh('film');
       setSaveBusy371(false,'Delning sparad. Lagets-vyn kopplas i nästa steg.');
       try{if(typeof showToast==='function')showToast('Taktikfilm-delning sparad');}catch(e){}
     }).catch(function(err){
@@ -33652,7 +33659,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
           var txt=String(btn.textContent||'').trim();
           var title=String(btn.title||'').toLowerCase();
           var aria=String(btn.getAttribute('aria-label')||'').toLowerCase();
-          if(txt==='👥'||txt==='🙈'||title.indexOf('dela med laget')>=0||title.indexOf('sluta dela')>=0||aria.indexOf('dela med laget')>=0||aria.indexOf('sluta dela')>=0||btn.dataset.tt371TaktikShareModal==='1'){
+          if(btn.dataset.ttShareIndicator==='true'||txt==='👥'||txt==='🙈'||title.indexOf('dela med laget')>=0||title.indexOf('sluta dela')>=0||aria.indexOf('dela med laget')>=0||aria.indexOf('sluta dela')>=0||btn.dataset.tt371TaktikShareModal==='1'){
             if(btn.dataset.tt371TaktikShareModal==='1')return;
             var clone=btn.cloneNode(true);
             clone.dataset.tt371TaktikShareModal='1';
@@ -40801,6 +40808,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var txt=norm(btn.textContent);
     var title=String(btn.title||btn.getAttribute('aria-label')||'').toLowerCase();
     if(btn.dataset && btn.dataset.tt569ShareModal==='1')return true;
+    if(btn.dataset.ttShareIndicator==='true')return true;
     if(txt==='👥' || txt==='🙈' || txt==='Dela' || txt==='Dölj')return true;
     if(title.indexOf('dela med laget')>=0 || title.indexOf('sluta dela')>=0 || title.indexOf('vilka lag')>=0)return true;
     return false;

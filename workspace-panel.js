@@ -29,13 +29,17 @@
     else { collapsed = selected === value && !collapsed; selected = value; }
     layout();
   }
+  let editorRotated = false, editorRotateButton;
   let editorDraw = true, editorDrawButton, editorFiles = true, boardContext = '';
   let boardPanel, boardControls, boardActive = false, boardDraw = false, boardObjects = false, boardLayers = false;
   const panelHomes = new Map(), boardButtons = {};
   function boardFullscreenLayout() {
     const fullscreen = document.body.classList.contains('fullscreen-portrait');
-    const active = document.querySelector('.tab.on')?.dataset.panel === 'saves';
-    const nextContext = active ? (fullscreen ? 'fullscreen' : 'editor') : '';
+    const panel = document.querySelector('.tab.on')?.dataset.panel;
+    const quick = panel === 'formations' && !fullscreen && matchMedia('(pointer:fine)').matches && !(typeof matchRoster !== 'undefined' && matchRoster.length);
+    const active = panel === 'saves' || quick;
+    document.body.classList.toggle('tt-quick-editor', quick);
+    const nextContext = active ? (fullscreen ? 'fullscreen' : quick ? 'quick' : 'editor') : '';
     if(nextContext!==boardContext){boardObjects=false;boardLayers=false;boardDraw=false;editorFiles=true;boardContext=nextContext;}
     document.body.classList.toggle('tt-board-editor',active&&!fullscreen);
     if (active !== boardActive) { boardDraw = false; boardObjects = false; boardLayers = false; }
@@ -263,7 +267,13 @@
       fullscreenButton.textContent='⤢';fullscreenButton.title='Öppna helskärm';fullscreenButton.setAttribute('aria-label','Öppna helskärm');
       fullscreenButton.addEventListener('click',()=>byId('btn-fs-topbar')?.click());nav.appendChild(fullscreenButton);
     }
-    nav.querySelector('[data-workspace="main"]').textContent='Tavlor';
+    if(!editorRotateButton){
+      editorRotateButton=document.createElement('button');editorRotateButton.type='button';editorRotateButton.id='tt-editor-rotate';editorRotateButton.textContent='⇄';
+      editorRotateButton.addEventListener('click',()=>{editorRotated=!editorRotated;layout();if(typeof render==='function')render();});nav.appendChild(editorRotateButton);
+    }
+    editorRotateButton.title=editorRotated?'Ställ planen upp':'Lägg planen ner';
+    editorRotateButton.setAttribute('aria-label',editorRotateButton.title);editorRotateButton.setAttribute('aria-pressed',String(editorRotated));
+    nav.querySelector('[data-workspace="main"]').textContent=document.body.classList.contains('tt-quick-editor')?'Formation':'Tavlor';
     for(const button of nav.querySelectorAll('[role="tab"]')){
       const key=button.dataset.workspace;
       button.setAttribute('aria-selected',String(key==='main'?editorFiles:key==='objects'?boardObjects:boardLayers));
@@ -284,7 +294,7 @@
     const width=Math.max(100,innerWidth-32-safe('left')-safe('right')-(below?0:reserve));
     const height=Math.max(100,innerHeight-top-bottom-(below?reserve:0));
     const vb=byId('pitch-svg').viewBox.baseVal;const ratio=vb.height/vb.width||1.5;
-    const rotated=document.body.classList.contains('landscape');
+    const rotated=matchMedia('(pointer:fine)').matches?editorRotated:document.body.classList.contains('landscape');
     const size=Math.max(1,(rotated?Math.min(height,width/ratio):Math.min(width,height/ratio))-4);
     setVar('--tt-editor-svg-width',size+'px');setVar('--tt-editor-svg-height',size*ratio+'px');
     setVar('--tt-editor-rotation',rotated?'-90deg':'0deg');

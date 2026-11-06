@@ -258,3 +258,16 @@ body.tt-board-editor #tt-workspace-tabs{left:calc(8px + var(--tt-safe-left,0px))
 body.tt-board-editor #pitch-wrapper#pitch-wrapper#pitch-wrapper{left:calc(16px + var(--tt-safe-left,0px))!important;right:calc(16px + var(--tt-safe-right,0px) + var(--tt-board-reserve))!important;bottom:var(--tt-board-bottom)!important}
 body.tt-board-editor.tt-board-panel-below #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:calc(16px + var(--tt-safe-right,0px))!important;bottom:calc(var(--tt-board-bottom) + var(--tt-board-reserve))!important}
 body.tt-board-editor #panel-saves#panel-saves#panel-saves{right:calc(8px + var(--tt-safe-right,0px))!important;bottom:var(--tt-board-bottom)!important}
+
+/* Permanent controls in both desktop board editors. */
+body:not(.tt-board-editor) #tt-editor-rotate{display:none!important}
+body.tt-board-editor #tt-editor-rotate{order:3;flex:0 0 44px!important;font-size:22px}
+body.tt-board-editor #tt-editor-rotate[aria-pressed=true]{background:#4ae87a;color:#101e16}
+body.tt-quick-editor #panel-saves#panel-saves#panel-saves{display:none!important}
+body.tt-quick-editor #panel-formations#panel-formations#panel-formations{display:block!important;position:fixed!important;top:var(--tt-board-top)!important;right:8px!important;bottom:16px!important;width:284px!important;max-height:none!important;overflow:auto!important;box-sizing:border-box!important;background:#101e16;border:1px solid #35543e;border-radius:12px;padding:8px;z-index:10100}
+body.tt-quick-editor:not(.tt-editor-files-open) #panel-formations#panel-formations#panel-formations{display:none!important}
+body.tt-board-editor #btn-orientation-toggle{display:none!important}
+
+@media(pointer:coarse){#tt-editor-rotate{display:none!important}}
+body.tt-quick-editor #formation-btns{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;white-space:normal!important;overflow:visible!important;max-width:100%;height:auto!important}
+body.tt-quick-editor #formation-btns button{min-width:0!important;width:100%!important;margin:0!important;min-height:36px}
