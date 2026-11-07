@@ -291,7 +291,7 @@
     const safe=side=>parseFloat(style.getPropertyValue('--tt-safe-'+side))||0;
     const bottom=Math.max(16,safe('bottom')+8);
     setVar('--tt-board-bottom',bottom+'px');
-    const width=Math.max(100,innerWidth-32-safe('left')-safe('right')-(below?0:reserve));
+    const width=Math.max(100,innerWidth-32-safe('left')-safe('right')-(below?0:reserve)-(window.TTToolRail?.inset()||0));
     const height=Math.max(100,innerHeight-top-bottom-(below?reserve:0));
     const vb=byId('pitch-svg').viewBox.baseVal;const ratio=vb.height/vb.width||1.5;
     const rotated=matchMedia('(pointer:fine)').matches?editorRotated:document.body.classList.contains('landscape');
@@ -301,6 +301,7 @@
     return true;
   }
   function layout() {
+    try {
     if (!nav) return false;
     fullscreenLayout();
     boardFullscreenLayout();
@@ -340,12 +341,15 @@
       button.setAttribute('aria-selected', String(!collapsed && selected === button.dataset.workspace));
     }
     const toggle = nav.querySelector('[data-workspace="collapse"]');
-    toggle.textContent = collapsed ? '▸' : '◂';
+    const rightSide = !!window.TTToolRail?.active();
+    const collapseIcon = rightSide ? (collapsed ? '◂' : '▸') : (collapsed ? '▸' : '◂');
+    if (toggle.textContent !== collapseIcon) toggle.textContent = collapseIcon;
     toggle.setAttribute('aria-label', collapsed ? 'Öppna sidopanel' : 'Fäll ihop sidopanel');
     toggle.setAttribute('aria-expanded', String(!collapsed));
     const layers = byId('tt616-layer-panel')?.querySelector('details');
     if (selected === 'layers' && layers && !layers.open) layers.open = true;
     return true;
+    } finally {window.TTToolRail?.layout();}
   }
   function init() {
     nav = document.createElement('nav');

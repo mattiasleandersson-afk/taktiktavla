@@ -26733,6 +26733,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function show248(el,displayValue){
     if(!el)return;
+    if(window.TTToolRail?.active() && toolIds248().includes(el.id) && el.id!=='tt747-object-btn'){hide248(el);return;}
     el.style.setProperty('display',displayValue||'inline-flex','important');
   }
   function hide248(el){
@@ -26814,7 +26815,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         if(!el)return;
         // v291: Taktikfilm och helskärm styrs av en central panelstyrning.
         // Den gamla Tavla-raden får därför inte gömma eller flytta ritvalen där.
-        if(taktik || document.body.classList.contains('fullscreen-portrait'))return;
+        if(taktik || window.TTToolRail?.active() || document.body.classList.contains('fullscreen-portrait'))return;
         if(activeOpt===id)show248(el,'flex');
         else hide248(el);
       });
@@ -28338,6 +28339,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function update291(){
+    if(window.TTToolRail?.active())return;
     try{
       setVersion291();
       injectStyle291();
@@ -49723,7 +49725,7 @@ function afterConfirmedTaktikSave(result,onSaved){
     });
   }catch(e){}}
 
-  function place964(){try{
+  function place964(){if(window.TTToolRail?.active())return;try{
     setVersion964();
     injectStyle964();
     var optId=activeOptionId964();

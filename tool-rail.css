@@ -1,0 +1,39 @@
+/* One palette and predictable focus/selection, preserving semantic danger states. */
+:root{--tt-ui-bg:#15261e;--tt-ui-line:#385246;--tt-ui-ink:#e1ece6;--tt-ui-active:#245b44;--tt-ui-accent:#8de2b6}
+body :is(button.btn,button.sa,button.tab,button.ls-btn,#tt-workspace-tabs button,#tt-board-panel button){background:var(--tt-ui-bg)!important;border-color:var(--tt-ui-line)!important;color:var(--tt-ui-ink)!important;border-radius:7px!important;box-shadow:none!important}
+body :is(button.btn,button.sa,button.tab,button.ls-btn,#tt-workspace-tabs button,#tt-board-panel button):is(.on,.active,[aria-pressed=true],[aria-selected=true],[data-shared=true]){background:var(--tt-ui-active)!important;border-color:#5baf83!important;color:#edfff4!important}
+body :is(button.danger,button.del){color:#ffb5ae!important;border-color:#86514e!important;background:#352321!important}
+body button:focus-visible,body select:focus-visible{outline:2px solid var(--tt-ui-accent)!important;outline-offset:3px}
+body button:disabled{opacity:.45!important;cursor:default!important}
+@media(hover:hover){body button:not(:disabled):hover{filter:brightness(1.15)}}
+#tt-tool-rail,#tt-tool-options{position:fixed;z-index:14000;box-sizing:border-box;background:#112219;border:1px solid var(--tt-ui-line);border-radius:12px}
+#tt-tool-rail[hidden],#tt-tool-options[hidden]{display:none!important}
+#tt-tool-rail{left:8px;width:52px;padding:5px;display:flex;flex-direction:column;gap:5px;max-height:calc(100vh - 160px);overflow-y:auto;scrollbar-width:thin}
+#tt-tool-rail button{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border:1px solid transparent;border-radius:7px;background:transparent;color:#c4d8cc;padding:8px;cursor:pointer}
+#tt-tool-rail button[hidden]{display:none!important}
+#tt-tool-rail button[aria-pressed=true]{background:#245b44;color:#b6f8d3;border-color:#5baf83}
+#tt-tool-rail button[data-action=undo]{margin-top:8px;border-top-color:#385246}
+#tt-tool-rail svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#tt-tool-options{left:68px;width:216px;max-height:calc(100vh - 170px);overflow:auto;padding:12px;color:var(--tt-ui-ink)}
+#tt-tool-options header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;font:600 14px Arial,sans-serif}
+#tt-tool-options header button{border:0;border-radius:6px;background:#203b2c;color:#d8e9df;width:28px;height:28px;cursor:pointer;font-size:22px}
+#tt-tool-hint{font:13px/1.5 Arial,sans-serif;margin:0;color:#adc6b7}
+.tt-rail-label{display:none}
+body.tt-tool-rail-active #tt-tool-options#tt-tool-options#tt-tool-options :is(#arrow-options,#freehand-options,#zone-options){position:static!important;display:none!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;max-width:none!important;white-space:normal!important;background:transparent!important;border:0!important;box-shadow:none!important;transform:none!important;margin:0!important;padding:0!important;gap:6px!important;visibility:visible!important;opacity:1!important;overflow:visible!important}
+body.tt-tool-rail-active #tt-tool-options#tt-tool-options#tt-tool-options :is(#arrow-options,#freehand-options,#zone-options).tt-rail-option-active{display:flex!important}
+body.tt-tool-rail-active #tt-tool-options#tt-tool-options#tt-tool-options .tt-rail-label{display:block;font:12px Arial,sans-serif;color:#adc6b7;margin-top:6px}
+body.tt-tool-rail-active #tt-tool-options#tt-tool-options#tt-tool-options select{width:100%!important;max-width:none!important;min-height:34px!important;height:34px!important;box-sizing:border-box;font:13px Arial,sans-serif!important;padding:4px 8px!important;background:#1a3023!important;border:1px solid #385246!important;color:#e1ece6!important;border-radius:6px!important}
+body.tt-tool-rail-active :is(#btn-undo,#btn-reset,#btn-arrow,#btn-freehand,#btn-zone,#btn-text,#btn-movement,#tt236-rita-move,#tt236-rita-clear,#tt236-rita-undo,#tt236-rita-reset,#btn-tb-arrow,#btn-tb-freehand,#btn-tb-zone,#btn-tb-text,#btn-tb-movement,#btn-tb-undo,#btn-tb-clear-drawings,#btn-tb-reset-start,#tt-editor-draw):is(#btn-undo,#btn-reset,#btn-arrow,#btn-freehand,#btn-zone,#btn-text,#btn-movement,#tt236-rita-move,#tt236-rita-clear,#tt236-rita-undo,#tt236-rita-reset,#btn-tb-arrow,#btn-tb-freehand,#btn-tb-zone,#btn-tb-text,#btn-tb-movement,#btn-tb-undo,#btn-tb-clear-drawings,#btn-tb-reset-start,#tt-editor-draw):is(#btn-undo,#btn-reset,#btn-arrow,#btn-freehand,#btn-zone,#btn-text,#btn-movement,#tt236-rita-move,#tt236-rita-clear,#tt236-rita-undo,#tt236-rita-reset,#btn-tb-arrow,#btn-tb-freehand,#btn-tb-zone,#btn-tb-text,#btn-tb-movement,#btn-tb-undo,#btn-tb-clear-drawings,#btn-tb-reset-start,#tt-editor-draw){display:none!important}
+body.tt-tool-rail-active :is(#tt964-board-draw-options-host,#tt291-plan-draw-options){display:none!important}
+body.tt-tool-rail-active.tt-board-editor #pitch-wrapper#pitch-wrapper#pitch-wrapper{left:calc(16px + var(--tt-rail-inset,64px))!important}
+/* Film steps / objects / layers use the right column; tools keep the left edge. */
+body.tt-tool-rail-active.tt-workspace-film #tt-workspace-tabs{left:auto;right:8px}
+body.tt-tool-rail-active.tt-workspace-film #bottompanel#bottompanel#bottompanel,
+body.tt-tool-rail-active.tt-workspace-film #edit-taktik-steps#edit-taktik-steps#edit-taktik-steps,
+body.tt-tool-rail-active.tt-workspace-film #tt692-film-actions-bottom#tt692-film-actions-bottom#tt692-film-actions-bottom,
+body.tt-tool-rail-active.tt-workspace-film #tt-objects-menu#tt-objects-menu#tt-objects-menu,
+body.tt-tool-rail-active.tt-workspace-film #tt616-layer-panel#tt616-layer-panel#tt616-layer-panel{left:auto!important;right:8px!important}
+body.tt-tool-rail-active.tt-workspace-film #pitch-wrapper#pitch-wrapper#pitch-wrapper,
+body.tt-tool-rail-active.tt-workspace-film #edit-taktik-ui#edit-taktik-ui#edit-taktik-ui>div:first-child{left:calc(16px + var(--tt-rail-inset,64px))!important;right:288px!important}
+body.tt-tool-rail-active.tt-workspace-film.tt-workspace-collapsed #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:8px!important}
+body.tt-tool-rail-active.tt-workspace-film.tt694-edit-landscape #pitch-svg#pitch-svg#pitch-svg{width:var(--tt-rail-film-size)!important}
