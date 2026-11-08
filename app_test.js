@@ -2943,7 +2943,8 @@ function renderTaktikListV545Original(){
   for(var i=0;i<filtered.length;i++){
     (function(tk){
       var idx=taktikFilmer.indexOf(tk), mine=isMineV10(tk), readOnly=isReadOnlyFileV10(tk);
-      tk._readOnly=readOnly;
+      // List redraws may tighten access, but must not unlock the film already open.
+      if(readOnly || !(typeof isEditingTaktik!=='undefined'&&isEditingTaktik&&typeof editingTaktikIdx!=='undefined'&&taktikFilmer[editingTaktikIdx]===tk))tk._readOnly=readOnly;
       var row=document.createElement("div");row.className="row";row.style.gap="3px";row.setAttribute("data-taktik-folder",tk.folder||"Taktik");
       var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;
       var fl=document.createElement("span");fl.className="row-sub";fl.textContent=(tk.steps.length-1)+" steg"+(mine?"":" · "+ownerNameV10(tk)+" · skrivskyddad");
@@ -3095,7 +3096,8 @@ function renderTaktikList(){
   for(var i=0;i<filtered.length;i++){
     (function(tk){
       var idx=taktikFilmer.indexOf(tk), mine=isMineV10(tk), readOnly=isReadOnlyFileV10(tk);
-      tk._readOnly=readOnly;
+      // List redraws may tighten access, but must not unlock the film already open.
+      if(readOnly || !(typeof isEditingTaktik!=='undefined'&&isEditingTaktik&&typeof editingTaktikIdx!=='undefined'&&taktikFilmer[editingTaktikIdx]===tk))tk._readOnly=readOnly;
       var folder=tk.folder||"Taktik";
       var row=document.createElement("div");row.className="row";row.style.gap="3px";row.setAttribute("data-taktik-folder",tk.folder||"Taktik");
       var nm=document.createElement("span");nm.className="row-name";nm.textContent=tk.name;
@@ -30269,7 +30271,9 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(p.ownerId)m.ownerId=p.ownerId;
     if(p.ownerName)m.ownerName=p.ownerName;
     if(obj.state&&obj.state._meta!==m)obj.state._meta=m;
-    delete obj._readOnly;delete obj._openedFromTeam;delete obj.readOnly;delete obj.readonly;delete obj._readonly;
+    // Background ownership refresh must preserve the active film's viewing permissions.
+    var activeFilm=typeof isEditingTaktik!=='undefined'&&isEditingTaktik&&typeof taktikFilmer!=='undefined'&&typeof editingTaktikIdx!=='undefined'&&taktikFilmer[editingTaktikIdx]===obj;
+    if(!activeFilm){delete obj._readOnly;delete obj._openedFromTeam;delete obj.readOnly;delete obj.readonly;delete obj._readonly;}
     return obj;
   }
 
@@ -30382,6 +30386,13 @@ setTimeout(tt152RebindTaktikListButtons,1500);
         var localFilms=Array.isArray(taktikFilmer)?taktikFilmer:[];
         var editingFilm=(typeof editingTaktikIdx==='number')?localFilms[editingTaktikIdx]:null;
         var merged=dedupe(loaded);
+        // A delayed list refresh must not replace the film currently being edited.
+        // Keep its unsaved steps; existing ownership checks still refresh access metadata.
+        if(editingFilm && typeof isEditingTaktik!=='undefined' && isEditingTaktik){
+          var editingId=editingFilm.dbId||editingFilm.id;
+          var activeServerIdx=editingId ? merged.findIndex(function(tk){return String(tk.dbId||tk.id)===String(editingId);}) : -1;
+          if(activeServerIdx>=0)merged[activeServerIdx]=editingFilm;
+        }
         localFilms.forEach(function(tk,idx){
           if(tk && !tk.dbId && !tk.id && (tk._isDraft || tk._draftUid)){
             merged.splice(Math.min(idx,merged.length),0,tk);
@@ -49759,6 +49770,14 @@ function afterConfirmedTaktikSave(result,onSaved){
     var hh=h.offsetHeight||36;
     var left=Math.max(6,Math.min(window.innerWidth-hw-6,r.left));
     var top=Math.max(6,Math.min(window.innerHeight-hh-6,r.bottom+6));
+    // On touch screens the tool row can sit above navigation. Never cover its buttons.
+    if(!document.body.classList.contains('fullscreen-portrait') && window.matchMedia('(pointer:coarse)').matches){
+      var tabs=document.querySelector('.tab[data-panel]');
+      [tabs&&tabs.parentElement,document.getElementById('tt-workspace-tabs')].forEach(function(nav){
+        if(nav&&visible964(nav))top=Math.max(top,nav.getBoundingClientRect().bottom+6);
+      });
+      top=Math.min(top,window.innerHeight-hh-6);
+    }
     h.style.left=Math.round(left)+'px';
     h.style.top=Math.round(top)+'px';
   }catch(e){}}
