@@ -7537,8 +7537,9 @@ window.addEventListener("resize",function(){
 var deletedFormationIdsV64 = {};
 var deletedTaktikIdsV64 = {};
 
-function killLegacyAdminButtonsV64(){
+function killLegacyAdminButtonsV64(root){
   try{
+    root=root&&root.querySelectorAll?root:document;
     ["btn-adopt-legacy-v56","btn-claim-invisible-v58"].forEach(function(id){
       var b=document.getElementById(id);
       if(b){
@@ -7548,7 +7549,7 @@ function killLegacyAdminButtonsV64(){
         if(b.parentNode)b.parentNode.removeChild(b);
       }
     });
-    Array.prototype.slice.call(document.querySelectorAll("button")).forEach(function(b){
+    Array.prototype.slice.call(root.querySelectorAll("button")).concat(root.matches&&root.matches("button")?[root]:[]).forEach(function(b){
       var txt=(b.textContent||"").trim();
       if(txt==="🔧 Äldre" || txt==="🔧 Äldre+" || txt==="🔧 Ta över"){
         b.style.display="none";
@@ -7569,7 +7570,12 @@ setTimeout(killLegacyAdminButtonsV64,300);
 setTimeout(killLegacyAdminButtonsV64,1300);
 
 try{
-  var obsV64=new MutationObserver(killLegacyAdminButtonsV64);
+  var obsV64=new MutationObserver(function(records){
+    // Inspect only newly inserted HTML; drawing an SVG must not rescan every button.
+    records.forEach(function(record){record.addedNodes.forEach(function(node){
+      if(node.nodeType===1&&node.namespaceURI==='http://www.w3.org/1999/xhtml')killLegacyAdminButtonsV64(node);
+    });});
+  });
   obsV64.observe(document.body,{childList:true,subtree:true});
 }catch(e){}
 
@@ -20689,6 +20695,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt186SavesScrollKeepPitch=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -20866,6 +20873,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt187CenterPitchWithSavesScroll=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -20987,6 +20995,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt188IosSavesListScroll=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -21183,6 +21192,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt191TestBlockers=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -21464,6 +21474,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt192TaktikCrossDeviceLoad=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -21737,6 +21748,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt200TaktikLoadNoStepFilter=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -21993,6 +22005,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt201TaktikProfileNameFallback=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -22289,6 +22302,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt204NewStepTargetOnly=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -22514,6 +22528,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt205QuickFormationInSaves=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -22763,6 +22778,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt206QuickFormationDesktopWidth=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -22836,6 +22852,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt207DesktopSavesPanelWidth=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -22943,6 +22960,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt208DeleteFormationDuplicates=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -23126,6 +23144,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt209MatchAlphaAndMenuLabel=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -23263,6 +23282,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt210SaveEmptyMatch=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -23486,6 +23506,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt214MatchLineupSaveMetadataExit=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -23816,6 +23837,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var editPlayerId="";
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -24131,6 +24153,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt217SaveMatchZeroPlayersHard=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -24390,6 +24413,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt218ShowZeroPlayerMatches=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -24519,6 +24543,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt221MobilePerformanceCleanup=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -24564,6 +24589,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt222MatchListDirectCountSort=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -24741,6 +24767,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -25017,6 +25044,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt225IphoneBenchMenuVisible=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -25199,6 +25227,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt226IphoneSecondMenuHorizontalScroll=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -25331,6 +25360,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt227HideBenchMenuOnLineupExit=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -25443,6 +25473,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt228FullscreenDrawingOptionsUnderTools=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -25616,6 +25647,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt229FullscreenDrawingOptionsCloser=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -25768,6 +25800,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt230FullscreenDrawingOptionsEvenHigher=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var spans=document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]');
       spans.forEach(function(s){
@@ -25918,6 +25951,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt231FullscreenUndoResetBoard=true;
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
@@ -26121,6 +26155,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt237TavlaRitaToolbar=true;
 
   function setVersion236(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
@@ -26424,6 +26459,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt238NormalTavlaOptionsInRita=true;
 
   function setVersion238(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
@@ -26529,6 +26565,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt239OptionsNextToTool=true;
 
   function setVersion239(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||"").trim();
@@ -26644,6 +26681,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt248AlwaysOpenRitaRowNoToggle=true;
 
   function setVersion248(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
@@ -26866,6 +26904,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt251HideTopbarMinimizeButtonSafe=true;
 
   function setVersion251Safe(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
@@ -26919,6 +26958,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var originalParents252={};
 
   function setVersion252(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
@@ -27110,6 +27150,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt253IpadRitaOptionsTouchFix=true;
 
   function setVersion253(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
@@ -27190,6 +27231,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt254DesktopRitaRowSelectFix=true;
 
   function setVersion254(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=(s.textContent||'').trim();
@@ -27252,6 +27294,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt255HideBenchInMatchSubmenus=true;
 
   function setVersion255(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       document.querySelectorAll('span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(s){
         var t=String(s.textContent||'').trim();
@@ -27348,6 +27391,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 (function(){
   function setVersion256(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     var nodes=[];
     var ids=['version','app-version','version-label','app-version-label'];
     for(var i=0;i<ids.length;i++){
@@ -27383,6 +27427,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt257ForceHideBenchInMatcherPanel=true;
 
   function setVersion257(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var ids=['version','app-version','version-label','app-version-label'];
       ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='680 TEST';});
@@ -27470,6 +27515,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 (function(){
   function setVersion268(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     var ids=['version','app-version','version-label','app-version-label'];
     for(var i=0;i<ids.length;i++){
       var el=document.getElementById(ids[i]);
@@ -27504,6 +27550,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt268DrawOptionValuesFixed=true;
 
   function setVersion268(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var ids=['app-version','version','version-label','ver','build-version'];
       ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='680 TEST';});
@@ -27634,6 +27681,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt269PlayerButtonLabelOnly=true;
 
   function setVersion269(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var ids=['app-version','version','version-label','ver','build-version'];
       ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='680 TEST';});
@@ -27673,6 +27721,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
    Endast versionsvisning. Ingen funktionslogik. */
 (function(){
   function setVersion274(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','version-label','app-version','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
@@ -27707,6 +27756,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt275MatchDialogAlphaList=true;
 
   function setVersion275(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var ids=['version','app-version','version-label','app-version-label'];
       ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='680 TEST';});
@@ -27840,6 +27890,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt276AutoSaveMatchBeforeLineup=true;
 
   function setVersion276(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var ids=['version','app-version','version-label','app-version-label','ver','build-version'];
       ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='680 TEST';});
@@ -28075,6 +28126,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return d;
   }
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var ids=['version','app-version','version-label','app-version-label','ver','build-version'];
       ids.forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='680 TEST';});
@@ -28228,6 +28280,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var TOOL_TO_OPTION={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
 
   function setVersion291(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent='680 TEST';
@@ -28467,6 +28520,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var MATCH_SORT_KEY='tt_match_sort_v326';
 
   function setVersion326(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
@@ -28693,6 +28747,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt294NewTaktikFormationDialog=true;
 
   function setVersion294(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
@@ -28920,6 +28975,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var AUTH_KEY='tt_auth_session_v1';
 
   function setVersion298(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
@@ -29614,6 +29670,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var checkTimer=null;
 
   function setVersion301(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
@@ -29864,6 +29921,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt302RlsReadyAuthToken=true;
   var VERSION='680 TEST';
   function setVersion302(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -29910,6 +29968,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion303(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);if(el)el.textContent=VERSION;
@@ -30038,12 +30097,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 /* === v304-final-version-and-speed-sync === */
 (function(){
   function setVersion304(){
+    try{if(typeof tt304InitSpeedControls==='function')tt304InitSpeedControls();}catch(e){}
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     var nodes=document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version');
     Array.prototype.forEach.call(nodes,function(el){
       var t=(el.textContent||'').trim();
       if(/^(v?\d+|v3\.)/i.test(t))el.textContent='680 TEST';
     });
-    try{if(typeof tt304InitSpeedControls==='function')tt304InitSpeedControls();}catch(e){}
+
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion304);else setVersion304();
   setTimeout(setVersion304,0);
@@ -30059,12 +30120,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 (function(){
   function setVersion305(){
+    try{if(typeof tt304InitSpeedControls==='function')tt304InitSpeedControls();}catch(e){}
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     var nodes=document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version');
     Array.prototype.forEach.call(nodes,function(el){
       var t=(el.textContent||'').trim();
       if(/^(v?\d+|v3\.)/i.test(t))el.textContent='680 TEST';
     });
-    try{if(typeof tt304InitSpeedControls==='function')tt304InitSpeedControls();}catch(e){}
+
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion305);else setVersion305();
   setTimeout(setVersion305,0);
@@ -30170,12 +30233,14 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   }
 
   function setVersion306(){
+    try{if(typeof tt304InitSpeedControls==='function')tt304InitSpeedControls();else tt306BindSpeedGuards();}catch(e){tt306BindSpeedGuards();}
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     var nodes=document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version');
     Array.prototype.forEach.call(nodes,function(el){
       var t=(el.textContent||'').trim();
       if(/^(v?\d+|v3\.)/i.test(t))el.textContent='680 TEST';
     });
-    try{if(typeof tt304InitSpeedControls==='function')tt304InitSpeedControls();else tt306BindSpeedGuards();}catch(e){tt306BindSpeedGuards();}
+
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setVersion306);else setVersion306();
   setTimeout(setVersion306,0);
@@ -30201,6 +30266,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var ALIAS_KEY='tt310_display_name_aliases_v1';
 
   function setVersion310(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -30453,6 +30519,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion312(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -30658,6 +30725,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var lastSearch='';
 
   function setVersion313(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -30782,6 +30850,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion316(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -30979,6 +31048,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion317(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -31172,6 +31242,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion318(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -31403,6 +31474,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion319(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -31573,6 +31645,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion323(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -32512,6 +32585,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion342(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -32586,6 +32660,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     try{
       if(typeof saveScope==='undefined'||saveScope!=='team')return;
       var list=document.getElementById('saves-list');if(!list)return;
+      // The RPC-backed team list has its own visibility rules; an older queued filter must not erase it.
+      if(list.classList.contains('tt367-team-list'))return;
       var rows=Array.prototype.slice.call(list.querySelectorAll('.row'));
       var q=String(typeof searchQuery!=='undefined'?searchQuery:'').toLowerCase();
       var visible=(savedFormations||[]).filter(function(s){
@@ -32673,6 +32749,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   var VERSION='680 TEST';
   function setVersion364(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -32742,6 +32819,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion364(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -33186,6 +33264,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   };
 
   function setVersion364(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='680 TEST';});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -33216,7 +33295,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.tt367TeamSharedFormations=[];
   window.tt367FormationShareMap=window.tt367FormationShareMap||{};
 
-  function setVersion366(){try{
+  function setVersion366(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
       var t=String(el.textContent||'').trim(); if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
@@ -33375,6 +33455,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   var VERSION='680 TEST';
   function setVersion371(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -33442,6 +33523,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   var VERSION='680 TEST';
   function setVersion371(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -33725,7 +33807,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var loading=false;
   window.tt374TeamSharedTaktikfilmer=[];
 
-  function setVersion374(){try{
+  function setVersion374(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
       var t=String(el.textContent||'').trim(); if(/^(v?\d+|v3\.)/i.test(t))el.textContent=VERSION;
@@ -34161,6 +34244,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt381MobileLineupPitchRestore=true;
 
   function setVersion381(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent='680 TEST';
@@ -34322,6 +34406,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt382HideBenchOnMatchEditSelection=true;
 
   function setVersion382(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);if(el)el.textContent='680 TEST';
@@ -34442,6 +34527,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt383MobileLineupLiftPitch=true;
 
   function setVersion383(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent='680 TEST';
@@ -34611,6 +34697,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion385(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -34885,6 +34972,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     return out;
   }
   function setVersion388(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     if(running)return;
     running=true;
     try{
@@ -34919,6 +35007,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion388(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['app-version','version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -35088,6 +35177,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var dragState=null;
 
   function setVersion392(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['app-version','version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -35266,6 +35356,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion394(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -35504,6 +35595,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var autoPoll396=null;
 
   function setVersion396(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var el=document.getElementById('app-version');
       if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -35702,6 +35794,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion398(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var el=document.getElementById('app-version');
       if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -35869,6 +35962,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var draggingSquadPlayer=null;
 
   function setVersion399(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var el=document.getElementById('app-version');
       if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -36200,6 +36294,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var LS_NAME_SIZE='tt400_tavla_name_size';
 
   function setVersion400(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
       document.body.setAttribute('data-app-version',VERSION);
@@ -36394,6 +36489,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var touchCandidate=null;
 
   function setVersion401(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
       document.body.setAttribute('data-app-version',VERSION);
@@ -36630,6 +36726,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var LS_SYMBOL='tt404_tavla_symbol';
 
   function setVersion404(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -36757,6 +36854,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion409(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       var el=document.getElementById('app-version');
       if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -36834,6 +36932,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion410(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -37046,6 +37145,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var AUTH_KEY='tt_auth_session_v1';
 
   function setVersion411(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -37183,6 +37283,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion412(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -37309,6 +37410,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt414PublicAdminNameRpcClient=true;
   var VERSION='680 TEST';
   function setVersion414(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){if(el)el.textContent=VERSION;});
@@ -37380,6 +37482,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var touchCandidate=null;
 
   function setVersion415(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
       document.body.setAttribute('data-app-version',VERSION);
@@ -37655,6 +37758,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   var VERSION='680 TEST';
   function setVersion418(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
@@ -37687,6 +37791,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 (function(){
   var VERSION='680 TEST';
   function setVersion423(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);
@@ -37819,6 +37924,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var LS_NAME_SIZE='tt400_tavla_name_size';
 
   function setVersion424(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -37954,6 +38060,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var LS_NAME_SIZE='tt425_taktikfilm_name_size';
 
   function setVersion425(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -38129,7 +38236,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt427UnifiedTaktikfilmVisuals)return;
   window.__tt427UnifiedTaktikfilmVisuals=true;
   var VERSION='680 TEST';
-  function setVersion427(){try{
+  function setVersion427(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){var t=String(el.textContent||'').trim();if(/^(v?\d+|v3\.)/i.test(t)){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
@@ -38167,6 +38275,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt428TaktikfilmTextSizeSync=true;
   var VERSION='680 TEST';
   function setVersion428(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -38252,6 +38361,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt429TaktikfilmNumberPolish=true;
   var VERSION='680 TEST';
   function setVersion429(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -38340,6 +38450,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt430StartToastAndNumberPolish=true;
   var VERSION='680 TEST';
   function setVersion430(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -38435,6 +38546,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var LS_DEFAULT_MARK='tt431_default_circle_applied';
 
   function setVersion431(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -38527,6 +38639,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt433TaktikfilmFinalNumberSync=true;
   var VERSION='680 TEST';
   function setVersion433(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -38607,6 +38720,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
   var LS_SYMBOL='tt425_taktikfilm_symbol';
   function setVersion433(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -38647,6 +38761,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
 
   function setVersion434(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}
@@ -38816,6 +38931,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt436SafeVersionLockNoObserver=true;
   var VERSION='680 TEST';
   function setVersion436(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -38856,6 +38972,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt437ImportMatchToTaktikfilm=true;
   var VERSION='680 TEST';
   function setVersion437(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -39027,6 +39144,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     'btn-tb-movement':'Rörelsepil'
   };
   function setVersion442(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -39071,6 +39189,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
   function isSmall444(){try{return window.matchMedia&&window.matchMedia('(max-width: 760px)').matches;}catch(e){return window.innerWidth<=760;}}
   function setVersion444(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -39117,6 +39236,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
   function small445(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
   function setVersion445(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -39183,6 +39303,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function small446(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
   function setVersion446(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -39278,6 +39399,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var VERSION='680 TEST';
   function small448(){try{return window.matchMedia&&window.matchMedia('(max-width:760px)').matches;}catch(e){return window.innerWidth<=760;}}
   function setVersion448(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -39350,6 +39472,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt449VersionDisplayCleanup=true;
   var VERSION='680 TEST';
   function setVersion449(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -39389,6 +39512,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt450PlayAllButtonUnified=true;
   var VERSION='680 TEST';
   function setVersion450(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -39459,6 +39583,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt451IphonePlayAllCameraCenterfix=true;
   var VERSION='680 TEST';
   function setVersion451(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       window.TAKTIKTAVLA_VERSION=VERSION;
       if(document.body)document.body.setAttribute('data-app-version',VERSION);
@@ -39539,6 +39664,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var timer=null;
 
   function setVersion455(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id);if(el)el.textContent=VERSION;
@@ -39702,6 +39828,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var scale535=100;
 
   function setVersion535(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['app-version','version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -39915,6 +40042,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var applying547=false;
 
   function setVersion547(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['app-version','version','version-label','app-version-label','ver','build-version'].forEach(function(id){
         var el=document.getElementById(id); if(el)el.textContent=VERSION;
@@ -40399,7 +40527,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt563MatchBytFormation=true;
   var VERSION='680 TEST';
 
-  function setVersion563(){try{
+  function setVersion563(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
       var t=String(el.textContent||'').trim();
@@ -40600,6 +40729,7 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var LS_KEY='tt568_empty_formation_folders_v1';
 
   function setVersion568(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{
       ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
@@ -40771,7 +40901,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt569FormationShareIdFix=true;
   var VERSION='680 TEST';
 
-  function setVersion569(){try{
+  function setVersion569(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
       var t=String(el.textContent||'').trim();
@@ -40921,7 +41052,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 */
 (function(){
   var VERSION='680 TEST';
-  function setVersion571(){try{
+  function setVersion571(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
       var t=String(el.textContent||'').trim();
@@ -40947,7 +41079,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt572FixedSavesTabsNoSearch=true;
   var VERSION='572';
 
-  function setVersion572(){try{
+  function setVersion572(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -41053,7 +41186,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt573PlusMappFixedRow=true;
   var VERSION='573';
 
-  function setVersion573(){try{
+  function setVersion573(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -41132,7 +41266,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt574PlusMappSameRow=true;
   var VERSION='574';
 
-  function setVersion574(){try{
+  function setVersion574(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -41234,7 +41369,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   window.__tt575StableSavesTabs=true;
   var VERSION='575';
 
-  function setVersion575(){try{
+  function setVersion575(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -41388,7 +41524,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
 
   function norm(v){return String(v==null?'':v).trim();}
   function lower(v){return norm(v).toLowerCase();}
-  function setVersion577(){try{
+  function setVersion577(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
       var t=String(el.textContent||'').trim();
@@ -41561,7 +41698,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt578SaveAsEmptyFolderSelect)return;
   window.__tt578SaveAsEmptyFolderSelect=true;
   var VERSION='680 TEST';
-  function setVersion578(){try{
+  function setVersion578(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version').forEach(function(el){
       var t=String(el.textContent||'').trim();
@@ -41608,7 +41746,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     if(b==='Träning'&&a!=='Träning')return 1;
     return String(a).localeCompare(String(b),'sv');
   }
-  function setVersion579(){try{
+  function setVersion579(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -41857,7 +41996,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   var LS_SYMBOL='tt223_match_symbol';
   var LS_NUMBERS='tt223_match_numbers';
 
-  function setVersion581(){try{
+  function setVersion581(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -41980,7 +42120,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
     var dx=(Number(a.x)||0)-(Number(b.x)||0),dy=(Number(a.y)||0)-(Number(b.y)||0);
     return dx*dx+dy*dy<2.25;
   }
-  function setVersion583(){try{
+  function setVersion583(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -42114,7 +42255,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt585TestEnvMarker)return;
   window.__tt585TestEnvMarker=true;
   var VERSION='680 TEST';
-  function setVersion585(){try{
+  function setVersion585(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body){
       document.body.setAttribute('data-app-version','621-test');
       document.body.setAttribute('data-env','test');
@@ -42143,7 +42285,8 @@ setTimeout(tt152RebindTaktikListButtons,1500);
   if(window.__tt586TestEnvBanner)return;
   window.__tt586TestEnvBanner=true;
   var VERSION='680 TEST';
-  function setVersion586(){try{
+  function setVersion586(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body){
       document.body.setAttribute('data-app-version','621-test');
       document.body.setAttribute('data-env','test');
@@ -42202,7 +42345,8 @@ function afterConfirmedTaktikSave(result,onSaved){
   var baselineByKey={};
 
 
-  function setVersion587(){try{
+  function setVersion587(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body){
       document.body.setAttribute('data-app-version','621-test');
       document.body.setAttribute('data-env','test');
@@ -42451,7 +42595,8 @@ function afterConfirmedTaktikSave(result,onSaved){
   var STORE='tt_test_taktikfilm_recovery_v587';
   var asked=false;
 
-  function setVersion590(){try{
+  function setVersion590(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     if(document.body){
       document.body.setAttribute('data-app-version','621-test');
       document.body.setAttribute('data-env','test');
@@ -42741,6 +42886,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   function show(el,display){if(el)el.style.display=display||'';}
   function hide(el){if(el)el.style.display='none';}
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -43277,6 +43423,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -43463,6 +43610,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -43703,6 +43851,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -43962,6 +44111,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -44081,6 +44231,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -44180,6 +44331,7 @@ function afterConfirmedTaktikSave(result,onSaved){
     syncDesktopFullscreenRotateV523._tt698Wrapped=true;
   }
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -44624,6 +44776,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -45056,6 +45209,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -45171,6 +45325,7 @@ function afterConfirmedTaktikSave(result,onSaved){
   }
 
   function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */
     try{document.title='Taktiktavla';}catch(e){}
     try{
       document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -49138,7 +49293,8 @@ function afterConfirmedTaktikSave(result,onSaved){
   window.__tt892TestSpeedCurveSync=true;
   var VERSION='Version 2 test v892';
   function byId(id){return document.getElementById(id);}
-  function setVersion(){try{
+  function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     window.TAKTIKTAVLA_VERSION=VERSION;
     if(document.body)document.body.setAttribute('data-app-version',VERSION);
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){
@@ -49223,7 +49379,8 @@ function afterConfirmedTaktikSave(result,onSaved){
     if(base && recNorm===norm(base)){removeRecovery(key);return;}
   }catch(e){} }
 
-  function setVersion(){try{
+  function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     document.title='Taktiktavla';
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=byId(id);if(el)el.textContent=VERSION;});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -49448,7 +49605,8 @@ function afterConfirmedTaktikSave(result,onSaved){
     return res;
   };
 
-  function setVersion(){try{
+  function setVersion(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     document.title='Taktiktavla';
     ['version','app-version','version-label','app-version-label','ver','build-version'].forEach(function(id){var el=byId(id);if(el){el.textContent=VERSION;el.setAttribute('data-version',VERSION);}});
     document.querySelectorAll('[data-version],.version,.app-version,.version-label,.app-version-label,#version,#app-version,#version-label,#app-version-label,#ver,#build-version,span[style*="font-size:0.6rem"][style*="letter-spacing"]').forEach(function(el){
@@ -49613,7 +49771,8 @@ function afterConfirmedTaktikSave(result,onSaved){
     try{window.tt631RefreshLayerPanelSoon=tt631RefreshLayerPanelSoon;}catch(e){}
   }
 
-  function setVersion931(){try{
+  function setVersion931(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     var VERSION='Version 2 test v936';
     document.title='Taktiktavla';
     var ids=['version','app-version','version-label','app-version-label','ver','build-version'];
@@ -49653,7 +49812,8 @@ function afterConfirmedTaktikSave(result,onSaved){
     zone:['fs-tb-zone','btn-zone']
   };
 
-  function setVersion964(){try{
+  function setVersion964(){
+    if(document.getElementById('tt-release-label'))return; /* Static release label owns version display. */try{
     document.title='Taktiktavla';
     var b=document.getElementById('tt610-test-env-banner')||document.getElementById('tt609-test-env-banner');
     if(b)b.textContent='⚠ TESTMILJÖ – testdata / inte produktion – v964 TEST';

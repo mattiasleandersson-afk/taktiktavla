@@ -10,8 +10,9 @@
  let rail,panel,content,heading,open=false,lastMode='',lastContext='',enabled=false,scheduled=false;
  const homes=new Map();
  const optionIds={arrow:'arrow-options',freehand:'freehand-options',zone:'zone-options'};
+ const desktopMedia=matchMedia('(min-width:1024px) and (pointer:fine)');
  function active(){
-  if(innerWidth<1024||!matchMedia('(pointer:fine)').matches||document.body.classList.contains('fullscreen-portrait'))return false;
+  if(!desktopMedia.matches||document.body.classList.contains('fullscreen-portrait'))return false;
   const view=document.querySelector('.tab.on')?.dataset.panel;
   return view==='saves'||(view==='formations'&&!(window.matchRoster?.length))||(view==='taktik'&&window.isEditingTaktik);
  }
