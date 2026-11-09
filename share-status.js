@@ -39,6 +39,14 @@
  }
  function attach(row,kind,item){
   if(!config[kind])return;const id=kind==='board'?item.id:item.dbId;if(id==null)return;
+  // Bind on the stable row before its icon can be painted. Legacy delayed button
+  // rebinding must not leave a brief window where clicking toggles old sharing flags.
+  if(kind==='board')row.addEventListener('click',event=>{
+   const button=event.target.closest('button[data-tt-share-indicator]');
+   const open=window.tt364OpenFormationShareModal||window.tt367OpenFormationShareModal;
+   if(!button||!row.contains(button)||!open)return;
+   event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();open(item);
+  },true);
   row.dataset.shareKind=kind;row.dataset.shareId=id;refresh(kind);
  }
  function init(){

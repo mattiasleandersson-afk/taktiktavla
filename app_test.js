@@ -45178,15 +45178,23 @@ function afterConfirmedTaktikSave(result,onSaved){
 
   function normalizeButton(btn){
     if(!btn)return;
+    // Confirmed sharing status owns its icon and label. Do not fight its observer.
+    if(btn.dataset.ttShareIndicator)return;
     var txt=String(btn.textContent||'').trim();
     var title=String(btn.title||btn.getAttribute('aria-label')||'').trim();
     var key=(title+' '+txt).toLowerCase();
-    if(key.indexOf('ladda')>=0){btn.textContent='▶';btn.title='Ladda';btn.setAttribute('aria-label','Ladda');return;}
-    if(key.indexOf('taktikfilm')>=0 || key.indexOf('ny film')>=0 || txt==='↗'){btn.textContent='🎬';btn.title='Till taktikfilm';btn.setAttribute('aria-label','Till taktikfilm');return;}
-    if(key.indexOf('flytta')>=0 || txt==='⇆'){btn.textContent='⇆';btn.title='Flytta till mapp';btn.setAttribute('aria-label','Flytta till mapp');return;}
-    if(key.indexOf('kopiera')>=0 || txt==='⧉'){btn.textContent='⧉';btn.title='Kopiera';btn.setAttribute('aria-label','Kopiera');return;}
-    if(key.indexOf('dela')>=0 || txt==='👥' || txt==='🙈'){btn.textContent=(txt==='🙈'?'🙈':'👥');btn.setAttribute('aria-label',btn.title||'Dela');return;}
-    if(key.indexOf('radera')>=0 || txt==='×' || txt==='x'){btn.textContent='×';btn.title='Radera';btn.setAttribute('aria-label','Radera');return;}
+    function set(text,newTitle,label){
+      // Writing the same text still replaces a text node and retriggers this list's observer.
+      if(btn.textContent!==text)btn.textContent=text;
+      if(newTitle!==null&&btn.title!==newTitle)btn.title=newTitle;
+      if(btn.getAttribute('aria-label')!==label)btn.setAttribute('aria-label',label);
+    }
+    if(key.indexOf('ladda')>=0){set('▶','Ladda','Ladda');return;}
+    if(key.indexOf('taktikfilm')>=0 || key.indexOf('ny film')>=0 || txt==='↗'){set('🎬','Till taktikfilm','Till taktikfilm');return;}
+    if(key.indexOf('flytta')>=0 || txt==='⇆'){set('⇆','Flytta till mapp','Flytta till mapp');return;}
+    if(key.indexOf('kopiera')>=0 || txt==='⧉'){set('⧉','Kopiera','Kopiera');return;}
+    if(key.indexOf('dela')>=0 || txt==='👥' || txt==='🙈'){set(txt==='🙈'?'🙈':'👥',null,btn.title||'Dela');return;}
+    if(key.indexOf('radera')>=0 || txt==='×' || txt==='x'){set('×','Radera','Radera');return;}
   }
 
   function normalizeRows(){
