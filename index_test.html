@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#111a14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23111a14'/><text y='.9em' font-size='80'>&#x26BD;</text></svg>">
 <title>Taktiktavla</title>
-<link rel="stylesheet" href="styles_test.css?v=20261109-fullscreen-fit">
+<link rel="stylesheet" href="styles_test.css?v=20261109-layer-refresh">
 
 
 
@@ -3190,9 +3190,9 @@
   log('TT963 pre-diagnos installerad före app_test.js');
 })();
 </script>
-<script src="share-status.js?v=20261109-fullscreen-fit"></script>
-<script src="file-names.js?v=20261109-fullscreen-fit"></script>
-<script src="app_test.js?v=20261109-fullscreen-fit"></script>
+<script src="share-status.js?v=20261109-layer-refresh"></script>
+<script src="file-names.js?v=20261109-layer-refresh"></script>
+<script src="app_test.js?v=20261109-layer-refresh"></script>
 <script id="tt963-diag-post-draw-runtime-readonly">
 (function(){
   if(!window.__tt963DiagPreInstalled)return;
@@ -4139,12 +4139,13 @@
     render();
   }
 
+  var renderedLayerLists=new WeakMap();
   function render(){
     if(window.tt635EnsureFreeLayersFromCurrentObjects)window.tt635EnsureFreeLayersFromCurrentObjects();
     syncLayerPanelStateFromCurrentTaktikStep();
     var list=document.getElementById('tt630-free-layer-list');
     if(!list)return;
-    list.innerHTML=state.layers.map(function(layer){
+    var markup=state.layers.map(function(layer){
       var active=layer.id===state.activeId;
       var rowClass='tt616-layer-row'+(active?' tt630-layer-row-active':'');
       var count=countObjectsByLayer(layer.id);
@@ -4181,6 +4182,12 @@
         + '</div>'
         + '</div>';
     }).join('');
+    // Legacy event handlers request the same refresh repeatedly. Preserve rows,
+    // focus and menu placement when the rendered layer state has not changed.
+    if(renderedLayerLists.get(list)!==markup || !list.firstElementChild){
+      list.innerHTML=markup;
+      renderedLayerLists.set(list,markup);
+    }
     applyFreeLayerVisibilityToDom();
   }
 
@@ -8364,12 +8371,12 @@
 </script>
 <!-- === slut v942 TEST === -->
 
-<link rel="stylesheet" href="objects-menu.css?v=20261109-fullscreen-fit">
-<script src="objects-menu.js?v=20261109-fullscreen-fit"></script>
-<link rel="stylesheet" href="workspace-panel.css?v=20261109-fullscreen-fit">
-<script src="workspace-panel.js?v=20261109-fullscreen-fit"></script>
-<link rel="stylesheet" href="film-motion.css?v=20261109-fullscreen-fit">
-<script src="film-motion.js?v=20261109-fullscreen-fit"></script>
+<link rel="stylesheet" href="objects-menu.css?v=20261109-layer-refresh">
+<script src="objects-menu.js?v=20261109-layer-refresh"></script>
+<link rel="stylesheet" href="workspace-panel.css?v=20261109-layer-refresh">
+<script src="workspace-panel.js?v=20261109-layer-refresh"></script>
+<link rel="stylesheet" href="film-motion.css?v=20261109-layer-refresh">
+<script src="film-motion.js?v=20261109-layer-refresh"></script>
 
-<link rel="stylesheet" href="tool-rail.css?v=20261109-fullscreen-fit">
-<script src="tool-rail.js?v=20261109-fullscreen-fit"></script>
+<link rel="stylesheet" href="tool-rail.css?v=20261109-layer-refresh">
+<script src="tool-rail.js?v=20261109-layer-refresh"></script>
