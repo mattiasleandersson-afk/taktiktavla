@@ -166,8 +166,8 @@ body #tt-board-panel#tt-board-panel[hidden]{display:none!important;pointer-event
   body.tt-board-fullscreen #fs-restore-btn#fs-restore-btn{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 8px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px)!important}
   body.tt-board-fullscreen #fs-top-tools#fs-top-tools#fs-top-tools{top:calc(var(--tt-vv-top,0px) + var(--tt-safe-top) + 8px)!important;left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 332px)!important}
   body:is(.tt-board-fullscreen,.tt-board-editor) #tt-board-panel{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px);bottom:var(--tt-board-bottom)}
-  body.tt-board-fullscreen #pitch-wrapper#pitch-wrapper#pitch-wrapper{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 48px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 16px + var(--tt-board-reserve))!important;bottom:var(--tt-board-bottom)!important}
-  body.tt-board-fullscreen.tt-board-panel-below #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 16px)!important;bottom:calc(var(--tt-board-bottom) + var(--tt-board-reserve))!important}
+  body.tt-board-fullscreen #pitch-wrapper#pitch-wrapper#pitch-wrapper{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)!important;right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px + var(--tt-board-reserve))!important;bottom:var(--tt-board-bottom)!important}
+  body.tt-board-fullscreen.tt-board-panel-below #pitch-wrapper#pitch-wrapper#pitch-wrapper{right:calc(var(--tt-vv-right,0px) + var(--tt-safe-right) + 8px)!important;bottom:calc(var(--tt-board-bottom) + var(--tt-board-reserve))!important}
   body:is(.tt-board-fullscreen,.tt-board-editor).tt-board-panel-below #tt-board-panel{left:calc(var(--tt-vv-left,0px) + var(--tt-safe-left) + 8px)}
   body:not(.fullscreen-portrait):not(.tt-lineup-layout) #tt-objects-menu#tt-objects-menu{
     left:auto!important;right:calc(var(--tt-safe-right) + 8px)!important;bottom:calc(var(--tt-safe-bottom) + 8px)!important;top:auto!important;

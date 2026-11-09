@@ -133,12 +133,12 @@
     const safeRight=touch ? parseFloat(getComputedStyle(boardControls).getPropertyValue('--tt-safe-right'))||0 : 0;
     const safeBottom=touch ? parseFloat(getComputedStyle(boardControls).getPropertyValue('--tt-safe-bottom'))||0 : 0;
     setVar('--tt-board-bottom', (touch ? Math.max(16,innerHeight-screenHeight-(viewport?.offsetTop||0)+safeBottom+8) : 16) + 'px');
-    const width=Math.max(100,screenWidth-64-safeLeft-safeRight-(below?0:reserve));
+    const width=Math.max(100,screenWidth-(touch?16:64)-safeLeft-safeRight-(below?0:reserve));
     setVar('--tt-board-top',top+'px');
     const bottom=parseFloat(document.body.style.getPropertyValue('--tt-board-bottom'))||16;
     const height=Math.max(100,innerHeight-top-bottom-(below?reserve:0));
     const rotated=document.body.classList.contains('landscape')||document.body.classList.contains('tt523-fs-rotated-desktop');
-    const svgWidth=(rotated?Math.min(height,width*2/3):Math.min(width,height*2/3))-4;
+    const svgWidth=(rotated?Math.min(height,width*2/3):Math.min(width,height*2/3))-(touch?2:4);
     setVar('--tt-board-reserve',reserve+'px');setVar('--tt-board-svg-width',svgWidth+'px');
     setVar('--tt-board-rotation',rotated?(document.body.classList.contains('landscape')?'-90deg':'90deg'):'0deg');
   }
